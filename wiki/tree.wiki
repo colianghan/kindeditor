@@ -1,0 +1,31 @@
+#labels KindEditor3.0,目录结构
+KindEditor 3.0 目录结构
+{{{
+│  ke-core.js //核心JS
+│
+├─emoticons //笑脸目录
+│      etc_xx.gif
+│
+├─php //PHP扩展
+│      upload.php
+│
+├─skins //风格目录，目录名和CSS名要一致
+│  │  default.css
+│  │
+│  └─default
+│          xxx.gif
+│
+├─docs //帮助文档
+├─examples //应用例子
+│      default_all.html
+│      default_all.css
+│      default_mini.css
+│      default_mini.html
+│
+├─lang //语言JS
+│      zh_CN.js
+│
+└─plugin //扩展JS，根据需求选择不同大小
+        plugin-all.js
+        plugin-mini.js
+}}}
