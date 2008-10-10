@@ -23,7 +23,10 @@ KE.plugin['bgcolor'] = {
         KE.util.select(id);
         if (KE.browser == 'IE') {
             KE.g[id].iframeDoc.execCommand('backcolor', false, value);
-        } else {
+        } else if (KE.browser == 'OPERA') {
+            alert('暂时不支持!');
+            return;
+        } else  {
             var startRangeNode = KE.g[id].range.startContainer;
             if (startRangeNode.nodeType == 3) {
                 var font = KE.$$("font");
@@ -258,23 +261,21 @@ KE.plugin['emoticons'] = {
         KE.util.selection(id);
         var table = KE.$$('table');
         table.cellPadding = 0;
-        table.cellSpacing = 0;
+        table.cellSpacing = 2;
         table.border = 0;
         for (var i = 0; i < emoticonTable.length; i++) {
             var row = table.insertRow(i);
             for (var j = 0; j < emoticonTable[i].length; j++) {
                 var cell = row.insertCell(j);
-                var span = KE.$$('span');
-                span.style.padding = '2px';
-                span.style.border = '1px solid #AAAAAA';
-                span.style.cursor = 'pointer';
-                span.onmouseover = function() {this.style.borderColor = '#000000'; }
-                span.onmouseout = function() {this.style.borderColor = '#AAAAAA'; }
-                span.onclick = new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + emoticonTable[i][j] + '")');
+                cell.style.padding = '1px';
+                cell.style.border = '1px solid #F0F0EE';
+                cell.style.cursor = 'pointer';
+                cell.onmouseover = function() {this.style.borderColor = '#000000'; }
+                cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
+                cell.onclick = new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + emoticonTable[i][j] + '")');
                 var img = KE.$$('img');
                 img.src = KE.scriptPath + 'emoticons/' + emoticonTable[i][j];
-                span.appendChild(img);
-                cell.appendChild(span);
+                cell.appendChild(img);
             }
         }
         var menu = new KE.menu({
@@ -450,14 +451,16 @@ KE.plugin['table'] = {
             for (j = 1; j <= num; j++) {
                 var value = i.toString(10) + ',' + j.toString(10);
                 html += '<td id="tableTd' + id + i.toString(10) + '_' + j.toString(10) +
-                '" style="font-size:1px;width:12px;height:12px;background-color:#FFFFFF;border:1px solid #DDDDDD;cursor:pointer;" ' + 
-                'onclick="javascript:KE.plugin[\'table\'].exec(\'' + id + '\', \'' + value + '\');" ' +
-                'onmouseover="javascript:KE.plugin[\'table\'].selected(\'' + id + '\', \'' + i.toString(10) + '\', \'' + j.toString(10) + '\');"' +
-                'onmouseout="javascript:;">&nbsp;</td>';
+                    '" style="font-size:1px;width:12px;height:12px;background-color:#FFFFFF;' +
+                    'border:1px solid #DDDDDD;cursor:pointer;" ' +
+                    'onclick="javascript:KE.plugin[\'table\'].exec(\'' + id + '\', \'' + value + '\');" ' +
+                    'onmouseover="javascript:KE.plugin[\'table\'].selected(\'' + id + '\', \'' + i.toString(10) +
+                    '\', \'' + j.toString(10) + '\');">&nbsp;</td>';
             }
             html += '</tr>';
         }
-        html += '<tr><td colspan="10" id="tableLocation' + id + '" style="font-size:12px;text-align:center;height:20px;"></td></tr>';
+        html += '<tr><td colspan="10" id="tableLocation' + id +
+        '" style="font-size:12px;text-align:center;height:20px;"></td></tr>';
         html += '</table>';
         var menu = new KE.menu({
                 id : id,

@@ -236,7 +236,7 @@ KE.layout = {
         KE.g[id].hideDiv.style.display = 'none';
         KE.g[id].maskDiv.style.display = 'none';
     },
-    get : function(id)
+    make : function(id)
     {
         var div = KE.$$('div');
         div.style.position = 'absolute';
@@ -246,7 +246,7 @@ KE.layout = {
 };
 KE.menu = function(cf){
     this.cf = cf;
-    var div = KE.layout.get(cf.id);
+    var div = KE.layout.make(cf.id);
     div.className = 'ke-menu';
     var obj = KE.g[cf.id].toolbarIcon[cf.cmd];
     div.style.top = KE.util.getTop(obj) + obj.offsetHeight + 'px';
@@ -291,9 +291,8 @@ KE.menu = function(cf){
             ];
         var table = KE.$$('table');
         table.cellPadding = 0;
-        table.cellSpacing = 2;
+        table.cellSpacing = 1;
         table.border = 0;
-        table.style.width = '130px';
         for (var i = 0; i < colorTable.length; i++) {
             var row = table.insertRow(i);
             for (var j = 0; j < colorTable[i].length; j++) {
@@ -301,6 +300,8 @@ KE.menu = function(cf){
                 cell.className = 'ke-picker-cell';
                 cell.style.background = colorTable[i][j];
                 cell.title = colorTable[i][j];
+                cell.onmouseover = function() {this.style.borderColor = '#000000'; }
+                cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
                 cell.onclick = new Function('KE.plugin["' + this.cf.cmd + '"].exec("' +
                                             this.cf.id + '", "' + colorTable[i][j] + '")');
                 cell.innerHTML = '&nbsp;';
@@ -451,7 +452,7 @@ KE.create = function(id)
     KE.util.pToBr(id);
     KE.util.focus(id);
 };
-KE.version = '3.0';
+KE.version = 'KindEditor 3.0';
 KE.scriptPath = KE.util.getScriptPath();
 KE.htmlPath = KE.util.getHtmlPath();
 KE.browser = KE.util.getBrowser();
