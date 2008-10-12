@@ -67,11 +67,6 @@
 }
 .ke-dialog {
     position: absolute;
-    z-index: 10001;
-}
-.ke-box {
-    position: absolute;
-    z-index: 10002;
     border-top: 2px solid #DDDDDD;
     border-left: 2px solid #DDDDDD;
     border-right: 2px solid #AAAAAA;
@@ -80,7 +75,7 @@
     color: #222222;
     text-align: left;
 }
-.ke-box-title {
+.ke-dialog-title {
     background-color: #1F3D74;
     padding: 3px;
     color: #FFFFFF;
@@ -88,11 +83,14 @@
     font-size: 12px;
     font-family: "sans serif",tahoma,verdana,helvetica;
 }
-.ke-box-body {
+.ke-dialog-body {
     position: absolute;
     text-align: center;
     font-size: 12px;
     font-family: "sans serif",tahoma,verdana,helvetica;
+}
+.ke-dialog-bottom {
+
 }
 .ke-box-close {
     position: absolute;

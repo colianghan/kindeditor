@@ -46,6 +46,7 @@ KE.plugin['bgcolor'] = {
             }
         }
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['date'] = {
@@ -85,6 +86,7 @@ KE.plugin['fontname'] = {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontname', false, value);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['fontsize'] = {
@@ -117,6 +119,7 @@ KE.plugin['fontsize'] = {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontsize', false, value.substr(0, 1));
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['hr'] = {
@@ -136,6 +139,7 @@ KE.plugin['hr'] = {
         var html = '<hr color="' + value + '" size="1">';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['preview'] = {
@@ -181,6 +185,7 @@ KE.plugin['textcolor'] = {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('forecolor', false, value);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['time'] = {
@@ -221,6 +226,7 @@ KE.plugin['title'] = {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('formatblock', false, value);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['zoom'] = {
@@ -243,6 +249,7 @@ KE.plugin['zoom'] = {
     {
         KE.g[id].iframeDoc.body.style.zoom = value;
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['emoticons'] = {
@@ -291,6 +298,7 @@ KE.plugin['emoticons'] = {
         var html = '<img src="' + KE.scriptPath + 'emoticons/' + value + '" border="0">';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['flash'] = {
@@ -305,6 +313,13 @@ KE.plugin['image'] = {
     click : function(id)
     {
         var cmd = 'link';
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'link',
+                width : 300,
+                height : 100,
+            });
+        dialog.show();
     }
 };
 KE.plugin['layer'] = {
@@ -324,6 +339,7 @@ KE.plugin['layer'] = {
         var html = '<div style="padding:5px;border:1px solid #AAAAAA;background-color:' + value + '">请输入内容</div>';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['link'] = {
@@ -357,6 +373,7 @@ KE.plugin['link'] = {
             }
         }
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['media'] = {
@@ -420,6 +437,7 @@ KE.plugin['specialchar'] = {
         KE.util.select(id);
         KE.util.insertHtml(id, value);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['table'] = {
@@ -484,5 +502,6 @@ KE.plugin['table'] = {
         html += '</table>';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };

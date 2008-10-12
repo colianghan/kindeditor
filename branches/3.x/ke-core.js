@@ -119,7 +119,7 @@ KE.util = {
         for (var i in items) {
             KE.plugin[items[i]] = {
                 icon : items[i] + '.gif',
-                click : new Function('KE.g["' + id + '"].iframeDoc.execCommand("' + items[i] + '", false, null)')
+                click : new Function('id', 'KE.g[id].iframeDoc.execCommand("' + items[i] + '", false, null);')
             };
         }
     },
@@ -211,15 +211,6 @@ KE.util = {
         }
     }
 };
-KE.button = function(cf){
-    var doc = cf.doc || document;
-    var input = KE.$$('input', doc);
-    input.type = cf.type || 'button';
-    input.className = 'ke-button';
-    input.value = cf.text;
-    input.onclick = cf.click;
-    return input;
-};
 KE.layout = {
     show : function(id, div)
     {
@@ -309,6 +300,32 @@ KE.menu = function(cf){
         }
         this.append(table);
         this.show();
+    };
+};
+KE.dialog = function(cf){
+    this.cf = cf;
+    var div = KE.layout.make(cf.id);
+    div.className = 'ke-dialog';
+    div.style.width = cf.width + 'px';
+    div.style.height = cf.height + 'px';
+    div.style.top = this.getTop + 'px';
+    div.style.left = this.getLeft + 'px';
+    this.div = div;
+    this.getLeft = function() {
+        var left = KE.util.getLeft(KE.g[this.cf.id].containerDiv);
+        var diff = Math.round(parseInt(KE.g[this.cf.id].width / 2)) - Math.round(this.cf.width / 2);
+        if (diff < 0) return left;
+        return left + diff;
+    };
+    this.getTop = function() {
+        var top = KE.util.getTop(KE.g[this.cf.id].containerDiv);
+        var diff = Math.round(parseInt(KE.g[this.cf.id].height / 2)) - Math.round(this.cf.height / 2);
+        if (diff < 0) return top;
+        return top + diff;
+    };
+    this.show = function()
+    {
+        KE.layout.show(this.cf.id, this.div);
     };
 };
 KE.toolbar = {
