@@ -16,8 +16,7 @@ KE.$$ = function(name, doc){
     return doc.createElement(name);
 };
 KE.event = {
-    add : function(el, event, listener)
-    {
+    add : function(el, event, listener) {
         if (el.addEventListener){
             el.addEventListener(event, listener, false);
         } else if (el.attachEvent){
@@ -52,8 +51,7 @@ KE.util = {
         }
         return width;
     },
-    getScriptPath : function()
-    {
+    getScriptPath : function() {
         var elements = document.getElementsByTagName('script');
         for (var i = 0; i < elements.length; i++) {
             if (elements[i].src && elements[i].src.indexOf('ke-core.js') != -1) {
@@ -61,12 +59,10 @@ KE.util = {
             }
         }
     },
-    getHtmlPath : function()
-    {
+    getHtmlPath : function() {
         return location.href.substring(0, location.href.lastIndexOf('/') + 1);
     },
-    getBrowser : function()
-    {
+    getBrowser : function() {
         var browser = '';
         var ua = navigator.userAgent.toLowerCase();
         if (ua.indexOf("msie") > -1) {
@@ -82,35 +78,30 @@ KE.util = {
         }
         return browser;
     },
-    loadStyle : function(path)
-    {
+    loadStyle : function(path) {
         var link = KE.$$('link');
         link.setAttribute('type', 'text/css');
         link.setAttribute('rel', 'stylesheet');
         link.setAttribute('href', path);
         document.getElementsByTagName("head")[0].appendChild(link);
     },
-    inArray : function(str, arr)
-    {
+    inArray : function(str, arr) {
         for (var i in arr) {if (str == arr[i]) return true;}
         return false;
     },
-    getTop : function(el)
-    {
+    getTop : function(el) {
         var top = el.offsetTop;
         var parent = el.offsetParent;
         while (parent) { top += parent.offsetTop; parent = parent.offsetParent; }
         return top;
     },
-    getLeft : function(el)
-    {
+    getLeft : function(el) {
         var left = el.offsetLeft;
         var parent = el.offsetParent;
         while (parent) { left += parent.offsetLeft; parent = parent.offsetParent; }
         return left;
     },
-    setDefaultPlugin : function(id)
-    {
+    setDefaultPlugin : function(id) {
         var items = [
             'undo', 'redo', 'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
             'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
@@ -123,25 +114,22 @@ KE.util = {
             };
         }
     },
-    getFullHtml : function(id, body)
-    {
+    getFullHtml : function(id, body) {
         var html = '<html>';
         html += '<head>';
         html += '<base href="' + KE.htmlPath + '" />';
-        html += '<title>blank_page</title>';
-        html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+        html += '<title>editor</title>';
         if (KE.g[id].cssPath) {
             html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
         }
         html += '</head>';
-        html += '<body>';
+        html += '<body> ';
         html += body;
         html += '</body>';
         html += '</html>';
         return html;
     },
-    getData : function(id)
-    {
+    getData : function(id) {
         var html;
         if (KE.g[id].wyswygMode == true) {
             html = KE.g[id].iframeDoc.body.innerHTML;
@@ -151,22 +139,19 @@ KE.util = {
         KE.g[id].hideInput.value = html;
         return html;
     },
-    focus : function(id)
-    {
+    focus : function(id) {
         if (KE.g[id].wyswygMode == true) {
             KE.g[id].iframeWin.focus();
         } else {
             KE.g[id].newTextarea.focus();
         }
     },
-    click : function(id, cmd)
-    {
+    click : function(id, cmd) {
         KE.layout.hide(id);
         KE.util.focus(id);
         KE.plugin[cmd].click(id);
     },
-    selection : function(id)
-    {
+    selection : function(id) {
         var selection, range, rangeText;
         if (KE.g[id].iframeDoc.selection) {
             selection = KE.g[id].iframeDoc.selection;
@@ -181,12 +166,10 @@ KE.util = {
         KE.g[id].range = range;
         KE.g[id].rangeText = rangeText;
     },
-    select : function(id)
-    {
+    select : function(id) {
         if (KE.browser == 'IE') KE.g[id].range.select();
     },
-    pToBr : function(id)
-    {
+    pToBr : function(id) {
         if(KE.browser == 'IE') {
             KE.event.add(KE.g[id].iframeDoc, 'keydown', function(e) {
                 KE.util.selection(id);
@@ -197,8 +180,7 @@ KE.util = {
             });
         }
     },
-    insertHtml : function(id, html)
-    {
+    insertHtml : function(id, html) {
         KE.util.select(id);
         if (KE.browser == 'IE') {
             if (KE.g[id].selection.type.toLowerCase() == 'control') {
@@ -304,13 +286,6 @@ KE.menu = function(cf){
 };
 KE.dialog = function(cf){
     this.cf = cf;
-    var div = KE.layout.make(cf.id);
-    div.className = 'ke-dialog';
-    div.style.width = cf.width + 'px';
-    div.style.height = cf.height + 'px';
-    div.style.top = this.getTop + 'px';
-    div.style.left = this.getLeft + 'px';
-    this.div = div;
     this.getLeft = function() {
         var left = KE.util.getLeft(KE.g[this.cf.id].containerDiv);
         var diff = Math.round(parseInt(KE.g[this.cf.id].width / 2)) - Math.round(this.cf.width / 2);
@@ -323,9 +298,15 @@ KE.dialog = function(cf){
         if (diff < 0) return top;
         return top + diff;
     };
-    this.show = function()
-    {
-        KE.layout.show(this.cf.id, this.div);
+    this.show = function() {
+    var div = KE.layout.make(cf.id);
+    div.className = 'ke-dialog';
+    div.style.width = cf.width + 'px';
+    div.style.height = cf.height + 'px';
+    div.style.top = this.getTop() + 'px';
+    div.style.left = this.getLeft() + 'px';
+    this.div = div;
+       KE.layout.show(this.cf.id, this.div);
     };
 };
 KE.toolbar = {
@@ -435,8 +416,13 @@ KE.create = function(id)
     containerDiv.appendChild(hideDiv);
     containerDiv.appendChild(maskDiv);
     var iframeWin = iframe.contentWindow;
-    var iframeDoc = iframeWin.document;
-    iframeDoc.designMode = "on";
+    var iframeDoc = null;
+    if (iframe.contentDocument) {
+        iframeDoc = iframe.contentDocument;
+    } else {
+        iframeDoc = iframeWin.document;
+    }
+    iframeDoc.designMode = "On";
     var html = KE.util.getFullHtml(id, oldTextarea.value);
     iframeDoc.open();
     iframeDoc.write(html);
@@ -452,8 +438,8 @@ KE.create = function(id)
     var form = hideDiv.parentNode;
     while (form.tagName != 'FORM') { form = form.parentNode; }
     KE.event.add(form, 'submit', new Function('KE.util.getData("' + id + '")'));
-    KE.event.add(iframeDoc, 'mousedown', new Function('KE.layout.hide("' + id + '")'));
-    KE.event.add(newTextarea, 'mousedown', new Function('KE.layout.hide("' + id + '")'));
+    KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
+    KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
 
     KE.g[id].containerDiv = containerDiv;
     KE.g[id].iframe = iframe;
@@ -465,7 +451,6 @@ KE.create = function(id)
     KE.g[id].iframeDoc = iframeDoc;
     KE.g[id].width = width;
     KE.g[id].height = height;
-
     KE.util.pToBr(id);
     KE.util.focus(id);
 };

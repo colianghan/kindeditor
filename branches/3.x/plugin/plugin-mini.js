@@ -9,8 +9,7 @@
 
 KE.plugin['bgcolor'] = {
     icon : 'bgcolor.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
@@ -18,31 +17,15 @@ KE.plugin['bgcolor'] = {
             });
         menu.picker();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         if (KE.browser == 'IE') {
             KE.g[id].iframeDoc.execCommand('backcolor', false, value);
-        } else {
-            var startRangeNode = KE.g[id].range.startContainer;
-            if (startRangeNode.nodeType == 3) {
-                var font = KE.$$("font");
-                font.style.backgroundColor = value;
-                font.appendChild(KE.g[id].range.extractContents());
-                var startOffset = KE.g[id].range.startOffset;
-                var text = startRangeNode.nodeValue;
-                var beforeText = text.substr(0, startOffset);
-                var afterText = text.substr(startOffset);
-                var beforeNode = document.createTextNode(beforeText);
-                var afterNode = document.createTextNode(afterText);
-                var parentRangeNode = startRangeNode.parentNode;
-                parentRangeNode.insertBefore(afterNode, startRangeNode);
-                parentRangeNode.insertBefore(font, afterNode);
-                parentRangeNode.insertBefore(beforeNode, font);
-                parentRangeNode.removeChild(startRangeNode);
-            }
+        } else  {
+            KE.g[id].iframeDoc.execCommand('hiliteColor', false, value);
         }
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['fontname'] = {

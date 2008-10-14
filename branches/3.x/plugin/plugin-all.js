@@ -6,11 +6,9 @@
 * @licence LGPL(http://www.opensource.org/licenses/lgpl-license.php)
 * @version 3.0
 *******************************************************************************/
-
 KE.plugin['bgcolor'] = {
     icon : 'bgcolor.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
@@ -18,32 +16,12 @@ KE.plugin['bgcolor'] = {
             });
         menu.picker();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         if (KE.browser == 'IE') {
             KE.g[id].iframeDoc.execCommand('backcolor', false, value);
-        } else if (KE.browser == 'OPERA') {
-            alert('暂时不支持!');
-            return;
         } else  {
-            var startRangeNode = KE.g[id].range.startContainer;
-            if (startRangeNode.nodeType == 3) {
-                var font = KE.$$("font");
-                font.style.backgroundColor = value;
-                font.appendChild(KE.g[id].range.extractContents());
-                var startOffset = KE.g[id].range.startOffset;
-                var text = startRangeNode.nodeValue;
-                var beforeText = text.substr(0, startOffset);
-                var afterText = text.substr(startOffset);
-                var beforeNode = document.createTextNode(beforeText);
-                var afterNode = document.createTextNode(afterText);
-                var parentRangeNode = startRangeNode.parentNode;
-                parentRangeNode.insertBefore(afterNode, startRangeNode);
-                parentRangeNode.insertBefore(font, afterNode);
-                parentRangeNode.insertBefore(beforeNode, font);
-                parentRangeNode.removeChild(startRangeNode);
-            }
+            KE.g[id].iframeDoc.execCommand('hiliteColor', false, value);
         }
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -51,8 +29,7 @@ KE.plugin['bgcolor'] = {
 };
 KE.plugin['date'] = {
     icon : 'date.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var date = new Date();
         var year = date.getFullYear().toString(10);
         var month = (date.getMonth() + 1).toString(10);
@@ -66,8 +43,7 @@ KE.plugin['date'] = {
 };
 KE.plugin['fontname'] = {
     icon: 'font.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var cmd = 'fontname';
         KE.util.selection(id);
         var fontName = KE.lang.fontTable;
@@ -91,8 +67,7 @@ KE.plugin['fontname'] = {
 };
 KE.plugin['fontsize'] = {
     icon : 'fontsize.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var fontSize = {
             '1' : '8pt',
             '2' : '10pt',
@@ -146,12 +121,12 @@ KE.plugin['preview'] = {
     icon : 'preview.gif',
     click : function(id)
     {
+        alert(1);
     }
 };
 KE.plugin['source'] = {
     icon : 'source.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var obj = KE.g[id];
         if (obj.wyswygMode == true) {
             KE.layout.hide(id);
@@ -305,14 +280,14 @@ KE.plugin['flash'] = {
     icon : 'flash.gif',
     click : function(id)
     {
-        //KE.g[id].iframeDoc.execCommand('bold', false, null);
+        alert(1);
     }
 };
 KE.plugin['image'] = {
     icon : 'image.gif',
-    click : function(id)
-    {
-        var cmd = 'link';
+    click : function(id) {
+        var cmd = 'image';
+        /*
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'link',
@@ -320,12 +295,12 @@ KE.plugin['image'] = {
                 height : 100,
             });
         dialog.show();
+        */
     }
 };
 KE.plugin['layer'] = {
     icon : 'layer.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
@@ -346,6 +321,7 @@ KE.plugin['link'] = {
     icon : 'link.gif',
     click : function(id)
     {
+        alert(1);
     },
     exec : function(id)
     {
@@ -380,13 +356,14 @@ KE.plugin['media'] = {
     icon : 'media.gif',
     click : function(id)
     {
+        alert(1);
     }
 };
 KE.plugin['real'] = {
     icon : 'real.gif',
     click : function(id)
     {
-        //KE.g[id].iframeDoc.execCommand('bold', false, null);
+        alert(1);
     }
 };
 KE.plugin['specialchar'] = {
