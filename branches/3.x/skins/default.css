@@ -38,8 +38,6 @@
 .ke-icon-disabled {
     border: 1px solid #F0F0EE;
     margin: 0 1px 0 1px;
-    filter: gray() alpha(opacity=50);
-    opacity: 0.50;
 }
 .ke-menu {
     border-top: 2px solid #DDDDDD;
@@ -80,23 +78,26 @@
     padding: 3px;
     color: #FFFFFF;
     text-align: left;
-    font-size: 12px;
+    font-size: 14px;
     font-family: "sans serif",tahoma,verdana,helvetica;
+    cursor: move;
 }
 .ke-dialog-body {
+}
+.ke-dialog-bottom {
     position: absolute;
-    text-align: center;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    text-align: left;
     font-size: 12px;
     font-family: "sans serif",tahoma,verdana,helvetica;
 }
-.ke-dialog-bottom {
-
+.ke-dialog-yes {
+    margin: 5px;
 }
-.ke-box-close {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    cursor: pointer;
+.ke-dialog-no {
+    margin: 5px;
 }
 .ke-mask {
     position: absolute;
@@ -105,8 +106,6 @@
     left: 0;
     display: none;
     background-color: #FFFFFF;
-    filter: gray() alpha(opacity=50);
-    opacity: 0.50;
 }
 .ke-button {
     background-color: #DDDDDD;

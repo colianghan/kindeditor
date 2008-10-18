@@ -22,34 +22,26 @@ KE.event = {
         } else if (el.attachEvent){
             el.attachEvent('on' + event, listener);
         }
+    },
+    remove : function(el, event, listener) {
+        if (el.removeEventListener){
+            el.removeEventListener(event, listener, false);
+        } else if (el.detachEvent){
+            el.detachEvent('on' + event, listener);
+        }
     }
 };
 KE.util = {
+    getDocumentElement : function() {
+        return (document.compatMode != "CSS1Compat") ? document.body : document.documentElement;
+    },
     getDocumentHeight: function() {
-        var scrollHeight =
-        (document.compatMode != "CSS1Compat") ? document.body.scrollHeight : document.documentElement.scrollHeight;
-        return Math.max(scrollHeight, this.getViewportHeight());
+        var el = this.getDocumentElement();
+        return Math.max(el.scrollHeight, el.clientHeight);
     },
     getDocumentWidth: function() {
-        var scrollWidth =
-        (document.compatMode != "CSS1Compat") ? document.body.scrollWidth : document.documentElement.scrollWidth;
-        return Math.max(scrollWidth, this.getViewportWidth());
-    },
-    getViewportHeight: function() {
-        var height = self.innerHeight;
-        var mode = document.compatMode;
-        if ((mode || KE.browser == 'IE') && KE.browser != 'OPERA') {
-            height = (mode == "CSS1Compat") ? document.documentElement.clientHeight : document.body.clientHeight;
-        }
-        return height;
-    },
-    getViewportWidth: function() {
-        var width = self.innerWidth;
-        var mode = document.compatMode;
-        if (mode || KE.browser == 'IE') {
-            width = (mode == "CSS1Compat") ? document.documentElement.clientWidth : document.body.clientWidth;
-        }
-        return width;
+        var el = this.getDocumentElement();
+        return Math.max(el.scrollWidth, el.clientWidth);
     },
     getScriptPath : function() {
         var elements = document.getElementsByTagName('script');
@@ -89,17 +81,41 @@ KE.util = {
         for (var i in arr) {if (str == arr[i]) return true;}
         return false;
     },
-    getTop : function(el) {
-        var top = el.offsetTop;
-        var parent = el.offsetParent;
-        while (parent) { top += parent.offsetTop; parent = parent.offsetParent; }
-        return top;
+    getElementPos : function(el) {
+        var x = 0;
+        var y = 0;
+        if (el.getBoundingClientRect) {
+            var box = el.getBoundingClientRect();
+            var el = this.getDocumentElement();
+            x = box.left + el.scrollLeft - el.clientLeft;
+            y = box.top + el.scrollTop - el.clientTop;
+        } else {
+            x = el.offsetLeft;
+            y = el.offsetTop;
+            var parent = el.offsetParent;
+            while (parent) {
+                x += parent.offsetLeft;
+                y += parent.offsetTop;
+                parent = parent.offsetParent;
+            }
+        }
+        return {'x' : x, 'y' : y};
     },
-    getLeft : function(el) {
-        var left = el.offsetLeft;
-        var parent = el.offsetParent;
-        while (parent) { left += parent.offsetLeft; parent = parent.offsetParent; }
-        return left;
+    getCoords : function(ev) {
+        ev = ev || window.event;
+        var el = this.getDocumentElement();
+        if (ev.pageX) return { x : ev.pageX, y : ev.pageY};
+        return {
+            x : ev.clientX + el.scrollLeft - el.clientLeft,
+            y : ev.clientY + el.scrollTop - el.clientTop
+        };
+    },
+    setOpacity : function(el, opacity) {
+        if (KE.browser == 'IE') {
+            el.style.filter = (opacity == 100) ? null : "gray() alpha(opacity=" + opacity + ")";
+        } else {
+            el.style.opacity = (opacity == 100) ? null : "0." + opacity.toString();
+        }
     },
     setDefaultPlugin : function(id) {
         var items = [
@@ -124,7 +140,7 @@ KE.util = {
         }
         html += '</head>';
         html += '<body> ';
-        html += body;
+        html += (body) ? body : '<br />';
         html += '</body>';
         html += '</html>';
         return html;
@@ -213,23 +229,24 @@ KE.layout = {
     {
         var div = KE.$$('div');
         div.style.position = 'absolute';
-        div.style.zIndex = 10000;
+        div.style.zIndex = 11000;
         return div;
     }
 };
-KE.menu = function(cf){
-    this.cf = cf;
-    var div = KE.layout.make(cf.id);
+KE.menu = function(arg){
+    this.arg = arg;
+    var div = KE.layout.make(arg.id);
     div.className = 'ke-menu';
-    var obj = KE.g[cf.id].toolbarIcon[cf.cmd];
-    div.style.top = KE.util.getTop(obj) + obj.offsetHeight + 'px';
-    div.style.left = KE.util.getLeft(obj) + 'px';
+    var obj = KE.g[arg.id].toolbarIcon[arg.cmd];
+    var pos = KE.util.getElementPos(obj);
+    div.style.top = pos.y + obj.offsetHeight + 'px';
+    div.style.left = pos.x + 'px';
     this.div = div;
     this.add = function(text, event)
     {
         var cDiv = KE.$$('div');
         cDiv.className = 'ke-menu-noselected';
-        cDiv.style.width = this.cf.width;
+        cDiv.style.width = this.arg.width;
         cDiv.onmouseover = function() { this.className = 'ke-menu-selected'; }
         cDiv.onmouseout = function() { this.className = 'ke-menu-noselected'; }
         cDiv.onclick = event;
@@ -246,7 +263,7 @@ KE.menu = function(cf){
     };
     this.show = function()
     {
-        KE.layout.show(this.cf.id, this.div);
+        KE.layout.show(this.arg.id, this.div);
     };
     this.picker = function()
     {
@@ -275,8 +292,8 @@ KE.menu = function(cf){
                 cell.title = colorTable[i][j];
                 cell.onmouseover = function() {this.style.borderColor = '#000000'; }
                 cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
-                cell.onclick = new Function('KE.plugin["' + this.cf.cmd + '"].exec("' +
-                                            this.cf.id + '", "' + colorTable[i][j] + '")');
+                cell.onclick = new Function('KE.plugin["' + this.arg.cmd + '"].exec("' +
+                                            this.arg.id + '", "' + colorTable[i][j] + '")');
                 cell.innerHTML = '&nbsp;';
             }
         }
@@ -284,29 +301,93 @@ KE.menu = function(cf){
         this.show();
     };
 };
-KE.dialog = function(cf){
-    this.cf = cf;
-    this.getLeft = function() {
-        var left = KE.util.getLeft(KE.g[this.cf.id].containerDiv);
-        var diff = Math.round(parseInt(KE.g[this.cf.id].width / 2)) - Math.round(this.cf.width / 2);
-        if (diff < 0) return left;
-        return left + diff;
-    };
-    this.getTop = function() {
-        var top = KE.util.getTop(KE.g[this.cf.id].containerDiv);
-        var diff = Math.round(parseInt(KE.g[this.cf.id].height / 2)) - Math.round(this.cf.height / 2);
-        if (diff < 0) return top;
-        return top + diff;
+KE.dialog = function(arg){
+    this.arg = arg;
+    this.getPos = function() {
+        var x = 0;
+        var y = 0;
+        var pos = KE.util.getElementPos(KE.g[this.arg.id].containerDiv);
+        var xDiff = Math.round(parseInt(KE.g[this.arg.id].width) / 2) - Math.round(this.arg.width / 2);
+        var yDiff = Math.round(parseInt(KE.g[this.arg.id].height) / 2) - Math.round(this.arg.height / 2);
+        if (xDiff < 0) {
+            x = pos.x;
+        } else {
+            x = pos.x + xDiff;
+        }
+        if (yDiff < 0) {
+            y = pos.y;
+        } else {
+            y = pos.y + yDiff;
+        }
+        return {'x' : x, 'y' : y};
     };
     this.show = function() {
-    var div = KE.layout.make(cf.id);
-    div.className = 'ke-dialog';
-    div.style.width = cf.width + 'px';
-    div.style.height = cf.height + 'px';
-    div.style.top = this.getTop() + 'px';
-    div.style.left = this.getLeft() + 'px';
-    this.div = div;
-       KE.layout.show(this.cf.id, this.div);
+        var arg = this.arg;
+        var div = KE.layout.make(arg.id);
+        div.className = 'ke-dialog';
+        div.style.width = arg.width + 'px';
+        div.style.height = arg.height + 'px';
+        var pos = this.getPos();
+        div.style.top = pos.y + 'px';
+        div.style.left = pos.x + 'px';
+        var titleDiv = KE.$$('div');
+        titleDiv.className = 'ke-dialog-title';
+        titleDiv.innerHTML = arg.title;
+        var dialogTop;
+        var dialogLeft;
+        var mouseTop;
+        var mouseLeft;
+        var dragFlag = false;
+        titleDiv.onmousedown = function(event) {
+            if (KE.browser != 'IE') event.preventDefault();
+            var ev = event || window.event;
+            var pos = KE.util.getCoords(ev);
+            dialogTop = pos.y;
+            dialogLeft = pos.x;
+            mouseTop = parseInt(div.style.top);
+            mouseLeft = parseInt(div.style.left);
+            dragFlag = true;
+            var moveListener = function(event) {
+                if (dragFlag) {
+                    var ev = event || window.event;
+                    var pos = KE.util.getCoords(ev);
+                    var top = pos.y - dialogTop;
+                    var left = pos.x - dialogLeft;
+                    div.style.top = (mouseTop + top) + 'px';
+                    div.style.left = (mouseLeft + left) + 'px';
+                }
+                return false;
+            };
+            var upListener = function(event) {
+                KE.event.remove(document, 'mousemove', moveListener);
+                KE.event.remove(document, 'mouseup', upListener);
+                dragFlag = false;
+            };
+            KE.event.add(document, 'mousemove', moveListener);
+            KE.event.add(document, 'mouseup', upListener);
+        };
+        div.appendChild(titleDiv);
+        var bodyDiv = KE.$$('div');
+        bodyDiv.className = 'ke-dialog-body';
+        div.appendChild(bodyDiv);
+        var bottomDiv = KE.$$('div');
+        bottomDiv.className = 'ke-dialog-bottom';
+        var yesBtn = KE.$$('input');
+        yesBtn.className = 'ke-dialog-yes';
+        yesBtn.type = 'button';
+        yesBtn.name = 'leftButton';
+        yesBtn.value = '确定';
+        bottomDiv.appendChild(yesBtn);
+        var noBtn = KE.$$('input');
+        noBtn.className = 'ke-dialog-no';
+        noBtn.type = 'button';
+        noBtn.name = 'leftButton';
+        noBtn.value = '取消';
+        noBtn.onclick = new Function("KE.layout.hide('" + arg.id + "')");
+        bottomDiv.appendChild(noBtn);
+        div.appendChild(bottomDiv);
+        KE.layout.show(this.arg.id, div);
+        KE.g[arg.id].maskDiv.style.display = 'block';
     };
 };
 KE.toolbar = {
@@ -316,6 +397,7 @@ KE.toolbar = {
             if (KE.util.inArray(cmd, arr)) continue;
             var obj = KE.g[id].toolbarIcon[cmd];
             obj.className = 'ke-icon';
+            KE.util.setOpacity(obj, 100);
             obj.onmouseover = function(){ this.className = "ke-icon-selected"; };
             obj.onmouseout = function(){ this.className = "ke-icon"; };
             obj.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '")');
@@ -327,9 +409,10 @@ KE.toolbar = {
             if (KE.util.inArray(cmd, arr)) continue;
             var obj = KE.g[id].toolbarIcon[cmd];
             obj.className = 'ke-icon-disabled';
-            obj.onmouseover = function(){ };
-            obj.onmouseout = function(){ };
-            obj.onclick = function(){ };
+            KE.util.setOpacity(obj, 50);
+            obj.onmouseover = null;
+            obj.onmouseout = null;
+            obj.onclick = null;
         }
     },
     create : function(id)
@@ -406,6 +489,7 @@ KE.create = function(id)
 
     var maskDiv = KE.$$('div');
     maskDiv.className = 'ke-mask';
+    KE.util.setOpacity(maskDiv, 50);
     maskDiv.style.width = KE.util.getDocumentWidth(true);
     maskDiv.style.height = KE.util.getDocumentHeight(true);
 
