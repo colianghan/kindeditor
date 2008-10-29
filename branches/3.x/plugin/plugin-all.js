@@ -142,6 +142,7 @@ KE.plugin['source'] = {
             KE.toolbar.able(id, ['source', 'preview']);
             obj.wyswygMode = true;
         }
+        KE.util.focus(id);
     }
 };
 KE.plugin['textcolor'] = {
@@ -286,12 +287,12 @@ KE.plugin['flash'] = {
 KE.plugin['image'] = {
     icon : 'image.gif',
     click : function(id) {
-        var cmd = 'image';
+        KE.util.selection(id);
         var dialog = new KE.dialog({
                 id : id,
-                cmd : 'link',
-                width : 300,
-                height : 100,
+                cmd : 'image',
+                width : 450,
+                height : 450,
                 title : "插入图片"
             });
         dialog.show();
@@ -320,31 +321,54 @@ KE.plugin['link'] = {
     icon : 'link.gif',
     click : function(id)
     {
-        alert(1);
+        KE.util.selection(id);
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'link',
+                width : 350,
+                height : 130,
+                title : "超级连接"
+            });
+        dialog.show();
     },
     exec : function(id)
     {
-        KE.util.focus(id);
         KE.util.select(id);
-        var url = KE.$(id + 'hyperLink').value;
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialog = KE.g[id].dialog;
+
+        var dialogWin = dialog.contentWindow;
+        var dialogDoc = null;
+        if (dialog.contentDocument) {
+            dialogDoc = dialog.contentDocument;
+        } else {
+            dialogDoc = dialogWin.document;
+        }
+        var url = KE.$('hyperLink', dialogDoc).value;
+        var target = KE.$('linkType', dialogDoc).value;
         if (url.match(/http:\/\/.{3,}/) == null) {
             alert('URL不正确。');
             window.focus();
-            KE.g[id].leftButton.focus();
+            KE.g[id].yesButton.focus();
             return false;
         }
         if (KE.g[id].rangeText != '') {
             var element;
             if (KE.browser == 'IE') {
                 if (KE.g[id].selection.type.toLowerCase() == 'control') {
-                    var el = KE.$$("a");
+                    var el = KE.$$("a", iframeDoc);
                     el.href = url;
+                    if (target) el.target = target;
                     KE.g[id].range.item(0).applyElement(el);
                 } else if (KE.g[id].selection.type.toLowerCase() == 'text') {
-                    KE.g[id].iframeDoc.execCommand("createlink", false, url);
+                    iframeDoc.execCommand("createlink", false, url);
+                    var el = KE.g[id].range.parentElement();
+                    if (target) el.target = target;
                 }
             } else {
-                KE.g[id].iframeDoc.execCommand("createlink", false, url);
+                iframeDoc.execCommand("createlink", false, url);
+                var el = KE.g[id].range.startContainer.previousSibling;
+                if (target) el.target = target;
             }
         }
         KE.layout.hide(id);

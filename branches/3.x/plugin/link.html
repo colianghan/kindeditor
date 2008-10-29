@@ -1,0 +1,36 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Link</title>
+  <style type="text/css" rel="stylesheet">
+    body {
+    font-size:12px;
+    margin: 5px;
+    background-color:#F0F0EE;
+    }
+    div.tableLayout div.left {
+    width: 70px;
+    clear: none;
+    float: left;
+    padding: 2px;
+    }
+    div.tableLayout div.right {
+    clear: none;
+    padding: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tableLayout">
+    <div class="left">URL: </div>
+    <div class="right"><input type="text" id="hyperLink" value="http://" style="width:200px;"></div>
+    <div class="left">打开类型: </div>
+    <div class="right">
+      <select id="linkType">
+        <option value="_blank">新窗口</option>
+        <option value="_self">当前窗口</option>
+      </select>
+    </div>
+  </div>
+</body>
+</html>

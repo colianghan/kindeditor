@@ -112,9 +112,9 @@ KE.util = {
     },
     setOpacity : function(el, opacity) {
         if (KE.browser == 'IE') {
-            el.style.filter = (opacity == 100) ? null : "gray() alpha(opacity=" + opacity + ")";
+            el.style.filter = (opacity == 100) ? "" : "gray() alpha(opacity=" + opacity + ")";
         } else {
-            el.style.opacity = (opacity == 100) ? null : "0." + opacity.toString();
+            el.style.opacity = (opacity == 100) ? "" : "0." + opacity.toString();
         }
     },
     setDefaultPlugin : function(id) {
@@ -188,7 +188,6 @@ KE.util = {
     pToBr : function(id) {
         if(KE.browser == 'IE') {
             KE.event.add(KE.g[id].iframeDoc, 'keydown', function(e) {
-                KE.util.selection(id);
                 if(e.keyCode == 13 && KE.g[id].range.parentElement().tagName != 'LI') {
                     KE.util.insertHtml(id, '<br>');
                     return false;
@@ -323,6 +322,7 @@ KE.dialog = function(arg){
     };
     this.show = function() {
         var arg = this.arg;
+        var id = arg.id;
         var div = KE.layout.make(arg.id);
         div.className = 'ke-dialog';
         div.style.width = arg.width + 'px';
@@ -342,19 +342,19 @@ KE.dialog = function(arg){
             if (KE.browser != 'IE') event.preventDefault();
             var ev = event || window.event;
             var pos = KE.util.getCoords(ev);
-            dialogTop = pos.y;
-            dialogLeft = pos.x;
-            mouseTop = parseInt(div.style.top);
-            mouseLeft = parseInt(div.style.left);
+            mouseTop = pos.y;
+            mouseLeft = pos.x;
+            dialogTop = parseInt(div.style.top);
+            dialogLeft = parseInt(div.style.left);
             dragFlag = true;
             var moveListener = function(event) {
                 if (dragFlag) {
                     var ev = event || window.event;
                     var pos = KE.util.getCoords(ev);
-                    var top = pos.y - dialogTop;
-                    var left = pos.x - dialogLeft;
-                    div.style.top = (mouseTop + top) + 'px';
-                    div.style.left = (mouseLeft + left) + 'px';
+                    var top = pos.y - mouseTop;
+                    var left = pos.x - mouseLeft;
+                    div.style.top = (dialogTop + top) + 'px';
+                    div.style.left = (dialogLeft + left) + 'px';
                 }
                 return false;
             };
@@ -369,7 +369,15 @@ KE.dialog = function(arg){
         div.appendChild(titleDiv);
         var bodyDiv = KE.$$('div');
         bodyDiv.className = 'ke-dialog-body';
+        var iframe = KE.$$('iframe');
+        iframe.name = 'Dialog';
+        iframe.width = (arg.width - 4) + 'px';
+        iframe.height = (arg.height - 60) + 'px';
+        iframe.setAttribute("frameBorder", "0");
+        iframe.src = KE.scriptPath + 'plugin/' + arg.cmd + '.html';
+        bodyDiv.appendChild(iframe);
         div.appendChild(bodyDiv);
+
         var bottomDiv = KE.$$('div');
         bottomDiv.className = 'ke-dialog-bottom';
         var yesBtn = KE.$$('input');
@@ -377,17 +385,25 @@ KE.dialog = function(arg){
         yesBtn.type = 'button';
         yesBtn.name = 'leftButton';
         yesBtn.value = '确定';
+        yesBtn.onclick = new Function("KE.plugin['" + arg.cmd  + "'].exec('" + id + "')");
         bottomDiv.appendChild(yesBtn);
         var noBtn = KE.$$('input');
         noBtn.className = 'ke-dialog-no';
         noBtn.type = 'button';
         noBtn.name = 'leftButton';
         noBtn.value = '取消';
-        noBtn.onclick = new Function("KE.layout.hide('" + arg.id + "')");
+        noBtn.onclick = new Function("KE.layout.hide('" + id + "')");
         bottomDiv.appendChild(noBtn);
         div.appendChild(bottomDiv);
-        KE.layout.show(this.arg.id, div);
-        KE.g[arg.id].maskDiv.style.display = 'block';
+        KE.layout.show(id, div);
+        window.focus();
+        yesBtn.focus();
+        KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
+        KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
+        KE.g[id].maskDiv.style.display = 'block';
+        KE.g[id].dialog = iframe;
+        KE.g[id].yesButton = yesBtn;
+        KE.g[id].noButton = noBtn;
     };
 };
 KE.toolbar = {
@@ -463,7 +479,6 @@ KE.create = function(id)
     formDiv.style.height = height;
 
     var iframe = KE.$$('iframe');
-    iframe.id = id + 'Iframe';
     iframe.name = id + 'Iframe';
     iframe.style.width = formWidth;
     iframe.style.height = formHeight;
@@ -490,8 +505,6 @@ KE.create = function(id)
     var maskDiv = KE.$$('div');
     maskDiv.className = 'ke-mask';
     KE.util.setOpacity(maskDiv, 50);
-    maskDiv.style.width = KE.util.getDocumentWidth(true);
-    maskDiv.style.height = KE.util.getDocumentHeight(true);
 
     KE.util.setDefaultPlugin(id);
     containerDiv.appendChild(KE.toolbar.create(id));

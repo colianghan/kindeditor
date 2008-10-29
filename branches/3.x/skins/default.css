@@ -78,8 +78,7 @@
     padding: 3px;
     color: #FFFFFF;
     text-align: left;
-    font-size: 14px;
-    font-family: "sans serif",tahoma,verdana,helvetica;
+    font-size: 12px;
     cursor: move;
 }
 .ke-dialog-body {
@@ -91,7 +90,6 @@
     right: 0px;
     text-align: left;
     font-size: 12px;
-    font-family: "sans serif",tahoma,verdana,helvetica;
 }
 .ke-dialog-yes {
     margin: 5px;
@@ -115,12 +113,10 @@
     border-bottom: 2px solid #AAAAAA;
     cursor: pointer;
     font-size: 12px;
-    font-family: "sans serif",tahoma,verdana,helvetica;
 }
 .ke-text-input {
     background-color:#FFFFFF;
     font-size: 12px;
-    font-family: "sans serif",tahoma,verdana,helvetica;
 }
 .ke-picker-cell {
     width: 12px;
