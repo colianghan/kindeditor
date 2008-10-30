@@ -88,14 +88,15 @@
     bottom: 0px;
     left: 0px;
     right: 0px;
-    text-align: left;
     font-size: 12px;
 }
 .ke-dialog-yes {
     margin: 5px;
+    float: right;
 }
 .ke-dialog-no {
-    margin: 5px;
+    margin: 5px 10px 5px 5px;
+    float: right;
 }
 .ke-mask {
     position: absolute;

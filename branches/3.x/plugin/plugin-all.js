@@ -271,7 +271,7 @@ KE.plugin['emoticons'] = {
     exec : function(id, value)
     {
         KE.util.select(id);
-        var html = '<img src="' + KE.scriptPath + 'emoticons/' + value + '" border="0">';
+        var html = '<img src="' + KE.scriptPath + 'plugin/emoticons/' + value + '" border="0">';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -346,7 +346,7 @@ KE.plugin['link'] = {
         }
         var url = KE.$('hyperLink', dialogDoc).value;
         var target = KE.$('linkType', dialogDoc).value;
-        if (url.match(/http:\/\/.{3,}/) == null) {
+        if (url.match(/\w+:\/\/.{3,}/) == null) {
             alert('URL不正确。');
             window.focus();
             KE.g[id].yesButton.focus();
