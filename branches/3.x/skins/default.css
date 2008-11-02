@@ -82,6 +82,7 @@
     cursor: move;
 }
 .ke-dialog-body {
+    padding: 2px;
 }
 .ke-dialog-bottom {
     position: absolute;

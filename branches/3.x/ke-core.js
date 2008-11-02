@@ -117,6 +117,16 @@ KE.util = {
             el.style.opacity = (opacity == 100) ? "" : "0." + opacity.toString();
         }
     },
+    getIframeDoc : function(iframe) {
+        var win = iframe.contentWindow;
+        var doc = null;
+        if (iframe.contentDocument) {
+            doc = iframe.contentDocument;
+        } else {
+            doc = win.document;
+        }
+        return doc;
+    },
     setDefaultPlugin : function(id) {
         var items = [
             'undo', 'redo', 'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
@@ -152,7 +162,7 @@ KE.util = {
         } else {
             html = KE.g[id].newTextarea.value;
         }
-        KE.g[id].hideInput.value = html;
+        KE.g[id].srcTextarea.value = html;
         return html;
     },
     focus : function(id) {
@@ -188,11 +198,14 @@ KE.util = {
     pToBr : function(id) {
         if(KE.browser == 'IE') {
             KE.event.add(KE.g[id].iframeDoc, 'keydown', function(e) {
-                if(e.keyCode == 13 && KE.g[id].range.parentElement().tagName != 'LI') {
-                    KE.util.insertHtml(id, '<br>');
-                    return false;
-                }
-            });
+                    if (e.keyCode == 13) {
+                        KE.util.selection(id);
+                        if(KE.g[id].range.parentElement().tagName != 'LI') {
+                            KE.util.insertHtml(id, '<br />');
+                            return false;
+                        }
+                    }
+                });
         }
     },
     insertHtml : function(id, html) {
@@ -371,40 +384,55 @@ KE.dialog = function(arg){
         bodyDiv.className = 'ke-dialog-body';
         var dialog = KE.$$('iframe');
         dialog.name = 'Dialog';
-        dialog.width = (arg.width - 4) + 'px';
+        dialog.width = (arg.width - 5) + 'px';
         dialog.height = (arg.height - 60) + 'px';
         dialog.setAttribute("frameBorder", "0");
-        dialog.src = KE.scriptPath + 'plugin/' + arg.cmd + '.html';
+        if (!arg.html) {
+            dialog.src = KE.scriptPath + 'plugin/' + arg.cmd + '.html';
+        }
         bodyDiv.appendChild(dialog);
         div.appendChild(bodyDiv);
 
         var bottomDiv = KE.$$('div');
         bottomDiv.className = 'ke-dialog-bottom';
-        var yesButton = KE.$$('input');
-        yesButton.className = 'ke-dialog-yes';
-        yesButton.type = 'button';
-        yesButton.name = 'leftButton';
-        yesButton.value = '确定';
-        yesButton.onclick = new Function("KE.plugin['" + arg.cmd  + "'].exec('" + id + "')");
-        yesButton.autocomplete = "off";
-        var noButton = KE.$$('input');
-        noButton.className = 'ke-dialog-no';
-        noButton.type = 'button';
-        noButton.name = 'leftButton';
-        noButton.value = '取消';
-        noButton.onclick = new Function("KE.layout.hide('" + id + "')");
-        bottomDiv.appendChild(noButton);
-        bottomDiv.appendChild(yesButton);
+        var noButton = null;
+        var yesButton = null;
+        if (arg.noButton) {
+            noButton = KE.$$('input');
+            noButton.className = 'ke-dialog-no';
+            noButton.type = 'button';
+            noButton.name = 'noButton';
+            noButton.value = arg.noButton;
+            noButton.onclick = new Function("KE.layout.hide('" + id + "')");
+            bottomDiv.appendChild(noButton);
+        }
+        if (arg.yesButton) {
+            yesButton = KE.$$('input');
+            yesButton.className = 'ke-dialog-yes';
+            yesButton.type = 'button';
+            yesButton.name = 'yesButton';
+            yesButton.value = arg.yesButton;
+            yesButton.onclick = new Function("KE.plugin['" + arg.cmd  + "'].exec('" + id + "')");
+            bottomDiv.appendChild(yesButton);
+        }
         div.appendChild(bottomDiv);
         KE.layout.show(id, div);
         window.focus();
-        yesButton.focus();
+        if (yesButton) yesButton.focus();
+        else if (noButton) noButton.focus();
+        if (arg.html) {
+            var dialogDoc = KE.util.getIframeDoc(dialog);
+            var html = KE.util.getFullHtml(id, arg.html);
+            dialogDoc.open();
+            dialogDoc.write(html);
+            dialogDoc.close();
+        }
         KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
         KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
         KE.g[id].maskDiv.style.display = 'block';
         KE.g[id].dialog = dialog;
-        KE.g[id].yesButton = yesButton;
         KE.g[id].noButton = noButton;
+        KE.g[id].yesButton = yesButton;
     };
 };
 KE.toolbar = {
@@ -459,14 +487,11 @@ KE.toolbar = {
         return el;
     }
 };
-/*******************************************************************************
-* create editor window
-*******************************************************************************/
 KE.create = function(id)
 {
-    var oldTextarea = KE.$(id);
-    var width = oldTextarea.style.width;
-    var height = oldTextarea.style.height;
+    var srcTextarea = KE.$(id);
+    var width = srcTextarea.style.width;
+    var height = srcTextarea.style.height;
     var widthArr = width.match(/(\d+)([px%]{1,2})/);
     var formWidth = (parseInt(widthArr[1]) - 2).toString(10) + widthArr[2];
     var heightArr = height.match(/(\d+)([px%]{1,2})/);
@@ -474,75 +499,55 @@ KE.create = function(id)
     var containerDiv = KE.$$('div');
     containerDiv.className = 'ke-container';
     containerDiv.style.width = width;
-    oldTextarea.parentNode.insertBefore(containerDiv, oldTextarea);
+    srcTextarea.parentNode.insertBefore(containerDiv, srcTextarea);
     var formDiv = KE.$$('div');
     formDiv.className = 'ke-form';
     formDiv.style.height = height;
-
     var iframe = KE.$$('iframe');
     iframe.name = id + 'Iframe';
     iframe.style.width = formWidth;
     iframe.style.height = formHeight;
     iframe.setAttribute("frameBorder", "0");
-
     var newTextarea = KE.$$('textarea');
     newTextarea.className = 'ke-textarea';
     newTextarea.style.width = formWidth;
     newTextarea.style.height = formHeight;
     newTextarea.style.display = 'none';
-    var hideInput;
-    if (KE.browser == 'IE') {
-        hideInput = KE.$$('<input type="hidden" name="' + oldTextarea.name + '">');
-    } else {
-        hideInput = KE.$$('input');
-        hideInput.setAttribute('type', 'hidden');
-        hideInput.setAttribute('name', oldTextarea.name);
-    }
-    var hideDiv = KE.$$('div');
-    hideDiv.style.display = 'none';
     formDiv.appendChild(iframe);
     formDiv.appendChild(newTextarea);
-
+    var hideDiv = KE.$$('div');
+    hideDiv.style.display = 'none';
     var maskDiv = KE.$$('div');
     maskDiv.className = 'ke-mask';
     KE.util.setOpacity(maskDiv, 50);
-
     KE.util.setDefaultPlugin(id);
+    srcTextarea.style.display = "none";
     containerDiv.appendChild(KE.toolbar.create(id));
     containerDiv.appendChild(formDiv);
-    containerDiv.appendChild(hideInput);
     containerDiv.appendChild(hideDiv);
     containerDiv.appendChild(maskDiv);
     var iframeWin = iframe.contentWindow;
-    var iframeDoc = null;
-    if (iframe.contentDocument) {
-        iframeDoc = iframe.contentDocument;
-    } else {
-        iframeDoc = iframeWin.document;
-    }
+    var iframeDoc = KE.util.getIframeDoc(iframe);
     iframeDoc.designMode = "On";
-    var html = KE.util.getFullHtml(id, oldTextarea.value);
+    var html = KE.util.getFullHtml(id, srcTextarea.value);
     iframeDoc.open();
     iframeDoc.write(html);
     iframeDoc.close();
     if (KE.g[id].wyswygMode == false) {
-        newTextarea.value = oldTextarea.value;
+        newTextarea.value = srcTextarea.value;
         newTextarea.style.display = 'block';
         iframe.style.display = 'none';
         KE.toolbar.disable(id, ['source', 'preview']);
     }
-    oldTextarea.parentNode.removeChild(oldTextarea);
-
     var form = hideDiv.parentNode;
     while (form.tagName != 'FORM') { form = form.parentNode; }
     KE.event.add(form, 'submit', new Function('KE.util.getData("' + id + '")'));
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
-
     KE.g[id].containerDiv = containerDiv;
     KE.g[id].iframe = iframe;
     KE.g[id].newTextarea = newTextarea;
-    KE.g[id].hideInput = hideInput;
+    KE.g[id].srcTextarea = srcTextarea;
     KE.g[id].hideDiv = hideDiv;
     KE.g[id].maskDiv = maskDiv;
     KE.g[id].iframeWin = iframeWin;

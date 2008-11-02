@@ -121,7 +121,18 @@ KE.plugin['preview'] = {
     icon : 'preview.gif',
     click : function(id)
     {
-        alert(1);
+        KE.util.selection(id);
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'preview',
+                html : KE.util.getData(id),
+                width : 600,
+                height : 400,
+                title : "预览",
+                noButton : "关闭"
+            });
+        dialog.show();
+        KE.g[id].dialog
     }
 };
 KE.plugin['source'] = {
@@ -293,7 +304,9 @@ KE.plugin['image'] = {
                 cmd : 'image',
                 width : 450,
                 height : 450,
-                title : "插入图片"
+                title : "插入图片",
+                yesButton : "确定",
+                noButton : "取消"
             });
         dialog.show();
     }
@@ -327,7 +340,9 @@ KE.plugin['link'] = {
                 cmd : 'link',
                 width : 350,
                 height : 130,
-                title : "超级连接"
+                title : "超级连接",
+                yesButton : "确定",
+                noButton : "取消"
             });
         dialog.show();
     },
@@ -335,15 +350,7 @@ KE.plugin['link'] = {
     {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
-        var dialog = KE.g[id].dialog;
-
-        var dialogWin = dialog.contentWindow;
-        var dialogDoc = null;
-        if (dialog.contentDocument) {
-            dialogDoc = dialog.contentDocument;
-        } else {
-            dialogDoc = dialogWin.document;
-        }
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('hyperLink', dialogDoc).value;
         var target = KE.$('linkType', dialogDoc).value;
         if (url.match(/\w+:\/\/.{3,}/) == null) {
