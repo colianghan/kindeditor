@@ -1,60 +1,100 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
-<title>Image</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>Image</title>
+  <style type="text/css" rel="stylesheet">
+    body {
+    font-size:12px;
+    margin: 5px;
+    background-color:#F0F0EE;
+    }
+    td.left1 {
+    font-size:12px;
+    width: 50px;
+    padding: 2px;
+    }
+    td.right1 {
+    font-size:12px;
+    padding: 2px;
+    }
+    td.left2 {
+    font-size:12px;
+    width: 35px;
+    padding: 2px;
+    }
+    td.right2 {
+    font-size:12px;
+    padding: 2px;
+    width: 50px;
+    }
+    div.preview {
+    border: 1px solid #AAAAAA;
+    background-color: #FFFFFF;
+    width: 310px;
+    height: 200px;
+    margin: 0px 0px 2px 0px;
+    }
+    div.preview div {
+    margin: 5px;
+    }
+    div.comment {
+    margin: 0px 0px 5px 0px;
+    }
+  </style>
+  <script type="text/javascript">
+    function changeType(obj) {
+        if (obj.value == 1) {
+            document.getElementById('imgLink').style.display = 'none';
+            document.getElementById('imgFile').style.display = 'block';
+        } else {
+            document.getElementById('imgLink').style.display = 'block';
+            document.getElementById('imgFile').style.display = 'none';
+        }
+    }
+  </script>
 </head>
 <body>
-  <form name="uploadForm" method="post" enctype="multipart/form-data" action="./php/upload.php">
-    <input type="hidden" name="fileName" value="" />
-    <input type="hidden" name="imageType" id="imageType" value="2">
-    <input type="hidden" name="fileData" id="imgFile" value="" />
-    <table cellpadding="0" cellspacing="0" style="width:100%;font-size:12px;">
+  <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../php/upload.php">
+    <div class="preview"><div id="previewImage"></div></div>
+    <div class="comment">注:只能预览远程图片。</div>
+    <table border="0" cellpadding="0" cellspacing="0">
       <tr>
-        <td colspan="2">
-          <table border="0" style="margin-bottom:3px;">
-            <tr>
-              <td id="imgPreview" style="width:240px;height:240px;border:1px solid #AAAAAA;background-color:#FFFFFF;" align="center" valign="middle">&nbsp;</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="width:100px;padding-left:5px;">
-          <select id="imageType" onchange="javascript:;">
+        <td class="left1">
+          <select id="imgType" name="imgType" onchange="javascript:changeType(this);">
             <option value="1" selected="selected">本地</option>
             <option value="2">远程</option>
           </select>
         </td>
-        <td style="padding-bottom:3px;">
-          <input type="text" id="imgLink" name="imgLink" value="http://" maxlength="255" style="width:100%;display:none;" />
-          <input type="file" id="imgFile" name="fileData" style="width:100%" />
+        <td class="right1">
+          <input type="text" id="imgLink" name="imgLink" value="http://" maxlength="255" style="width:200px;display:none;" />
+          <input type="file" id="imgFile" name="fileData" style="width:200px;" />
         </td>
       </tr>
       <tr>
-        <td colspan="2" style="padding-bottom:3px;">
-          <table border="0" style="width:100%;">
-            <tr>
-              <td width="100" style="padding:2px 2px 2px 5px;">标题</td>
-              <td>
-                <input type="text" name="imgTitle" id="imgTitle" value="" maxlength="100" style="width:95%;" />
-              </td>
-            </tr>
-          </table>
-          <table border="0" style="width:100%;">
-            <tr>
-              <td width="10%" style="padding:2px 2px 2px 5px;">宽度</td>
-              <td width="23%"><input type="text" name="imgWidth" id="imgWidth" value="0" maxlength="4" style="width:40px;" /></td>
-              <td width="10%" style="padding:2px;">高度</td>
-              <td width="23%"><input type="text" name="imgHeight" id="imgHeight" value="0" maxlength="4" style="width:40px;" /></td>
-              <td width="10%" style="padding:2px;">边框</td>
-              <td width="23%"><input type="text" name="imgBorder" id="imgBorder" value="0" maxlength="1" style="width:20px;" /></td>
-            </tr>
-          </table>
+        <td class="left1">说明:</td>
+        <td class="right1">
+          <input type="text" id="imgTitle" name="imgTitle" value="" maxlength="100" style="width:200px;" />
         </td>
       </tr>
     </table>
-</form>
+    <table border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td class="left2">宽度: </td>
+        <td class="right2">
+          <input type="text" name="imgWidth" id="imgWidth" value="0" maxlength="4" style="width:40px;" />
+        </td>
+        <td class="left2">高度: </td>
+        <td class="right2">
+          <input type="text" name="imgHeight" id="imgHeight" value="0" maxlength="4" style="width:40px;" />
+        </td>
+        <td class="left2">边框: </td>
+        <td class="right2">
+          <input type="text" name="imgBorder" id="imgBorder" value="0" maxlength="1" style="width:40px;" />
+        </td>
+      </tr>
+    </table>
+  </form>
 </div>
 </body>
 </html>

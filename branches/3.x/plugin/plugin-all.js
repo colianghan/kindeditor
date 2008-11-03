@@ -132,7 +132,14 @@ KE.plugin['preview'] = {
                 noButton : "关闭"
             });
         dialog.show();
-        KE.g[id].dialog
+    }
+};
+KE.plugin['print'] = {
+    icon : 'print.gif',
+    click : function(id)
+    {
+        KE.util.selection(id);
+        KE.g[id].iframeWin.print();
     }
 };
 KE.plugin['source'] = {
@@ -302,13 +309,102 @@ KE.plugin['image'] = {
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'image',
-                width : 450,
-                height : 450,
+                width : 340,
+                height : 400,
                 title : "插入图片",
+                previewButton : "预览",
                 yesButton : "确定",
                 noButton : "取消"
             });
         dialog.show();
+    },
+    preview : function(id) {
+        var divWidth = 280;
+        var divHeight = 180;
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var type = KE.$('imgType', dialogDoc).value;
+        var url = KE.$('imgLink', dialogDoc).value;
+        if (type == 1) return false;
+        if (url.match(/^\w+:\/\/.{3,}(jpg|jpeg|gif|bmp|png)$/) == null) {
+            alert('无效的图片地址。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        var img = KE.$$('img', dialogDoc);
+        img.src = url;
+        var width = parseInt(img.width);
+        var height = parseInt(img.height);
+        KE.$('imgWidth', dialogDoc).value = width;
+        KE.$('imgHeight', dialogDoc).value = height;
+        var rate = parseInt(width/height);
+        if (width > divWidth && height <= divHeight) {
+            width = divWidth;
+            height = parseInt(width / rate);
+        } else if (width <= divWidth && height > divHeight) {
+            height = divHeight;
+            width = parseInt(height * rate);
+        } else if (width > divWidth && height > divHeight) {
+            if (width >= height) {
+                width = divWidth;
+                height = parseInt(width / rate);
+            } else {
+                height = divHeight;
+                width = parseInt(height * rate);
+            }
+        }
+        img.width = width;
+        img.height = height;
+        KE.$('previewImage', dialogDoc).innerHTML = "";
+        KE.$('previewImage', dialogDoc).appendChild(img);
+    },
+    exec : function(id)
+    {
+        KE.util.select(id);
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var type = KE.$('imgType', dialogDoc).value;
+        var url = KE.$('imgLink', dialogDoc).value;
+        var title = KE.$('imgTitle', dialogDoc).value;
+        var width = KE.$('imgWidth', dialogDoc).value;
+        var height = KE.$('imgHeight', dialogDoc).value;
+        var border = KE.$('imgBorder', dialogDoc).value;
+        if (type == 1) {
+            dialogDoc.uploadForm.submit();
+            return false;
+        }
+        if (url.match(/^\w+:\/\/.{3,}(jpg|jpeg|gif|bmp|png)$/) == null) {
+            alert('无效的图片地址。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        if (width.match(/^\d+$/) == null) {
+            alert('宽度必须为数字。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        if (height.match(/^\d+$/) == null) {
+            alert('高度必须为数字。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        if (border.match(/^\d+$/) == null) {
+            alert('边框必须为数字。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        var html = '<img src="' + url + '" ';
+        if (width > 0) html += 'width="' + width + '" ';
+        if (height > 0) html += 'height="' + height + '" ';
+        html += 'border="' + border + '" />';
+        KE.util.insertHtml(id, html);
+        KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['layer'] = {
@@ -338,7 +434,7 @@ KE.plugin['link'] = {
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'link',
-                width : 350,
+                width : 330,
                 height : 130,
                 title : "超级连接",
                 yesButton : "确定",

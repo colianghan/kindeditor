@@ -131,7 +131,7 @@ KE.util = {
         var items = [
             'undo', 'redo', 'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
             'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
-            'bold', 'italic', 'underline', 'strikethrough', 'removeformat', 'unlink', 'print'
+            'bold', 'italic', 'underline', 'strikethrough', 'removeformat', 'unlink'
         ];
         for (var i in items) {
             KE.plugin[items[i]] = {
@@ -387,9 +387,6 @@ KE.dialog = function(arg){
         dialog.width = (arg.width - 5) + 'px';
         dialog.height = (arg.height - 60) + 'px';
         dialog.setAttribute("frameBorder", "0");
-        if (!arg.html) {
-            dialog.src = KE.scriptPath + 'plugin/' + arg.cmd + '.html';
-        }
         bodyDiv.appendChild(dialog);
         div.appendChild(bodyDiv);
 
@@ -397,6 +394,7 @@ KE.dialog = function(arg){
         bottomDiv.className = 'ke-dialog-bottom';
         var noButton = null;
         var yesButton = null;
+        var previewButton = null;
         if (arg.noButton) {
             noButton = KE.$$('input');
             noButton.className = 'ke-dialog-no';
@@ -415,6 +413,15 @@ KE.dialog = function(arg){
             yesButton.onclick = new Function("KE.plugin['" + arg.cmd  + "'].exec('" + id + "')");
             bottomDiv.appendChild(yesButton);
         }
+        if (arg.previewButton) {
+            previewButton = KE.$$('input');
+            previewButton.className = 'ke-dialog-preview';
+            previewButton.type = 'button';
+            previewButton.name = 'previewButton';
+            previewButton.value = arg.previewButton;
+            previewButton.onclick = new Function("KE.plugin['" + arg.cmd  + "'].preview('" + id + "')");
+            bottomDiv.appendChild(previewButton);
+        }
         div.appendChild(bottomDiv);
         KE.layout.show(id, div);
         window.focus();
@@ -426,6 +433,8 @@ KE.dialog = function(arg){
             dialogDoc.open();
             dialogDoc.write(html);
             dialogDoc.close();
+        } else {
+            dialog.src = KE.scriptPath + 'plugin/' + arg.cmd + '.html';
         }
         KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
         KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
@@ -433,6 +442,7 @@ KE.dialog = function(arg){
         KE.g[id].dialog = dialog;
         KE.g[id].noButton = noButton;
         KE.g[id].yesButton = yesButton;
+        KE.g[id].previewButton = previewButton;
     };
 };
 KE.toolbar = {

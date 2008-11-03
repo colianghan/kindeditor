@@ -91,6 +91,10 @@
     right: 0px;
     font-size: 12px;
 }
+.ke-dialog-preview {
+    margin: 5px;
+    float: right;
+}
 .ke-dialog-yes {
     margin: 5px;
     float: right;
