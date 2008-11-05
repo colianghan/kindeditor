@@ -1,3 +1,4 @@
+#labels 介绍
 == 介绍 ==
 KindEditor是基于浏览器的简单的所见即所得(WYSWYG)HTML在线编辑器，有体积小、文件少、效率高等特点。它是100%用DHTML/JavaScript编写的，可以很方便地嵌入到ASP,ASP.NET,PHP,JSP等CGI程序里。最新3.0版本所有代码重新编写，支持大多数浏览器，通过插件可以无限的扩展。
 
