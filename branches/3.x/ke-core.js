@@ -580,13 +580,13 @@ KE.show = function(config)
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/' + config.skinType + '/';
     config.items = config.items || [
-        'source', 'preview', 'zoom', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
+        'source', 'preview', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
         'selectall', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull',
         'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
         'superscript', 'date', 'time', '-',
         'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
         'italic', 'underline', 'strikethrough', 'removeformat', 'image',
-        'flash', 'media', 'real', 'layer', 'table', 'specialchar', 'hr',
+        'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
         'emoticons', 'link', 'unlink'
     ];
     KE.g[config.id] = config;

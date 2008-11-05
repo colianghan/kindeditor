@@ -223,29 +223,6 @@ KE.plugin['title'] = {
         KE.util.focus(id);
     }
 };
-KE.plugin['zoom'] = {
-    icon : 'zoom.gif',
-    click : function(id)
-    {
-        var cmd = 'zoom';
-        var zoom = ['250%', '200%', '150%', '120%', '100%', '80%', '50%'];
-        var menu = new KE.menu({
-                id : id,
-                cmd : cmd,
-                width : '120px'
-            });
-        for (var i in zoom) {
-            menu.add(zoom[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + zoom[i] + '")'));
-        }
-        menu.show();
-    },
-    exec : function(id, value)
-    {
-        KE.g[id].iframeDoc.body.style.zoom = value;
-        KE.layout.hide(id);
-        KE.util.focus(id);
-    }
-};
 KE.plugin['emoticons'] = {
     icon : 'emoticons.gif',
     click : function(id)
@@ -299,7 +276,56 @@ KE.plugin['flash'] = {
     icon : 'flash.gif',
     click : function(id)
     {
-        alert(1);
+        KE.util.selection(id);
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'flash',
+                width : 280,
+                height : 320,
+                title : "Flash",
+                previewButton : "预览",
+                yesButton : "确定",
+                noButton : "取消"
+            });
+        dialog.show();
+    },
+    check : function(id, url)
+    {
+        if (url.match(/^\w+:\/\/.{3,}(swf)$/i) == null) {
+            alert('请输入有效的URL地址。\n只允许swf格式。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+    },
+    preview : function(id)
+    {
+        var divWidth = 280;
+        var divHeight = 180;
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var url = KE.$('url', dialogDoc).value;
+        this.check(id, url);
+        var embed = KE.$$('embed', dialogDoc);
+        embed.src = url;
+        embed.type = "application/x-shockwave-flash";
+        embed.quality = "high";
+        embed.width = 190;
+        embed.height = 190;
+        KE.$('previewDiv', dialogDoc).innerHTML = "";
+        KE.$('previewDiv', dialogDoc).appendChild(embed);
+    },
+    exec : function(id)
+    {
+        KE.util.select(id);
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var url = KE.$('url', dialogDoc).value;
+        this.check(id, url);
+        var html = '<embed src="' + url + '" type="application/x-shockwave-flash" quality="high"></embed>';
+        KE.util.insertHtml(id, html);
+        KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['image'] = {
@@ -311,27 +337,56 @@ KE.plugin['image'] = {
                 cmd : 'image',
                 width : 340,
                 height : 400,
-                title : "插入图片",
+                title : "图片",
                 previewButton : "预览",
                 yesButton : "确定",
                 noButton : "取消"
             });
         dialog.show();
     },
-    preview : function(id) {
-        var divWidth = 280;
-        var divHeight = 180;
-        var iframeDoc = KE.g[id].iframeDoc;
+    check : function(id)
+    {
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
-        var type = KE.$('imgType', dialogDoc).value;
-        var url = KE.$('imgLink', dialogDoc).value;
-        if (type == 1) return false;
-        if (url.match(/^\w+:\/\/.{3,}(jpg|jpeg|gif|bmp|png)$/) == null) {
-            alert('无效的图片地址。');
+        var url = KE.$('url', dialogDoc).value;
+        var title = KE.$('imgTitle', dialogDoc).value;
+        var width = KE.$('imgWidth', dialogDoc).value;
+        var height = KE.$('imgHeight', dialogDoc).value;
+        var border = KE.$('imgBorder', dialogDoc).value;
+        if (url.match(/^\w+:\/\/.{3,}(jpg|jpeg|gif|bmp|png)$/i) == null) {
+            alert('请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。');
             window.focus();
             KE.g[id].yesButton.focus();
             return false;
         }
+        if (width.match(/^\d+$/) == null) {
+            alert('宽度必须为数字。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        if (height.match(/^\d+$/) == null) {
+            alert('高度必须为数字。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+        if (border.match(/^\d+$/) == null) {
+            alert('边框必须为数字。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+    },
+    preview : function(id)
+    {
+        var divWidth = 280;
+        var divHeight = 180;
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var type = KE.$('type', dialogDoc).value;
+        var url = KE.$('url', dialogDoc).value;
+        if (type == 1) return false;
+        this.check(id);
         var img = KE.$$('img', dialogDoc);
         img.src = url;
         var width = parseInt(img.width);
@@ -364,40 +419,22 @@ KE.plugin['image'] = {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
-        var type = KE.$('imgType', dialogDoc).value;
-        var url = KE.$('imgLink', dialogDoc).value;
+        var type = KE.$('type', dialogDoc).value;
+        if (type == 1) {
+            KE.$('id', dialogDoc).value = id;
+            dialogDoc.uploadForm.submit();
+            return false;
+        }
+        var url = KE.$('url', dialogDoc).value;
         var title = KE.$('imgTitle', dialogDoc).value;
         var width = KE.$('imgWidth', dialogDoc).value;
         var height = KE.$('imgHeight', dialogDoc).value;
         var border = KE.$('imgBorder', dialogDoc).value;
-        if (type == 1) {
-            dialogDoc.uploadForm.submit();
-            return false;
-        }
-        if (url.match(/^\w+:\/\/.{3,}(jpg|jpeg|gif|bmp|png)$/) == null) {
-            alert('无效的图片地址。');
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
-        if (width.match(/^\d+$/) == null) {
-            alert('宽度必须为数字。');
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
-        if (height.match(/^\d+$/) == null) {
-            alert('高度必须为数字。');
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
-        if (border.match(/^\d+$/) == null) {
-            alert('边框必须为数字。');
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
+        this.check(id);
+        this.insert(id, url, title, width, height, border);
+    },
+    insert : function(id, url, title, width, height, border)
+    {
         var html = '<img src="' + url + '" ';
         if (width > 0) html += 'width="' + width + '" ';
         if (height > 0) html += 'height="' + height + '" ';
@@ -482,14 +519,66 @@ KE.plugin['media'] = {
     icon : 'media.gif',
     click : function(id)
     {
-        alert(1);
-    }
-};
-KE.plugin['real'] = {
-    icon : 'real.gif',
-    click : function(id)
+        KE.util.selection(id);
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'media',
+                width : 280,
+                height : 320,
+                title : "多媒体",
+                previewButton : "预览",
+                yesButton : "确定",
+                noButton : "取消"
+            });
+        dialog.show();
+    },
+    check : function(id, url)
     {
-        alert(1);
+        if (url.match(/^\w+:\/\/.{3,}\.(mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)$/i) == null) {
+            alert('请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。');
+            window.focus();
+            KE.g[id].yesButton.focus();
+            return false;
+        }
+    },
+    preview : function(id)
+    {
+        var divWidth = 280;
+        var divHeight = 180;
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var url = KE.$('url', dialogDoc).value;
+        this.check(id, url);
+        var embed = KE.$$('embed', dialogDoc);
+        embed.src = url;
+        if (url.match(/\.(rm|rmvb)$/i) == null) {
+            embed.type = "video/x-ms-asf-plugin";
+        } else {
+            embed.type = "audio/x-pn-realaudio-plugin";
+        }
+        embed.loop = "true";
+        embed.autostart = "true";
+        embed.width = 240;
+        embed.height = 190;
+        KE.$('previewDiv', dialogDoc).innerHTML = "";
+        KE.$('previewDiv', dialogDoc).appendChild(embed);
+    },
+    exec : function(id)
+    {
+        KE.util.select(id);
+        var iframeDoc = KE.g[id].iframeDoc;
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var url = KE.$('url', dialogDoc).value;
+        this.check(id, url);
+        var html;
+        if (url.match(/\.(rm|rmvb)$/i) == null) {
+            html = '<embed src="' + url + '" type="video/x-ms-asf-plugin" loop="true" autostart="true"></embed>';
+        } else {
+            html = '<embed src="' + url + '" type="audio/x-pn-realaudio-plugin" loop="true" autostart="true"></embed>';
+        }
+        KE.util.insertHtml(id, html);
+        KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['specialchar'] = {

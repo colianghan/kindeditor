@@ -45,10 +45,10 @@
   <script type="text/javascript">
     function changeType(obj) {
         if (obj.value == 1) {
-            document.getElementById('imgLink').style.display = 'none';
+            document.getElementById('url').style.display = 'none';
             document.getElementById('imgFile').style.display = 'block';
         } else {
-            document.getElementById('imgLink').style.display = 'block';
+            document.getElementById('url').style.display = 'block';
             document.getElementById('imgFile').style.display = 'none';
         }
     }
@@ -56,19 +56,20 @@
 </head>
 <body>
   <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../php/upload.php">
+    <input type="hidden" id="id" name="id" value="" />
     <div class="preview"><div id="previewImage"></div></div>
     <div class="comment">注:只能预览远程图片。</div>
     <table border="0" cellpadding="0" cellspacing="0">
       <tr>
         <td class="left1">
-          <select id="imgType" name="imgType" onchange="javascript:changeType(this);">
+          <select id="type" name="type" onchange="javascript:changeType(this);">
             <option value="1" selected="selected">本地</option>
             <option value="2">远程</option>
           </select>
         </td>
         <td class="right1">
-          <input type="text" id="imgLink" name="imgLink" value="http://" maxlength="255" style="width:200px;display:none;" />
-          <input type="file" id="imgFile" name="fileData" style="width:200px;" />
+          <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:200px;display:none;" />
+          <input type="file" id="imgFile" name="imgFile" style="width:200px;" />
         </td>
       </tr>
       <tr>
@@ -95,6 +96,5 @@
       </tr>
     </table>
   </form>
-</div>
 </body>
 </html>
