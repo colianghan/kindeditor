@@ -587,7 +587,7 @@ KE.show = function(config)
         'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
         'italic', 'underline', 'strikethrough', 'removeformat', 'image',
         'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
-        'emoticons', 'link', 'unlink'
+        'emoticons', 'link', 'unlink', 'fullscreen', 'about'
     ];
     KE.g[config.id] = config;
     KE.util.loadStyle(KE.scriptPath + 'skins/' + config.skinType + '.css');

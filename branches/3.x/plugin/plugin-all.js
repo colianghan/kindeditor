@@ -6,6 +6,20 @@
 * @licence LGPL(http://www.opensource.org/licenses/lgpl-license.php)
 * @version 3.0
 *******************************************************************************/
+KE.plugin['about'] = {
+    icon : 'about.gif',
+    click : function(id) {
+    },
+    exec : function(id) {
+    }
+};
+KE.plugin['fullscreen'] = {
+    icon : 'fullscreen.gif',
+    click : function(id) {
+    },
+    exec : function(id) {
+    }
+};
 KE.plugin['bgcolor'] = {
     icon : 'bgcolor.gif',
     click : function(id) {
