@@ -4,6 +4,7 @@ KindEditor是基于浏览器的简单的所见即所得(WYSWYG)HTML在线编辑�
 
 == 测试浏览器 ==
  * Internet Explorer 6.0
+ * Internet Explorer 7.0
  * Mozilla Firefox 3.0.3
  * Chrome 0.3.154.9
  * Safari 3.1.2
