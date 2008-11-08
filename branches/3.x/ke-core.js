@@ -117,6 +117,18 @@ KE.util = {
             el.style.opacity = (opacity == 100) ? "" : "0." + opacity.toString();
         }
     },
+    setDefaultPlugin : function(id) {
+        var items = [
+            'undo', 'redo', 'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
+            'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
+            'bold', 'italic', 'underline', 'strikethrough', 'removeformat', 'unlink'
+        ];
+        for (var i in items) {
+            KE.plugin[items[i]] = {
+                click : new Function('id', 'KE.g[id].iframeDoc.execCommand("' + items[i] + '", false, null);')
+            };
+        }
+    },
     getIframeDoc : function(iframe) {
         var win = iframe.contentWindow;
         var doc = null;
@@ -126,19 +138,6 @@ KE.util = {
             doc = win.document;
         }
         return doc;
-    },
-    setDefaultPlugin : function(id) {
-        var items = [
-            'undo', 'redo', 'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
-            'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
-            'bold', 'italic', 'underline', 'strikethrough', 'removeformat', 'unlink'
-        ];
-        for (var i in items) {
-            KE.plugin[items[i]] = {
-                icon : items[i] + '.gif',
-                click : new Function('id', 'KE.g[id].iframeDoc.execCommand("' + items[i] + '", false, null);')
-            };
-        }
     },
     getFullHtml : function(id, body) {
         var html = '<html>';
@@ -473,28 +472,48 @@ KE.toolbar = {
     create : function(id)
     {
         KE.g[id].toolbarIcon = [];
-        var el = KE.$$('div');
-        el.className = 'ke-toolbar';
-        for (var i in KE.g[id].items) {
+        var toolbar = KE.$$('table');
+        toolbar.className = 'ke-toolbar';
+        toolbar.cellPadding = 0;
+        toolbar.cellSpacing = 0;
+        toolbar.border = 0;
+        var row = toolbar.insertRow(0);
+        var toolbarCell = row.insertCell(0);
+        var length = KE.g[id].items.length;
+        var cellNum = 0;
+        var row;
+        for (var i = 0; i < length; i++) {
             var cmd = KE.g[id].items[i];
-            var obj;
-            if (cmd == '-') {
-                obj = KE.$$('br');
-            } else {
-                obj = KE.$$('img');
-                obj.src = KE.g[id].skinsPath + KE.plugin[cmd].icon;
-                obj.align = 'absmiddle';
-                obj.className = 'ke-icon';
-                obj.alt = KE.lang[cmd];
-                obj.title = KE.lang[cmd];
-                obj.onmouseover = function(){ this.className = "ke-icon-selected"; };
-                obj.onmouseout = function(){ this.className = "ke-icon"; };
-                obj.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '")');
-                KE.g[id].toolbarIcon[cmd] = obj;
+            if (i == 0 || cmd == '-') {
+                var table = KE.$$('table');
+                table.cellPadding = 0;
+                table.cellSpacing = 0;
+                table.border = 0;
+                table.className = 'ke-toolbar-table';
+                row = table.insertRow(0);
+                cellNum = 0;
+                toolbarCell.appendChild(table);
+                if (cmd == '-') continue;
             }
-            el.appendChild(obj);
+            if (typeof KE.plugin[cmd] == 'undefined') continue;
+            var cell = row.insertCell(cellNum);
+            cellNum++;
+            obj = KE.$$('img');
+            obj.src = KE.g[id].skinsPath + 'spacer.gif';
+            var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
+            obj.style.backgroundImage = "url(" + url + ")";
+            obj.className = "ke-toolbar-" + cmd;
+            obj.alt = KE.lang[cmd];
+            obj.border = 0;
+            cell.className = 'ke-icon';
+            cell.title = KE.lang[cmd];
+            cell.onmouseover = function(){ this.className = "ke-icon-selected"; };
+            cell.onmouseout = function(){ this.className = "ke-icon"; };
+            cell.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '")');
+            cell.appendChild(obj);
+            KE.g[id].toolbarIcon[cmd] = cell;
         }
-        return el;
+        return toolbar;
     }
 };
 KE.create = function(id)
@@ -530,8 +549,8 @@ KE.create = function(id)
     var maskDiv = KE.$$('div');
     maskDiv.className = 'ke-mask';
     KE.util.setOpacity(maskDiv, 50);
-    KE.util.setDefaultPlugin(id);
     srcTextarea.style.display = "none";
+    KE.util.setDefaultPlugin(id);
     containerDiv.appendChild(KE.toolbar.create(id));
     containerDiv.appendChild(formDiv);
     containerDiv.appendChild(hideDiv);
@@ -578,7 +597,7 @@ KE.show = function(config)
     config.wyswygMode = config.wyswygMode || true;
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
-    config.skinsPath = KE.scriptPath + 'skins/' + config.skinType + '/';
+    config.skinsPath = KE.scriptPath + 'skins/';
     config.items = config.items || [
         'source', 'preview', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
         'selectall', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull',

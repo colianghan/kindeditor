@@ -9,8 +9,6 @@
 KE.plugin['about'] = {
     icon : 'about.gif',
     click : function(id) {
-    },
-    exec : function(id) {
     }
 };
 KE.plugin['fullscreen'] = {
@@ -132,10 +130,9 @@ KE.plugin['hr'] = {
     }
 };
 KE.plugin['preview'] = {
-    icon : 'preview.gif',
+    icon : '0px -16px 16px 16px',
     click : function(id)
     {
-        KE.util.selection(id);
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'preview',
@@ -149,7 +146,7 @@ KE.plugin['preview'] = {
     }
 };
 KE.plugin['print'] = {
-    icon : 'print.gif',
+    icon : '0px -32px 16px 16px',
     click : function(id)
     {
         KE.util.selection(id);
@@ -157,7 +154,7 @@ KE.plugin['print'] = {
     }
 };
 KE.plugin['source'] = {
-    icon : 'source.gif',
+    icon : '0px 0px 39px 16px',
     click : function(id) {
         var obj = KE.g[id];
         if (obj.wyswygMode == true) {
