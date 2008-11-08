@@ -1,6 +1,7 @@
-﻿<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <title>KindEditor 3.0</title>
 </head>
 <script type="text/javascript" charset="utf-8" src="./../lang/zh_CN.js"></script>
@@ -17,14 +18,20 @@ KE.show({
 });
 </script>
 <body>
-<form name="test" method="post">
+<input type="button" name="button" value="多个编辑器" onclick="javascript:location.href='default_all.html';" />
+<input type="button" name="button" value="简单编辑器" onclick="javascript:location.href='default_mini.html';" />
+<input type="button" name="button" value="FCKeditor风格" onclick="javascript:;location.href='fck.html';" />
+<input type="button" name="button" value="TinyMCE风格" onclick="javascript:location.href='tiny.html';" />
+<input type="button" name="button" value="frame中的编辑器" onclick="javascript:location.href='frame.html';" />
+<input type="button" name="button" value="relative中的编辑器" onclick="javascript:location.href='relative.html';" />
+<form name="example" method="post" action="./../php/demo.php">
 <div align="center">
 <textarea id="content" name="content" style="width:700px;height:300px;visibility:hidden;"></textarea>
 <br/>
 </div>
 <br/>
 <div align="center">
-<input type="submit" value="Submit">
+<input type="submit" value="提交" />
 </form>
 </div>
 </body>

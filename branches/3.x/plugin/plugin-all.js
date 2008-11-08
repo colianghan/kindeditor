@@ -7,19 +7,45 @@
 * @version 3.0
 *******************************************************************************/
 KE.plugin['about'] = {
-    icon : 'about.gif',
     click : function(id) {
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'about',
+                width : 300,
+                height : 150,
+                title : KE.lang['about'],
+                noButton : KE.lang['close']
+            });
+        dialog.show();
     }
 };
 KE.plugin['fullscreen'] = {
-    icon : 'fullscreen.gif',
     click : function(id) {
-    },
-    exec : function(id) {
+        var obj = KE.g[id];
+        var width, height, formSize;
+        if (obj.fullscreenMode == true) {
+            width = obj.width;
+            height = obj.height;
+            formSize = KE.util.getFormSize(width, height);
+            obj.containerDiv.className = 'ke-container';
+            obj.fullscreenMode = false;
+        } else {
+            var el = KE.util.getDocumentElement();
+            width = el.clientWidth + 'px';
+            height = el.clientHeight + 'px';
+            formSize = KE.util.getFormSize(width, height);
+            obj.containerDiv.className = 'ke-container-fullscreen';
+            obj.fullscreenMode = true;
+        }
+        obj.containerDiv.style.width = width;
+        obj.formDiv.style.height = height;
+        obj.iframe.style.width = formSize.width;
+        obj.iframe.style.height = formSize.height;
+        obj.newTextarea.style.width = formSize.width;
+        obj.newTextarea.style.height = formSize.height;
     }
 };
 KE.plugin['bgcolor'] = {
-    icon : 'bgcolor.gif',
     click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
@@ -40,7 +66,6 @@ KE.plugin['bgcolor'] = {
     }
 };
 KE.plugin['date'] = {
-    icon : 'date.gif',
     click : function(id) {
         var date = new Date();
         var year = date.getFullYear().toString(10);
@@ -54,7 +79,6 @@ KE.plugin['date'] = {
     }
 };
 KE.plugin['fontname'] = {
-    icon: 'font.gif',
     click : function(id) {
         var cmd = 'fontname';
         KE.util.selection(id);
@@ -69,8 +93,7 @@ KE.plugin['fontname'] = {
         }
         menu.show();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontname', false, value);
         KE.layout.hide(id);
@@ -78,7 +101,6 @@ KE.plugin['fontname'] = {
     }
 };
 KE.plugin['fontsize'] = {
-    icon : 'fontsize.gif',
     click : function(id) {
         var fontSize = {
             '1' : '8pt',
@@ -101,8 +123,7 @@ KE.plugin['fontsize'] = {
         }
         menu.show();
     },
-    'exec' : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontsize', false, value.substr(0, 1));
         KE.layout.hide(id);
@@ -110,9 +131,7 @@ KE.plugin['fontsize'] = {
     }
 };
 KE.plugin['hr'] = {
-    icon : 'hr.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
@@ -120,8 +139,7 @@ KE.plugin['hr'] = {
             });
         menu.picker();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         var html = '<hr color="' + value + '" size="1">';
         KE.util.insertHtml(id, html);
@@ -130,31 +148,26 @@ KE.plugin['hr'] = {
     }
 };
 KE.plugin['preview'] = {
-    icon : '0px -16px 16px 16px',
-    click : function(id)
-    {
+    click : function(id) {
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'preview',
                 html : KE.util.getData(id),
                 width : 600,
                 height : 400,
-                title : "预览",
-                noButton : "关闭"
+                title : KE.lang['preview'],
+                noButton : KE.lang['close']
             });
         dialog.show();
     }
 };
 KE.plugin['print'] = {
-    icon : '0px -32px 16px 16px',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         KE.g[id].iframeWin.print();
     }
 };
 KE.plugin['source'] = {
-    icon : '0px 0px 39px 16px',
     click : function(id) {
         var obj = KE.g[id];
         if (obj.wyswygMode == true) {
@@ -175,9 +188,7 @@ KE.plugin['source'] = {
     }
 };
 KE.plugin['textcolor'] = {
-    icon : 'textcolor.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
@@ -185,8 +196,7 @@ KE.plugin['textcolor'] = {
             });
         menu.picker();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('forecolor', false, value);
         KE.layout.hide(id);
@@ -194,9 +204,7 @@ KE.plugin['textcolor'] = {
     }
 };
 KE.plugin['time'] = {
-    icon : 'time.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var date = new Date();
         var hour = date.getHours().toString(10);
         hour = hour.length < 2 ? '0' + hour : hour;
@@ -210,9 +218,7 @@ KE.plugin['time'] = {
     }
 };
 KE.plugin['title'] = {
-    icon : 'title.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var title = KE.lang.titleTable;
         var cmd = 'title';
         KE.util.selection(id);
@@ -226,8 +232,7 @@ KE.plugin['title'] = {
         }
         menu.show();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('formatblock', false, value);
         KE.layout.hide(id);
@@ -236,8 +241,7 @@ KE.plugin['title'] = {
 };
 KE.plugin['emoticons'] = {
     icon : 'emoticons.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var emoticonTable = [
                 ['etc_01.gif','etc_02.gif','etc_03.gif','etc_04.gif','etc_05.gif','etc_06.gif'],
                 ['etc_07.gif','etc_08.gif','etc_09.gif','etc_10.gif','etc_11.gif','etc_12.gif'],
@@ -274,8 +278,7 @@ KE.plugin['emoticons'] = {
         menu.append(table);
         menu.show();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         var html = '<img src="' + KE.scriptPath + 'plugin/emoticons/' + value + '" border="0">';
         KE.util.insertHtml(id, html);
@@ -284,9 +287,7 @@ KE.plugin['emoticons'] = {
     }
 };
 KE.plugin['flash'] = {
-    icon : 'flash.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var dialog = new KE.dialog({
                 id : id,
@@ -294,14 +295,13 @@ KE.plugin['flash'] = {
                 width : 280,
                 height : 320,
                 title : "Flash",
-                previewButton : "预览",
-                yesButton : "确定",
-                noButton : "取消"
+                previewButton : KE.lang['preview'],
+                yesButton : KE.lang['yes'],
+                noButton : KE.lang['no']
             });
         dialog.show();
     },
-    check : function(id, url)
-    {
+    check : function(id, url) {
         if (url.match(/^\w+:\/\/.{3,}(swf)$/i) == null) {
             alert('请输入有效的URL地址。\n只允许swf格式。');
             window.focus();
@@ -309,8 +309,7 @@ KE.plugin['flash'] = {
             return false;
         }
     },
-    preview : function(id)
-    {
+    preview : function(id) {
         var divWidth = 280;
         var divHeight = 180;
         var iframeDoc = KE.g[id].iframeDoc;
@@ -326,8 +325,7 @@ KE.plugin['flash'] = {
         KE.$('previewDiv', dialogDoc).innerHTML = "";
         KE.$('previewDiv', dialogDoc).appendChild(embed);
     },
-    exec : function(id)
-    {
+    exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
@@ -340,7 +338,6 @@ KE.plugin['flash'] = {
     }
 };
 KE.plugin['image'] = {
-    icon : 'image.gif',
     click : function(id) {
         KE.util.selection(id);
         var dialog = new KE.dialog({
@@ -355,8 +352,7 @@ KE.plugin['image'] = {
             });
         dialog.show();
     },
-    check : function(id)
-    {
+    check : function(id) {
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('url', dialogDoc).value;
         var title = KE.$('imgTitle', dialogDoc).value;
@@ -388,8 +384,7 @@ KE.plugin['image'] = {
             return false;
         }
     },
-    preview : function(id)
-    {
+    preview : function(id) {
         var divWidth = 280;
         var divHeight = 180;
         var iframeDoc = KE.g[id].iframeDoc;
@@ -425,8 +420,7 @@ KE.plugin['image'] = {
         KE.$('previewImage', dialogDoc).innerHTML = "";
         KE.$('previewImage', dialogDoc).appendChild(img);
     },
-    exec : function(id)
-    {
+    exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
@@ -444,8 +438,7 @@ KE.plugin['image'] = {
         this.check(id);
         this.insert(id, url, title, width, height, border);
     },
-    insert : function(id, url, title, width, height, border)
-    {
+    insert : function(id, url, title, width, height, border) {
         var html = '<img src="' + url + '" ';
         if (width > 0) html += 'width="' + width + '" ';
         if (height > 0) html += 'height="' + height + '" ';
@@ -456,7 +449,6 @@ KE.plugin['image'] = {
     }
 };
 KE.plugin['layer'] = {
-    icon : 'layer.gif',
     click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
@@ -465,8 +457,7 @@ KE.plugin['layer'] = {
             });
         menu.picker();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         var html = '<div style="padding:5px;border:1px solid #AAAAAA;background-color:' + value + '">请输入内容</div>';
         KE.util.insertHtml(id, html);
@@ -475,9 +466,7 @@ KE.plugin['layer'] = {
     }
 };
 KE.plugin['link'] = {
-    icon : 'link.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var dialog = new KE.dialog({
                 id : id,
@@ -490,8 +479,7 @@ KE.plugin['link'] = {
             });
         dialog.show();
     },
-    exec : function(id)
-    {
+    exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
@@ -527,9 +515,7 @@ KE.plugin['link'] = {
     }
 };
 KE.plugin['media'] = {
-    icon : 'media.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var dialog = new KE.dialog({
                 id : id,
@@ -543,8 +529,7 @@ KE.plugin['media'] = {
             });
         dialog.show();
     },
-    check : function(id, url)
-    {
+    check : function(id, url) {
         if (url.match(/^\w+:\/\/.{3,}\.(mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)$/i) == null) {
             alert('请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。');
             window.focus();
@@ -552,8 +537,7 @@ KE.plugin['media'] = {
             return false;
         }
     },
-    preview : function(id)
-    {
+    preview : function(id) {
         var divWidth = 280;
         var divHeight = 180;
         var iframeDoc = KE.g[id].iframeDoc;
@@ -574,8 +558,7 @@ KE.plugin['media'] = {
         KE.$('previewDiv', dialogDoc).innerHTML = "";
         KE.$('previewDiv', dialogDoc).appendChild(embed);
     },
-    exec : function(id)
-    {
+    exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
@@ -593,9 +576,7 @@ KE.plugin['media'] = {
     }
 };
 KE.plugin['specialchar'] = {
-    icon : 'specialchar.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var charTable = [
             ['§','№','☆','★','○','●','◎','◇','◆','□'],
             ['℃','‰','■','△','▲','※','→','←','↑','↓'],
@@ -635,8 +616,7 @@ KE.plugin['specialchar'] = {
         menu.append(table);
         menu.show();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.util.insertHtml(id, value);
         KE.layout.hide(id);
@@ -644,9 +624,7 @@ KE.plugin['specialchar'] = {
     }
 };
 KE.plugin['table'] = {
-    icon    : 'table.gif',
-    selected : function(id, i, j)
-    {
+    selected : function(id, i, j) {
         var text = i.toString(10) + ' by ' + j.toString(10) + ' Table';
         KE.$('tableLocation' + id).innerHTML = text;
         var num = 10;
@@ -661,8 +639,7 @@ KE.plugin['table'] = {
             }
         }
     },
-    click : function(id)
-    {
+    click : function(id) {
         var cmd = 'table';
         KE.util.selection(id);
         var num = 10;
@@ -690,8 +667,7 @@ KE.plugin['table'] = {
         menu.insert(html);
         menu.show();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         var location = value.split(',');
         var html = '<table border="1">';

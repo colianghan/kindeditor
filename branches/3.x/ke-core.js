@@ -154,6 +154,13 @@ KE.util = {
         html += '</html>';
         return html;
     },
+    getFormSize : function(width, height) {
+        var widthArr = width.match(/(\d+)([px%]{1,2})/);
+        var formWidth = (parseInt(widthArr[1]) - 4).toString(10) + widthArr[2];
+        var heightArr = height.match(/(\d+)([px%]{1,2})/);
+        var formHeight = (parseInt(heightArr[1]) - 4).toString(10) + heightArr[2];
+        return {width : formWidth, height : formHeight};
+    },
     getData : function(id) {
         var html;
         if (KE.g[id].wyswygMode == true) {
@@ -345,6 +352,15 @@ KE.dialog = function(arg){
         var titleDiv = KE.$$('div');
         titleDiv.className = 'ke-dialog-title';
         titleDiv.innerHTML = arg.title;
+        var img = KE.$$('img');
+        img.src = KE.g[id].skinsPath + 'spacer.gif';
+        var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
+        img.style.backgroundImage = "url(" + url + ")";
+        img.className = "ke-toolbar-close";
+        img.alt = KE.lang['close'];
+        img.title = KE.lang['close'];
+        img.onclick = new Function("KE.layout.hide('" + id + "')");
+        titleDiv.appendChild(img);
         var dialogTop;
         var dialogLeft;
         var mouseTop;
@@ -504,7 +520,6 @@ KE.toolbar = {
             obj.style.backgroundImage = "url(" + url + ")";
             obj.className = "ke-toolbar-" + cmd;
             obj.alt = KE.lang[cmd];
-            obj.border = 0;
             cell.className = 'ke-icon';
             cell.title = KE.lang[cmd];
             cell.onmouseover = function(){ this.className = "ke-icon-selected"; };
@@ -521,10 +536,7 @@ KE.create = function(id)
     var srcTextarea = KE.$(id);
     var width = srcTextarea.style.width;
     var height = srcTextarea.style.height;
-    var widthArr = width.match(/(\d+)([px%]{1,2})/);
-    var formWidth = (parseInt(widthArr[1]) - 2).toString(10) + widthArr[2];
-    var heightArr = height.match(/(\d+)([px%]{1,2})/);
-    var formHeight = (parseInt(heightArr[1]) - 4).toString(10) + heightArr[2];
+    var formSize = KE.util.getFormSize(width, height);
     var containerDiv = KE.$$('div');
     containerDiv.className = 'ke-container';
     containerDiv.style.width = width;
@@ -534,13 +546,13 @@ KE.create = function(id)
     formDiv.style.height = height;
     var iframe = KE.$$('iframe');
     iframe.name = id + 'Iframe';
-    iframe.style.width = formWidth;
-    iframe.style.height = formHeight;
+    iframe.style.width = formSize.width;
+    iframe.style.height = formSize.height;
     iframe.setAttribute("frameBorder", "0");
     var newTextarea = KE.$$('textarea');
     newTextarea.className = 'ke-textarea';
-    newTextarea.style.width = formWidth;
-    newTextarea.style.height = formHeight;
+    newTextarea.style.width = formSize.width;
+    newTextarea.style.height = formSize.height;
     newTextarea.style.display = 'none';
     formDiv.appendChild(iframe);
     formDiv.appendChild(newTextarea);
@@ -574,6 +586,7 @@ KE.create = function(id)
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.g[id].containerDiv = containerDiv;
+    KE.g[id].formDiv = formDiv;
     KE.g[id].iframe = iframe;
     KE.g[id].newTextarea = newTextarea;
     KE.g[id].srcTextarea = srcTextarea;
@@ -586,7 +599,7 @@ KE.create = function(id)
     KE.util.pToBr(id);
     KE.util.focus(id);
 };
-KE.version = 'KindEditor 3.0';
+KE.version = '3.0 alpha';
 KE.scriptPath = KE.util.getScriptPath();
 KE.htmlPath = KE.util.getHtmlPath();
 KE.browser = KE.util.getBrowser();
@@ -595,6 +608,7 @@ KE.g = {};
 KE.show = function(config)
 {
     config.wyswygMode = config.wyswygMode || true;
+    config.fullscreenMode = config.fullscreenMode || false;
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
@@ -602,11 +616,11 @@ KE.show = function(config)
         'source', 'preview', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
         'selectall', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull',
         'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
-        'superscript', 'date', 'time', '-',
+        'superscript', 'date', 'time', 'fullscreen', '-',
         'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
         'italic', 'underline', 'strikethrough', 'removeformat', 'image',
         'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
-        'emoticons', 'link', 'unlink', 'fullscreen', 'about'
+        'emoticons', 'link', 'unlink', 'about'
     ];
     KE.g[config.id] = config;
     KE.util.loadStyle(KE.scriptPath + 'skins/' + config.skinType + '.css');

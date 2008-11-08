@@ -6,7 +6,6 @@
 * @licence LGPL(http://www.opensource.org/licenses/lgpl-license.php)
 * @version 3.0
 *******************************************************************************/
-
 KE.plugin['bgcolor'] = {
     icon : 'bgcolor.gif',
     click : function(id) {
@@ -30,8 +29,7 @@ KE.plugin['bgcolor'] = {
 };
 KE.plugin['fontname'] = {
     icon: 'font.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var cmd = 'fontname';
         KE.util.selection(id);
         var fontName = KE.lang.fontTable;
@@ -54,8 +52,7 @@ KE.plugin['fontname'] = {
 };
 KE.plugin['fontsize'] = {
     icon : 'fontsize.gif',
-    click : function(id)
-    {
+    click : function(id) {
         var fontSize = {
             '1' : '8pt',
             '2' : '10pt',
@@ -77,8 +74,7 @@ KE.plugin['fontsize'] = {
         }
         menu.show();
     },
-    'exec' : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontsize', false, value.substr(0, 1));
         KE.layout.hide(id);
@@ -86,8 +82,7 @@ KE.plugin['fontsize'] = {
 };
 KE.plugin['textcolor'] = {
     icon : 'textcolor.gif',
-    click : function(id)
-    {
+    click : function(id) {
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
@@ -95,8 +90,7 @@ KE.plugin['textcolor'] = {
             });
         menu.picker();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('forecolor', false, value);
         KE.layout.hide(id);

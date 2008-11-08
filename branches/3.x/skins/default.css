@@ -113,17 +113,17 @@
 }
 .ke-toolbar-title {
     background-position: 0px -336px;
-    width: 23px;
+    width: 39px;
     height: 16px;
 }
 .ke-toolbar-fontname {
     background-position: 0px -352px;
-    width: 23px;
+    width: 39px;
     height: 16px;
 }
 .ke-toolbar-fontsize {
     background-position: 0px -368px;
-    width: 23px;
+    width: 39px;
     height: 16px;
 }
 .ke-toolbar-textcolor {
@@ -221,13 +221,31 @@
     width: 16px;
     height: 16px;
 }
+.ke-toolbar-close {
+    background-position: 0px -688px;
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    margin-top: 2px;
+    margin-right: 3px;
+    right: 0px;
+    top: 0px;
+    cursor: pointer;
+}
 .ke-toolbar-table {
     float: left;
 }
 .ke-container {
     border: 3px solid #CCCCCC;
     background-color: #F0F0EE;
-    padding: 1px;
+}
+.ke-container-fullscreen {
+    border: 3px solid #CCCCCC;
+    background-color: #F0F0EE;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 999999;
 }
 .ke-textarea {
     margin: 0;
@@ -242,6 +260,7 @@
 .ke-form {
     border: 1px solid #CCCCCC;
     background-color: #FFFFFF;
+    margin: 1px;
 }
 .ke-icon {
     border: 1px solid #F0F0EE;
@@ -292,9 +311,9 @@
     text-align: left;
 }
 .ke-dialog-title {
-    background-color: #1F3D74;
+    background-color: #DDDDDD;
     padding: 3px;
-    color: #FFFFFF;
+    color: #000000;
     text-align: left;
     font-size: 12px;
     cursor: move;
