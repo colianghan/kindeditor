@@ -57,7 +57,16 @@
 <body>
   <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../php/upload.php">
     <input type="hidden" id="id" name="id" value="" />
-    <div class="preview"><div id="previewImage"></div></div>
+    <div class="preview">
+      <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="300" height="200" id="preview" align="middle">
+        <param name="allowScriptAccess" value="sameDomain" />
+        <param name="allowFullScreen" value="false" />
+        <param name="movie" value="./preview.swf" />
+        <param name="quality" value="high" />
+        <param name="bgcolor" value="#ffffff" />
+        <embed src="./preview.swf" quality="high" bgcolor="#ffffff" width="300" height="200" name="preview" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer" />
+      </object>
+    </div>
     <div class="comment">注:只能预览远程图片。</div>
     <table border="0" cellpadding="0" cellspacing="0">
       <tr>

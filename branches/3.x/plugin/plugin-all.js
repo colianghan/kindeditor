@@ -345,10 +345,10 @@ KE.plugin['image'] = {
                 cmd : 'image',
                 width : 340,
                 height : 400,
-                title : "图片",
-                previewButton : "预览",
-                yesButton : "确定",
-                noButton : "取消"
+                title : KE.lang['image'],
+                previewButton : KE.lang['preview'],
+                yesButton : KE.lang['yes'],
+                noButton : KE.lang['no']
             });
         dialog.show();
     },
@@ -359,7 +359,7 @@ KE.plugin['image'] = {
         var width = KE.$('imgWidth', dialogDoc).value;
         var height = KE.$('imgHeight', dialogDoc).value;
         var border = KE.$('imgBorder', dialogDoc).value;
-        if (url.match(/^\w+:\/\/.{3,}(jpg|jpeg|gif|bmp|png)$/i) == null) {
+        if (url.match(/\.(jpg|jpeg|gif|bmp|png)$/i) == null) {
             alert('请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。');
             window.focus();
             KE.g[id].yesButton.focus();
@@ -391,34 +391,8 @@ KE.plugin['image'] = {
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var type = KE.$('type', dialogDoc).value;
         var url = KE.$('url', dialogDoc).value;
-        if (type == 1) return false;
-        this.check(id);
-        var img = KE.$$('img', dialogDoc);
-        img.src = url;
-        var width = parseInt(img.width);
-        var height = parseInt(img.height);
-        KE.$('imgWidth', dialogDoc).value = width;
-        KE.$('imgHeight', dialogDoc).value = height;
-        var rate = parseInt(width/height);
-        if (width > divWidth && height <= divHeight) {
-            width = divWidth;
-            height = parseInt(width / rate);
-        } else if (width <= divWidth && height > divHeight) {
-            height = divHeight;
-            width = parseInt(height * rate);
-        } else if (width > divWidth && height > divHeight) {
-            if (width >= height) {
-                width = divWidth;
-                height = parseInt(width / rate);
-            } else {
-                height = divHeight;
-                width = parseInt(height * rate);
-            }
-        }
-        img.width = width;
-        img.height = height;
-        KE.$('previewImage', dialogDoc).innerHTML = "";
-        KE.$('previewImage', dialogDoc).appendChild(img);
+        if (type == 2) this.check(id);
+        //set flash
     },
     exec : function(id) {
         KE.util.select(id);
@@ -473,9 +447,9 @@ KE.plugin['link'] = {
                 cmd : 'link',
                 width : 330,
                 height : 130,
-                title : "超级连接",
-                yesButton : "确定",
-                noButton : "取消"
+                title : KE.lang['link'],
+                yesButton : KE.lang['yes'],
+                noButton : KE.lang['no']
             });
         dialog.show();
     },
@@ -522,10 +496,10 @@ KE.plugin['media'] = {
                 cmd : 'media',
                 width : 280,
                 height : 320,
-                title : "多媒体",
-                previewButton : "预览",
-                yesButton : "确定",
-                noButton : "取消"
+                title : KE.lang['media'],
+                previewButton : KE.lang['preview'],
+                yesButton : KE.lang['yes'],
+                noButton : KE.lang['no']
             });
         dialog.show();
     },
