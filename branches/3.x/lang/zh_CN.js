@@ -18,6 +18,8 @@ KE.lang = {
     cut : '剪切',
     copy : '复制',
     paste : '粘贴',
+    plainpaste : '粘贴为无格式文本',
+    wordpaste : '从Word粘贴',
     selectall : '全选',
     justifyleft : '左对齐',
     justifycenter : '居中',

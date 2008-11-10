@@ -19,6 +19,50 @@ KE.plugin['about'] = {
         dialog.show();
     }
 };
+KE.plugin['plainpaste'] = {
+    click : function(id) {
+        KE.util.selection(id);
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'plainpaste',
+                width : 330,
+                height : 330,
+                title : KE.lang['plainpaste'],
+                yesButton : KE.lang['yes'],
+                noButton : KE.lang['no']
+            });
+        dialog.show();
+    },
+    exec : function(id) {
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var html = KE.$('textArea', dialogDoc).value;
+        KE.util.insertHtml(id, html);
+        KE.layout.hide(id);
+        KE.util.focus(id);
+    }
+};
+KE.plugin['wordpaste'] = {
+    click : function(id) {
+        var dialog = new KE.dialog({
+                id : id,
+                cmd : 'wordpaste',
+                width : 330,
+                height : 330,
+                title : KE.lang['wordpaste'],
+                yesButton : KE.lang['yes'],
+                noButton : KE.lang['no']
+            });
+        dialog.show();
+    },
+    exec : function(id) {
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var wordIframe = KE.$('wordIframe', dialogDoc);
+        var wordDoc = KE.util.getIframeDoc(wordIframe);
+        KE.util.insertHtml(id, wordDoc.body.innerHTML);
+        KE.layout.hide(id);
+        KE.util.focus(id);
+    }
+};
 KE.plugin['fullscreen'] = {
     click : function(id) {
         var obj = KE.g[id];
@@ -89,7 +133,8 @@ KE.plugin['fontname'] = {
                 width : '160px'
             });
         for (var i in fontName) {
-            menu.add(fontName[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
+            var html = '<span style="font-family: ' + i + ';">' + fontName[i] + '</span>';
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
         }
         menu.show();
     },
@@ -108,8 +153,7 @@ KE.plugin['fontsize'] = {
             '3' : '12pt',
             '4' : '14pt',
             '5' : '18pt',
-            '6' : '24pt',
-            '7' : '36pt'
+            '6' : '24pt'
         };
         var cmd = 'fontsize';
         KE.util.selection(id);
@@ -119,7 +163,8 @@ KE.plugin['fontsize'] = {
                 width : '100px'
             });
         for (var i in fontSize) {
-            menu.add(fontSize[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
+            var html = '<span style="font-size: ' + fontSize[i] + ';">' + fontSize[i] + '</span>';
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
         }
         menu.show();
     },
@@ -228,7 +273,8 @@ KE.plugin['title'] = {
                 width : '100px'
             });
         for (var i in title) {
-            menu.add(title[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "<' + i + '>")'));
+            var html = '<' + i + ' style="margin:0px;">' + title[i] + '</' + i + '>';
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "<' + i + '>")'));
         }
         menu.show();
     },

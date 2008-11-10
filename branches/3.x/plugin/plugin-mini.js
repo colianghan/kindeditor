@@ -28,7 +28,6 @@ KE.plugin['bgcolor'] = {
     }
 };
 KE.plugin['fontname'] = {
-    icon: 'font.gif',
     click : function(id) {
         var cmd = 'fontname';
         KE.util.selection(id);
@@ -39,19 +38,19 @@ KE.plugin['fontname'] = {
                 width : '160px'
             });
         for (var i in fontName) {
-            menu.add(fontName[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
+            var html = '<span style="font-family: ' + i + ';">' + fontName[i] + '</span>';
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
         }
         menu.show();
     },
-    exec : function(id, value)
-    {
+    exec : function(id, value) {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontname', false, value);
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['fontsize'] = {
-    icon : 'fontsize.gif',
     click : function(id) {
         var fontSize = {
             '1' : '8pt',
@@ -59,8 +58,7 @@ KE.plugin['fontsize'] = {
             '3' : '12pt',
             '4' : '14pt',
             '5' : '18pt',
-            '6' : '24pt',
-            '7' : '36pt'
+            '6' : '24pt'
         };
         var cmd = 'fontsize';
         KE.util.selection(id);
@@ -70,7 +68,8 @@ KE.plugin['fontsize'] = {
                 width : '100px'
             });
         for (var i in fontSize) {
-            menu.add(fontSize[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
+            var html = '<span style="font-size: ' + fontSize[i] + ';">' + fontSize[i] + '</span>';
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + i + '")'));
         }
         menu.show();
     },
@@ -78,6 +77,7 @@ KE.plugin['fontsize'] = {
         KE.util.select(id);
         KE.g[id].iframeDoc.execCommand('fontsize', false, value.substr(0, 1));
         KE.layout.hide(id);
+        KE.util.focus(id);
     }
 };
 KE.plugin['textcolor'] = {

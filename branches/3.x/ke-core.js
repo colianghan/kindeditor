@@ -260,7 +260,7 @@ KE.menu = function(arg){
     div.style.top = pos.y + obj.offsetHeight + 'px';
     div.style.left = pos.x + 'px';
     this.div = div;
-    this.add = function(text, event)
+    this.add = function(html, event)
     {
         var cDiv = KE.$$('div');
         cDiv.className = 'ke-menu-noselected';
@@ -268,7 +268,7 @@ KE.menu = function(arg){
         cDiv.onmouseover = function() { this.className = 'ke-menu-selected'; }
         cDiv.onmouseout = function() { this.className = 'ke-menu-noselected'; }
         cDiv.onclick = event;
-        cDiv.innerHTML = text;
+        cDiv.innerHTML = html;
         this.append(cDiv);
     };
     this.append = function(el)
@@ -613,7 +613,7 @@ KE.show = function(config)
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
     config.items = config.items || [
-        'source', 'preview', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
+        'source', 'preview', 'print', 'undo', 'redo', 'cut', 'copy', 'paste', 'plainpaste', 'wordpaste',
         'selectall', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull',
         'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
         'superscript', 'date', 'time', 'fullscreen', '-',

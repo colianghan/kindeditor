@@ -221,6 +221,16 @@
     width: 16px;
     height: 16px;
 }
+.ke-toolbar-plainpaste {
+    background-position: 0px -704px;
+    width: 16px;
+    height: 16px;
+}
+.ke-toolbar-wordpaste {
+    background-position: 0px -720px;
+    width: 16px;
+    height: 16px;
+}
 .ke-toolbar-close {
     background-position: 0px -688px;
     width: 16px;
