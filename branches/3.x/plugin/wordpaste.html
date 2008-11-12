@@ -22,7 +22,9 @@
         iframeDoc.designMode = "On";
         iframeDoc.open();
         iframeDoc.write('<html><head><title>WordPaste</title></head>');
-        iframeDoc.write('<body style="background-color:#FFFFFF;font-size:12px;margin:2px;" /></body></html>');
+        iframeDoc.write('<body style="background-color:#FFFFFF;font-size:12px;margin:2px;" />');
+        if (parent.KE.browser != 'IE') iframeDoc.write('<br />');
+        iframeDoc.write('</body></html>');
         iframeDoc.close();
     }
   </script>

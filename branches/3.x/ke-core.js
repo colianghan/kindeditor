@@ -148,8 +148,12 @@ KE.util = {
             html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
         }
         html += '</head>';
-        html += '<body> ';
-        html += (body) ? body : '<br />';
+        html += '<body>';
+        if (parent.KE.browser == 'IE') {
+            html += (body) ? body : '';
+        } else {
+            html += (body) ? body : '<br />';
+        }
         html += '</body>';
         html += '</html>';
         return html;
@@ -582,7 +586,9 @@ KE.create = function(id)
     }
     var form = hideDiv.parentNode;
     while (form.tagName != 'FORM') { form = form.parentNode; }
-    KE.event.add(form, 'submit', new Function('KE.util.getData("' + id + '")'));
+    if (form.tagName == 'FORM') {
+        KE.event.add(form, 'submit', new Function('KE.util.getData("' + id + '")'));
+    }
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.g[id].containerDiv = containerDiv;

@@ -34,6 +34,7 @@ KE.plugin['plainpaste'] = {
         dialog.show();
     },
     exec : function(id) {
+        KE.util.select(id);
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var html = KE.$('textArea', dialogDoc).value;
         KE.util.insertHtml(id, html);
@@ -43,6 +44,7 @@ KE.plugin['plainpaste'] = {
 };
 KE.plugin['wordpaste'] = {
     click : function(id) {
+        KE.util.selection(id);
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'wordpaste',
@@ -54,11 +56,16 @@ KE.plugin['wordpaste'] = {
             });
         dialog.show();
     },
+    clearWordTag : function(doc) {
+        var str = doc.body.innerHTML;
+        return str;
+    },
     exec : function(id) {
+        KE.util.select(id);
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var wordIframe = KE.$('wordIframe', dialogDoc);
         var wordDoc = KE.util.getIframeDoc(wordIframe);
-        KE.util.insertHtml(id, wordDoc.body.innerHTML);
+        KE.util.insertHtml(id, this.clearWordTag(wordDoc));
         KE.layout.hide(id);
         KE.util.focus(id);
     }
