@@ -26,7 +26,7 @@ KE.plugin['plainpaste'] = {
                 id : id,
                 cmd : 'plainpaste',
                 width : 330,
-                height : 330,
+                height : 300,
                 title : KE.lang['plainpaste'],
                 yesButton : KE.lang['yes'],
                 noButton : KE.lang['no']
@@ -49,7 +49,7 @@ KE.plugin['wordpaste'] = {
                 id : id,
                 cmd : 'wordpaste',
                 width : 330,
-                height : 330,
+                height : 300,
                 title : KE.lang['wordpaste'],
                 yesButton : KE.lang['yes'],
                 noButton : KE.lang['no']
@@ -207,6 +207,7 @@ KE.plugin['preview'] = {
                 html : KE.util.getData(id),
                 width : 600,
                 height : 400,
+                useFrameCSS : true,
                 title : KE.lang['preview'],
                 noButton : KE.lang['close']
             });

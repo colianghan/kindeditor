@@ -257,6 +257,11 @@
     left: 0px;
     z-index: 999999;
 }
+.ke-form {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    margin: 1px;
+}
 .ke-textarea {
     margin: 0;
     padding: 0;
@@ -266,11 +271,12 @@
     font-size: 12px;
     font-family: "sans serif",tahoma,verdana,helvetica;
     line-height: 16px;
+    overflow: auto;
 }
-.ke-form {
-    border: 1px solid #CCCCCC;
+.ke-iframe {
+    margin: 0;
+    padding: 0;
     background-color: #FFFFFF;
-    margin: 1px;
 }
 .ke-icon {
     border: 1px solid #F0F0EE;
@@ -329,13 +335,12 @@
     cursor: move;
 }
 .ke-dialog-body {
-    padding: 2px;
+    margin: 10px;
+}
+.ke-dialog-iframe {
+    border: 1px solid #AAAAAA;
 }
 .ke-dialog-bottom {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
     font-size: 12px;
 }
 .ke-dialog-preview {

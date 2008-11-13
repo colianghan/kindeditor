@@ -160,7 +160,7 @@ KE.util = {
     },
     getFormSize : function(width, height) {
         var widthArr = width.match(/(\d+)([px%]{1,2})/);
-        var formWidth = (parseInt(widthArr[1]) - 4).toString(10) + widthArr[2];
+        var formWidth = (parseInt(widthArr[1]) - 6).toString(10) + widthArr[2];
         var heightArr = height.match(/(\d+)([px%]{1,2})/);
         var formHeight = (parseInt(heightArr[1]) - 4).toString(10) + heightArr[2];
         return {width : formWidth, height : formHeight};
@@ -246,6 +246,7 @@ KE.layout = {
         } catch (e) {}
         KE.g[id].hideDiv.style.display = 'none';
         KE.g[id].maskDiv.style.display = 'none';
+        KE.util.focus(id);
     },
     make : function(id)
     {
@@ -348,9 +349,9 @@ KE.dialog = function(arg){
         var id = arg.id;
         var div = KE.layout.make(arg.id);
         div.className = 'ke-dialog';
-        div.style.width = arg.width + 'px';
-        div.style.height = arg.height + 'px';
         var pos = this.getPos();
+        div.style.width = (arg.width + 20) + 'px';
+        div.style.height = (arg.height + 76) + 'px';
         div.style.top = pos.y + 'px';
         div.style.left = pos.x + 'px';
         var titleDiv = KE.$$('div');
@@ -402,9 +403,11 @@ KE.dialog = function(arg){
         var bodyDiv = KE.$$('div');
         bodyDiv.className = 'ke-dialog-body';
         var dialog = KE.$$('iframe');
-        dialog.name = 'Dialog';
-        dialog.width = (arg.width - 5) + 'px';
-        dialog.height = (arg.height - 60) + 'px';
+        if (arg.useFrameCSS) {
+            dialog.className = 'ke-dialog-iframe';
+        }
+        dialog.width = arg.width + 'px';
+        dialog.height = arg.height + 'px';
         dialog.setAttribute("frameBorder", "0");
         bodyDiv.appendChild(dialog);
         div.appendChild(bodyDiv);
@@ -446,7 +449,7 @@ KE.dialog = function(arg){
         window.focus();
         if (yesButton) yesButton.focus();
         else if (noButton) noButton.focus();
-        if (arg.html) {
+        if (typeof arg.html != "undefined") {
             var dialogDoc = KE.util.getIframeDoc(dialog);
             var html = KE.util.getFullHtml(id, arg.html);
             dialogDoc.open();
@@ -549,7 +552,7 @@ KE.create = function(id)
     formDiv.className = 'ke-form';
     formDiv.style.height = height;
     var iframe = KE.$$('iframe');
-    iframe.name = id + 'Iframe';
+    iframe.className = 'ke-iframe';
     iframe.style.width = formSize.width;
     iframe.style.height = formSize.height;
     iframe.setAttribute("frameBorder", "0");
