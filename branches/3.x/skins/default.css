@@ -6,232 +6,236 @@
     width: 100%;
     padding: 2px;
 }
-.ke-toolbar-source {
+.ke-toolbar-table {
+    float: left;
+    clear: both;
+}
+.ke-icon-source {
     background-position: 0px 0px;
     width: 39px;
     height: 16px;
 }
-.ke-toolbar-preview {
+.ke-icon-preview {
     background-position: 0px -16px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-print {
+.ke-icon-print {
     background-position: 0px -32px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-undo {
+.ke-icon-undo {
     background-position: 0px -48px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-redo {
+.ke-icon-redo {
     background-position: 0px -64px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-cut {
+.ke-icon-cut {
     background-position: 0px -80px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-copy {
+.ke-icon-copy {
     background-position: 0px -96px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-paste {
+.ke-icon-paste {
     background-position: 0px -112px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-selectall {
+.ke-icon-selectall {
     background-position: 0px -128px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-justifyleft {
+.ke-icon-justifyleft {
     background-position: 0px -144px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-justifycenter {
+.ke-icon-justifycenter {
     background-position: 0px -160px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-justifyright {
+.ke-icon-justifyright {
     background-position: 0px -176px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-justifyfull {
+.ke-icon-justifyfull {
     background-position: 0px -192px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-insertorderedlist {
+.ke-icon-insertorderedlist {
     background-position: 0px -208px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-insertunorderedlist {
+.ke-icon-insertunorderedlist {
     background-position: 0px -224px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-indent {
+.ke-icon-indent {
     background-position: 0px -240px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-outdent {
+.ke-icon-outdent {
     background-position: 0px -256px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-subscript {
+.ke-icon-subscript {
     background-position: 0px -272px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-superscript {
+.ke-icon-superscript {
     background-position: 0px -288px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-date {
+.ke-icon-date {
     background-position: 0px -304px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-time {
+.ke-icon-time {
     background-position: 0px -320px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-title {
+.ke-icon-title {
     background-position: 0px -336px;
     width: 39px;
     height: 16px;
 }
-.ke-toolbar-fontname {
+.ke-icon-fontname {
     background-position: 0px -352px;
     width: 39px;
     height: 16px;
 }
-.ke-toolbar-fontsize {
+.ke-icon-fontsize {
     background-position: 0px -368px;
     width: 39px;
     height: 16px;
 }
-.ke-toolbar-textcolor {
+.ke-icon-textcolor {
     background-position: 0px -384px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-bgcolor {
+.ke-icon-bgcolor {
     background-position: 0px -400px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-bold {
+.ke-icon-bold {
     background-position: 0px -416px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-italic {
+.ke-icon-italic {
     background-position: 0px -432px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-underline {
+.ke-icon-underline {
     background-position: 0px -448px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-strikethrough {
+.ke-icon-strikethrough {
     background-position: 0px -464px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-removeformat {
+.ke-icon-removeformat {
     background-position: 0px -480px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-image {
+.ke-icon-image {
     background-position: 0px -496px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-flash {
+.ke-icon-flash {
     background-position: 0px -512px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-media {
+.ke-icon-media {
     background-position: 0px -528px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-layer {
+.ke-icon-layer {
     background-position: 0px -544px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-table {
+.ke-icon-table {
     background-position: 0px -560px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-specialchar {
+.ke-icon-specialchar {
     background-position: 0px -576px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-hr {
+.ke-icon-hr {
     background-position: 0px -592px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-emoticons {
+.ke-icon-emoticons {
     background-position: 0px -608px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-link {
+.ke-icon-link {
     background-position: 0px -624px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-unlink {
+.ke-icon-unlink {
     background-position: 0px -640px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-fullscreen {
+.ke-icon-fullscreen {
     background-position: 0px -656px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-about {
+.ke-icon-about {
     background-position: 0px -672px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-plainpaste {
+.ke-icon-plainpaste {
     background-position: 0px -704px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-wordpaste {
+.ke-icon-wordpaste {
     background-position: 0px -720px;
     width: 16px;
     height: 16px;
 }
-.ke-toolbar-close {
+.ke-icon-close {
     background-position: 0px -688px;
     width: 16px;
     height: 16px;
@@ -241,9 +245,6 @@
     right: 0px;
     top: 0px;
     cursor: pointer;
-}
-.ke-toolbar-table {
-    float: left;
 }
 .ke-container {
     border: 3px solid #CCCCCC;

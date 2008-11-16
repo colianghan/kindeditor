@@ -12,7 +12,7 @@ KE.plugin['about'] = {
                 id : id,
                 cmd : 'about',
                 width : 300,
-                height : 150,
+                height : 80,
                 title : KE.lang['about'],
                 noButton : KE.lang['close']
             });
@@ -71,29 +71,51 @@ KE.plugin['wordpaste'] = {
     }
 };
 KE.plugin['fullscreen'] = {
-    click : function(id) {
+    setFull : function(id) {
         var obj = KE.g[id];
-        var width, height, formSize;
-        if (obj.fullscreenMode == true) {
-            width = obj.width;
-            height = obj.height;
-            formSize = KE.util.getFormSize(width, height);
-            obj.containerDiv.className = 'ke-container';
-            obj.fullscreenMode = false;
-        } else {
-            var el = KE.util.getDocumentElement();
-            width = el.clientWidth + 'px';
-            height = el.clientHeight + 'px';
-            formSize = KE.util.getFormSize(width, height);
-            obj.containerDiv.className = 'ke-container-fullscreen';
-            obj.fullscreenMode = true;
-        }
+        document.body.style.overflow = 'hidden';
+        var el = KE.util.getDocumentElement();
+        var width = (el.clientWidth - 6) + 'px';
+        var height = (el.clientHeight - 58) + 'px';
+        var formSize = KE.util.getFormSize(width, height);
+        obj.containerDiv.className = 'ke-container-fullscreen';
         obj.containerDiv.style.width = width;
         obj.formDiv.style.height = height;
         obj.iframe.style.width = formSize.width;
         obj.iframe.style.height = formSize.height;
         obj.newTextarea.style.width = formSize.width;
         obj.newTextarea.style.height = formSize.height;
+    },
+    setNormal : function(id) {
+        var obj = KE.g[id];
+        document.body.style.overflow = 'auto';
+        var width = obj.width;
+        var height = obj.height;
+        var formSize = KE.util.getFormSize(width, height);
+        obj.containerDiv.className = 'ke-container';
+        obj.containerDiv.style.width = width;
+        obj.formDiv.style.height = height;
+        obj.iframe.style.width = formSize.width;
+        obj.iframe.style.height = formSize.height;
+        obj.newTextarea.style.width = formSize.width;
+        obj.newTextarea.style.height = formSize.height;
+    },
+    click : function(id) {
+        var obj = KE.g[id];
+        var listener = function(event) {
+            if (obj.fullscreenMode == true) {
+                KE.plugin["fullscreen"].setFull(id);
+            }
+        }
+        if (obj.fullscreenMode == true) {
+            obj.fullscreenMode = false;
+            KE.event.remove(window, 'resize', listener);
+            this.setNormal(id);
+        } else {
+            obj.fullscreenMode = true;
+            KE.event.add(window, 'resize', listener);
+            this.setFull(id);
+        }
     }
 };
 KE.plugin['bgcolor'] = {
@@ -184,17 +206,31 @@ KE.plugin['fontsize'] = {
 };
 KE.plugin['hr'] = {
     click : function(id) {
+        var items = [
+                     '<hr />',
+                     '<hr size="1">',
+                     '<hr size="1" color="#000000" />',
+                     '<hr size="2" color="#000000" />',
+                     '<hr size="3" color="#000000" />',
+                     '<hr size="4" color="#000000" />',
+                     '<hr size="5" color="#000000" />',
+                     '<hr size="6" color="#000000" />'
+                     ];
+        var cmd = 'hr';
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
-                cmd : 'hr'
+                cmd : cmd,
+                width : '150px'
             });
-        menu.picker();
+        for (var i in items) {
+            menu.add(items[i], new Function('KE.plugin["' + cmd + '"].exec("' + id + '", \'' + items[i] + '\')'));
+        }
+        menu.show();
     },
     exec : function(id, value) {
         KE.util.select(id);
-        var html = '<hr color="' + value + '" size="1">';
-        KE.util.insertHtml(id, html);
+        KE.util.insertHtml(id, value);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -278,7 +314,7 @@ KE.plugin['title'] = {
         var menu = new KE.menu({
                 id : id,
                 cmd : cmd,
-                width : '100px'
+                width : '120px'
             });
         for (var i in title) {
             var html = '<' + i + ' style="margin:0px;">' + title[i] + '</' + i + '>';
@@ -347,7 +383,7 @@ KE.plugin['flash'] = {
                 id : id,
                 cmd : 'flash',
                 width : 280,
-                height : 320,
+                height : 250,
                 title : "Flash",
                 previewButton : KE.lang['preview'],
                 yesButton : KE.lang['yes'],
@@ -362,6 +398,7 @@ KE.plugin['flash'] = {
             KE.g[id].yesButton.focus();
             return false;
         }
+        return true;
     },
     preview : function(id) {
         var divWidth = 280;
@@ -369,7 +406,7 @@ KE.plugin['flash'] = {
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('url', dialogDoc).value;
-        this.check(id, url);
+        if (this.check(id, url) == false) return false;
         var embed = KE.$$('embed', dialogDoc);
         embed.src = url;
         embed.type = "application/x-shockwave-flash";
@@ -384,7 +421,7 @@ KE.plugin['flash'] = {
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('url', dialogDoc).value;
-        this.check(id, url);
+        if (this.check(id, url) == false) return false;
         var html = '<embed src="' + url + '" type="application/x-shockwave-flash" quality="high"></embed>';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
@@ -397,10 +434,9 @@ KE.plugin['image'] = {
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'image',
-                width : 340,
-                height : 400,
+                width : 310,
+                height : 90,
                 title : KE.lang['image'],
-                previewButton : KE.lang['preview'],
                 yesButton : KE.lang['yes'],
                 noButton : KE.lang['no']
             });
@@ -408,7 +444,13 @@ KE.plugin['image'] = {
     },
     check : function(id) {
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
-        var url = KE.$('url', dialogDoc).value;
+        var type = KE.$('type', dialogDoc).value;
+        var url = '';
+        if (type == 1) {
+            url = KE.$('imgFile', dialogDoc).value;
+        } else {
+            url = KE.$('url', dialogDoc).value;
+        }
         var title = KE.$('imgTitle', dialogDoc).value;
         var width = KE.$('imgWidth', dialogDoc).value;
         var height = KE.$('imgHeight', dialogDoc).value;
@@ -437,39 +479,33 @@ KE.plugin['image'] = {
             KE.g[id].yesButton.focus();
             return false;
         }
-    },
-    preview : function(id) {
-        var divWidth = 280;
-        var divHeight = 180;
-        var iframeDoc = KE.g[id].iframeDoc;
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
-        var type = KE.$('type', dialogDoc).value;
-        var url = KE.$('url', dialogDoc).value;
-        if (type == 2) this.check(id);
-        //set flash
+        return true;
     },
     exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var type = KE.$('type', dialogDoc).value;
+        if (this.check(id) == false) return false;
         if (type == 1) {
-            KE.$('id', dialogDoc).value = id;
+            KE.$('editorId', dialogDoc).value = id;
             dialogDoc.uploadForm.submit();
             return false;
+        } else {
+            var url = KE.$('url', dialogDoc).value;
+            var title = KE.$('imgTitle', dialogDoc).value;
+            var width = KE.$('imgWidth', dialogDoc).value;
+            var height = KE.$('imgHeight', dialogDoc).value;
+            var border = KE.$('imgBorder', dialogDoc).value;
+            this.insert(id, url, title, width, height, border);
         }
-        var url = KE.$('url', dialogDoc).value;
-        var title = KE.$('imgTitle', dialogDoc).value;
-        var width = KE.$('imgWidth', dialogDoc).value;
-        var height = KE.$('imgHeight', dialogDoc).value;
-        var border = KE.$('imgBorder', dialogDoc).value;
-        this.check(id);
-        this.insert(id, url, title, width, height, border);
     },
     insert : function(id, url, title, width, height, border) {
         var html = '<img src="' + url + '" ';
         if (width > 0) html += 'width="' + width + '" ';
         if (height > 0) html += 'height="' + height + '" ';
+        if (title) html += 'title="' + title + '" ';
+        html += 'alt="' + title + '" ';
         html += 'border="' + border + '" />';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
@@ -478,16 +514,30 @@ KE.plugin['image'] = {
 };
 KE.plugin['layer'] = {
     click : function(id) {
+        var cmd = 'layer';
+        var styles = [
+                    'margin:5px;border:1px solid #000000;',
+                    'margin:5px;border:2px solid #000000;',
+                    'margin:5px;border:1px dashed #000000;',
+                    'margin:5px;border:2px dashed #000000;',
+                    'margin:5px;border:1px dotted #000000;',
+                    'margin:5px;border:2px dotted #000000;'
+                    ];
         KE.util.selection(id);
         var menu = new KE.menu({
                 id : id,
-                cmd : 'layer'
+                cmd : cmd,
+                width : '150px'
             });
-        menu.picker();
+        for (var i in styles) {
+            var html = '<div style="height:15px;' + styles[i] + '"></div>';
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "padding:5px;' + styles[i] + '")'));
+        }
+        menu.show();
     },
     exec : function(id, value) {
         KE.util.select(id);
-        var html = '<div style="padding:5px;border:1px solid #AAAAAA;background-color:' + value + '">请输入内容</div>';
+        var html = '<div style="' + value + '">请输入内容</div>';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -499,8 +549,8 @@ KE.plugin['link'] = {
         var dialog = new KE.dialog({
                 id : id,
                 cmd : 'link',
-                width : 330,
-                height : 130,
+                width : 310,
+                height : 70,
                 title : KE.lang['link'],
                 yesButton : KE.lang['yes'],
                 noButton : KE.lang['no']
@@ -549,7 +599,7 @@ KE.plugin['media'] = {
                 id : id,
                 cmd : 'media',
                 width : 280,
-                height : 320,
+                height : 250,
                 title : KE.lang['media'],
                 previewButton : KE.lang['preview'],
                 yesButton : KE.lang['yes'],
@@ -564,6 +614,7 @@ KE.plugin['media'] = {
             KE.g[id].yesButton.focus();
             return false;
         }
+        return true;
     },
     preview : function(id) {
         var divWidth = 280;
@@ -571,7 +622,7 @@ KE.plugin['media'] = {
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('url', dialogDoc).value;
-        this.check(id, url);
+        if (this.check(id, url) == false) return false;
         var embed = KE.$$('embed', dialogDoc);
         embed.src = url;
         if (url.match(/\.(rm|rmvb)$/i) == null) {
@@ -591,7 +642,7 @@ KE.plugin['media'] = {
         var iframeDoc = KE.g[id].iframeDoc;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('url', dialogDoc).value;
-        this.check(id, url);
+        if (this.check(id, url) == false) return false;
         var html;
         if (url.match(/\.(rm|rmvb)$/i) == null) {
             html = '<embed src="' + url + '" type="video/x-ms-asf-plugin" loop="true" autostart="true"></embed>';

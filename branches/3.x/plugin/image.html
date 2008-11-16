@@ -6,7 +6,7 @@
   <style type="text/css" rel="stylesheet">
     body {
     font-size:12px;
-    margin: 5px;
+    margin: 0px;
     background-color:#F0F0EE;
     }
     td.left1 {
@@ -28,19 +28,6 @@
     padding: 2px;
     width: 50px;
     }
-    div.preview {
-    border: 1px solid #AAAAAA;
-    background-color: #FFFFFF;
-    width: 310px;
-    height: 200px;
-    margin: 0px 0px 5px 0px;
-    }
-    div.preview div {
-    margin: 5px;
-    }
-    div.comment {
-    margin: 0px 0px 5px 0px;
-    }
   </style>
   <script type="text/javascript">
     function changeType(obj) {
@@ -56,18 +43,7 @@
 </head>
 <body>
   <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../php/upload.php">
-    <input type="hidden" id="id" name="id" value="" />
-    <div class="preview">
-      <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="300" height="200" id="preview" align="middle">
-        <param name="allowScriptAccess" value="sameDomain" />
-        <param name="allowFullScreen" value="false" />
-        <param name="movie" value="./preview.swf" />
-        <param name="quality" value="high" />
-        <param name="bgcolor" value="#ffffff" />
-        <embed src="./preview.swf" quality="high" bgcolor="#ffffff" width="300" height="200" name="preview" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.adobe.com/go/getflashplayer" />
-      </object>
-    </div>
-    <div class="comment">注:只能预览远程图片。</div>
+    <input type="hidden" id="editorId" name="id" value="" />
     <table border="0" cellpadding="0" cellspacing="0">
       <tr>
         <td class="left1">
@@ -77,14 +53,14 @@
           </select>
         </td>
         <td class="right1">
-          <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:200px;display:none;" />
-          <input type="file" id="imgFile" name="imgFile" style="width:200px;" />
+          <input type="file" id="imgFile" name="imgFile" style="width:220px;" />
+          <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:220px;display:none;" />
         </td>
       </tr>
       <tr>
         <td class="left1">说明:</td>
         <td class="right1">
-          <input type="text" id="imgTitle" name="imgTitle" value="" maxlength="100" style="width:200px;" />
+          <input type="text" id="imgTitle" name="imgTitle" value="" maxlength="100" style="width:220px;" />
         </td>
       </tr>
     </table>
