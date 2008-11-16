@@ -10,6 +10,17 @@
     float: left;
     clear: both;
 }
+.ke-toolbar-close {
+    background-position: 0px -688px;
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    margin-top: 2px;
+    margin-right: 3px;
+    right: 0px;
+    top: 0px;
+    cursor: pointer;
+}
 .ke-icon-source {
     background-position: 0px 0px;
     width: 39px;
@@ -235,17 +246,6 @@
     width: 16px;
     height: 16px;
 }
-.ke-icon-close {
-    background-position: 0px -688px;
-    width: 16px;
-    height: 16px;
-    position: absolute;
-    margin-top: 2px;
-    margin-right: 3px;
-    right: 0px;
-    top: 0px;
-    cursor: pointer;
-}
 .ke-container {
     border: 3px solid #CCCCCC;
     background-color: #F0F0EE;
@@ -328,7 +328,7 @@
     text-align: left;
 }
 .ke-dialog-title {
-    background-color: #DDDDDD;
+    background-color: #E0E0E0;
     padding: 3px;
     color: #000000;
     text-align: left;
