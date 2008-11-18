@@ -37,6 +37,8 @@ KE.plugin['plainpaste'] = {
         KE.util.select(id);
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var html = KE.$('textArea', dialogDoc).value;
+        var re = new RegExp("\r\n|\n|\r", "g");
+        html = html.replace(re, "<br />$&");
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -56,8 +58,62 @@ KE.plugin['wordpaste'] = {
             });
         dialog.show();
     },
+    allowTagTable : [
+                     'A', 'FONT', 'SPAN', 'P', 'BR', 'DIV', 'LI', 'U', 'STRIKE',
+                     'STRONG', 'TABLE', 'TR', 'TD', 'TBODY', 'HR', 'BLOCKQUOTE',
+                     'SUB', 'SUP', 'UL', 'OL', 'IMG', 'B', 'EM', 'H1', 'H2', 'H3',
+                     'H4', 'H5', 'H6'
+                     ],
+    scanNode : function(el) {
+        if (el.hasChildNodes()) {
+            var nodes = el.childNodes;
+            for (var i = 0; i < nodes.length; i++) {
+                var node = nodes[i];
+                switch (node.nodeType) {
+                case 1:
+                    if (KE.util.inArray(node.tagName, this.allowTagTable) == false) {
+                        node.parentNode.removeChild(node);
+                    } else {
+                        if (KE.browser == 'IE') {
+                            node.removeAttribute("className");
+                        } else {
+                            node.removeAttribute("class");
+                        }
+                        if (node.tagName == 'TABLE') {
+                            node.setAttribute("border", 1);
+                        }
+                        node.removeAttribute("lang");
+                        node.removeAttribute("type");
+                        var fontSize = node.style.fontSize;
+                        var fontFamily = node.style.fontFamily;
+                        var color = node.style.color;
+                        node.removeAttribute("style");
+                        if (fontSize) node.style.fontSize = fontSize;
+                        if (fontFamily) node.style.fontFamily = fontFamily;
+                        if (color) node.style.color = color;
+                        break;
+                    }
+                case 3:
+                    break;
+                default:
+                    node.innerHTML = '';
+                    break;
+                }
+                this.scanNode(node);
+            }
+        }
+    },
     clearWordTag : function(doc) {
+        this.scanNode(doc.body);
         var str = doc.body.innerHTML;
+        str = str.replace(new RegExp("<meta(\n|.)*?>", "ig"), "");
+        str = str.replace(new RegExp("<!(\n|.)*?>", "ig"), "");
+        str = str.replace(new RegExp("<style[^>]*>(\n|.)*?</style>", "ig"), "");
+        str = str.replace(new RegExp("<script[^>]*>(\n|.)*?</script>", "ig"), "");
+        str = str.replace(new RegExp("<w:[^>]+>(\n|.)*?</w:[^>]+>", "ig"), "");
+        str = str.replace(new RegExp("<w:[^>]*/>", "ig"), "");
+        str = str.replace(new RegExp("<xml>(\n|.)*?</xml>", "ig"), "");
+        str = str.replace(new RegExp("^\n+", "ig"), "");
         return str;
     },
     exec : function(id) {
@@ -72,33 +128,19 @@ KE.plugin['wordpaste'] = {
 };
 KE.plugin['fullscreen'] = {
     setFull : function(id) {
-        var obj = KE.g[id];
         document.body.style.overflow = 'hidden';
         var el = KE.util.getDocumentElement();
         var width = (el.clientWidth - 6) + 'px';
         var height = (el.clientHeight - 58) + 'px';
-        var formSize = KE.util.getFormSize(width, height);
-        obj.containerDiv.className = 'ke-container-fullscreen';
-        obj.containerDiv.style.width = width;
-        obj.formDiv.style.height = height;
-        obj.iframe.style.width = formSize.width;
-        obj.iframe.style.height = formSize.height;
-        obj.newTextarea.style.width = formSize.width;
-        obj.newTextarea.style.height = formSize.height;
+        KE.g[id].containerDiv.className = 'ke-container-fullscreen';
+        KE.util.resize(id, width, height);
     },
     setNormal : function(id) {
-        var obj = KE.g[id];
         document.body.style.overflow = 'auto';
-        var width = obj.width;
-        var height = obj.height;
-        var formSize = KE.util.getFormSize(width, height);
-        obj.containerDiv.className = 'ke-container';
-        obj.containerDiv.style.width = width;
-        obj.formDiv.style.height = height;
-        obj.iframe.style.width = formSize.width;
-        obj.iframe.style.height = formSize.height;
-        obj.newTextarea.style.width = formSize.width;
-        obj.newTextarea.style.height = formSize.height;
+        var width = KE.g[id].width;
+        var height = KE.g[id].height;
+        KE.g[id].containerDiv.className = 'ke-container';
+        KE.util.resize(id, width, height);
     },
     click : function(id) {
         var obj = KE.g[id];
@@ -264,13 +306,13 @@ KE.plugin['source'] = {
             obj.newTextarea.value = obj.iframeDoc.body.innerHTML;
             obj.iframe.style.display = 'none';
             obj.newTextarea.style.display = 'block';
-            KE.toolbar.disable(id, ['source', 'preview']);
+            KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
             obj.wyswygMode = false;
         } else {
             obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
             obj.iframe.style.display = 'block';
             obj.newTextarea.style.display = 'none';
-            KE.toolbar.able(id, ['source', 'preview']);
+            KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
             obj.wyswygMode = true;
         }
         KE.util.focus(id);

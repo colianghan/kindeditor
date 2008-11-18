@@ -158,12 +158,18 @@ KE.util = {
         html += '</html>';
         return html;
     },
-    getFormSize : function(width, height) {
+    resize : function(id, width, height) {
+        var obj = KE.g[id];
         var widthArr = width.match(/(\d+)([px%]{1,2})/);
         var formWidth = (parseInt(widthArr[1]) - 6).toString(10) + widthArr[2];
         var heightArr = height.match(/(\d+)([px%]{1,2})/);
         var formHeight = (parseInt(heightArr[1]) - 4).toString(10) + heightArr[2];
-        return {width : formWidth, height : formHeight};
+        obj.containerDiv.style.width = width;
+        obj.formDiv.style.height = height;
+        obj.iframe.style.width = formWidth;
+        obj.iframe.style.height = formHeight;
+        obj.newTextarea.style.width = formWidth;
+        obj.newTextarea.style.height = formHeight;
     },
     getData : function(id) {
         var html;
@@ -219,6 +225,7 @@ KE.util = {
         }
     },
     insertHtml : function(id, html) {
+        if (html == '') return;
         KE.util.select(id);
         if (KE.browser == 'IE') {
             if (KE.g[id].selection.type.toLowerCase() == 'control') {
@@ -543,23 +550,16 @@ KE.create = function(id)
     var srcTextarea = KE.$(id);
     var width = srcTextarea.style.width;
     var height = srcTextarea.style.height;
-    var formSize = KE.util.getFormSize(width, height);
     var containerDiv = KE.$$('div');
     containerDiv.className = 'ke-container';
-    containerDiv.style.width = width;
     srcTextarea.parentNode.insertBefore(containerDiv, srcTextarea);
     var formDiv = KE.$$('div');
     formDiv.className = 'ke-form';
-    formDiv.style.height = height;
     var iframe = KE.$$('iframe');
     iframe.className = 'ke-iframe';
-    iframe.style.width = formSize.width;
-    iframe.style.height = formSize.height;
     iframe.setAttribute("frameBorder", "0");
     var newTextarea = KE.$$('textarea');
     newTextarea.className = 'ke-textarea';
-    newTextarea.style.width = formSize.width;
-    newTextarea.style.height = formSize.height;
     newTextarea.style.display = 'none';
     formDiv.appendChild(iframe);
     formDiv.appendChild(newTextarea);
@@ -585,7 +585,7 @@ KE.create = function(id)
         newTextarea.value = srcTextarea.value;
         newTextarea.style.display = 'block';
         iframe.style.display = 'none';
-        KE.toolbar.disable(id, ['source', 'preview']);
+        KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
     }
     var form = hideDiv.parentNode;
     while (form.tagName != 'FORM') { form = form.parentNode; }
@@ -605,6 +605,7 @@ KE.create = function(id)
     KE.g[id].iframeDoc = iframeDoc;
     KE.g[id].width = width;
     KE.g[id].height = height;
+    KE.util.resize(id, width, height);
     KE.util.pToBr(id);
     KE.util.focus(id);
 };
@@ -616,19 +617,18 @@ KE.plugin = {};
 KE.g = {};
 KE.show = function(config)
 {
-    config.wyswygMode = config.wyswygMode || true;
-    config.fullscreenMode = config.fullscreenMode || false;
+    config.wyswygMode = (config.wyswygMode == false) ? false : true;
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
     config.pluginPath = KE.scriptPath + 'plugin/';
     config.items = config.items || [
-        'source', 'preview', 'print', 'undo', 'redo', 'cut', 'copy', 'paste', 'plainpaste', 'wordpaste',
-        'selectall', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull',
-        'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
-        'superscript', 'date', 'time', 'fullscreen', '-',
+        'source', 'preview', 'fullscreen', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
+        'plainpaste', 'wordpaste', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+        'superscript', 'date', 'time', '-',
         'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
-        'italic', 'underline', 'strikethrough', 'removeformat', 'image',
+        'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', 'image',
         'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
         'emoticons', 'link', 'unlink', 'about'
     ];

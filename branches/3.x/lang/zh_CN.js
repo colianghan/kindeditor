@@ -53,7 +53,7 @@ KE.lang = {
     emoticons : '插入笑脸',
     link : '超级连接',
     unlink : '取消超级连接',
-    fullscreen : '全屏',
+    fullscreen : '全屏显示',
     about : '关于',
     print : '打印',
     yes : '确定',
