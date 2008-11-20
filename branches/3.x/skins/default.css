@@ -263,6 +263,11 @@
     background-color: #FFFFFF;
     margin: 1px;
 }
+.ke-bottom {
+    font-size: 0px;
+    height: 5px;
+    cursor: s-resize;
+}
 .ke-textarea {
     margin: 0;
     padding: 0;

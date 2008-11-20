@@ -117,6 +117,44 @@ KE.util = {
             el.style.opacity = (opacity == 100) ? "" : "0." + opacity.toString();
         }
     },
+    drag : function(id, mousedownObj, moveObj, func) {
+        var obj = KE.g[id];
+        mousedownObj.onmousedown = function(event) {
+            if (obj.wyswygMode == true) {
+                obj.iframe.style.display = 'none';
+            }
+            if (KE.browser != 'IE') event.preventDefault();
+            var ev = event || window.event;
+            var pos = KE.util.getCoords(ev);
+            var objTop = parseInt(moveObj.style.top);
+            var objLeft = parseInt(moveObj.style.left);
+            var objWidth = parseInt(moveObj.style.width);
+            var objHeight = parseInt(moveObj.style.height);
+            var mouseTop = pos.y;
+            var mouseLeft = pos.x;
+            var dragFlag = true;
+            var moveListener = function(event) {
+                if (dragFlag) {
+                    var ev = event || window.event;
+                    var pos = KE.util.getCoords(ev);
+                    var top = pos.y - mouseTop;
+                    var left = pos.x - mouseLeft;
+                    func(objTop, objLeft, objWidth, objHeight, top, left);
+                }
+                return false;
+            };
+            var upListener = function(event) {
+                KE.event.remove(document, 'mousemove', moveListener);
+                KE.event.remove(document, 'mouseup', upListener);
+                if (obj.wyswygMode == true) {
+                    obj.iframe.style.display = 'block';
+                }
+                dragFlag = false;
+            };
+            KE.event.add(document, 'mousemove', moveListener);
+            KE.event.add(document, 'mouseup', upListener);
+        };
+    },
     setDefaultPlugin : function(id) {
         var items = [
             'undo', 'redo', 'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
@@ -160,16 +198,14 @@ KE.util = {
     },
     resize : function(id, width, height) {
         var obj = KE.g[id];
-        var widthArr = width.match(/(\d+)([px%]{1,2})/);
-        var formWidth = (parseInt(widthArr[1]) - 6).toString(10) + widthArr[2];
-        var heightArr = height.match(/(\d+)([px%]{1,2})/);
-        var formHeight = (parseInt(heightArr[1]) - 4).toString(10) + heightArr[2];
-        obj.containerDiv.style.width = width;
+        if (parseInt(width) <= 2 || parseInt(height) <= 2) return;
+        obj.containerDiv.style.width = (parseInt(width) + 4) + 'px';
+        obj.formDiv.style.width = width;
         obj.formDiv.style.height = height;
-        obj.iframe.style.width = formWidth;
-        obj.iframe.style.height = formHeight;
-        obj.newTextarea.style.width = formWidth;
-        obj.newTextarea.style.height = formHeight;
+        obj.iframe.style.width = (parseInt(width) - 2) + 'px';
+        obj.iframe.style.height = (parseInt(height) - 2) + 'px';
+        obj.newTextarea.style.width = (parseInt(width) - 2) + 'px';
+        obj.newTextarea.style.height = (parseInt(height) - 2) + 'px';
     },
     getData : function(id) {
         var html;
@@ -373,39 +409,10 @@ KE.dialog = function(arg){
         img.title = KE.lang['close'];
         img.onclick = new Function("KE.layout.hide('" + id + "')");
         titleDiv.appendChild(img);
-        var dialogTop;
-        var dialogLeft;
-        var mouseTop;
-        var mouseLeft;
-        var dragFlag = false;
-        titleDiv.onmousedown = function(event) {
-            if (KE.browser != 'IE') event.preventDefault();
-            var ev = event || window.event;
-            var pos = KE.util.getCoords(ev);
-            mouseTop = pos.y;
-            mouseLeft = pos.x;
-            dialogTop = parseInt(div.style.top);
-            dialogLeft = parseInt(div.style.left);
-            dragFlag = true;
-            var moveListener = function(event) {
-                if (dragFlag) {
-                    var ev = event || window.event;
-                    var pos = KE.util.getCoords(ev);
-                    var top = pos.y - mouseTop;
-                    var left = pos.x - mouseLeft;
-                    div.style.top = (dialogTop + top) + 'px';
-                    div.style.left = (dialogLeft + left) + 'px';
-                }
-                return false;
-            };
-            var upListener = function(event) {
-                KE.event.remove(document, 'mousemove', moveListener);
-                KE.event.remove(document, 'mouseup', upListener);
-                dragFlag = false;
-            };
-            KE.event.add(document, 'mousemove', moveListener);
-            KE.event.add(document, 'mouseup', upListener);
-        };
+        KE.util.drag(id, titleDiv, div, function(objTop, objLeft, objWidth, objHeight, top, left) {
+                div.style.top = (objTop + top) + 'px';
+                div.style.left = (objLeft + left) + 'px';
+            });
         div.appendChild(titleDiv);
         var bodyDiv = KE.$$('div');
         bodyDiv.className = 'ke-dialog-body';
@@ -528,7 +535,7 @@ KE.toolbar = {
             if (typeof KE.plugin[cmd] == 'undefined') continue;
             var cell = row.insertCell(cellNum);
             cellNum++;
-            obj = KE.$$('img');
+            var obj = KE.$$('img');
             obj.src = KE.g[id].skinsPath + 'spacer.gif';
             var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
             obj.style.backgroundImage = "url(" + url + ")";
@@ -555,6 +562,8 @@ KE.create = function(id)
     srcTextarea.parentNode.insertBefore(containerDiv, srcTextarea);
     var formDiv = KE.$$('div');
     formDiv.className = 'ke-form';
+    var bottomDiv = KE.$$('div');
+    bottomDiv.className = 'ke-bottom';
     var iframe = KE.$$('iframe');
     iframe.className = 'ke-iframe';
     iframe.setAttribute("frameBorder", "0");
@@ -572,6 +581,7 @@ KE.create = function(id)
     KE.util.setDefaultPlugin(id);
     containerDiv.appendChild(KE.toolbar.create(id));
     containerDiv.appendChild(formDiv);
+    containerDiv.appendChild(bottomDiv);
     containerDiv.appendChild(hideDiv);
     containerDiv.appendChild(maskDiv);
     var iframeWin = iframe.contentWindow;
@@ -596,6 +606,7 @@ KE.create = function(id)
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.g[id].containerDiv = containerDiv;
     KE.g[id].formDiv = formDiv;
+    KE.g[id].bottomDiv = bottomDiv;
     KE.g[id].iframe = iframe;
     KE.g[id].newTextarea = newTextarea;
     KE.g[id].srcTextarea = srcTextarea;
@@ -606,6 +617,9 @@ KE.create = function(id)
     KE.g[id].width = width;
     KE.g[id].height = height;
     KE.util.resize(id, width, height);
+    KE.util.drag(id, bottomDiv, formDiv, function(objTop, objLeft, objWidth, objHeight, top, left) {
+            KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px');
+        });
     KE.util.pToBr(id);
     KE.util.focus(id);
 };
