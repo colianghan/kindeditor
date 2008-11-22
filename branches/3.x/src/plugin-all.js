@@ -131,13 +131,26 @@ KE.plugin['fullscreen'] = {
         document.body.style.overflow = 'hidden';
         var el = KE.util.getDocumentElement();
         var width = (el.clientWidth - 10) + 'px';
-        var height = (el.clientHeight - 58) + 'px';
-        KE.g[id].containerDiv.className = 'ke-container-fullscreen';
+        var height = (el.clientHeight - 57) + 'px';
+        var div = KE.g[id].containerDiv;
+        div.style.position = 'absolute';
+        var left,top;
+        if (KE.browser == 'IE' || KE.browser == 'OPERA') {
+            left = document.body.parentNode.scrollLeft;
+            top = document.body.parentNode.scrollTop;
+        } else {
+            left = window.scrollX;
+            top = window.scrollY;
+        }
+        div.style.left = left + 'px';
+        div.style.top = top + 'px';
+        div.style.zIndex = '999999';
         KE.util.resize(id, width, height);
     },
     setNormal : function(id) {
         document.body.style.overflow = 'auto';
-        KE.g[id].containerDiv.className = 'ke-container';
+        var div = KE.g[id].containerDiv;
+        div.style.position = 'static';
         KE.util.resize(id, this.width, this.height);
     },
     click : function(id) {
@@ -149,14 +162,14 @@ KE.plugin['fullscreen'] = {
         }
         if (obj.fullscreenMode == true) {
             obj.fullscreenMode = false;
-            obj.bottomDiv.style.display = 'block';
+            KE.util.showBottom(id);
             KE.event.remove(window, 'resize', listener);
             this.setNormal(id);
         } else {
             obj.fullscreenMode = true;
             this.width = obj.formDiv.style.width;
             this.height = obj.formDiv.style.height;
-            obj.bottomDiv.style.display = 'none';
+            KE.util.hideBottom(id);
             KE.event.add(window, 'resize', listener);
             this.setFull(id);
         }

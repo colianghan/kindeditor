@@ -46,7 +46,7 @@ KE.util = {
     getScriptPath : function() {
         var elements = document.getElementsByTagName('script');
         for (var i = 0; i < elements.length; i++) {
-            if (elements[i].src && elements[i].src.indexOf('kindeditor.js') != -1) {
+            if (elements[i].src && elements[i].src.indexOf('kindeditor') != -1) {
                 return elements[i].src.substring(0, elements[i].src.lastIndexOf('/') + 1);
             }
         }
@@ -116,6 +116,14 @@ KE.util = {
         } else {
             el.style.opacity = (opacity == 100) ? "" : "0." + opacity.toString();
         }
+    },
+    showBottom : function(id) {
+        KE.g[id].bottomDiv.style.display = 'block';
+        KE.g[id].bottomRightDiv.style.display = 'block';
+    },
+    hideBottom : function(id) {
+        KE.g[id].bottomDiv.style.display = 'none';
+        KE.g[id].bottomRightDiv.style.display = 'none';
     },
     drag : function(id, mousedownObj, moveObj, func) {
         var obj = KE.g[id];
@@ -198,7 +206,7 @@ KE.util = {
     },
     resize : function(id, width, height) {
         var obj = KE.g[id];
-        if (parseInt(width) <= 2 || parseInt(height) <= 2) return;
+        if (parseInt(width) <= 20 || parseInt(height) <= 20) return;
         obj.containerDiv.style.width = (parseInt(width) + 4) + 'px';
         obj.formDiv.style.width = width;
         obj.formDiv.style.height = height;
@@ -206,16 +214,30 @@ KE.util = {
         obj.iframe.style.height = (parseInt(height) - 2) + 'px';
         obj.newTextarea.style.width = (parseInt(width) - 2) + 'px';
         obj.newTextarea.style.height = (parseInt(height) - 2) + 'px';
+        obj.bottomDiv.style.width = (parseInt(width) - 22) + 'px';
     },
     getData : function(id) {
-        var html;
+        var data;
         if (KE.g[id].wyswygMode == true) {
-            html = KE.g[id].iframeDoc.body.innerHTML;
+            data = KE.g[id].iframeDoc.body.innerHTML;
         } else {
-            html = KE.g[id].newTextarea.value;
+            data = KE.g[id].newTextarea.value;
         }
-        KE.g[id].srcTextarea.value = html;
-        return html;
+        return data;
+    },
+    setData : function(id) {
+        var data = this.getData(id);
+        KE.g[id].srcTextarea.value = data;
+    },
+    getPureData : function(id) {
+        var data = this.getData(id);
+        data = data.replace(/<br[\s\/]{0,2}>/ig, "\r\n");
+        data = data.replace(/<.*?>/ig, "");
+        return data;
+    },
+    setPureData : function(id) {
+        var data = this.getPureData(id);
+        KE.g[id].srcTextarea.value = data;
     },
     focus : function(id) {
         if (KE.g[id].wyswygMode == true) {
@@ -564,6 +586,8 @@ KE.create = function(id)
     formDiv.className = 'ke-form';
     var bottomDiv = KE.$$('div');
     bottomDiv.className = 'ke-bottom';
+    var bottomRightDiv = KE.$$('div');
+    bottomRightDiv.className = 'ke-bottom-right';
     var iframe = KE.$$('iframe');
     iframe.className = 'ke-iframe';
     iframe.setAttribute("frameBorder", "0");
@@ -582,6 +606,7 @@ KE.create = function(id)
     containerDiv.appendChild(KE.toolbar.create(id));
     containerDiv.appendChild(formDiv);
     containerDiv.appendChild(bottomDiv);
+    containerDiv.appendChild(bottomRightDiv);
     containerDiv.appendChild(hideDiv);
     containerDiv.appendChild(maskDiv);
     var iframeWin = iframe.contentWindow;
@@ -597,16 +622,19 @@ KE.create = function(id)
         iframe.style.display = 'none';
         KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
     }
-    var form = hideDiv.parentNode;
-    while (form.tagName != 'FORM') { form = form.parentNode; }
-    if (form.tagName == 'FORM') {
-        KE.event.add(form, 'submit', new Function('KE.util.getData("' + id + '")'));
+    if (KE.g[id].autoOnsubmit == true) {
+        var form = srcTextarea.parentNode;
+        while (form != null && form.tagName != 'FORM') { form = form.parentNode; }
+        if (form != null && form.tagName == 'FORM') {
+            KE.event.add(form, 'submit', new Function('KE.util.setData("' + id + '")'));
+        }
     }
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.g[id].containerDiv = containerDiv;
     KE.g[id].formDiv = formDiv;
     KE.g[id].bottomDiv = bottomDiv;
+    KE.g[id].bottomRightDiv = bottomRightDiv;
     KE.g[id].iframe = iframe;
     KE.g[id].newTextarea = newTextarea;
     KE.g[id].srcTextarea = srcTextarea;
@@ -617,6 +645,9 @@ KE.create = function(id)
     KE.g[id].width = width;
     KE.g[id].height = height;
     KE.util.resize(id, width, height);
+    KE.util.drag(id, bottomRightDiv, formDiv, function(objTop, objLeft, objWidth, objHeight, top, left) {
+            KE.util.resize(id, (objWidth + left) + 'px', (objHeight + top) + 'px');
+        });
     KE.util.drag(id, bottomDiv, formDiv, function(objTop, objLeft, objWidth, objHeight, top, left) {
             KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px');
         });
@@ -629,9 +660,9 @@ KE.htmlPath = KE.util.getHtmlPath();
 KE.browser = KE.util.getBrowser();
 KE.plugin = {};
 KE.g = {};
-KE.show = function(config)
-{
+KE.init = function(config) {
     config.wyswygMode = (config.wyswygMode == false) ? false : true;
+    config.autoOnsubmit = (config.autoOnsubmit == false) ? false : true;
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
@@ -648,5 +679,9 @@ KE.show = function(config)
     ];
     KE.g[config.id] = config;
     KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
+}
+KE.show = function(config)
+{
+    KE.init(config);
     KE.event.add(window, 'load', new Function('KE.create("' + config.id + '")'));
 };
