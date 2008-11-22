@@ -1,31 +1,67 @@
 #labels KindEditor3.0,目录结构
 KindEditor 3.0 目录结构
 {{{
-│  ke-core.js //核心JS
-│
-├─emoticons //笑脸目录
-│      etc_xx.gif
-│
-├─php //PHP扩展
+├─php //PHP程序
 │      upload.php
+│      demo.php
 │
-├─skins //风格目录，目录名和CSS名要一致
-│  │  default.css
-│  │
-│  └─default
-│          xxx.gif
+├─docs //文档
+│      CHANGE.txt
+│      LICENCE.txt
+│      README.txt
 │
-├─docs //帮助文档
 ├─examples //应用例子
-│      default_all.html
-│      default_all.css
-│      default_mini.css
-│      default_mini.html
+│      index.html
+│      index.css
+│      index-mini.html
 │
-├─lang //语言JS
-│      zh_CN.js
+├─attached //上传附件
+├─src //压缩前的代码
+│  │  kindeditor.js //核心JS代码
+│  │  plugin-all.js //扩展JS（包含所有扩展）
+│  │  plugin-mini.js //扩展JS（包含部分扩展）
+│  │
+│  ├─plugins //扩展所需要的文件
+│  │  │  link.html
+│  │  │  flash.html
+│  │  │  media.html
+│  │  │  plainpaste.html
+│  │  │  image.html
+│  │  │  wordpaste.html
+│  │  │  about.html
+│  │  │
+│  │  └─emoticons
+│  │          etc_01.gif
+│  │          etc_20.gif
+│  │
+│  ├─lang //语言包
+│  │      zh_CN.js
+│  │
+│  └─skins //风格
+│          spacer.gif
+│          default.png
+│          default.gif
+│          default.css
 │
-└─plugin //扩展JS，根据需求选择不同大小
-        plugin-all.js
-        plugin-mini.js
+└─build //压缩后代码
+    │  kindeditor.js
+    │  kindeditor-mini.js
+    │
+    ├─skins
+    │      default.gif
+    │      spacer.gif
+    │      default.css
+    │
+    └─plugins
+        │  about.html
+        │  flash.html
+        │  image.html
+        │  link.html
+        │  media.html
+        │  plainpaste.html
+        │  wordpaste.html
+        │
+        └─emoticons
+                etc_01.gif
+                etc_02.gif
 }}}
