@@ -46,7 +46,7 @@ KE.util = {
     getScriptPath : function() {
         var elements = document.getElementsByTagName('script');
         for (var i = 0; i < elements.length; i++) {
-            if (elements[i].src && elements[i].src.indexOf('ke-core.js') != -1) {
+            if (elements[i].src && elements[i].src.indexOf('kindeditor.js') != -1) {
                 return elements[i].src.substring(0, elements[i].src.lastIndexOf('/') + 1);
             }
         }
@@ -470,7 +470,7 @@ KE.dialog = function(arg){
             dialogDoc.write(html);
             dialogDoc.close();
         } else {
-            dialog.src = KE.g[id].pluginPath + arg.cmd + '.html';
+            dialog.src = KE.g[id].pluginsPath + arg.cmd + '.html';
         }
         KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
         KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
@@ -635,7 +635,7 @@ KE.show = function(config)
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
-    config.pluginPath = KE.scriptPath + 'plugin/';
+    config.pluginsPath = KE.scriptPath + 'plugins/';
     config.items = config.items || [
         'source', 'preview', 'fullscreen', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
         'plainpaste', 'wordpaste', 'justifyleft', 'justifycenter', 'justifyright',

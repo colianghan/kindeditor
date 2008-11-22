@@ -401,7 +401,7 @@ KE.plugin['emoticons'] = {
                 cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
                 cell.onclick = new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + emoticonTable[i][j] + '")');
                 var img = KE.$$('img');
-                img.src = KE.scriptPath + 'plugin/emoticons/' + emoticonTable[i][j];
+                img.src = KE.g[id].pluginsPath + 'emoticons/' + emoticonTable[i][j];
                 cell.appendChild(img);
             }
         }
