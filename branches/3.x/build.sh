@@ -20,8 +20,8 @@ fi
 cp -f ./src/plugins/*.html ./build/plugins/
 cp -f ./src/plugins/emoticons/*.gif ./build/plugins/emoticons/
 cp -f ./src/skins/default.gif ./build/skins/
+cp -f ./src/skins/default.css ./build/skins/
 cp -f ./src/skins/spacer.gif ./build/skins/
-java -jar yuicompressor-2.4.1.jar --type css --charset utf-8 -v ./src/skins/default.css > ./build/skins/default.css
 echo ""
 echo "Build done."
 echo ""
