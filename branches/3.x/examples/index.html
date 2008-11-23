@@ -22,6 +22,9 @@
     margin-top: 5px;
     margin-bottom: 5px;
     }
+    div.relative {
+    position:relative;
+    }
   </style>
   <script type="text/javascript" charset="utf-8" src="./../src/lang/zh_CN.js"></script>
   <script type="text/javascript" charset="utf-8" src="./../src/kindeditor.js"></script>
@@ -55,6 +58,10 @@
     KE.event.add(window, 'load', function(){
         KE.create('content5');
         KE.util.hideBottom('content5');
+    });
+    KE.show({
+        id : 'content6',
+        cssPath : './index.css'
     });
   </script>
 </head>
@@ -121,11 +128,21 @@ KE.event.add(window, 'load', function(){
     KE.util.hideBottom('content5');
 });</pre></div>
   <form name="example" method="post" action="./../php/demo.php" onsubmit="javascript:KE.util.setData('content5');">
-      <div class="editor">
-        <textarea id="content5" name="content" style="width:700px;height:300px;"></textarea>
-      </div>
-      <input type="submit" name="button" value="提交内容" />
-    </form>
+    <div class="editor">
+      <textarea id="content5" name="content" style="width:700px;height:300px;"></textarea>
+    </div>
+    <input type="submit" name="button" value="提交内容" />
+  </form>
+  <h3>编辑器在relative对象内</h3>
+  <div class="source"><pre>
+KE.show({
+    id : 'content6',
+    cssPath : './index.css'
+});</pre></div>
+  <div class="relative">
+    <div class="editor">
+      <textarea id="content6" name="content" style="width:700px;height:300px;visibility:hidden;"></textarea>
+    </div>
   </div>
 </body>
 </html>

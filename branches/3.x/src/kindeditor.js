@@ -597,6 +597,7 @@ KE.create = function(id)
     formDiv.appendChild(iframe);
     formDiv.appendChild(newTextarea);
     var hideDiv = KE.$$('div');
+    hideDiv.style.height = '0px';
     hideDiv.style.display = 'none';
     var maskDiv = KE.$$('div');
     maskDiv.className = 'ke-mask';
@@ -607,8 +608,8 @@ KE.create = function(id)
     containerDiv.appendChild(formDiv);
     containerDiv.appendChild(bottomDiv);
     containerDiv.appendChild(bottomRightDiv);
-    containerDiv.appendChild(hideDiv);
-    containerDiv.appendChild(maskDiv);
+    document.body.appendChild(hideDiv);
+    document.body.appendChild(maskDiv);
     var iframeWin = iframe.contentWindow;
     var iframeDoc = KE.util.getIframeDoc(iframe);
     iframeDoc.designMode = "On";

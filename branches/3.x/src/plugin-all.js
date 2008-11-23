@@ -127,13 +127,10 @@ KE.plugin['wordpaste'] = {
     }
 };
 KE.plugin['fullscreen'] = {
-    setFull : function(id) {
-        document.body.style.overflow = 'hidden';
+    resetFull : function(id) {
         var el = KE.util.getDocumentElement();
         var width = (el.clientWidth - 10) + 'px';
         var height = (el.clientHeight - 57) + 'px';
-        var div = KE.g[id].containerDiv;
-        div.style.position = 'absolute';
         var left,top;
         if (KE.browser == 'IE' || KE.browser == 'OPERA') {
             left = document.body.parentNode.scrollLeft;
@@ -142,36 +139,37 @@ KE.plugin['fullscreen'] = {
             left = window.scrollX;
             top = window.scrollY;
         }
+        var div = KE.g[id].containerDiv;
         div.style.left = left + 'px';
         div.style.top = top + 'px';
         div.style.zIndex = '999999';
         KE.util.resize(id, width, height);
     },
-    setNormal : function(id) {
-        document.body.style.overflow = 'auto';
-        var div = KE.g[id].containerDiv;
-        div.style.position = 'static';
-        KE.util.resize(id, this.width, this.height);
-    },
     click : function(id) {
         var obj = KE.g[id];
-        var listener = function(event) {
+        var resizeListener = function(event) {
             if (obj.fullscreenMode == true) {
-                KE.plugin["fullscreen"].setFull(id);
+                KE.plugin["fullscreen"].resetFull(id);
             }
         }
         if (obj.fullscreenMode == true) {
             obj.fullscreenMode = false;
             KE.util.showBottom(id);
-            KE.event.remove(window, 'resize', listener);
-            this.setNormal(id);
+            document.body.parentNode.style.overflow = 'auto';
+            var div = KE.g[id].containerDiv;
+            div.style.position = 'static';
+            KE.util.resize(id, this.width, this.height);
+            KE.event.remove(window, 'resize', resizeListener);
         } else {
             obj.fullscreenMode = true;
             this.width = obj.formDiv.style.width;
             this.height = obj.formDiv.style.height;
             KE.util.hideBottom(id);
-            KE.event.add(window, 'resize', listener);
-            this.setFull(id);
+            document.body.parentNode.style.overflow = 'hidden';
+            var div = KE.g[id].containerDiv;
+            div.style.position = 'absolute';
+            this.resetFull(id);
+            KE.event.add(window, 'resize', resizeListener);
         }
     }
 };
