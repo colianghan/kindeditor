@@ -118,8 +118,10 @@ KE.util = {
         }
     },
     showBottom : function(id) {
-        KE.g[id].bottomDiv.style.display = 'block';
-        KE.g[id].bottomRightDiv.style.display = 'block';
+        if (KE.g[id].hideBottomMode == false) {
+            KE.g[id].bottomDiv.style.display = 'block';
+            KE.g[id].bottomRightDiv.style.display = 'block';
+        }
     },
     hideBottom : function(id) {
         KE.g[id].bottomDiv.style.display = 'none';
@@ -317,7 +319,7 @@ KE.layout = {
     {
         var div = KE.$$('div');
         div.style.position = 'absolute';
-        div.style.zIndex = 11000;
+        div.style.zIndex = 19811214;
         return div;
     }
 };
@@ -392,11 +394,13 @@ KE.menu = function(arg){
 KE.dialog = function(arg){
     this.arg = arg;
     this.getPos = function() {
+        var arg = this.arg;
+        var id = this.arg.id;
         var x = 0;
         var y = 0;
-        var pos = KE.util.getElementPos(KE.g[this.arg.id].containerDiv);
-        var xDiff = Math.round(parseInt(KE.g[this.arg.id].width) / 2) - Math.round(this.arg.width / 2);
-        var yDiff = Math.round(parseInt(KE.g[this.arg.id].height) / 2) - Math.round(this.arg.height / 2);
+        var pos = KE.util.getElementPos(KE.g[id].containerDiv);
+        var xDiff = Math.round(parseInt(KE.g[id].formDiv.style.width) / 2) - Math.round(arg.width / 2);
+        var yDiff = Math.round(parseInt(KE.g[id].formDiv.style.height) / 2) - Math.round(arg.height / 2);
         if (xDiff < 0) {
             x = pos.x;
         } else {
@@ -623,7 +627,7 @@ KE.create = function(id)
         iframe.style.display = 'none';
         KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
     }
-    if (KE.g[id].autoOnsubmit == true) {
+    if (KE.g[id].autoOnsubmitMode) {
         var form = srcTextarea.parentNode;
         while (form != null && form.tagName != 'FORM') { form = form.parentNode; }
         if (form != null && form.tagName == 'FORM') {
@@ -652,6 +656,7 @@ KE.create = function(id)
     KE.util.drag(id, bottomDiv, formDiv, function(objTop, objLeft, objWidth, objHeight, top, left) {
             KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px');
         });
+    if (KE.g[id].hideBottomMode) KE.util.hideBottom(id);
     KE.util.pToBr(id);
     KE.util.focus(id);
 };
@@ -663,7 +668,8 @@ KE.plugin = {};
 KE.g = {};
 KE.init = function(config) {
     config.wyswygMode = (config.wyswygMode == false) ? false : true;
-    config.autoOnsubmit = (config.autoOnsubmit == false) ? false : true;
+    config.autoOnsubmitMode = (config.autoOnsubmitMode == false) ? false : true;
+    config.hideBottomMode = (config.hideBottomMode == true) ? true : false;
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
