@@ -22,9 +22,8 @@ mkdir ./build/skins
 fi
 cp -f ./src/plugins/*.html ./build/plugins/
 cp -f ./src/plugins/emoticons/*.gif ./build/plugins/emoticons/
-cp -f ./src/skins/default.gif ./build/skins/
-cp -f ./src/skins/default.css ./build/skins/
-cp -f ./src/skins/spacer.gif ./build/skins/
+cp -f ./src/skins/*.gif ./build/skins/
+cp -f ./src/skins/*.css ./build/skins/
 echo ""
 echo "Build done."
 echo ""

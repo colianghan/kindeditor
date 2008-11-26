@@ -129,8 +129,8 @@ KE.plugin['wordpaste'] = {
 KE.plugin['fullscreen'] = {
     resetFull : function(id) {
         var el = KE.util.getDocumentElement();
-        var width = (el.clientWidth - 10) + 'px';
-        var height = (el.clientHeight - 57) + 'px';
+        var width = el.clientWidth + 'px';
+        var height = (el.clientHeight - 46) + 'px';
         var left,top;
         if (KE.browser == 'IE' || KE.browser == 'OPERA') {
             left = document.body.parentNode.scrollLeft;
@@ -139,7 +139,7 @@ KE.plugin['fullscreen'] = {
             left = window.scrollX;
             top = window.scrollY;
         }
-        var div = KE.g[id].containerDiv;
+        var div = KE.g[id].container;
         div.style.left = left + 'px';
         div.style.top = top + 'px';
         div.style.zIndex = 19811213;
@@ -156,17 +156,17 @@ KE.plugin['fullscreen'] = {
             obj.fullscreenMode = false;
             KE.util.showBottom(id);
             document.body.parentNode.style.overflow = 'auto';
-            var div = KE.g[id].containerDiv;
+            var div = KE.g[id].container;
             div.style.position = 'static';
             KE.util.resize(id, this.width, this.height);
             KE.event.remove(window, 'resize', resizeListener);
         } else {
             obj.fullscreenMode = true;
-            this.width = obj.formDiv.style.width;
-            this.height = obj.formDiv.style.height;
+            this.width = obj.container.style.width;
+            this.height = obj.container.style.height;
             KE.util.hideBottom(id);
             document.body.parentNode.style.overflow = 'hidden';
-            var div = KE.g[id].containerDiv;
+            var div = KE.g[id].container;
             div.style.position = 'absolute';
             this.resetFull(id);
             KE.event.add(window, 'resize', resizeListener);
