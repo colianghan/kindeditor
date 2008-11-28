@@ -399,14 +399,17 @@ KE.menu = function(arg){
 };
 KE.dialog = function(arg){
     this.arg = arg;
+    this.topHeight = 20;
+    this.bottomHeight = 76;
     this.getPos = function() {
         var arg = this.arg;
         var id = this.arg.id;
         var x = 0;
         var y = 0;
         var pos = KE.util.getElementPos(KE.g[id].container);
+        var height = arg.height + this.topHeight + this.bottomHeight;
         var xDiff = Math.round(parseInt(KE.g[id].container.style.width) / 2) - Math.round(arg.width / 2);
-        var yDiff = Math.round(parseInt(KE.g[id].container.style.height) / 2) - Math.round(arg.height / 2);
+        var yDiff = Math.round(parseInt(KE.g[id].container.style.height) / 2) - Math.round(height / 2);
         if (xDiff < 0) {
             x = pos.x;
         } else {
@@ -425,8 +428,8 @@ KE.dialog = function(arg){
         var div = KE.layout.make(arg.id);
         div.className = 'ke-dialog';
         var pos = this.getPos();
-        div.style.width = (arg.width + 20) + 'px';
-        div.style.height = (arg.height + 76) + 'px';
+        div.style.width = (arg.width + this.topHeight) + 'px';
+        div.style.height = (arg.height + this.bottomHeight) + 'px';
         div.style.top = pos.y + 'px';
         div.style.left = pos.x + 'px';
         var titleDiv = KE.$$('div');
