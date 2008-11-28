@@ -129,8 +129,8 @@ KE.plugin['wordpaste'] = {
 KE.plugin['fullscreen'] = {
     resetFull : function(id) {
         var el = KE.util.getDocumentElement();
-        var width = el.clientWidth + 'px';
-        var height = (el.clientHeight - 46) + 'px';
+        var width = el.clientWidth;
+        var height = el.clientHeight;
         var left,top;
         if (KE.browser == 'IE' || KE.browser == 'OPERA') {
             left = document.body.parentNode.scrollLeft;
@@ -158,7 +158,7 @@ KE.plugin['fullscreen'] = {
             document.body.parentNode.style.overflow = 'auto';
             var div = KE.g[id].container;
             div.style.position = 'static';
-            KE.util.resize(id, this.width, this.height);
+            KE.util.resize(id, parseInt(this.width), parseInt(this.height));
             KE.event.remove(window, 'resize', resizeListener);
         } else {
             obj.fullscreenMode = true;
@@ -425,7 +425,7 @@ KE.plugin['emoticons'] = {
     },
     exec : function(id, value) {
         KE.util.select(id);
-        var html = '<img src="' + KE.scriptPath + 'plugin/emoticons/' + value + '" border="0">';
+        var html = '<img src="' + KE.g[id].pluginsPath + 'emoticons/' + value + '" border="0">';
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
         KE.util.focus(id);

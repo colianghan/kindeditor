@@ -206,12 +206,23 @@ KE.util = {
     },
     resize : function(id, width, height) {
         var obj = KE.g[id];
-        if (parseInt(width) <= 20 || parseInt(height) <= 20) return;
-        obj.container.style.width = parseInt(width) + 'px';
-        obj.container.style.height = parseInt(height) + 'px';
-        obj.formDiv.style.height = parseInt(height) + 'px';
-        obj.iframe.style.height = parseInt(height) + 'px';
-        obj.newTextarea.style.height = parseInt(height) + 'px';
+        if (width <= obj.minWidth || height <= obj.minHeight) return;
+        obj.container.style.width = width + 'px';
+        obj.container.style.height = height + 'px';
+        obj.formDiv.style.height = height + 'px';
+        var diff = obj.toolbarDiv.offsetHeight + obj.bottom.offsetHeight;
+        var formBorder = obj.formDiv.offsetHeight - obj.formDiv.clientHeight;
+        height = height - diff - formBorder;
+        obj.formDiv.style.height = height + 'px';
+        obj.iframe.style.height = height + 'px';
+        if (KE.browser == 'IE') {
+            var border = obj.container.offsetWidth - obj.container.clientWidth;
+            obj.newTextarea.style.width = (width - border) + 'px';
+            obj.newTextarea.style.height = (height - formBorder) + 'px';
+        } else {
+            obj.newTextarea.style.width = '100%';
+            obj.newTextarea.style.height = height + 'px';
+        }
     },
     getData : function(id) {
         var data;
@@ -577,26 +588,24 @@ KE.create = function(id)
     var srcTextarea = KE.$(id);
     var width = srcTextarea.style.width;
     var height = srcTextarea.style.height;
-    var container = KE.$$('table');
+    var container = KE.$$('div');
     container.className = 'ke-container';
-    container.cellPadding = 0;
-    container.cellSpacing = 0;
-    container.border = 0;
+    container.style.width = width;
+    container.style.height = height;
     srcTextarea.parentNode.insertBefore(container, srcTextarea);
-    var toolbarCell = container.insertRow(0).insertCell(0);
-    toolbarCell.appendChild(KE.toolbar.create(id));
-    var formDiv = KE.$$('div');
-    formDiv.className = 'ke-form';
+    var toolbarDiv = KE.toolbar.create(id);
+    container.appendChild(toolbarDiv);
     var iframe = KE.$$('iframe');
     iframe.className = 'ke-iframe';
     iframe.setAttribute("frameBorder", "0");
     var newTextarea = KE.$$('textarea');
     newTextarea.className = 'ke-textarea';
     newTextarea.style.display = 'none';
+    var formDiv = KE.$$('div');
+    formDiv.className = 'ke-form';
     formDiv.appendChild(iframe);
     formDiv.appendChild(newTextarea);
-    var formCell = container.insertRow(1).insertCell(0);
-    formCell.appendChild(formDiv);
+    container.appendChild(formDiv);
     var bottom = KE.$$('table');
     bottom.className = 'ke-bottom';
     bottom.cellPadding = 0;
@@ -611,10 +620,8 @@ KE.create = function(id)
     img.className = 'ke-bottom-right-img';
     img.src = KE.g[id].skinsPath + 'spacer.gif';
     bottomRight.appendChild(img);
-    var bottomCell = container.insertRow(2).insertCell(0);
-    bottomCell.appendChild(bottom);
+    container.appendChild(bottom);
     var hideDiv = KE.$$('div');
-    hideDiv.style.height = 0;
     hideDiv.style.display = 'none';
     var maskDiv = KE.$$('div');
     maskDiv.className = 'ke-mask';
@@ -646,6 +653,7 @@ KE.create = function(id)
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.g[id].container = container;
+    KE.g[id].toolbarDiv = toolbarDiv;
     KE.g[id].formDiv = formDiv;
     KE.g[id].iframe = iframe;
     KE.g[id].newTextarea = newTextarea;
@@ -655,14 +663,16 @@ KE.create = function(id)
     KE.g[id].maskDiv = maskDiv;
     KE.g[id].iframeWin = iframeWin;
     KE.g[id].iframeDoc = iframeDoc;
-    KE.g[id].width = width;
-    KE.g[id].height = height;
+    width = container.offsetWidth;
+    height = container.offsetHeight;
+    KE.g[id].width = width + 'px';
+    KE.g[id].height = height + 'px';
     KE.util.resize(id, width, height);
     KE.util.drag(id, bottomRight, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
-            KE.util.resize(id, (objWidth + left) + 'px', (objHeight + top) + 'px');
+            KE.util.resize(id, objWidth + left, objHeight + top);
         });
     KE.util.drag(id, bottomLeft, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
-            KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px');
+            KE.util.resize(id, objWidth, objHeight + top);
         });
     if (KE.g[id].hideBottomMode) KE.util.hideBottom(id);
     KE.util.pToBr(id);
@@ -682,6 +692,8 @@ KE.init = function(config) {
     config.cssPath = config.cssPath || '';
     config.skinsPath = KE.scriptPath + 'skins/';
     config.pluginsPath = KE.scriptPath + 'plugins/';
+    config.minWidth = config.minWidth || 200;
+    config.minHeight = config.minHeight || 100;
     config.items = config.items || [
         'source', 'preview', 'fullscreen', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
         'plainpaste', 'wordpaste', 'justifyleft', 'justifycenter', 'justifyright',
