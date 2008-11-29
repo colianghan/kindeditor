@@ -61,12 +61,8 @@ KE.util = {
             browser = 'IE';
         } else if (ua.indexOf("gecko") > -1) {
             browser = 'GECKO';
-        } else if (ua.indexOf("webkit") > -1) {
-            browser = 'SAFARI';
         } else if (ua.indexOf("opera") > -1) {
             browser = 'OPERA';
-        } else if (ua.indexOf("chrome") > -1) {
-            browser = 'CHROME';
         }
         return browser;
     },
@@ -118,9 +114,7 @@ KE.util = {
         }
     },
     showBottom : function(id) {
-        if (KE.g[id].hideBottomMode == false) {
-            KE.g[id].bottom.style.display = 'block';
-        }
+        KE.g[id].bottom.style.display = 'block';
     },
     hideBottom : function(id) {
         KE.g[id].bottom.style.display = 'none';
