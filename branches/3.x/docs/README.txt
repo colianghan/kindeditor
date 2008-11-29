@@ -39,7 +39,7 @@ true或false，true时form的onsubmit里自动添加setData事件
 默认值：true
 
 3. skinType
-风格类型，default或fck或tinymce
+风格类型，default或tinymce
 默认值：default
 
 4. cssPath
