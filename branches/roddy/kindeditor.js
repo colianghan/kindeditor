@@ -548,7 +548,41 @@ KE.util = {
             setEndTag();
         };
         scanNodes(element);
-        return htmlList.join('');
+        var html = htmlList.join('');
+        return KE.g[id].bbcodeMode ? this.htmlToBbcode(html) : html;
+    },
+    htmlToBbcode : function(str) {
+        str = str.replace(/\n/gi, "");
+        str = str.replace(/<strong>(.*?)<\/strong>/gi, "[b]$1[/b]");
+        str = str.replace(/<em>(.*?)<\/em>/gi, "[i]$1[/i]");
+        str = str.replace(/<span.*?style="text-decoration:underline;">(.*?)<\/span>/gi, "[u]$1[/u]");
+        str = str.replace(/<ul>(.*?)<\/ul>/gi, "[list]$1[/list]");
+        str = str.replace(/<li>(.*?)<\/li>/gi, "[*]$1[/*]");
+        str = str.replace(/<ol>(.*?)<\/ol>/gi, "[list=1]$1[/list]");
+        str = str.replace(/<img.*?src="(.*?)".*?>/gi, "[img]$1[/img]");
+        str = str.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/gi, "[url=$1]$2[/url]");
+        str = str.replace(/<br.*?>/gi, "\n");
+        str = str.replace(/<p>/gi, "");
+        str = str.replace(/<\/p>/gi,"\n\n");
+        str = str.replace(/&nbsp;/gi," ");
+        str = str.replace(/&quot;/gi,"\"");
+        str = str.replace(/&lt;/gi,"<");
+        str = str.replace(/&gt;/gi,">");
+        str = str.replace(/&amp;/gi,"&");
+        str = str.replace(/<.*?>(.*?)<\/.*?>/gi, "$1");
+        return str;
+    },
+    bbcodeToHtml : function(str) {
+        str = str.replace(/\[b\](.*?)\[\/b\]/gi, "<strong>$1</strong>");
+        str = str.replace(/\[i\](.*?)\[\/i\]/gi, "<em>$1</em>");
+        str = str.replace(/\[u\](.*?)\[\/u\]/gi, "<span style=\"text-decoration:underline;\">$1</span>");
+        str = str.replace(/\[list\](.*?)\[\/list\]/gi, "<ul>$1</ul>");
+        str = str.replace(/\[list=1\](.*?)\[\/list\]/gi, "<ol>$1</ol>");
+        str = str.replace(/\[\*\](.*?)\[\/\*\]/gi, "<li>$1</li>");
+        str = str.replace(/\[img\](.*?)\[\/img\]/gi, "<img src=\"$1\" />");
+        str = str.replace(/\[url=(.*?)\](.*?)\[\/url\]/gi, "<a href=\"$1\">$2</a>");
+        str = str.replace(/\n/gi, "<br />");
+        return str;
     }
 };
 KE.layout = {
@@ -983,6 +1017,7 @@ KE.init = function(config) {
     config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? true : config.autoOnsubmitMode;
     config.resizeMode = (typeof config.resizeMode == "undefined") ? 2 : config.resizeMode;
     config.filterMode = (typeof config.filterMode == "undefined") ? true : config.filterMode;
+    config.bbcodeMode = (typeof config.bbcodeMode == "undefined") ? true : config.bbcodeMode;
     config.skinType = config.skinType || 'default';
     config.cssPath = config.cssPath || '';
     config.skinsPath = config.skinsPath || KE.scriptPath + 'skins/';
@@ -1301,7 +1336,8 @@ KE.plugin['source'] = {
             KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
             obj.wyswygMode = false;
         } else {
-            obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
+            var html = obj.newTextarea.value;
+            obj.iframeDoc.body.innerHTML = obj.bbcodeMode ? KE.util.bbcodeToHtml(html) : html;
             obj.iframe.style.display = 'block';
             obj.newTextarea.style.display = 'none';
             KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
