@@ -4,11 +4,12 @@
 * @author Roddy <luolonghao@gmail.com>
 * @site http://www.kindsoft.net/
 * @licence LGPL(http://www.opensource.org/licenses/lgpl-license.php)
-* @version 3.1
+* @version 3.2
 *******************************************************************************/
 
 var KE = {};
 
+KE.version = '3.2';
 KE.lang = {
     source : '切换模式',
     preview : '预览',
@@ -113,7 +114,89 @@ KE.lang = {
     invalidUrl : "URL不正确。",
     pleaseInput : "请输入内容"
 };
-
+KE.scriptPath = (function() {
+    var elements = document.getElementsByTagName('script');
+    for (var i = 0, len = elements.length; i < len; i++) {
+        if (elements[i].src && elements[i].src.match(/kindeditor[\w\-\.]*\.js/)) {
+            return elements[i].src.substring(0, elements[i].src.lastIndexOf('/') + 1);
+        }
+    }
+    return "";
+})();
+KE.htmlPath = (function() {
+    return location.href.substring(0, location.href.lastIndexOf('/') + 1);
+})();
+KE.browser = (function() {
+    var browser = '';
+    var ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf("msie") > -1) {
+        browser = 'IE';
+    } else if (ua.indexOf("gecko") > -1) {
+        browser = 'GECKO';
+    } else if (ua.indexOf("opera") > -1) {
+        browser = 'OPERA';
+    }
+    return browser;
+})();
+KE.setting = {
+    wyswygMode : true,
+    autoOnsubmitMode : true,
+    resizeMode : 2,
+    filterMode : true,
+    bbcodeMode : true,
+    skinType : 'default',
+    cssPath : '',
+    skinsPath : KE.scriptPath + 'skins/',
+    pluginsPath : KE.scriptPath + 'plugins/',
+    minWidth : 200,
+    minHeight : 100,
+    minChangeSize : 5,
+    siteDomains : [],
+    items : [
+        'source', 'preview', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
+        'plainpaste', 'wordpaste', 'justifyleft', 'justifycenter', 'justifyright',
+        'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+        'superscript', 'date', 'time', '-',
+        'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
+        'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', 'image',
+        'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
+        'emoticons', 'link', 'unlink', 'about'
+    ],
+    htmlTags : {
+        'font' : ['color', 'size', 'face', '.background-color'],
+        'span' : ['.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'div' : ['class', 'align', '.border', '.margin', '.padding', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'a' : ['href', 'target'],
+        'embed' : ['src', 'type', 'loop', 'autostart', 'quality', '.width', '.height', '/'],
+        'img' : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
+        'hr' : ['/'],
+        'br' : ['/'],
+        'p' : ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'table' : ['border', 'cellspacing', 'cellpadding', 'width', 'height', '.padding', '.margin', '.border'],
+        'tbody': [],
+        'tr': [],
+        'td': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'strong': [],
+        'b': [],
+        'ol': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'ul': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'li': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'sub': [],
+        'sup': [],
+        'blockquote': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'h1': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'h2': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'h3': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'h4': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'h5': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'h6': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
+        'em': [],
+        'u': [],
+        'strike': []
+    }
+};
+KE.g = {};
+KE.plugin = {};
 KE.$ = function(id, doc){
     var doc = doc || document;
     return doc.getElementById(id);
@@ -154,29 +237,6 @@ KE.util = {
     getDocumentWidth: function() {
         var el = this.getDocumentElement();
         return Math.max(el.scrollWidth, el.clientWidth);
-    },
-    getScriptPath : function() {
-        var elements = document.getElementsByTagName('script');
-        for (var i = 0; i < elements.length; i++) {
-            if (elements[i].src && elements[i].src.match(/kindeditor[\w\-\.]*\.js/) != null) {
-                return elements[i].src.substring(0, elements[i].src.lastIndexOf('/') + 1);
-            }
-        }
-    },
-    getHtmlPath : function() {
-        return location.href.substring(0, location.href.lastIndexOf('/') + 1);
-    },
-    getBrowser : function() {
-        var browser = '';
-        var ua = navigator.userAgent.toLowerCase();
-        if (ua.indexOf("msie") > -1) {
-            browser = 'IE';
-        } else if (ua.indexOf("gecko") > -1) {
-            browser = 'GECKO';
-        } else if (ua.indexOf("opera") > -1) {
-            browser = 'OPERA';
-        }
-        return browser;
     },
     loadStyle : function(path) {
         var link = KE.$$('link');
@@ -1006,71 +1066,23 @@ KE.create = function(id, mode) {
             KE.history.add(id, false);
         }, 1);
 };
-KE.version = '3.1';
-KE.scriptPath = KE.util.getScriptPath();
-KE.htmlPath = KE.util.getHtmlPath();
-KE.browser = KE.util.getBrowser();
-KE.plugin = {};
-KE.g = {};
 KE.init = function(config) {
-    config.wyswygMode = (typeof config.wyswygMode == "undefined") ? true : config.wyswygMode;
-    config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? true : config.autoOnsubmitMode;
-    config.resizeMode = (typeof config.resizeMode == "undefined") ? 2 : config.resizeMode;
-    config.filterMode = (typeof config.filterMode == "undefined") ? true : config.filterMode;
-    config.bbcodeMode = (typeof config.bbcodeMode == "undefined") ? true : config.bbcodeMode;
-    config.skinType = config.skinType || 'default';
-    config.cssPath = config.cssPath || '';
-    config.skinsPath = config.skinsPath || KE.scriptPath + 'skins/';
-    config.pluginsPath = config.pluginsPath || KE.scriptPath + 'plugins/';
-    config.minWidth = config.minWidth || 200;
-    config.minHeight = config.minHeight || 100;
-    config.minChangeSize = config.minChangeSize || 5;
-    config.siteDomains = config.siteDomains || [];
-    var defaultItems = [
-        'source', 'preview', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
-        'plainpaste', 'wordpaste', 'justifyleft', 'justifycenter', 'justifyright',
-        'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
-        'superscript', 'date', 'time', '-',
-        'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
-        'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', 'image',
-        'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
-        'emoticons', 'link', 'unlink', 'about'
-    ];
-    config.defaultItems = defaultItems;
-    config.items = config.items || defaultItems;
-    var defaultHtmlTags = {
-        'font' : ['color', 'size', 'face', '.background-color'],
-        'span' : ['.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'div' : ['class', 'align', '.border', '.margin', '.padding', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'a' : ['href', 'target'],
-        'embed' : ['src', 'type', 'loop', 'autostart', 'quality', '.width', '.height', '/'],
-        'img' : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
-        'hr' : ['/'],
-        'br' : ['/'],
-        'p' : ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'table' : ['border', 'cellspacing', 'cellpadding', 'width', 'height', '.padding', '.margin', '.border'],
-        'tbody': [],
-        'tr': [],
-        'td': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'strong': [],
-        'b': [],
-        'ol': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'ul': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'li': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'sub': [],
-        'sup': [],
-        'blockquote': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h1': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h2': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h3': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h4': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h5': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h6': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'em': [],
-        'u': [],
-        'strike': []
-    };
-    config.htmlTags = config.htmlTags || defaultHtmlTags;
+    config.wyswygMode = (typeof config.wyswygMode == "undefined") ? KE.setting.wyswygMode : config.wyswygMode;
+    config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? KE.setting.autoOnsubmitMode : config.autoOnsubmitMode;
+    config.resizeMode = (typeof config.resizeMode == "undefined") ? KE.setting.resizeMode : config.resizeMode;
+    config.filterMode = (typeof config.filterMode == "undefined") ? KE.setting.filterMode : config.filterMode;
+    config.bbcodeMode = (typeof config.bbcodeMode == "undefined") ? KE.setting.bbcodeMode : config.bbcodeMode;
+    config.skinType = config.skinType || KE.setting.skinType;
+    config.cssPath = config.cssPath || KE.setting.cssPath;
+    config.skinsPath = config.skinsPath || KE.setting.skinsPath;
+    config.pluginsPath = config.pluginsPath || KE.setting.pluginsPath;
+    config.minWidth = config.minWidth || KE.setting.minWidth;
+    config.minHeight = config.minHeight || KE.setting.minHeight;
+    config.minChangeSize = config.minChangeSize || KE.setting.minChangeSize;
+    config.siteDomains = config.siteDomains || KE.setting.siteDomains;
+    config.defaultItems = KE.setting.items;
+    config.items = config.items || KE.setting.items;
+    config.htmlTags = config.htmlTags || KE.setting.htmlTags;
     KE.g[config.id] = config;
     KE.g[config.id].undoStack = [];
     KE.g[config.id].redoStack = [];
