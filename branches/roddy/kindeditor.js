@@ -163,36 +163,27 @@ KE.setting = {
         'emoticons', 'link', 'unlink', 'about'
     ],
     htmlTags : {
-        'font' : ['color', 'size', 'face', '.background-color'],
-        'span' : ['.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'div' : ['class', 'align', '.border', '.margin', '.padding', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'a' : ['href', 'target'],
-        'embed' : ['src', 'type', 'loop', 'autostart', 'quality', '.width', '.height', '/'],
-        'img' : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
-        'hr' : ['/'],
-        'br' : ['/'],
-        'p' : ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'table' : ['border', 'cellspacing', 'cellpadding', 'width', 'height', '.padding', '.margin', '.border'],
-        'tbody': [],
-        'tr': [],
-        'td': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'strong': [],
-        'b': [],
-        'ol': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'ul': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'li': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'sub': [],
-        'sup': [],
-        'blockquote': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h1': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h2': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h3': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h4': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h5': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'h6': ['align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.vertical-align'],
-        'em': [],
-        'u': [],
-        'strike': []
+        font : ['color', 'size', 'face', '.background-color'],
+        span : [
+            '.color', '.background-color', '.font-size', '.font-family',
+            '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
+        ],
+        div : [
+            'class', 'align', '.border', '.margin', '.padding', '.text-align', '.color',
+            '.background-color', '.font-size', '.font-family', '.font-weight',
+            '.font-style', '.text-decoration', '.vertical-align'
+        ],
+        table : ['border', 'cellspacing', 'cellpadding', 'width', 'height', '.padding', '.margin', '.border'],
+        a : ['href', 'target'],
+        embed : ['src', 'type', 'loop', 'autostart', 'quality', '.width', '.height', '/'],
+        img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
+        hr : ['/'],
+        br : ['/'],
+        'p,td,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
+            'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family',
+            '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
+        ],
+        'tbody,tr,strong,b,sub,sup,em,u,strike' : []
     }
 };
 KE.g = {};
@@ -504,7 +495,13 @@ KE.util = {
         return url;
     },
     outputHtml : function(id, element) {
-        var htmlTags = KE.g[id].htmlTags;
+        var newHtmlTags = [];
+        KE.each(KE.g[id].htmlTags, function(key, val) {
+            var arr = key.split(',');
+            for (var i = 0, len = arr.length; i < len; i++) {
+                newHtmlTags[arr[i]] = val;
+            }
+        });
         var htmlList = [];
         var startTags = [];
         var setStartTag = function(tagName, attrStr, styleStr, endFlag) {
@@ -532,10 +529,10 @@ KE.util = {
                 switch (node.nodeType) {
                 case 1:
                     var tagName = node.tagName.toLowerCase();
-                    if (typeof htmlTags[tagName] != 'undefined') {
+                    if (typeof newHtmlTags[tagName] != 'undefined') {
                         var attrStr = '';
                         var styleStr = '';
-                        var attrList = htmlTags[tagName];
+                        var attrList = newHtmlTags[tagName];
                         var endFlag = false;
                         for (var j = 0, l = attrList.length; j < l; j++) {
                             var attr = attrList[j];
@@ -614,33 +611,47 @@ KE.util = {
     htmlToBbcode : function(str) {
         str = str.replace(/\n/gi, "");
         str = str.replace(/<strong>(.*?)<\/strong>/gi, "[b]$1[/b]");
+        str = str.replace(/<b>(.*?)<\/b>/gi, "[b]$1[/b]");
+        str = str.replace(/<span.*?style="font-weight:\s?bold;">(.*?)<\/span>/gi, "[b]$1[/b]");
+        str = str.replace(/<font.*?color=\"(.*?)\".*?>(.*?)<\/font>/gi, "[color=$1]$2[/color]");
+        str = str.replace(/<span.*?style="color:\s?(.*?);">(.*?)<\/span>/gi, "[color=$1]$2[/color]");
         str = str.replace(/<em>(.*?)<\/em>/gi, "[i]$1[/i]");
-        str = str.replace(/<span.*?style="text-decoration:underline;">(.*?)<\/span>/gi, "[u]$1[/u]");
+        str = str.replace(/<i>(.*?)<\/i>/gi, "[i]$1[/i]");
+        str = str.replace(/<span.*?style="text-decoration:\s?underline;">(.*?)<\/span>/gi, "[u]$1[/u]");
+        str = str.replace(/<u>(.*?)<\/u>/gi, "[u]$1[/u]");
         str = str.replace(/<ul>(.*?)<\/ul>/gi, "[list]$1[/list]");
         str = str.replace(/<li>(.*?)<\/li>/gi, "[*]$1[/*]");
         str = str.replace(/<ol>(.*?)<\/ol>/gi, "[list=1]$1[/list]");
         str = str.replace(/<img.*?src="(.*?)".*?>/gi, "[img]$1[/img]");
         str = str.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/gi, "[url=$1]$2[/url]");
+        str = str.replace(/<blockquote.*?>(.*?)<\/blockquote>/gi, "[quote]$1[/quote]");
         str = str.replace(/<br.*?>/gi, "\n");
         str = str.replace(/<p>/gi, "");
-        str = str.replace(/<\/p>/gi,"\n\n");
-        str = str.replace(/&nbsp;/gi," ");
-        str = str.replace(/&quot;/gi,"\"");
-        str = str.replace(/&lt;/gi,"<");
-        str = str.replace(/&gt;/gi,">");
-        str = str.replace(/&amp;/gi,"&");
-        str = str.replace(/<.*?>(.*?)<\/.*?>/gi, "$1");
+        str = str.replace(/<\/p>/gi, "\n\n");
+        str = str.replace(/<.*?>/gi, "");
+        str = str.replace(/&nbsp;/gi, " ");
+        str = str.replace(/&quot;/gi, "\"");
+        str = str.replace(/&lt;/gi, "<");
+        str = str.replace(/&gt;/gi, ">");
+        str = str.replace(/&amp;/gi, "&");
         return str;
     },
     bbcodeToHtml : function(str) {
+        str = str.replace(/&/gi, "&amp;");
+        str = str.replace(/ /gi, "&nbsp;");
+        str = str.replace(/"/gi, "&quot;");
+        str = str.replace(/</gi, "&lt;");
+        str = str.replace(/>/gi, "&gt;");
         str = str.replace(/\[b\](.*?)\[\/b\]/gi, "<strong>$1</strong>");
+        str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, "<span style=\"color:$1;\">$2</span>");
         str = str.replace(/\[i\](.*?)\[\/i\]/gi, "<em>$1</em>");
-        str = str.replace(/\[u\](.*?)\[\/u\]/gi, "<span style=\"text-decoration:underline;\">$1</span>");
+        str = str.replace(/\[u\](.*?)\[\/u\]/gi, "<u>$1</u>");
         str = str.replace(/\[list\](.*?)\[\/list\]/gi, "<ul>$1</ul>");
         str = str.replace(/\[list=1\](.*?)\[\/list\]/gi, "<ol>$1</ol>");
         str = str.replace(/\[\*\](.*?)\[\/\*\]/gi, "<li>$1</li>");
         str = str.replace(/\[img\](.*?)\[\/img\]/gi, "<img src=\"$1\" />");
         str = str.replace(/\[url=(.*?)\](.*?)\[\/url\]/gi, "<a href=\"$1\">$2</a>");
+        str = str.replace(/\[quote\](.*?)\[\/quote\]/gi, "<blockquote>$1</blockquote>");
         str = str.replace(/\n/gi, "<br />");
         return str;
     }
