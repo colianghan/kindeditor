@@ -613,8 +613,10 @@ KE.util = {
         str = str.replace(/<strong>(.*?)<\/strong>/gi, "[b]$1[/b]");
         str = str.replace(/<b>(.*?)<\/b>/gi, "[b]$1[/b]");
         str = str.replace(/<span.*?style="font-weight:\s?bold;">(.*?)<\/span>/gi, "[b]$1[/b]");
-        str = str.replace(/<font.*?color=\"(.*?)\".*?>(.*?)<\/font>/gi, "[color=$1]$2[/color]");
+        str = str.replace(/<font.*?color=\"(.*?)\">(.*?)<\/font>/gi, "[color=$1]$2[/color]");
         str = str.replace(/<span.*?style="color:\s?(.*?);">(.*?)<\/span>/gi, "[color=$1]$2[/color]");
+        str = str.replace(/<font.*?size=\"(.*?)\">(.*?)<\/font>/gi, "[size=$1]$2[/size]");
+        str = str.replace(/<span.*?style="font-size:\s?(.*?);">(.*?)<\/span>/gi, "[size=$1]$2[/size]");
         str = str.replace(/<em>(.*?)<\/em>/gi, "[i]$1[/i]");
         str = str.replace(/<i>(.*?)<\/i>/gi, "[i]$1[/i]");
         str = str.replace(/<span.*?style="text-decoration:\s?underline;">(.*?)<\/span>/gi, "[u]$1[/u]");
@@ -643,7 +645,8 @@ KE.util = {
         str = str.replace(/</gi, "&lt;");
         str = str.replace(/>/gi, "&gt;");
         str = str.replace(/\[b\](.*?)\[\/b\]/gi, "<strong>$1</strong>");
-        str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, "<span style=\"color:$1;\">$2</span>");
+        str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, "<font color=\"$1\">$2</font>");
+        str = str.replace(/\[size=(.*?)\](.*?)\[\/size\]/gi, "<font size=\"$1\">$2</font>");
         str = str.replace(/\[i\](.*?)\[\/i\]/gi, "<em>$1</em>");
         str = str.replace(/\[u\](.*?)\[\/u\]/gi, "<u>$1</u>");
         str = str.replace(/\[list\](.*?)\[\/list\]/gi, "<ul>$1</ul>");
