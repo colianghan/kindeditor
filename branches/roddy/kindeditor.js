@@ -10,6 +10,7 @@
 var KE = {};
 
 KE.version = '3.2';
+
 KE.lang = {
     source : '切换模式',
     preview : '预览',
@@ -60,51 +61,6 @@ KE.lang = {
     yes : '确定',
     no : '取消',
     close : '关闭',
-    fontTable : {
-        'SimSun'             : '宋体',
-        'SimHei'             : '黑体',
-        'FangSong_GB2312'    : '仿宋体',
-        'KaiTi_GB2312'       : '楷体',
-        'NSimSun'            : '新宋体',
-        'Arial'              : 'Arial',
-        'Arial Black'        : 'Arial Black',
-        'Times New Roman'    : 'Times New Roman',
-        'Courier New'        : 'Courier New',
-        'Tahoma'             : 'Tahoma',
-        'Verdana'            : 'Verdana'
-    },
-    titleTable : {
-        'H1' : '标题 1',
-        'H2' : '标题 2',
-        'H3' : '标题 3',
-        'H4' : '标题 4',
-        'H5' : '标题 5',
-        'H6' : '标题 6'
-    },
-    charTable : [
-        ['§','№','☆','★','○','●','◎','◇','◆','□'],
-        ['℃','‰','■','△','▲','※','→','←','↑','↓'],
-        ['〓','¤','°','＃','＆','＠','＼','︿','＿','￣'],
-        ['―','α','β','γ','δ','ε','ζ','η','θ','ι'],
-        ['κ','λ','μ','ν','ξ','ο','π','ρ','σ','τ'],
-        ['υ','φ','χ','ψ','ω','≈','≡','≠','＝','≤'],
-        ['≥','＜','＞','≮','≯','∷','±','＋','－','×'],
-        ['÷','／','∫','∮','∝','∞','∧','∨','∑','∏'],
-        ['∪','∩','∈','∵','∴','⊥','∥','∠','⌒','⊙'],
-        ['≌','∽','〖','〗','【','】','（','）','［','］']
-    ],
-    colorTable : [
-        ["#FFFFFF","#E5E4E4","#D9D8D8","#C0BDBD","#A7A4A4","#8E8A8B","#827E7F","#767173","#5C585A","#000000"],
-        ["#FEFCDF","#FEF4C4","#FEED9B","#FEE573","#FFED43","#F6CC0B","#E0B800","#C9A601","#AD8E00","#8C7301"],
-        ["#FFDED3","#FFC4B0","#FF9D7D","#FF7A4E","#FF6600","#E95D00","#D15502","#BA4B01","#A44201","#8D3901"],
-        ["#FFD2D0","#FFBAB7","#FE9A95","#FF7A73","#FF483F","#FE2419","#F10B00","#D40A00","#940000","#6D201B"],
-        ["#FFDAED","#FFB7DC","#FFA1D1","#FF84C3","#FF57AC","#FD1289","#EC0078","#D6006D","#BB005F","#9B014F"],
-        ["#FCD6FE","#FBBCFF","#F9A1FE","#F784FE","#F564FE","#F546FF","#F328FF","#D801E5","#C001CB","#8F0197"],
-        ["#E2F0FE","#C7E2FE","#ADD5FE","#92C7FE","#6EB5FF","#48A2FF","#2690FE","#0162F4","#013ADD","#0021B0"],
-        ["#D3FDFF","#ACFAFD","#7CFAFF","#4AF7FE","#1DE6FE","#01DEFF","#00CDEC","#01B6DE","#00A0C2","#0084A0"],
-        ["#EDFFCF","#DFFEAA","#D1FD88","#BEFA5A","#A8F32A","#8FD80A","#79C101","#3FA701","#307F00","#156200"],
-        ["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
-    ],
     invalidSwf : "请输入有效的URL地址。\n只允许swf格式。",
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
@@ -114,6 +70,7 @@ KE.lang = {
     invalidUrl : "URL不正确。",
     pleaseInput : "请输入内容"
 };
+
 KE.scriptPath = (function() {
     var elements = document.getElementsByTagName('script');
     for (var i = 0, len = elements.length; i < len; i++) {
@@ -123,9 +80,11 @@ KE.scriptPath = (function() {
     }
     return "";
 })();
+
 KE.htmlPath = (function() {
     return location.href.substring(0, location.href.lastIndexOf('/') + 1);
 })();
+
 KE.browser = (function() {
     var browser = '';
     var ua = navigator.userAgent.toLowerCase();
@@ -138,12 +97,13 @@ KE.browser = (function() {
     }
     return browser;
 })();
+
 KE.setting = {
     wyswygMode : true,
     autoOnsubmitMode : true,
     resizeMode : 2,
     filterMode : true,
-    bbcodeMode : true,
+    bbcodeMode : false,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
@@ -161,6 +121,18 @@ KE.setting = {
         'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', 'image',
         'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
         'emoticons', 'link', 'unlink', 'about'
+    ],
+    colorTable : [
+        ["#FFFFFF","#E5E4E4","#D9D8D8","#C0BDBD","#A7A4A4","#8E8A8B","#827E7F","#767173","#5C585A","#000000"],
+        ["#FEFCDF","#FEF4C4","#FEED9B","#FEE573","#FFED43","#F6CC0B","#E0B800","#C9A601","#AD8E00","#8C7301"],
+        ["#FFDED3","#FFC4B0","#FF9D7D","#FF7A4E","#FF6600","#E95D00","#D15502","#BA4B01","#A44201","#8D3901"],
+        ["#FFD2D0","#FFBAB7","#FE9A95","#FF7A73","#FF483F","#FE2419","#F10B00","#D40A00","#940000","#6D201B"],
+        ["#FFDAED","#FFB7DC","#FFA1D1","#FF84C3","#FF57AC","#FD1289","#EC0078","#D6006D","#BB005F","#9B014F"],
+        ["#FCD6FE","#FBBCFF","#F9A1FE","#F784FE","#F564FE","#F546FF","#F328FF","#D801E5","#C001CB","#8F0197"],
+        ["#E2F0FE","#C7E2FE","#ADD5FE","#92C7FE","#6EB5FF","#48A2FF","#2690FE","#0162F4","#013ADD","#0021B0"],
+        ["#D3FDFF","#ACFAFD","#7CFAFF","#4AF7FE","#1DE6FE","#01DEFF","#00CDEC","#01B6DE","#00A0C2","#0084A0"],
+        ["#EDFFCF","#DFFEAA","#D1FD88","#BEFA5A","#A8F32A","#8FD80A","#79C101","#3FA701","#307F00","#156200"],
+        ["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
     ],
     htmlTags : {
         font : ['color', 'size', 'face', '.background-color'],
@@ -186,16 +158,21 @@ KE.setting = {
         'tbody,tr,strong,b,sub,sup,em,u,strike' : []
     }
 };
+
 KE.g = {};
+
 KE.plugin = {};
+
 KE.$ = function(id, doc){
     var doc = doc || document;
     return doc.getElementById(id);
 };
+
 KE.$$ = function(name, doc){
     var doc = doc || document;
     return doc.createElement(name);
 };
+
 KE.event = {
     add : function(el, event, listener) {
         if (el.addEventListener){
@@ -212,11 +189,13 @@ KE.event = {
         }
     }
 };
+
 KE.each = function(obj, func) {
     for (var key in obj) {
         if (obj.hasOwnProperty(key)) func(key, obj[key]);
     }
 };
+
 KE.util = {
     getDocumentElement : function() {
         return (document.compatMode != "CSS1Compat") ? document.body : document.documentElement;
@@ -247,6 +226,34 @@ KE.util = {
         html = html.replace(/\xA0/g, "&nbsp;");
         html = html.replace(/\x20/g, " ");
         return html;
+    },
+    rgbToHex : function(str) {
+        function hex(s) {
+            s = parseInt(s).toString(16);
+            return s.length > 1 ? s : '0' + s;
+        };
+        return str.replace(/rgb\s*?\(\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?\)/ig,
+                           function($0, $1, $2, $3) {
+                               return '#' + hex($1) + hex($2) + hex($3);
+                           }
+                          );
+    },
+    getStyle : function(el, key) {
+        var arr = key.split('-');
+        key = "";
+        for (var i = 0, len = arr.length; i < len; i++) {
+            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
+        }
+        var val = el.style[key];
+        if (!val) {
+            var css = el.getAttribute("style");
+            if (css) {
+                var re = new RegExp("(^|[^\w\-])" + key + "\s*:\s*([^;]+)", "ig");
+                var arr = re.exec(css);
+                if (arr) val = arr[2];
+            }
+        }
+        return KE.util.rgbToHex(val);
     },
     getElementPos : function(el) {
         var x = 0;
@@ -511,14 +518,15 @@ KE.util = {
             if (styleStr) html += ' style="' + styleStr + '"';
             html += endFlag ? ' />' : '>';
             if (KE.browser == 'IE' && endFlag && KE.util.inArray(tagName, ['br', 'hr'])) html += "\n";
-            htmlList.push(html);
+            if (typeof newHtmlTags[tagName] == 'object') htmlList.push(html);
             if (!endFlag) startTags.push(tagName);
         };
         var setEndTag = function() {
             if (startTags.length > 0) {
-                var endTag = startTags.pop();
-                var html = '</' + endTag + '>';
-                if (KE.browser == 'IE' && KE.util.inArray(endTag, ['p', 'div', 'table', 'ol', 'ul'])) html += "\n";
+                var tagName = startTags.pop();
+                if (typeof newHtmlTags[tagName] != 'object') return;
+                var html = '</' + tagName + '>';
+                if (KE.browser == 'IE' && KE.util.inArray(tagName, ['p', 'div', 'table', 'ol', 'ul'])) html += "\n";
                 htmlList.push(html);
             }
         };
@@ -529,60 +537,31 @@ KE.util = {
                 switch (node.nodeType) {
                 case 1:
                     var tagName = node.tagName.toLowerCase();
-                    if (typeof newHtmlTags[tagName] != 'undefined') {
-                        var attrStr = '';
-                        var styleStr = '';
+                    var attrStr = '';
+                    var styleStr = '';
+                    var endFlag = false;
+                    if (typeof newHtmlTags[tagName] == 'object') {
                         var attrList = newHtmlTags[tagName];
-                        var endFlag = false;
                         for (var j = 0, l = attrList.length; j < l; j++) {
                             var attr = attrList[j];
                             if (attr == '/') endFlag = true;
                             else if (attr.charAt(0) == '.') {
                                 var key = attr.substr(1);
-                                var arr = key.split('-');
-                                var jsKey = '';
-                                for (var k = 0, length = arr.length; k < length; k++) {
-                                    jsKey += (k > 0) ? arr[k].charAt(0).toUpperCase() + arr[k].substr(1) : arr[k];
-                                }
-                                if (key == 'border') {
-                                    if (node.style.border) {
-                                        styleStr += 'border:' + node.style.border + ';';
-                                    } else if (node.style.borderWidth && node.style.borderStyle && node.style.borderColor) {
-                                        styleStr += 'border:' + node.style.borderWidth + ' ' + node.style.borderStyle + ' ' + node.style.borderColor + ';';
-                                    }
-                                } else if (key == 'margin') {
-                                    if (node.style.margin) {
-                                        styleStr += 'margin:' + node.style.margin + ';';
-                                    } else {
-                                        if (node.style.marginLeft) styleStr += 'margin-left:' + node.style.marginLeft + ';';
-                                        if (node.style.marginRight) styleStr += 'margin-right:' + node.style.marginRight + ';';
-                                        if (node.style.marginTop) styleStr += 'margin-top:' + node.style.marginTop + ';';
-                                        if (node.style.marginBottom) styleStr += 'margin-bottom:' + node.style.marginBottom + ';';
-                                    }
-                                } else if (key == 'padding') {
-                                    if (node.style.padding) {
-                                        styleStr += 'padding:' + node.style.padding + ';';
-                                    } else {
-                                        if (node.style.paddingLeft) styleStr += 'padding-left:' + node.style.paddingLeft + ';';
-                                        if (node.style.paddingRight) styleStr += 'padding-right:' + node.style.paddingRight + ';';
-                                        if (node.style.paddingTop) styleStr += 'padding-top:' + node.style.paddingTop + ';';
-                                        if (node.style.paddingBottom) styleStr += 'padding-bottom:' + node.style.paddingBottom + ';';
-                                    }
-                                } else {
-                                    if (node.style[jsKey]) styleStr += key + ':' + node.style[jsKey] + ';';
-                                }
+                                var val = KE.util.getStyle(node, key);
+                                if (val) styleStr += key + ':' + val + ';';
                             } else {
                                 var val = node.getAttribute(attr);
                                 if (val != null && val !== '') {
                                     if (typeof val == 'string' && val.match(/^javascript:/)) val = '';
                                     if ((tagName == 'a' && attr == 'href') || (tagName == 'img' && attr == 'src') ||
                                         (tagName == 'embed' && attr == 'src')) val = KE.util.removeDomain(id, val);
+                                    if (typeof val == 'string') val = val.toLowerCase();
                                     attrStr += ' ' + attr + '="' + val + '"';
                                 }
                             }
                         }
-                        setStartTag(tagName, attrStr, styleStr, endFlag);
                     }
+                    setStartTag(tagName, attrStr, styleStr, endFlag);
                     if (node.hasChildNodes()) {
                         scanNodes(node);
                     } else {
@@ -641,7 +620,7 @@ KE.util = {
     bbcodeToHtml : function(str) {
         str = str.replace(/&/gi, "&amp;");
         str = str.replace(/ /gi, "&nbsp;");
-        str = str.replace(/"/gi, "&quot;");
+        //str = str.replace(/"/gi, "&quot;");
         str = str.replace(/</gi, "&lt;");
         str = str.replace(/>/gi, "&gt;");
         str = str.replace(/\[b\](.*?)\[\/b\]/gi, "<strong>$1</strong>");
@@ -659,6 +638,7 @@ KE.util = {
         return str;
     }
 };
+
 KE.layout = {
     show : function(id, div)
     {
@@ -684,6 +664,7 @@ KE.layout = {
         return div;
     }
 };
+
 KE.menu = function(arg){
     this.arg = arg;
     var div = KE.layout.make(arg.id);
@@ -718,7 +699,7 @@ KE.menu = function(arg){
     };
     this.picker = function()
     {
-        var colorTable = KE.lang['colorTable'];
+        var colorTable = KE.setting.colorTable;
         var table = KE.$$('table');
         table.cellPadding = 0;
         table.cellSpacing = 0;
@@ -744,6 +725,7 @@ KE.menu = function(arg){
         this.show();
     };
 };
+
 KE.dialog = function(arg){
     this.arg = arg;
     this.topHeight = 20;
@@ -854,6 +836,7 @@ KE.dialog = function(arg){
         KE.g[id].previewButton = previewButton;
     };
 };
+
 KE.toolbar = {
     able : function(id, arr) {
         KE.each(KE.g[id].toolbarIcon, function(cmd, obj) {
@@ -929,6 +912,7 @@ KE.toolbar = {
         return toolbar;
     }
 };
+
 KE.history = {
     add : function(id, minChangeFlag) {
         var obj = KE.g[id];
@@ -963,6 +947,7 @@ KE.history = {
         obj.newTextarea.value = nextHtml;
     }
 };
+
 KE.remove = function(id, mode) {
     mode = (typeof mode == "undefined") ? 0 : mode;
     var container = KE.g[id].container;
@@ -976,6 +961,7 @@ KE.remove = function(id, mode) {
     document.body.removeChild(KE.g[id].maskDiv);
     KE.g[id].containner = null;
 };
+
 KE.create = function(id, mode) {
     if (KE.browser == 'IE') try { document.execCommand('BackgroundImageCache', false, true); }catch(e){}
     var srcTextarea = KE.$(id);
@@ -1065,6 +1051,7 @@ KE.create = function(id, mode) {
     height = container.offsetHeight;
     KE.g[id].width = width + 'px';
     KE.g[id].height = height + 'px';
+    KE.util.resize(id, width, height);
     KE.util.drag(id, bottomRight, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
         if (KE.g[id].resizeMode == 2) KE.util.resize(id, objWidth + left, objHeight + top);
         else if (KE.g[id].resizeMode == 1) KE.util.resize(id, objWidth, objHeight + top);
@@ -1075,11 +1062,11 @@ KE.create = function(id, mode) {
     if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
     setTimeout(
         function(){
-            KE.util.resize(id, width, height);
             if (srcTextarea.value) iframeDoc.body.innerHTML = srcTextarea.value;
             KE.history.add(id, false);
         }, 1);
 };
+
 KE.init = function(config) {
     config.wyswygMode = (typeof config.wyswygMode == "undefined") ? KE.setting.wyswygMode : config.wyswygMode;
     config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? KE.setting.autoOnsubmitMode : config.autoOnsubmitMode;
@@ -1102,6 +1089,7 @@ KE.init = function(config) {
     KE.g[config.id].redoStack = [];
     KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
 }
+
 KE.show = function(config) {
     KE.init(config);
     KE.event.add(window, 'load', new Function('KE.create("' + config.id + '")'));
@@ -1120,16 +1108,19 @@ KE.plugin['about'] = {
         dialog.show();
     }
 };
+
 KE.plugin['undo'] = {
     click : function(id) {
         KE.history.undo(id);
     }
 };
+
 KE.plugin['redo'] = {
     click : function(id) {
         KE.history.redo(id);
     }
 };
+
 KE.plugin['plainpaste'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1156,6 +1147,7 @@ KE.plugin['plainpaste'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['wordpaste'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1180,6 +1172,7 @@ KE.plugin['wordpaste'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['fullscreen'] = {
     resetFull : function(id) {
         var el = KE.util.getDocumentElement();
@@ -1232,6 +1225,7 @@ KE.plugin['fullscreen'] = {
         }
     }
 };
+
 KE.plugin['bgcolor'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1252,6 +1246,7 @@ KE.plugin['bgcolor'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['date'] = {
     click : function(id) {
         var date = new Date();
@@ -1265,11 +1260,24 @@ KE.plugin['date'] = {
         KE.util.insertHtml(id, value);
     }
 };
+
 KE.plugin['fontname'] = {
     click : function(id) {
+        var fontName = {
+            'SimSun'             : '宋体',
+            'SimHei'             : '黑体',
+            'FangSong_GB2312'    : '仿宋体',
+            'KaiTi_GB2312'       : '楷体',
+            'NSimSun'            : '新宋体',
+            'Arial'              : 'Arial',
+            'Arial Black'        : 'Arial Black',
+            'Times New Roman'    : 'Times New Roman',
+            'Courier New'        : 'Courier New',
+            'Tahoma'             : 'Tahoma',
+            'Verdana'            : 'Verdana'
+        };
         var cmd = 'fontname';
         KE.util.selection(id);
-        var fontName = KE.lang['fontTable'];
         var menu = new KE.menu({
             id : id,
             cmd : cmd,
@@ -1288,6 +1296,7 @@ KE.plugin['fontname'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['fontsize'] = {
     click : function(id) {
         var fontSize = {
@@ -1318,6 +1327,7 @@ KE.plugin['fontsize'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['hr'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1326,6 +1336,7 @@ KE.plugin['hr'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['preview'] = {
     click : function(id) {
         var dialog = new KE.dialog({
@@ -1341,12 +1352,14 @@ KE.plugin['preview'] = {
         dialog.show();
     }
 };
+
 KE.plugin['print'] = {
     click : function(id) {
         KE.util.selection(id);
         KE.g[id].iframeWin.print();
     }
 };
+
 KE.plugin['source'] = {
     click : function(id) {
         var obj = KE.g[id];
@@ -1372,6 +1385,7 @@ KE.plugin['source'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['textcolor'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1388,6 +1402,7 @@ KE.plugin['textcolor'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['time'] = {
     click : function(id) {
         var date = new Date();
@@ -1402,9 +1417,17 @@ KE.plugin['time'] = {
         KE.util.insertHtml(id, value);
     }
 };
+
 KE.plugin['title'] = {
     click : function(id) {
-        var title = KE.lang['titleTable'];
+        var title = {
+            'H1' : '标题 1',
+            'H2' : '标题 2',
+            'H3' : '标题 3',
+            'H4' : '标题 4',
+            'H5' : '标题 5',
+            'H6' : '标题 6'
+        };
         var cmd = 'title';
         KE.util.selection(id);
         var menu = new KE.menu({
@@ -1425,6 +1448,7 @@ KE.plugin['title'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['emoticons'] = {
     icon : 'emoticons.gif',
     click : function(id) {
@@ -1476,6 +1500,7 @@ KE.plugin['emoticons'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['flash'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1524,6 +1549,7 @@ KE.plugin['flash'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['image'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1606,6 +1632,7 @@ KE.plugin['image'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['layer'] = {
     click : function(id) {
         var cmd = 'layer';
@@ -1637,6 +1664,7 @@ KE.plugin['layer'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['link'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1685,6 +1713,7 @@ KE.plugin['link'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['media'] = {
     click : function(id) {
         KE.util.selection(id);
@@ -1743,9 +1772,21 @@ KE.plugin['media'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['specialchar'] = {
     click : function(id) {
-        var charTable = KE.lang['charTable'];
+        var charTable = [
+            ['§','№','☆','★','○','●','◎','◇','◆','□'],
+            ['℃','‰','■','△','▲','※','→','←','↑','↓'],
+            ['〓','¤','°','＃','＆','＠','＼','︿','＿','￣'],
+            ['―','α','β','γ','δ','ε','ζ','η','θ','ι'],
+            ['κ','λ','μ','ν','ξ','ο','π','ρ','σ','τ'],
+            ['υ','φ','χ','ψ','ω','≈','≡','≠','＝','≤'],
+            ['≥','＜','＞','≮','≯','∷','±','＋','－','×'],
+            ['÷','／','∫','∮','∝','∞','∧','∨','∑','∏'],
+            ['∪','∩','∈','∵','∴','⊥','∥','∠','⌒','⊙'],
+            ['≌','∽','〖','〗','【','】','（','）','［','］']
+        ];
         var cmd = 'specialchar';
         KE.util.selection(id);
         var table = KE.$$('table');
@@ -1784,6 +1825,7 @@ KE.plugin['specialchar'] = {
         KE.util.focus(id);
     }
 };
+
 KE.plugin['table'] = {
     selected : function(id, i, j) {
         var text = i.toString(10) + ' by ' + j.toString(10) + ' Table';
