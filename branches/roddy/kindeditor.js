@@ -103,7 +103,7 @@ KE.setting = {
     autoOnsubmitMode : true,
     resizeMode : 2,
     filterMode : true,
-    bbcodeMode : false,
+    bbcodeMode : true,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
@@ -226,34 +226,6 @@ KE.util = {
         html = html.replace(/\xA0/g, "&nbsp;");
         html = html.replace(/\x20/g, " ");
         return html;
-    },
-    rgbToHex : function(str) {
-        function hex(s) {
-            s = parseInt(s).toString(16);
-            return s.length > 1 ? s : '0' + s;
-        };
-        return str.replace(/rgb\s*?\(\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?\)/ig,
-                           function($0, $1, $2, $3) {
-                               return '#' + hex($1) + hex($2) + hex($3);
-                           }
-                          );
-    },
-    getStyle : function(el, key) {
-        var arr = key.split('-');
-        key = "";
-        for (var i = 0, len = arr.length; i < len; i++) {
-            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
-        }
-        var val = el.style[key];
-        if (!val) {
-            var css = el.getAttribute("style");
-            if (css) {
-                var re = new RegExp("(^|[^\w\-])" + key + "\s*:\s*([^;]+)", "ig");
-                var arr = re.exec(css);
-                if (arr) val = arr[2];
-            }
-        }
-        return KE.util.rgbToHex(val);
     },
     getElementPos : function(el) {
         var x = 0;
@@ -493,6 +465,34 @@ KE.util = {
             this.execCommand(id, 'inserthtml', html);
         }
     },
+    rgbToHex : function(str) {
+        function hex(s) {
+            s = parseInt(s).toString(16);
+            return s.length > 1 ? s : '0' + s;
+        };
+        return str.replace(/rgb\s*?\(\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?\)/ig,
+                           function($0, $1, $2, $3) {
+                               return '#' + hex($1) + hex($2) + hex($3);
+                           }
+                          );
+    },
+    getStyle : function(el, key) {
+        var arr = key.split('-');
+        key = "";
+        for (var i = 0, len = arr.length; i < len; i++) {
+            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
+        }
+        var val = el.style[key];
+        if (!val) {
+            var css = el.getAttribute("style");
+            if (css) {
+                var re = new RegExp("(^|[^\w\-])" + key + "\s*:\s*([^;]+)", "ig");
+                var arr = re.exec(css);
+                if (arr) val = arr[2];
+            }
+        }
+        return KE.util.rgbToHex(val);
+    },
     removeDomain : function(id, url) {
         var domains = KE.g[id].siteDomains;
         for (var i = 0, len = domains.length; i < len; i++) {
@@ -611,7 +611,6 @@ KE.util = {
         str = str.replace(/<\/p>/gi, "\n\n");
         str = str.replace(/<.*?>/gi, "");
         str = str.replace(/&nbsp;/gi, " ");
-        str = str.replace(/&quot;/gi, "\"");
         str = str.replace(/&lt;/gi, "<");
         str = str.replace(/&gt;/gi, ">");
         str = str.replace(/&amp;/gi, "&");
@@ -620,7 +619,6 @@ KE.util = {
     bbcodeToHtml : function(str) {
         str = str.replace(/&/gi, "&amp;");
         str = str.replace(/ /gi, "&nbsp;");
-        //str = str.replace(/"/gi, "&quot;");
         str = str.replace(/</gi, "&lt;");
         str = str.replace(/>/gi, "&gt;");
         str = str.replace(/\[b\](.*?)\[\/b\]/gi, "<strong>$1</strong>");
