@@ -86,16 +86,11 @@ KE.htmlPath = (function() {
 })();
 
 KE.browser = (function() {
-    var browser = '';
     var ua = navigator.userAgent.toLowerCase();
-    if (ua.indexOf("msie") > -1) {
-        browser = 'IE';
-    } else if (ua.indexOf("gecko") > -1) {
-        browser = 'GECKO';
-    } else if (ua.indexOf("opera") > -1) {
-        browser = 'OPERA';
-    }
-    return browser;
+    if (ua.indexOf("msie") > -1) return 'IE';
+    else if (ua.indexOf("gecko") > -1) return 'GECKO';
+    else if (ua.indexOf("opera") > -1) return 'OPERA';
+    else return "";
 })();
 
 KE.setting = {
@@ -155,7 +150,7 @@ KE.setting = {
             'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family',
             '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
         ],
-        'tbody,tr,strong,b,sub,sup,em,u,strike' : []
+        'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
     }
 };
 
@@ -257,11 +252,42 @@ KE.util = {
         };
     },
     setOpacity : function(el, opacity) {
-        if (KE.browser == 'IE') {
-            el.style.filter = (opacity == 100) ? "" : "gray() alpha(opacity=" + opacity + ")";
+        if (typeof el.style.opacity == "undefined") {
+            el.style.filter = (opacity == 100) ? "" : "alpha(opacity=" + opacity + ")";
         } else {
             el.style.opacity = (opacity == 100) ? "" : "0." + opacity.toString();
         }
+    },
+    getIframeDoc : function(iframe) {
+        return iframe.contentDocument || iframe.contentWindow.document;
+    },
+    rgbToHex : function(str) {
+        function hex(s) {
+            s = parseInt(s).toString(16);
+            return s.length > 1 ? s : '0' + s;
+        };
+        return str.replace(/rgb\s*?\(\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?\)/ig,
+                           function($0, $1, $2, $3) {
+                               return '#' + hex($1) + hex($2) + hex($3);
+                           }
+                          );
+    },
+    getStyle : function(el, key) {
+        var arr = key.split('-');
+        key = "";
+        for (var i = 0, len = arr.length; i < len; i++) {
+            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
+        }
+        var val = el.style[key];
+        if (!val) {
+            var css = el.getAttribute("style");
+            if (css) {
+                var re = new RegExp("(^|[^\w\-])" + key + "\s*:\s*([^;]+)", "ig");
+                var arr = re.exec(css);
+                if (arr) val = arr[2];
+            }
+        }
+        return KE.util.rgbToHex(val);
     },
     showBottom : function(id) {
         KE.g[id].bottom.style.display = 'block';
@@ -272,9 +298,6 @@ KE.util = {
     drag : function(id, mousedownObj, moveObj, func) {
         var obj = KE.g[id];
         mousedownObj.onmousedown = function(event) {
-            if (obj.wyswygMode) {
-                obj.iframe.style.display = 'none';
-            }
             if (KE.browser != 'IE') event.preventDefault();
             var ev = event || window.event;
             var pos = KE.util.getCoords(ev);
@@ -318,16 +341,6 @@ KE.util = {
                 click : new Function('id', 'KE.util.execCommand(id, "' + items[i] + '", null);')
             };
         }
-    },
-    getIframeDoc : function(iframe) {
-        var win = iframe.contentWindow;
-        var doc = null;
-        if (iframe.contentDocument) {
-            doc = iframe.contentDocument;
-        } else {
-            doc = win.document;
-        }
-        return doc;
     },
     getFullHtml : function(id) {
         var html = '<html>';
@@ -465,34 +478,6 @@ KE.util = {
             this.execCommand(id, 'inserthtml', html);
         }
     },
-    rgbToHex : function(str) {
-        function hex(s) {
-            s = parseInt(s).toString(16);
-            return s.length > 1 ? s : '0' + s;
-        };
-        return str.replace(/rgb\s*?\(\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?,\s*?([0-9]+)\s*?\)/ig,
-                           function($0, $1, $2, $3) {
-                               return '#' + hex($1) + hex($2) + hex($3);
-                           }
-                          );
-    },
-    getStyle : function(el, key) {
-        var arr = key.split('-');
-        key = "";
-        for (var i = 0, len = arr.length; i < len; i++) {
-            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
-        }
-        var val = el.style[key];
-        if (!val) {
-            var css = el.getAttribute("style");
-            if (css) {
-                var re = new RegExp("(^|[^\w\-])" + key + "\s*:\s*([^;]+)", "ig");
-                var arr = re.exec(css);
-                if (arr) val = arr[2];
-            }
-        }
-        return KE.util.rgbToHex(val);
-    },
     removeDomain : function(id, url) {
         var domains = KE.g[id].siteDomains;
         for (var i = 0, len = domains.length; i < len; i++) {
@@ -588,7 +573,7 @@ KE.util = {
         return KE.g[id].bbcodeMode ? this.htmlToBbcode(html) : html;
     },
     htmlToBbcode : function(str) {
-        str = str.replace(/\n/gi, "");
+        str = str.replace(/\r\n|\n|\r/gi, "");
         str = str.replace(/<strong>(.*?)<\/strong>/gi, "[b]$1[/b]");
         str = str.replace(/<b>(.*?)<\/b>/gi, "[b]$1[/b]");
         str = str.replace(/<span.*?style="font-weight:\s?bold;">(.*?)<\/span>/gi, "[b]$1[/b]");
