@@ -98,7 +98,7 @@ KE.setting = {
     autoOnsubmitMode : true,
     resizeMode : 2,
     filterMode : true,
-    bbcodeMode : true,
+    bbcodeMode : false,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
@@ -295,9 +295,10 @@ KE.util = {
     hideBottom : function(id) {
         KE.g[id].bottom.style.display = 'none';
     },
-    drag : function(id, mousedownObj, moveObj, func) {
+    drag : function(id, mousedownObj, moveObj, func, hideFlag) {
         var obj = KE.g[id];
         mousedownObj.onmousedown = function(event) {
+            if (hideFlag && obj.wyswygMode) obj.iframe.style.display = 'none';
             if (KE.browser != 'IE') event.preventDefault();
             var ev = event || window.event;
             var pos = KE.util.getCoords(ev);
@@ -319,9 +320,7 @@ KE.util = {
                 return false;
             };
             var upListener = function(event) {
-                if (obj.wyswygMode) {
-                    obj.iframe.style.display = '';
-                }
+                if (hideFlag && obj.wyswygMode) obj.iframe.style.display = '';
                 dragFlag = false;
                 KE.event.remove(document, 'mousemove', moveListener);
                 KE.event.remove(document, 'mouseup', upListener);
@@ -375,12 +374,11 @@ KE.util = {
                 obj.formDiv.style.height = height + 'px';
             }
             obj.iframe.style.height = height + 'px';
-            obj.newTextarea.style.width = (width - border) + 'px';
+            obj.newTextarea.style.width = (obj.formDiv.clientWidth - 2) + 'px';
             obj.newTextarea.style.height = (height - formBorder) + 'px';
         } else {
             obj.formDiv.style.height = height + 'px';
             obj.iframe.style.height = height + 'px';
-            obj.newTextarea.style.width = '100%';
             obj.newTextarea.style.height = height + 'px';
         }
     },
@@ -982,8 +980,10 @@ KE.create = function(id, mode) {
     var bottomRight = row.insertCell(1);
     bottomRight.className = 'ke-bottom-right';
     var img = KE.$$('img');
-    img.className = 'ke-bottom-right-img';
+    var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
+    img.style.backgroundImage = "url(" + url + ")";
     img.src = KE.g[id].skinsPath + 'spacer.gif';
+    img.className = 'ke-bottom-right-img';
     bottomRight.appendChild(img);
     container.appendChild(bottom);
     var hideDiv = KE.$$('div');
@@ -1038,14 +1038,15 @@ KE.create = function(id, mode) {
     KE.util.drag(id, bottomRight, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
         if (KE.g[id].resizeMode == 2) KE.util.resize(id, objWidth + left, objHeight + top);
         else if (KE.g[id].resizeMode == 1) KE.util.resize(id, objWidth, objHeight + top);
-    });
+    }, true);
     KE.util.drag(id, bottomLeft, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
         KE.util.resize(id, objWidth, objHeight + top);
-    });
+    }, true);
     if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
     setTimeout(
         function(){
-            if (srcTextarea.value) iframeDoc.body.innerHTML = srcTextarea.value;
+            var value = srcTextarea.value;
+            if (srcTextarea.value) iframeDoc.body.innerHTML = KE.g[id].bbcodeMode ? KE.util.bbcodeToHtml(value) : value;
             KE.history.add(id, false);
         }, 1);
 };
@@ -1322,10 +1323,11 @@ KE.plugin['hr'] = {
 
 KE.plugin['preview'] = {
     click : function(id) {
+        var value = KE.util.getData(id);
         var dialog = new KE.dialog({
             id : id,
             cmd : 'preview',
-            html : KE.util.getData(id),
+            html : KE.g[id].bbcodeMode ? KE.util.bbcodeToHtml(value) : value,
             width : 600,
             height : 400,
             useFrameCSS : true,
