@@ -388,6 +388,7 @@ KE.util = {
         if (KE.g[id].wyswygMode) {
             if (filterMode) {
                 data = KE.util.outputHtml(id, KE.g[id].iframeDoc.body);
+                data = KE.g[id].bbcodeMode ? KE.util.htmlToBbcode(data) : data;
             } else {
                 data = KE.g[id].iframeDoc.body.innerHTML;
             }
@@ -476,14 +477,6 @@ KE.util = {
             this.execCommand(id, 'inserthtml', html);
         }
     },
-    removeDomain : function(id, url) {
-        var domains = KE.g[id].siteDomains;
-        for (var i = 0, len = domains.length; i < len; i++) {
-            var domain = "http://" + domains[i];
-            if (url.indexOf(domain) == 0) return url.substr(domain.length);
-        }
-        return url;
-    },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
         KE.each(KE.g[id].htmlTags, function(key, val) {
@@ -513,6 +506,14 @@ KE.util = {
                 htmlList.push(html);
             }
         };
+        var removeDomain = function(id, url) {
+            var domains = KE.g[id].siteDomains;
+            for (var i = 0, len = domains.length; i < len; i++) {
+                var domain = "http://" + domains[i];
+                if (url.indexOf(domain) == 0) return url.substr(domain.length);
+            }
+            return url;
+        };
         var scanNodes = function(el) {
             var nodes = el.childNodes;
             for (var i = 0, len = nodes.length; i < len; i++) {
@@ -537,7 +538,7 @@ KE.util = {
                                 if (val != null && val !== '') {
                                     if (typeof val == 'string' && val.match(/^javascript:/)) val = '';
                                     if ((tagName == 'a' && attr == 'href') || (tagName == 'img' && attr == 'src') ||
-                                        (tagName == 'embed' && attr == 'src')) val = KE.util.removeDomain(id, val);
+                                        (tagName == 'embed' && attr == 'src')) val = removeDomain(id, val);
                                     if (typeof val == 'string') val = val.toLowerCase();
                                     attrStr += ' ' + attr + '="' + val + '"';
                                 }
@@ -568,7 +569,7 @@ KE.util = {
         };
         scanNodes(element);
         var html = htmlList.join('');
-        return KE.g[id].bbcodeMode ? this.htmlToBbcode(html) : html;
+        return html;
     },
     htmlToBbcode : function(str) {
         str = str.replace(/\r\n|\n|\r/gi, "");
@@ -615,7 +616,7 @@ KE.util = {
         str = str.replace(/\[img\](.*?)\[\/img\]/gi, "<img src=\"$1\" />");
         str = str.replace(/\[url=(.*?)\](.*?)\[\/url\]/gi, "<a href=\"$1\">$2</a>");
         str = str.replace(/\[quote\](.*?)\[\/quote\]/gi, "<blockquote>$1</blockquote>");
-        str = str.replace(/\n/gi, "<br />");
+        str = str.replace(/\r\n|\n|\r/gi, "<br />");
         return str;
     }
 };
@@ -1351,7 +1352,9 @@ KE.plugin['source'] = {
         if (obj.wyswygMode) {
             KE.layout.hide(id);
             if (KE.g[id].filterMode) {
-                obj.newTextarea.value = KE.util.outputHtml(id, obj.iframeDoc.body);
+                var html = KE.util.outputHtml(id, obj.iframeDoc.body);
+                html = obj.bbcodeMode ? KE.util.htmlToBbcode(html) : html;
+                obj.newTextarea.value = html;
             } else {
                 obj.newTextarea.value = obj.iframeDoc.body.innerHTML;
             }
