@@ -10,6 +10,7 @@ ver 3.2
 4. Firefox等浏览器上颜色可以输出统一的十六进制颜色。
 5. 添加了BBCODE功能。
 6. KE.lang里的有些定义表移动到KE.setting里。
+7. 修改了默认风格。
 
 ver 3.1 (2009-03-01)
 1. 合并了javascript文件，删除了build目录，只保留kindeditor.js非压缩格式。
