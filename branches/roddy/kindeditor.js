@@ -1502,7 +1502,7 @@ KE.plugin['flash'] = {
         dialog.show();
     },
     check : function(id, url) {
-        if (url.match(/^\w+:\/\/.{3,}(swf)$/i) == null) {
+        if (url.match(/^\w+:\/\/.{3,}(swf)(\s|$)/i) == null) {
             alert(KE.lang['invalidSwf']);
             window.focus();
             KE.g[id].yesButton.focus();
@@ -1561,7 +1561,7 @@ KE.plugin['image'] = {
         var width = KE.$('imgWidth', dialogDoc).value;
         var height = KE.$('imgHeight', dialogDoc).value;
         var border = KE.$('imgBorder', dialogDoc).value;
-        if (url.match(/\.(jpg|jpeg|gif|bmp|png)$/i) == null) {
+        if (url.match(/\.(jpg|jpeg|gif|bmp|png)(\s|$)/i) == null) {
             alert(KE.lang['invalidImg']);
             window.focus();
             KE.g[id].yesButton.focus();
@@ -1679,7 +1679,7 @@ KE.plugin['link'] = {
         }
         var node;
         if (KE.browser == 'IE') {
-            node = range.item ? range.item(0).parentNode : range.parentElement();
+            node = range.item ? range.item(0).parentNode : iframeDoc.body;
         } else {
             node = (range.startContainer == range.endContainer) ? range.startContainer.parentNode : iframeDoc.body;
         }
@@ -1715,7 +1715,7 @@ KE.plugin['media'] = {
         dialog.show();
     },
     check : function(id, url) {
-        if (url.match(/^\w+:\/\/.{3,}\.(mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)$/i) == null) {
+        if (url.match(/^\w+:\/\/.{3,}\.(mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)(\?|$)/i) == null) {
             alert(KE.lang['invalidMedia']);
             window.focus();
             KE.g[id].yesButton.focus();
