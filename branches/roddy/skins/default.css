@@ -2,10 +2,6 @@
     font-size: 12px;
     font-family: "sans serif",tahoma,verdana,helvetica;
 }
-.ke-common-icon {
-    background-repeat: no-repeat;
-    overflow: hidden;
-}
 .ke-icon-source {
     background-position: 0px 0px;
     width: 39px;
@@ -312,18 +308,27 @@
     background-color: #FFFFFF;
 }
 .ke-icon {
+    display: block;
     border: 1px solid #F0F0EE;
-    padding: 2px 3px 2px 3px;
+    padding: 2px 3px;
     cursor: pointer;
 }
+.ke-common-icon {
+    display: block;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
 .ke-icon-selected {
+    display: block;
     border: 1px solid #1F3D74;
-    padding: 2px 3px 2px 3px;
+    padding: 2px 3px;
     cursor: pointer;
 }
 .ke-icon-disabled {
+    display: block;
     border: 1px solid #F0F0EE;
-    padding: 2px 3px 2px 3px;
+    padding: 2px 3px;
+    cursor: default;
 }
 .ke-menu {
     border-top: 2px solid #DDDDDD;

@@ -652,8 +652,8 @@ KE.menu = function(arg){
     var div = KE.layout.make(arg.id);
     div.className = 'ke-menu';
     var obj = KE.g[arg.id].toolbarIcon[arg.cmd];
-    var pos = KE.util.getElementPos(obj);
-    div.style.top = pos.y + obj.offsetHeight + 'px';
+    var pos = KE.util.getElementPos(obj[0]);
+    div.style.top = pos.y + obj[0].offsetHeight + 'px';
     div.style.left = pos.x + 'px';
     this.div = div;
     this.add = function(html, event)
@@ -823,22 +823,26 @@ KE.toolbar = {
     able : function(id, arr) {
         KE.each(KE.g[id].toolbarIcon, function(cmd, obj) {
             if (!KE.util.inArray(cmd, arr)) {
-                obj.className = 'ke-icon';
-                KE.util.setOpacity(obj, 100);
-                obj.onmouseover = function(){ this.className = "ke-icon-selected"; };
-                obj.onmouseout = function(){ this.className = "ke-icon"; };
-                obj.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '")');
+                var a = obj[0];
+                var span = obj[1];
+                a.className = 'ke-icon';
+                a.href = 'javascript:KE.util.click("' + id + '", "' + cmd + '")';
+                KE.util.setOpacity(span, 100);
+                a.onmouseover = function(){ this.className = "ke-icon-selected"; };
+                a.onmouseout = function(){ this.className = "ke-icon"; };
             }
         });
     },
     disable : function(id, arr) {
         KE.each(KE.g[id].toolbarIcon, function(cmd, obj) {
             if (!KE.util.inArray(cmd, arr)) {
-                obj.className = 'ke-icon-disabled';
-                KE.util.setOpacity(obj, 50);
-                obj.onmouseover = null;
-                obj.onmouseout = null;
-                obj.onclick = null;
+                var a = obj[0];
+                var span = obj[1];
+                a.className = 'ke-icon-disabled';
+                a.href = 'javascript:;';
+                KE.util.setOpacity(span, 50);
+                a.onmouseover = null;
+                a.onmouseout = null;
             }
         });
     },
@@ -874,22 +878,24 @@ KE.toolbar = {
                 if (cmd == '-') continue;
             }
             var cell = row.insertCell(cellNum);
+            cell.hideforcus = true;
             cellNum++;
-            var obj = KE.$$('img');
-            obj.src = KE.g[id].skinsPath + 'spacer.gif';
+            var a = KE.$$('a');
+            a.className = 'ke-icon';
+            a.href = 'javascript:KE.util.click("' + id + '", "' + cmd + '")';
+            a.onmouseover = function(){ this.className = "ke-icon-selected"; };
+            a.onmouseout = function(){ this.className = "ke-icon"; };
+            a.hidefocus = true;
+            a.title = KE.lang[cmd];
+            var span = KE.$$('span');
+            span.className = "ke-common-icon ke-icon-" + cmd;
             if (KE.util.inArray(cmd, KE.g[id].defaultItems)) {
                 var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
-                obj.style.backgroundImage = "url(" + url + ")";
+                span.style.backgroundImage = "url(" + url + ")";
             }
-            obj.className = "ke-common-icon ke-icon-" + cmd;
-            obj.alt = KE.lang[cmd];
-            cell.className = 'ke-icon';
-            cell.title = KE.lang[cmd];
-            cell.onmouseover = function(){ this.className = "ke-icon-selected"; };
-            cell.onmouseout = function(){ this.className = "ke-icon"; };
-            cell.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '")');
-            cell.appendChild(obj);
-            KE.g[id].toolbarIcon[cmd] = cell;
+            a.appendChild(span);
+            cell.appendChild(a);
+            KE.g[id].toolbarIcon[cmd] = [a, span];
         }
         return toolbar;
     }
