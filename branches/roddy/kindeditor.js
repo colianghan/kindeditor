@@ -826,7 +826,7 @@ KE.toolbar = {
                 var a = obj[0];
                 var span = obj[1];
                 a.className = 'ke-icon';
-                a.href = 'javascript:KE.util.click("' + id + '", "' + cmd + '")';
+                a.href = 'javascript:KE.util.click("' + id + '", "' + cmd + '");';
                 KE.util.setOpacity(span, 100);
                 a.onmouseover = function(){ this.className = "ke-icon-selected"; };
                 a.onmouseout = function(){ this.className = "ke-icon"; };
@@ -858,9 +858,7 @@ KE.toolbar = {
         toolbar.border = 0;
         var row = toolbar.insertRow(0);
         var toolbarCell = row.insertCell(0);
-        toolbarCell.style.padding = 0;
-        toolbarCell.style.margin = 0;
-        toolbarCell.style.border = 0;
+        toolbarCell.className = 'ke-toolbar-td';
         var length = KE.g[id].items.length;
         var cellNum = 0;
         var row;
@@ -882,7 +880,7 @@ KE.toolbar = {
             cellNum++;
             var a = KE.$$('a');
             a.className = 'ke-icon';
-            a.href = 'javascript:KE.util.click("' + id + '", "' + cmd + '")';
+            a.href = 'javascript:KE.util.click("' + id + '", "' + cmd + '");';
             a.onmouseover = function(){ this.className = "ke-icon-selected"; };
             a.onmouseout = function(){ this.className = "ke-icon"; };
             a.hidefocus = true;

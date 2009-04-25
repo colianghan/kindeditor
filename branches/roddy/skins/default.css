@@ -239,6 +239,11 @@
     margin:0;
     border-collapse:separate;
 }
+.ke-toolbar-td {
+    border: 0;
+    padding: 2px 5px;
+    margin: 0;
+}
 .ke-toolbar-table {
     font-size: 0;
     float: left;
