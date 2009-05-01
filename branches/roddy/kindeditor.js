@@ -477,6 +477,145 @@ KE.util = {
             this.execCommand(id, 'inserthtml', html);
         }
     },
+    wrap : function(id, tagName, attributes) {
+        var setAttributes = function(el, attr) {
+            for (var i = 0, len = attr.length; i < len; i++) {
+                KE.each(attr[i], function(key, value) {
+                    if (key.charAt(0) == '.') {
+                        var key = key.substr(1);
+                        var arr = key.split('-');
+                        var jsKey = '';
+                        for (var j = 0, l = arr.length; j < l; j++) {
+                            if (j == 0) jsKey += arr[j];
+                            else jsKey += arr[j].charAt(0).toUpperCase() + arr[j].substr(1);
+                        }
+                        eval('el.style.' + jsKey + ' = value;');
+                    } else {
+                        el.setAttribute(key, value);
+                    }
+                });
+            }
+            return el;
+        };
+        KE.util.select(id);
+        var iframeDoc = KE.g[id].iframeDoc;
+        var sel = KE.g[id].selection;
+        var range = KE.g[id].range;
+        var element = KE.$$(tagName, iframeDoc);
+        setAttributes(element, attributes);
+        if (KE.browser == 'IE') {
+            if (sel.type.toLowerCase() == 'control') {
+                var el = range.item(0);
+                if (el.parentNode && el.parentNode.tagName.toLowerCase() == tagName) {
+                    setAttributes(el.parentNode, attributes);
+                } else {
+                    el.applyElement(element);
+                }
+            } else if (sel.type.toLowerCase() == 'text') {
+                var getOffset = function(range, startFlag) {
+                    var pointRange = range.duplicate();
+                    pointRange.collapse(startFlag);
+                    var parentNode = pointRange.parentElement();
+                    var nodes = parentNode.childNodes;
+                    var i;
+                    for (i = 0, len = nodes.length; i < len; i++) {
+                        var node = nodes[i];
+                        if (node.nodeType == 1) {
+                            var range = range.duplicate();
+                            range.moveToElementText(node);
+                            range.collapse();
+                            var cmp = range.compareEndPoints('StartToStart', pointRange);
+                            if (cmp > 0) break;
+                            else if (cmp == 0) return {container: parentNode, offset: i};
+                        }
+                    }
+                    var range = range.duplicate();
+                    range.moveToElementText(parentNode);
+                    range.collapse(false);
+                    range.setEndPoint('StartToStart', pointRange);
+                    var offset = range.text.length;
+                    while (offset > 0) offset -= nodes[--i].nodeValue.length;
+                    if (offset == 0) return {container: parentNode, offset: i};
+                    else return {container: nodes[i], offset: -offset};
+                };
+                var start = getOffset(range, true);
+                var end = getOffset(range, false);
+                var startContainer = start.container;
+                var startOffset = start.offset;
+                var endContainer = end.container;
+                var endOffset = end.offset;
+                var parentNode = range.parentElement();
+                var parentRange = range.duplicate();
+                parentRange.moveToElementText(parentNode);
+                if (parentRange.text.length < range.text.length) parentNode = parentNode.parentNode;
+                range.collapse(true);
+                var startFlag = false;
+                var wrapNodes = function(rootNode) {
+                    if (!startFlag && rootNode == startContainer) startFlag = true;
+                    if (rootNode.tagName.toLowerCase() == tagName) {
+                        setAttributes(rootNode, attributes);
+                    }
+                    if (rootNode.hasChildNodes) {
+                        var nodes = rootNode.childNodes;
+                        for (var i = 0, len = nodes.length; i < len; i++) {
+                            var node = nodes[i];
+                            if (!startFlag && node == startContainer) startFlag = true;
+                            if (node.nodeType == 1) {
+                                var result = wrapNodes(node);
+                                if (node == startContainer) {
+                                    range.moveToElementText(node);
+                                } else if (node == endContainer) {
+                                    var nodeRange = range.duplicate();
+                                    nodeRange.moveToElementText(node);
+                                    nodeRange.collapse(false);
+                                    range.setEndPoint('EndToStart', nodeRange);
+                                }
+                                if (!result) return false;
+                            } else if (node.nodeType == 3) {
+                                if (!startFlag) continue;
+                                if (node == startContainer && node == endContainer) {
+                                    var el = element.cloneNode();
+                                    node = node.splitText(startOffset);
+                                    node.splitText(endOffset - startOffset);
+                                    el.innerHTML = node.nodeValue;
+                                    node.replaceNode(el);
+                                    range.moveToElementText(el);
+                                    return false;
+                                } else if (node == startContainer) {
+                                    var el = element.cloneNode();
+                                    node = node.splitText(startOffset);
+                                    el.innerHTML = node.nodeValue;
+                                    node.replaceNode(el);
+                                    range.moveToElementText(el);
+                                } else if (node == endContainer) {
+                                    var el = element.cloneNode();
+                                    node.splitText(endOffset);
+                                    el.innerHTML = node.nodeValue;
+                                    node.replaceNode(el);
+                                    var nodeRange = range.duplicate();
+                                    nodeRange.moveToElementText(el);
+                                    nodeRange.collapse(false);
+                                    range.setEndPoint('EndToStart', nodeRange);
+                                    return false;
+                                } else {
+                                    var el = element.cloneNode();
+                                    el.innerHTML = node.nodeValue;
+                                    node.replaceNode(el);
+                                }
+                            }
+                            if (node == endContainer) return false;
+                        }
+                    }
+                    return true;
+                }
+                wrapNodes(parentNode);
+                range.select();
+            }
+        } else {
+            //gecko,webkit
+        }
+        KE.history.add(id, false);
+    },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
         KE.each(KE.g[id].htmlTags, function(key, val) {
@@ -1289,12 +1428,14 @@ KE.plugin['fontname'] = {
 KE.plugin['fontsize'] = {
     click : function(id) {
         var fontSize = {
-            '1' : '8pt',
-            '2' : '10pt',
-            '3' : '12pt',
-            '4' : '14pt',
-            '5' : '18pt',
-            '6' : '24pt'
+            '1' : '12px',
+            '2' : '14px',
+            '3' : '16px',
+            '4' : '18px',
+            '5' : '20px',
+            '6' : '22px',
+            '7' : '24px',
+            '8' : '32px'
         };
         var cmd = 'fontsize';
         KE.util.selection(id);
@@ -1305,13 +1446,14 @@ KE.plugin['fontsize'] = {
         });
         KE.each(fontSize, function(key, value) {
             var html = '<span style="font-size: ' + value + ';">' + value + '</span>';
-            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + key + '")'));
+            menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + value + '")'));
         });
         menu.show();
     },
     exec : function(id, value) {
         KE.util.select(id);
-        KE.util.execCommand(id, 'fontsize', value.substr(0, 1));
+        //KE.util.execCommand(id, 'fontsize', value.substr(0, 1));
+        KE.util.wrap(id, 'span', [{'.font-size' : value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
