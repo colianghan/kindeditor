@@ -191,6 +191,250 @@ KE.each = function(obj, func) {
     }
 };
 
+KE.selection = function(id) {
+    this.startFlag = false;
+    this.startContainer;
+    this.startOffset;
+    this.endContainer;
+    this.endOffset;
+    this.win = KE.g[id].iframeWin;
+    this.doc = KE.g[id].iframeDoc;
+    this.sel = this.win.getSelection ? this.win.getSelection() : this.doc.selection;
+    this.ranges = [];
+    this.getRange = function() {
+        var range;
+        try {
+            if (this.sel.rangeCount > 0) {
+                range = this.sel.getRangeAt(0);
+            } else {
+                range = this.sel.createRange ? this.sel.createRange() : this.doc.createRange();
+            }
+        } catch(e) {}
+        if (!range) {
+            range = (KE.browser == 'IE') ? this.doc.body.createTextRange() : this.doc.createRange();
+        }
+        return range;
+    };
+    this.range = this.getRange();
+    this.saveStartEndInfo = function() {
+        var range = this.range;
+        if (KE.browser == 'IE') {
+            if (this.sel.type.toLowerCase() == 'control') {
+                var el = range.item(0);
+                this.startContainer = el;
+                this.startOffset = 0;
+                this.endContainer = el;
+                this.endOffset = 0;
+            } else if (this.sel.type.toLowerCase() == 'text') {
+                var getStartEnd = function(startFlag) {
+                    var pointRange = range.duplicate();
+                    pointRange.collapse(startFlag);
+                    var parentNode = pointRange.parentElement();
+                    var nodes = parentNode.childNodes;
+                    var testRange;
+                    for (var i = 0, len = nodes.length; i < len; i++) {
+                        var node = nodes[i];
+                        if (node.nodeType == 1) {
+                            testRange = range.duplicate();
+                            testRange.moveToElementText(node);
+                            testRange.collapse();
+                            var cmp = testRange.compareEndPoints('StartToStart', pointRange);
+                            if (cmp > 0) break;
+                            else if (cmp == 0) return {container: node, offset: i};
+                            testRange = null;
+                        }
+                    }
+                    if (!testRange) {
+                        testRange = range.duplicate();
+                        testRange.moveToElementText(parentNode);
+                        testRange.collapse(false);
+                    }
+                    testRange.setEndPoint('StartToStart', pointRange);
+                    var offset = testRange.text.length;
+                    while (offset > 0) {
+                        offset -= nodes[--i].nodeValue.length;
+                    }
+                    if (offset == 0) return {container: parentNode, offset: i};
+                    else return {container: nodes[i], offset: -offset};
+                };
+                var start = getStartEnd(true);
+                var end = getStartEnd(false);
+                this.startContainer = start.container;
+                this.startOffset = start.offset;
+                this.endContainer = end.container;
+                this.endOffset = end.offset;
+            }
+        } else {
+            this.startContainer = range.startContainer;
+            this.startOffset = range.startOffset;
+            this.endContainer = range.endContainer;
+            this.endOffset = range.endOffset;
+        }
+    };
+    this.saveStartEndInfo();
+    this.getParentElement = function() {
+        var range = this.range;
+        if (KE.browser == 'IE' && this.sel.type.toLowerCase() == 'control') {
+            return range.item(0).parentNode;
+        } else {
+            if (range.parentElement) {
+                var parentNode = range.parentElement();
+                var parentRange = range.duplicate();
+                parentRange.moveToElementText(parentNode);
+                if (parentRange.text.length < range.text.length) parentNode = parentNode.parentNode;
+                return parentNode;
+            } else {
+                return this.doc.body;
+            }
+        }
+    };
+    this.addRanges = function(node, endFlag) {
+        if (KE.browser == 'IE') {
+            var range;
+            if (this.sel.type.toLowerCase() == 'control') {
+                range = this.range;
+            } else {
+                if (this.ranges.length == 0) {
+                    range = this.range.duplicate();
+                } else {
+                    range = this.ranges[0];
+                }
+                var nodeRange = range.duplicate();
+                nodeRange.moveToElementText(node);
+                if (endFlag) {
+                    nodeRange.collapse(false);
+                    range.setEndPoint('EndToStart', nodeRange);
+                } else {
+                    range = nodeRange;
+                }
+            }
+            this.ranges[0] = range;
+        } else {
+            if (!node) return;
+            var range = this.doc.createRange();
+            range.selectNodeContents(node);
+            this.ranges.push(range);
+        }
+    };
+    this.select = function() {
+        if (KE.browser == 'IE') {
+            if (this.ranges.length) this.ranges[0].select();
+        } else {
+            this.sel.removeAllRanges();
+            for (var i = 0, len = this.ranges.length; i < len; i++) {
+                var range = this.ranges[i];
+                var nativeRange = this.doc.createRange();
+                nativeRange.setStart(range.startContainer, range.startOffset);
+                nativeRange.setEnd(range.endContainer, range.endOffset);
+                this.sel.addRange(nativeRange);
+            }
+        }
+    };
+    this.setAttributes = function(el, attr) {
+        for (var i = 0, len = attr.length; i < len; i++) {
+            KE.each(attr[i], function(key, value) {
+                if (key.charAt(0) == '.') {
+                    var key = key.substr(1);
+                    var arr = key.split('-');
+                    var jsKey = '';
+                    for (var j = 0, l = arr.length; j < l; j++) {
+                        if (j == 0) jsKey += arr[j];
+                        else jsKey += arr[j].charAt(0).toUpperCase() + arr[j].substr(1);
+                    }
+                    eval('el.style.' + jsKey + ' = value;');
+                } else {
+                    el.setAttribute(key, value);
+                }
+            });
+        }
+        return el;
+    };
+    this.replaceNode = function(srcElement, element) {
+        if (srcElement.replaceNode) srcElement.replaceNode(element);
+        else srcElement.parentNode.replaceChild(element, srcElement);
+    };
+    this.mergeElement = function(srcElement, element, attributes) {
+        if (srcElement.tagName.toLowerCase() == element.tagName.toLowerCase()) {
+            this.setAttributes(srcElement, attributes);
+        } else {
+            if (KE.browser == 'IE') srcElement.applyElement(element);
+        }
+    };
+    this.wrapElement = function(srcElement, element, attributes) {
+        if (srcElement == this.startContainer && srcElement == this.endContainer) {
+            this.mergeElement(srcElement, element, attributes);
+            this.addRanges(srcElement);
+            return false;
+        } else if (srcElement == this.startContainer) {
+            this.addRanges(srcElement);
+        } else if (srcElement == this.endContainer) {
+            this.addRanges(srcElement, true);
+            return false;
+        }
+        return true;
+    };
+    this.wrapChildNodes = function(parentNode, element, attributes) {
+        if (!parentNode.hasChildNodes) return true;
+        var nodes = parentNode.childNodes;
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            if (!this.startFlag && node == this.startContainer) this.startFlag = true;
+            if (node.nodeType == 1) {
+                if (!this.wrapChildNodes(node, element, attributes)) return false;
+                if (!this.wrapElement(node, element, attributes)) return false;
+            } else if (node.nodeType == 3) {
+                if (node.nodeValue.match(/^\r\n|\n|\r$/i)) continue;
+                if (!this.startFlag) continue;
+                if (node == this.startContainer && node == this.endContainer) {
+                    var el = element.cloneNode(true);
+                    var centerNode = node.splitText(this.startOffset);
+                    centerNode.splitText(this.endOffset - this.startOffset);
+                    el.innerHTML = centerNode.nodeValue;
+                    this.replaceNode(centerNode, el);
+                    this.addRanges(el);
+                    return false;
+                } else if (node == this.startContainer) {
+                    var el = element.cloneNode(true);
+                    var rightNode = node.splitText(this.startOffset);
+                    el.innerHTML = rightNode.nodeValue;
+                    this.replaceNode(rightNode, el);
+                    this.addRanges(el);
+                    i++;
+                } else if (node == this.endContainer) {
+                    var el = element.cloneNode(true);
+                    node.splitText(this.endOffset);
+                    el.innerHTML = node.nodeValue;
+                    this.replaceNode(node, el);
+                    this.addRanges(el, true);
+                    return false;
+                } else {
+                    if (node.parentNode.tagName.toLowerCase() == element.tagName.toLowerCase()) {
+                        this.setAttributes(node.parentNode, attributes);
+                        if (KE.browser != 'IE') this.addRanges(el);
+                    } else {
+                        var el = element.cloneNode(true);
+                        el.innerHTML = node.nodeValue;
+                        this.replaceNode(node, el);
+                        if (KE.browser != 'IE') this.addRanges(el);
+                    }
+                }
+            }
+            if (node == this.endContainer) return false;
+        }
+        return true;
+    };
+    this.wrap = function(tagName, attributes) {
+        var element = KE.$$(tagName, this.doc);
+        this.setAttributes(element, attributes);
+        var parentNode = this.getParentElement();
+        if (!this.startFlag && parentNode == this.startContainer) this.startFlag = true;
+        this.wrapChildNodes(parentNode, element, attributes);
+        this.wrapElement(parentNode, element, attributes);
+        this.select();
+        KE.history.add(id, false);
+    };
+}
+
 KE.util = {
     getDocumentElement : function() {
         return (document.compatMode != "CSS1Compat") ? document.body : document.documentElement;
@@ -476,151 +720,6 @@ KE.util = {
         } else {
             this.execCommand(id, 'inserthtml', html);
         }
-    },
-    wrap : function(id, tagName, attributes) {
-        var setAttributes = function(el, attr) {
-            for (var i = 0, len = attr.length; i < len; i++) {
-                KE.each(attr[i], function(key, value) {
-                    if (key.charAt(0) == '.') {
-                        var key = key.substr(1);
-                        var arr = key.split('-');
-                        var jsKey = '';
-                        for (var j = 0, l = arr.length; j < l; j++) {
-                            if (j == 0) jsKey += arr[j];
-                            else jsKey += arr[j].charAt(0).toUpperCase() + arr[j].substr(1);
-                        }
-                        eval('el.style.' + jsKey + ' = value;');
-                    } else {
-                        el.setAttribute(key, value);
-                    }
-                });
-            }
-            return el;
-        };
-        KE.util.select(id);
-        var iframeDoc = KE.g[id].iframeDoc;
-        var sel = KE.g[id].selection;
-        var range = KE.g[id].range;
-        var element = KE.$$(tagName, iframeDoc);
-        setAttributes(element, attributes);
-        if (KE.browser == 'IE') {
-            if (sel.type.toLowerCase() == 'control') {
-                var el = range.item(0);
-                if (el.parentNode && el.parentNode.tagName.toLowerCase() == tagName) {
-                    setAttributes(el.parentNode, attributes);
-                } else {
-                    el.applyElement(element);
-                }
-            } else if (sel.type.toLowerCase() == 'text') {
-                var getOffset = function(range, startFlag) {
-                    var pointRange = range.duplicate();
-                    pointRange.collapse(startFlag);
-                    var parentNode = pointRange.parentElement();
-                    var nodes = parentNode.childNodes;
-                    var testRange;
-                    for (var i = 0, len = nodes.length; i < len; i++) {
-                        var node = nodes[i];
-                        if (node.nodeType == 1) {
-                            testRange = range.duplicate();
-                            testRange.moveToElementText(node);
-                            testRange.collapse();
-                            var cmp = testRange.compareEndPoints('StartToStart', pointRange);
-                            if (cmp > 0) break;
-                            else if (cmp == 0) return {container: parentNode, offset: i};
-                            testRange = null;
-                        }
-                    }
-                    if (!testRange) {
-                        testRange = range.duplicate();
-                        testRange.moveToElementText(parentNode);
-                        testRange.collapse(false);
-                    }
-                    testRange.setEndPoint('StartToStart', pointRange);
-                    var offset = testRange.text.length;
-                    while (offset > 0) {
-                        offset -= nodes[--i].nodeValue.length;
-                    }
-                    if (offset == 0) return {container: parentNode, offset: i};
-                    else return {container: nodes[i], offset: -offset};
-                };
-                var start = getOffset(range, true);
-                var end = getOffset(range, false);
-                var startContainer = start.container;
-                var startOffset = start.offset;
-                var endContainer = end.container;
-                var endOffset = end.offset;
-                //alert(startContainer.nodeValue + '-' + endContainer.nodeValue);
-                //alert(startOffset + '-' + endOffset);
-                var parentNode = range.parentElement();
-                var parentRange = range.duplicate();
-                parentRange.moveToElementText(parentNode);
-                if (parentRange.text.length < range.text.length) parentNode = parentNode.parentNode;
-                range.collapse();
-                var startFlag = false;
-                var wrapNodes = function(rootNode) {
-                    if (!startFlag && rootNode == startContainer) startFlag = true;
-                    if (rootNode.hasChildNodes) {
-                        var nodes = rootNode.childNodes;
-                        for (var i = 0; i < nodes.length; i++) {
-                            var node = nodes[i];
-                            //alert(node.tagName + '---' + node.nodeValue);
-                            if (!startFlag && node == startContainer) startFlag = true;
-                            if (node.nodeType == 1) {
-                                var result = wrapNodes(node);
-                                if (node == startContainer) {
-                                    range.moveToElementText(node);
-                                } else if (node == endContainer) {
-                                    var nodeRange = range.duplicate();
-                                    nodeRange.moveToElementText(node);
-                                    nodeRange.collapse(false);
-                                    range.setEndPoint('EndToStart', nodeRange);
-                                }
-                                if (!result) return false;
-                            } else if (node.nodeType == 3) {
-                                if (!startFlag) continue;
-                                if (node == startContainer && node == endContainer) {
-                                    var el = element.cloneNode();
-                                    var centerNode = node.splitText(startOffset);
-                                    centerNode.splitText(endOffset - startOffset);
-                                    el.innerHTML = centerNode.nodeValue;
-                                    centerNode.replaceNode(el);
-                                    range.moveToElementText(el);
-                                    return false;
-                                } else if (node == startContainer) {
-                                    var el = element.cloneNode();
-                                    var rightNode = node.splitText(startOffset);
-                                    el.innerHTML = rightNode.nodeValue;
-                                    rightNode.replaceNode(el);
-                                    range.moveToElementText(el);
-                                    i++;
-                                } else if (node == endContainer) {
-                                    var el = element.cloneNode();
-                                    node.splitText(endOffset);
-                                    el.innerHTML = node.nodeValue;
-                                    node.replaceNode(el);
-                                    var nodeRange = range.duplicate();
-                                    nodeRange.moveToElementText(el);
-                                    nodeRange.collapse(false);
-                                    range.setEndPoint('EndToStart', nodeRange);
-                                    return false;
-                                } else {
-                                    var el = element.cloneNode();
-                                    el.innerHTML = node.nodeValue;
-                                    node.replaceNode(el);
-                                }
-                            }
-                            if (node == endContainer) return false;
-                        }
-                    }
-                    return true;
-                }
-                wrapNodes(parentNode);
-                range.select();
-            }
-        } else {
-            //gecko,webkit
-        }
-        KE.history.add(id, false);
     },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
@@ -1459,7 +1558,8 @@ KE.plugin['fontsize'] = {
     exec : function(id, value) {
         KE.util.select(id);
         //KE.util.execCommand(id, 'fontsize', value.substr(0, 1));
-        KE.util.wrap(id, 'span', [{'.font-size' : value}]);
+        var selection = new KE.selection(id);
+        selection.wrap('span', [{'.font-size' : value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
