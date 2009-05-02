@@ -517,24 +517,29 @@ KE.util = {
                     pointRange.collapse(startFlag);
                     var parentNode = pointRange.parentElement();
                     var nodes = parentNode.childNodes;
-                    var i;
-                    for (i = 0, len = nodes.length; i < len; i++) {
+                    var testRange;
+                    for (var i = 0, len = nodes.length; i < len; i++) {
                         var node = nodes[i];
                         if (node.nodeType == 1) {
-                            var range = range.duplicate();
-                            range.moveToElementText(node);
-                            range.collapse();
-                            var cmp = range.compareEndPoints('StartToStart', pointRange);
+                            testRange = range.duplicate();
+                            testRange.moveToElementText(node);
+                            testRange.collapse();
+                            var cmp = testRange.compareEndPoints('StartToStart', pointRange);
                             if (cmp > 0) break;
                             else if (cmp == 0) return {container: parentNode, offset: i};
+                            testRange = null;
                         }
                     }
-                    var range = range.duplicate();
-                    range.moveToElementText(parentNode);
-                    range.collapse(false);
-                    range.setEndPoint('StartToStart', pointRange);
-                    var offset = range.text.length;
-                    while (offset > 0) offset -= nodes[--i].nodeValue.length;
+                    if (!testRange) {
+                        testRange = range.duplicate();
+                        testRange.moveToElementText(parentNode);
+                        testRange.collapse(false);
+                    }
+                    testRange.setEndPoint('StartToStart', pointRange);
+                    var offset = testRange.text.length;
+                    while (offset > 0) {
+                        offset -= nodes[--i].nodeValue.length;
+                    }
                     if (offset == 0) return {container: parentNode, offset: i};
                     else return {container: nodes[i], offset: -offset};
                 };
@@ -544,21 +549,21 @@ KE.util = {
                 var startOffset = start.offset;
                 var endContainer = end.container;
                 var endOffset = end.offset;
+                //alert(startContainer.nodeValue + '-' + endContainer.nodeValue);
+                //alert(startOffset + '-' + endOffset);
                 var parentNode = range.parentElement();
                 var parentRange = range.duplicate();
                 parentRange.moveToElementText(parentNode);
                 if (parentRange.text.length < range.text.length) parentNode = parentNode.parentNode;
-                range.collapse(true);
+                range.collapse();
                 var startFlag = false;
                 var wrapNodes = function(rootNode) {
                     if (!startFlag && rootNode == startContainer) startFlag = true;
-                    if (rootNode.tagName.toLowerCase() == tagName) {
-                        setAttributes(rootNode, attributes);
-                    }
                     if (rootNode.hasChildNodes) {
                         var nodes = rootNode.childNodes;
-                        for (var i = 0, len = nodes.length; i < len; i++) {
+                        for (var i = 0; i < nodes.length; i++) {
                             var node = nodes[i];
+                            //alert(node.tagName + '---' + node.nodeValue);
                             if (!startFlag && node == startContainer) startFlag = true;
                             if (node.nodeType == 1) {
                                 var result = wrapNodes(node);
@@ -575,18 +580,19 @@ KE.util = {
                                 if (!startFlag) continue;
                                 if (node == startContainer && node == endContainer) {
                                     var el = element.cloneNode();
-                                    node = node.splitText(startOffset);
-                                    node.splitText(endOffset - startOffset);
-                                    el.innerHTML = node.nodeValue;
-                                    node.replaceNode(el);
+                                    var centerNode = node.splitText(startOffset);
+                                    centerNode.splitText(endOffset - startOffset);
+                                    el.innerHTML = centerNode.nodeValue;
+                                    centerNode.replaceNode(el);
                                     range.moveToElementText(el);
                                     return false;
                                 } else if (node == startContainer) {
                                     var el = element.cloneNode();
-                                    node = node.splitText(startOffset);
-                                    el.innerHTML = node.nodeValue;
-                                    node.replaceNode(el);
+                                    var rightNode = node.splitText(startOffset);
+                                    el.innerHTML = rightNode.nodeValue;
+                                    rightNode.replaceNode(el);
                                     range.moveToElementText(el);
+                                    i++;
                                 } else if (node == endContainer) {
                                     var el = element.cloneNode();
                                     node.splitText(endOffset);
