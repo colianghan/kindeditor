@@ -192,30 +192,16 @@ KE.each = function(obj, func) {
 };
 
 KE.selection = function(id) {
-    this.startFlag = false;
+    this.isStarted = false;
+    this.win = KE.g[id].iframeWin;
+    this.doc = KE.g[id].iframeDoc;
+    this.sel = KE.g[id].selection;
+    this.range = KE.g[id].range;
+    this.ranges = [];
     this.startContainer;
     this.startOffset;
     this.endContainer;
     this.endOffset;
-    this.win = KE.g[id].iframeWin;
-    this.doc = KE.g[id].iframeDoc;
-    this.sel = this.win.getSelection ? this.win.getSelection() : this.doc.selection;
-    this.ranges = [];
-    this.getRange = function() {
-        var range;
-        try {
-            if (this.sel.rangeCount > 0) {
-                range = this.sel.getRangeAt(0);
-            } else {
-                range = this.sel.createRange ? this.sel.createRange() : this.doc.createRange();
-            }
-        } catch(e) {}
-        if (!range) {
-            range = (KE.browser == 'IE') ? this.doc.body.createTextRange() : this.doc.createRange();
-        }
-        return range;
-    };
-    this.range = this.getRange();
     this.saveStartEndInfo = function() {
         var range = this.range;
         if (KE.browser == 'IE') {
@@ -226,9 +212,9 @@ KE.selection = function(id) {
                 this.endContainer = el;
                 this.endOffset = 0;
             } else if (this.sel.type.toLowerCase() == 'text') {
-                var getStartEnd = function(startFlag) {
+                var getStartEnd = function(isStarted) {
                     var pointRange = range.duplicate();
-                    pointRange.collapse(startFlag);
+                    pointRange.collapse(isStarted);
                     var parentNode = pointRange.parentElement();
                     var nodes = parentNode.childNodes;
                     var testRange;
@@ -274,60 +260,62 @@ KE.selection = function(id) {
     this.saveStartEndInfo();
     this.getParentElement = function() {
         var range = this.range;
-        if (KE.browser == 'IE' && this.sel.type.toLowerCase() == 'control') {
-            return range.item(0).parentNode;
-        } else {
-            if (range.parentElement) {
+        if (range.parentElement) {
+            if (this.sel.type.toLowerCase() == 'control') {
+                return range.item(0).parentNode;
+            } else {
                 var parentNode = range.parentElement();
                 var parentRange = range.duplicate();
                 parentRange.moveToElementText(parentNode);
                 if (parentRange.text.length < range.text.length) parentNode = parentNode.parentNode;
                 return parentNode;
+            }
+        } else {
+            if (this.startContainer.parentNode == this.endContainer.parentNode) {
+                return this.startContainer.parentNode;
             } else {
                 return this.doc.body;
             }
         }
     };
-    this.addRanges = function(node, endFlag) {
+    this.addRanges = function(node, isEnd) {
         if (KE.browser == 'IE') {
-            var range;
             if (this.sel.type.toLowerCase() == 'control') {
-                range = this.range;
+                this.ranges[0] = this.range;
             } else {
                 if (this.ranges.length == 0) {
-                    range = this.range.duplicate();
-                } else {
-                    range = this.ranges[0];
-                }
-                var nodeRange = range.duplicate();
-                nodeRange.moveToElementText(node);
-                if (endFlag) {
-                    nodeRange.collapse(false);
-                    range.setEndPoint('EndToStart', nodeRange);
-                } else {
-                    range = nodeRange;
+                    var range = this.range.duplicate();
+                    range.moveToElementText(node);
+                    this.ranges[0] = range;
+                } else if (isEnd) {
+                    var range = this.ranges[0];
+                    var testRange = range.duplicate();
+                    testRange.moveToElementText(node);
+                    testRange.collapse(false);
+                    range.setEndPoint('EndToStart', testRange);
+                    this.ranges[0] = range;
                 }
             }
-            this.ranges[0] = range;
         } else {
-            if (!node) return;
             var range = this.doc.createRange();
             range.selectNodeContents(node);
             this.ranges.push(range);
         }
     };
     this.select = function() {
+        if (this.ranges.length == 0) return;
         if (KE.browser == 'IE') {
-            if (this.ranges.length) this.ranges[0].select();
+            this.ranges[0].select();
         } else {
+            var startContainer = this.ranges[0].startContainer;
+            var startOffset = this.ranges[0].startOffset;
+            var endContainer = this.ranges[this.ranges.length - 1].endContainer;
+            var endOffset = this.ranges[this.ranges.length - 1].endOffset;
+            var range = this.doc.createRange();
+            range.setStart(startContainer, startOffset);
+            range.setEnd(endContainer, endOffset);
             this.sel.removeAllRanges();
-            for (var i = 0, len = this.ranges.length; i < len; i++) {
-                var range = this.ranges[i];
-                var nativeRange = this.doc.createRange();
-                nativeRange.setStart(range.startContainer, range.startOffset);
-                nativeRange.setEnd(range.endContainer, range.endOffset);
-                this.sel.addRange(nativeRange);
-            }
+            this.sel.addRange(range);
         }
     };
     this.setAttributes = function(el, attr) {
@@ -350,19 +338,36 @@ KE.selection = function(id) {
         return el;
     };
     this.replaceNode = function(srcElement, element) {
-        if (srcElement.replaceNode) srcElement.replaceNode(element);
-        else srcElement.parentNode.replaceChild(element, srcElement);
-    };
-    this.mergeElement = function(srcElement, element, attributes) {
-        if (srcElement.tagName.toLowerCase() == element.tagName.toLowerCase()) {
-            this.setAttributes(srcElement, attributes);
+        if (srcElement.replaceNode) {
+            srcElement.replaceNode(element);
         } else {
-            if (KE.browser == 'IE') srcElement.applyElement(element);
+            srcElement.parentNode.replaceChild(element, srcElement);
+        }
+    };
+    this.wrapTextNode = function(node, startOffset, endOffset, element, attributes) {
+        var isFull = (startOffset == 0 && endOffset == node.nodeValue.length);
+        if (isFull && node.parentNode.tagName.toLowerCase() == element.tagName.toLowerCase()) {
+            this.setAttributes(node.parentNode, attributes);
+            return node.parentNode;
+        } else {
+            var el = element.cloneNode(true);
+            if (isFull) {
+                el.innerHTML = node.nodeValue;
+                this.replaceNode(node, el);
+            } else {
+                var centerNode = node.splitText(startOffset);
+                centerNode.splitText(endOffset - startOffset);
+                el.innerHTML = centerNode.nodeValue;
+                this.replaceNode(centerNode, el);
+            }
+            return el;
         }
     };
     this.wrapElement = function(srcElement, element, attributes) {
         if (srcElement == this.startContainer && srcElement == this.endContainer) {
-            this.mergeElement(srcElement, element, attributes);
+            if (srcElement.tagName.toLowerCase() == element.tagName.toLowerCase()) {
+                this.setAttributes(srcElement, attributes);
+            }
             this.addRanges(srcElement);
             return false;
         } else if (srcElement == this.startContainer) {
@@ -373,53 +378,38 @@ KE.selection = function(id) {
         }
         return true;
     };
+    this.wrapText = function(node, element, attributes) {
+        if (node == this.startContainer && node == this.endContainer) {
+            var rangeNode = this.wrapTextNode(node, this.startOffset, this.endOffset, element, attributes);
+            this.addRanges(rangeNode);
+            return false;
+        } else if (node == this.startContainer) {
+            var rangeNode = this.wrapTextNode(node, this.startOffset, node.nodeValue.length, element, attributes);
+            this.addRanges(rangeNode);
+        } else if (node == this.endContainer) {
+            var rangeNode = this.wrapTextNode(node, 0, this.endOffset, element, attributes);
+            this.addRanges(rangeNode, true);
+            return false;
+        } else {
+            var rangeNode = this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
+            this.addRanges(rangeNode);
+        }
+        return true;
+    }
     this.wrapChildNodes = function(parentNode, element, attributes) {
         if (!parentNode.hasChildNodes) return true;
         var nodes = parentNode.childNodes;
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
-            if (!this.startFlag && node == this.startContainer) this.startFlag = true;
+            if (!this.isStarted && node == this.startContainer) this.isStarted = true;
             if (node.nodeType == 1) {
                 if (!this.wrapChildNodes(node, element, attributes)) return false;
                 if (!this.wrapElement(node, element, attributes)) return false;
             } else if (node.nodeType == 3) {
-                if (node.nodeValue.match(/^\r\n|\n|\r$/i)) continue;
-                if (!this.startFlag) continue;
-                if (node == this.startContainer && node == this.endContainer) {
-                    var el = element.cloneNode(true);
-                    var centerNode = node.splitText(this.startOffset);
-                    centerNode.splitText(this.endOffset - this.startOffset);
-                    el.innerHTML = centerNode.nodeValue;
-                    this.replaceNode(centerNode, el);
-                    this.addRanges(el);
-                    return false;
-                } else if (node == this.startContainer) {
-                    var el = element.cloneNode(true);
-                    var rightNode = node.splitText(this.startOffset);
-                    el.innerHTML = rightNode.nodeValue;
-                    this.replaceNode(rightNode, el);
-                    this.addRanges(el);
-                    i++;
-                } else if (node == this.endContainer) {
-                    var el = element.cloneNode(true);
-                    node.splitText(this.endOffset);
-                    el.innerHTML = node.nodeValue;
-                    this.replaceNode(node, el);
-                    this.addRanges(el, true);
-                    return false;
-                } else {
-                    if (node.parentNode.tagName.toLowerCase() == element.tagName.toLowerCase()) {
-                        this.setAttributes(node.parentNode, attributes);
-                        if (KE.browser != 'IE') this.addRanges(el);
-                    } else {
-                        var el = element.cloneNode(true);
-                        el.innerHTML = node.nodeValue;
-                        this.replaceNode(node, el);
-                        if (KE.browser != 'IE') this.addRanges(el);
-                    }
-                }
+                if (!node.nodeValue || node.nodeValue.match(/^\r\n|\n|\r$/i)) continue;
+                if (!this.isStarted) continue;
+                if (!this.wrapText(node, element, attributes)) return false;
             }
-            if (node == this.endContainer) return false;
         }
         return true;
     };
@@ -427,7 +417,7 @@ KE.selection = function(id) {
         var element = KE.$$(tagName, this.doc);
         this.setAttributes(element, attributes);
         var parentNode = this.getParentElement();
-        if (!this.startFlag && parentNode == this.startContainer) this.startFlag = true;
+        if (!this.isStarted && parentNode == this.startContainer) this.isStarted = true;
         this.wrapChildNodes(parentNode, element, attributes);
         this.wrapElement(parentNode, element, attributes);
         this.select();
@@ -721,6 +711,10 @@ KE.util = {
             this.execCommand(id, 'inserthtml', html);
         }
     },
+    wrap : function(id, tagName, attributes) {
+        var selection = new KE.selection(id);
+        selection.wrap(tagName, attributes);
+    },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
         KE.each(KE.g[id].htmlTags, function(key, val) {
@@ -731,15 +725,15 @@ KE.util = {
         });
         var htmlList = [];
         var startTags = [];
-        var setStartTag = function(tagName, attrStr, styleStr, endFlag) {
+        var setStartTag = function(tagName, attrStr, styleStr, isEnd) {
             var html = '';
             html += '<' + tagName;
             if (attrStr) html += attrStr;
             if (styleStr) html += ' style="' + styleStr + '"';
-            html += endFlag ? ' />' : '>';
-            if (KE.browser == 'IE' && endFlag && KE.util.inArray(tagName, ['br', 'hr'])) html += "\n";
+            html += isEnd ? ' />' : '>';
+            if (KE.browser == 'IE' && isEnd && KE.util.inArray(tagName, ['br', 'hr'])) html += "\n";
             if (typeof newHtmlTags[tagName] == 'object') htmlList.push(html);
-            if (!endFlag) startTags.push(tagName);
+            if (!isEnd) startTags.push(tagName);
         };
         var setEndTag = function() {
             if (startTags.length > 0) {
@@ -767,12 +761,12 @@ KE.util = {
                     var tagName = node.tagName.toLowerCase();
                     var attrStr = '';
                     var styleStr = '';
-                    var endFlag = false;
+                    var isEnd = false;
                     if (typeof newHtmlTags[tagName] == 'object') {
                         var attrList = newHtmlTags[tagName];
                         for (var j = 0, l = attrList.length; j < l; j++) {
                             var attr = attrList[j];
-                            if (attr == '/') endFlag = true;
+                            if (attr == '/') isEnd = true;
                             else if (attr.charAt(0) == '.') {
                                 var key = attr.substr(1);
                                 var val = KE.util.getStyle(node, key);
@@ -789,7 +783,7 @@ KE.util = {
                             }
                         }
                     }
-                    setStartTag(tagName, attrStr, styleStr, endFlag);
+                    setStartTag(tagName, attrStr, styleStr, isEnd);
                     if (node.hasChildNodes()) {
                         scanNodes(node);
                     } else {
@@ -1558,8 +1552,7 @@ KE.plugin['fontsize'] = {
     exec : function(id, value) {
         KE.util.select(id);
         //KE.util.execCommand(id, 'fontsize', value.substr(0, 1));
-        var selection = new KE.selection(id);
-        selection.wrap('span', [{'.font-size' : value}]);
+        KE.util.wrap(id, 'span', [{'.font-size': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -1637,7 +1630,8 @@ KE.plugin['textcolor'] = {
     },
     exec : function(id, value) {
         KE.util.select(id);
-        KE.util.execCommand(id, 'forecolor', value);
+        //KE.util.execCommand(id, 'forecolor', value);
+        KE.util.wrap(id, 'span', [{'.color': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
