@@ -421,7 +421,6 @@ KE.selection = function(id) {
         this.wrapChildNodes(parentNode, element, attributes);
         this.wrapElement(parentNode, element, attributes);
         this.select();
-        KE.history.add(id, false);
     };
 }
 
@@ -714,6 +713,7 @@ KE.util = {
     wrap : function(id, tagName, attributes) {
         var selection = new KE.selection(id);
         selection.wrap(tagName, attributes);
+        KE.history.add(id, false);
     },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
@@ -1464,11 +1464,12 @@ KE.plugin['bgcolor'] = {
     },
     exec : function(id, value) {
         KE.util.select(id);
-        if (KE.browser == 'IE') {
-            KE.util.execCommand(id, 'backcolor', value);
-        } else  {
-            KE.util.execCommand(id, 'hiliteColor', value);
-        }
+        //if (KE.browser == 'IE') {
+        //    KE.util.execCommand(id, 'backcolor', value);
+        //} else  {
+        //    KE.util.execCommand(id, 'hiliteColor', value);
+        //}
+        KE.util.wrap(id, 'span', [{'.background-color': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -1518,7 +1519,8 @@ KE.plugin['fontname'] = {
     },
     exec : function(id, value) {
         KE.util.select(id);
-        KE.util.execCommand(id, 'fontname', value);
+        //KE.util.execCommand(id, 'fontname', value);
+        KE.util.wrap(id, 'span', [{'.font-family': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -1526,16 +1528,7 @@ KE.plugin['fontname'] = {
 
 KE.plugin['fontsize'] = {
     click : function(id) {
-        var fontSize = {
-            '1' : '12px',
-            '2' : '14px',
-            '3' : '16px',
-            '4' : '18px',
-            '5' : '20px',
-            '6' : '22px',
-            '7' : '24px',
-            '8' : '32px'
-        };
+        var fontSize = ['9px', '10px', '11px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '32px'];
         var cmd = 'fontsize';
         KE.util.selection(id);
         var menu = new KE.menu({
@@ -1543,10 +1536,11 @@ KE.plugin['fontsize'] = {
             cmd : cmd,
             width : '100px'
         });
-        KE.each(fontSize, function(key, value) {
+        for (var i = 0, len = fontSize.length; i < len; i++) {
+            var value = fontSize[i];
             var html = '<span style="font-size: ' + value + ';">' + value + '</span>';
             menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + value + '")'));
-        });
+        }
         menu.show();
     },
     exec : function(id, value) {
