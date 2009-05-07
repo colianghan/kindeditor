@@ -191,19 +191,76 @@ KE.each = function(obj, func) {
     }
 };
 
-KE.selection = function(id) {
-    this.isStarted = false;
-    this.win = KE.g[id].iframeWin;
-    this.doc = KE.g[id].iframeDoc;
-    this.sel = KE.g[id].selection;
-    this.range = KE.g[id].range;
+KE.selection = function(win, doc) {
+    this.win = win;
+    this.doc = doc;
+    this.sel = win.getSelection ? win.getSelection() : this.doc.selection;
     this.ranges = [];
+    this.type = 'none';
+    this.init = function() {
+        if (this.ranges.length == 0) return;
+        var startContainer = this.ranges[0].startContainer;
+        var startOffset = this.ranges[0].startOffset;
+        var endContainer = this.ranges[this.ranges.length - 1].endContainer;
+        var endOffset = this.ranges[this.ranges.length - 1].endOffset;
+        if (startContainer.nodeType == 1 && startContainer == endContainer) this.type = 'element';
+        else this.type = 'text';
+    };
+    this.init();
+    this.createRange = function() {
+        return new KE.range(this.doc, this.sel);
+    };
+    this.removeAllRanges = function() {
+        this.ranges = [];
+    };
+    this.addRange = function($range) {
+        this.ranges.push($range);
+        var startContainer = this.ranges[0].startContainer;
+        var startOffset = this.ranges[0].startOffset;
+        var endContainer = this.ranges[this.ranges.length - 1].endContainer;
+        var endOffset = this.ranges[this.ranges.length - 1].endOffset;
+        if (KE.browser == 'IE') {
+            var startRange = this.doc.createTextRange();
+            startRange.moveToElementText(startContainer.parentNode);
+            startRange.moveStart('character', startOffset);
+            startRange.collapse(true);
+            var endRange = this.doc.createTextRange();
+            endRange.moveToElementText(endContainer.parentNode);
+            endRange.moveStart('character', endOffset);
+            endRange.collapse(true);
+            var range = this.doc.createTextRange();
+            range.setEndPoint('StartToStart', startRange);
+            range.setEndPoint('EndToStart', endRange);
+            range.select();
+        } else {
+            var range = this.doc.createRange();
+            range.setStart(startContainer, startOffset);
+            range.setEnd(endContainer, endOffset);
+            this.sel.addRange(range);
+        }
+    };
+};
+
+KE.range = function(doc, sel) {
+    this.collapsed;
     this.startContainer;
     this.startOffset;
     this.endContainer;
     this.endOffset;
-    this.saveStartEndInfo = function() {
-        var range = this.range;
+    this.doc = doc;
+    this.sel = sel;
+    this.init = function() {
+        var range;
+        try {
+            if (this.sel.rangeCount > 0) {
+                range = this.sel.getRangeAt(0);
+            } else {
+                range = this.sel.createRange ? this.sel.createRange() : this.doc.createRange();
+            }
+        } catch(e) {}
+        if (!range) {
+            range = (KE.browser == 'IE') ? this.doc.body.createTextRange() : this.doc.createRange();
+        }
         if (KE.browser == 'IE') {
             if (this.sel.type.toLowerCase() == 'control') {
                 var el = range.item(0);
@@ -256,66 +313,33 @@ KE.selection = function(id) {
             this.endContainer = range.endContainer;
             this.endOffset = range.endOffset;
         }
+        this.range = range;
     };
-    this.saveStartEndInfo();
+    this.init();
+    this.selectNode = function(node) {
+        if (KE.browser == 'IE') {
+            this.range.moveToElementText(node);
+        } else {
+            this.range.selectNode(node);
+        }
+    };
+};
+
+KE.dom = function(id) {
+    this.isStarted = false;
+    this.doc = KE.g[id].iframeDoc;
+    this.$sel = KE.g[id].selection;
+    this.$range = KE.g[id].range;
+    this.startContainer = this.$range.startContainer;
+    this.startOffset = this.$range.startOffset;
+    this.endContainer = this.$range.endContainer;
+    this.endOffset = this.$range.endOffset;
+    this.nodes = [];
     this.getParentElement = function() {
-        var range = this.range;
-        if (range.parentElement) {
-            if (this.sel.type.toLowerCase() == 'control') {
-                return range.item(0).parentNode;
-            } else {
-                var parentNode = range.parentElement();
-                var parentRange = range.duplicate();
-                parentRange.moveToElementText(parentNode);
-                if (parentRange.text.length < range.text.length) parentNode = parentNode.parentNode;
-                return parentNode;
-            }
+        if (this.startContainer.parentNode == this.endContainer.parentNode) {
+            return this.startContainer.parentNode;
         } else {
-            if (this.startContainer.parentNode == this.endContainer.parentNode) {
-                return this.startContainer.parentNode;
-            } else {
-                return this.doc.body;
-            }
-        }
-    };
-    this.addRanges = function(node, isEnd) {
-        if (KE.browser == 'IE') {
-            if (this.sel.type.toLowerCase() == 'control') {
-                this.ranges[0] = this.range;
-            } else {
-                if (this.ranges.length == 0) {
-                    var range = this.range.duplicate();
-                    range.moveToElementText(node);
-                    this.ranges[0] = range;
-                } else if (isEnd) {
-                    var range = this.ranges[0];
-                    var testRange = range.duplicate();
-                    testRange.moveToElementText(node);
-                    testRange.collapse(false);
-                    range.setEndPoint('EndToStart', testRange);
-                    this.ranges[0] = range;
-                }
-            }
-        } else {
-            var range = this.doc.createRange();
-            range.selectNodeContents(node);
-            this.ranges.push(range);
-        }
-    };
-    this.select = function() {
-        if (this.ranges.length == 0) return;
-        if (KE.browser == 'IE') {
-            this.ranges[0].select();
-        } else {
-            var startContainer = this.ranges[0].startContainer;
-            var startOffset = this.ranges[0].startOffset;
-            var endContainer = this.ranges[this.ranges.length - 1].endContainer;
-            var endOffset = this.ranges[this.ranges.length - 1].endOffset;
-            var range = this.doc.createRange();
-            range.setStart(startContainer, startOffset);
-            range.setEnd(endContainer, endOffset);
-            this.sel.removeAllRanges();
-            this.sel.addRange(range);
+            return this.doc.body;
         }
     };
     this.setAttributes = function(el, attr) {
@@ -337,12 +361,10 @@ KE.selection = function(id) {
         }
         return el;
     };
-    this.replaceNode = function(srcElement, element) {
-        if (srcElement.replaceNode) {
-            srcElement.replaceNode(element);
-        } else {
-            srcElement.parentNode.replaceChild(element, srcElement);
-        }
+    this.addRanges = function(node) {
+        var $range = this.$sel.createRange();
+        $range.selectNode(node);
+        this.$sel.addRange($range);
     };
     this.wrapTextNode = function(node, startOffset, endOffset, element, attributes) {
         var isFull = (startOffset == 0 && endOffset == node.nodeValue.length);
@@ -353,12 +375,12 @@ KE.selection = function(id) {
             var el = element.cloneNode(true);
             if (isFull) {
                 el.innerHTML = node.nodeValue;
-                this.replaceNode(node, el);
+                node.parentNode.replaceChild(el, node);
             } else {
                 var centerNode = node.splitText(startOffset);
                 centerNode.splitText(endOffset - startOffset);
                 el.innerHTML = centerNode.nodeValue;
-                this.replaceNode(centerNode, el);
+                centerNode.parentNode.replaceChild(el, centerNode);
             }
             return el;
         }
@@ -373,7 +395,7 @@ KE.selection = function(id) {
         } else if (srcElement == this.startContainer) {
             this.addRanges(srcElement);
         } else if (srcElement == this.endContainer) {
-            this.addRanges(srcElement, true);
+            this.addRanges(srcElement);
             return false;
         }
         return true;
@@ -388,7 +410,7 @@ KE.selection = function(id) {
             this.addRanges(rangeNode);
         } else if (node == this.endContainer) {
             var rangeNode = this.wrapTextNode(node, 0, this.endOffset, element, attributes);
-            this.addRanges(rangeNode, true);
+            this.addRanges(rangeNode);
             return false;
         } else {
             var rangeNode = this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
@@ -420,7 +442,24 @@ KE.selection = function(id) {
         if (!this.isStarted && parentNode == this.startContainer) this.isStarted = true;
         this.wrapChildNodes(parentNode, element, attributes);
         this.wrapElement(parentNode, element, attributes);
-        this.select();
+    };
+    this.removeFormat = function(tags) {
+        if (this.startContainer.nodeType == 3 && KE.util.inArray(this.startContainer.parentNode.tagName.toLowerCase(), tags)) {
+            if (this.startContainer == this.endContainer) {
+                var parentNode = this.startContainer.parentNode;
+                var leftEl = parentNode.cloneNode(true);
+                var rightEl = parentNode.cloneNode(true);
+                var node = this.startContainer.splitText(this.startOffset);
+                leftEl.innerHTML = this.startContainer.nodeValue;
+                var rightNode = node.splitText(this.endOffset - this.startOffset);
+                rightEl.innerHTML = rightNode.nodeValue;
+                var centerNode = node.cloneNode(true);
+                parentNode.parentNode.replaceChild(rightEl, parentNode);
+                rightEl.parentNode.insertBefore(centerNode, rightEl);
+                rightEl.parentNode.insertBefore(leftEl, centerNode);
+                this.addRanges(centerNode);
+            }
+        }
     };
 }
 
@@ -566,7 +605,7 @@ KE.util = {
         var items = [
             'cut', 'copy', 'paste', 'selectall', 'justifyleft', 'justifycenter', 'justifyright',
             'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
-            'bold', 'italic', 'underline', 'strikethrough', 'removeformat', 'unlink'
+            'bold', 'italic', 'underline', 'strikethrough', 'unlink'
         ];
         for (var i = 0; i < items.length; i++) {
             KE.plugin[items[i]] = {
@@ -659,23 +698,8 @@ KE.util = {
     selection : function(id) {
         var win = KE.g[id].iframeWin;
         var doc = KE.g[id].iframeDoc;
-        var sel = win.getSelection ? win.getSelection() : doc.selection;
-        var range;
-        try {
-            if (sel.rangeCount > 0) {
-                range = sel.getRangeAt(0);
-            } else {
-                range = sel.createRange ? sel.createRange() : doc.createRange();
-            }
-        } catch(e) {}
-        if (!range) {
-            range = (KE.browser == 'IE') ? doc.body.createTextRange() : doc.createRange();
-        }
-        KE.g[id].selection = sel;
-        KE.g[id].range = range;
-    },
-    select : function(id) {
-        if (KE.browser == 'IE') KE.g[id].range.select();
+        KE.g[id].selection = new KE.selection(win, doc);
+        KE.g[id].range = KE.g[id].selection.createRange();
     },
     pToBr : function(id) {
         if(KE.browser == 'IE') {
@@ -711,8 +735,8 @@ KE.util = {
         }
     },
     wrap : function(id, tagName, attributes) {
-        var selection = new KE.selection(id);
-        selection.wrap(tagName, attributes);
+        var dom = new KE.dom(id);
+        dom.wrap(tagName, attributes);
         KE.history.add(id, false);
     },
     outputHtml : function(id, element) {
@@ -1463,12 +1487,6 @@ KE.plugin['bgcolor'] = {
         menu.picker();
     },
     exec : function(id, value) {
-        KE.util.select(id);
-        //if (KE.browser == 'IE') {
-        //    KE.util.execCommand(id, 'backcolor', value);
-        //} else  {
-        //    KE.util.execCommand(id, 'hiliteColor', value);
-        //}
         KE.util.wrap(id, 'span', [{'.background-color': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -1518,8 +1536,6 @@ KE.plugin['fontname'] = {
         menu.show();
     },
     exec : function(id, value) {
-        KE.util.select(id);
-        //KE.util.execCommand(id, 'fontname', value);
         KE.util.wrap(id, 'span', [{'.font-family': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -1528,7 +1544,7 @@ KE.plugin['fontname'] = {
 
 KE.plugin['fontsize'] = {
     click : function(id) {
-        var fontSize = ['9px', '10px', '11px', '12px', '13px', '14px', '16px', '18px', '20px', '24px', '32px'];
+        var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'];
         var cmd = 'fontsize';
         KE.util.selection(id);
         var menu = new KE.menu({
@@ -1544,8 +1560,6 @@ KE.plugin['fontsize'] = {
         menu.show();
     },
     exec : function(id, value) {
-        KE.util.select(id);
-        //KE.util.execCommand(id, 'fontsize', value.substr(0, 1));
         KE.util.wrap(id, 'span', [{'.font-size': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
@@ -1582,6 +1596,17 @@ KE.plugin['print'] = {
     click : function(id) {
         KE.util.selection(id);
         KE.g[id].iframeWin.print();
+    }
+};
+
+KE.plugin['removeformat'] = {
+    click : function(id) {
+        KE.util.selection(id);
+        KE.util.select(id);
+        var dom = new KE.dom(id);
+        dom.removeFormat(['span', 'font', 'b', 'strong', 'u', 'i', 'strike', 'sub', 'sup']);
+        KE.history.add(id, false);
+        KE.util.focus(id);
     }
 };
 
@@ -1623,8 +1648,6 @@ KE.plugin['textcolor'] = {
         menu.picker();
     },
     exec : function(id, value) {
-        KE.util.select(id);
-        //KE.util.execCommand(id, 'forecolor', value);
         KE.util.wrap(id, 'span', [{'.color': value}]);
         KE.layout.hide(id);
         KE.util.focus(id);
