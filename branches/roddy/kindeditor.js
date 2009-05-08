@@ -192,83 +192,80 @@ KE.each = function(obj, func) {
 };
 
 KE.selection = function(win, doc) {
-    this.win = win;
-    this.doc = doc;
-    this.sel = win.getSelection ? win.getSelection() : this.doc.selection;
+    this.sel;
     this.ranges = [];
-    this.type = 'none';
-    this.init = function() {
-        if (this.ranges.length == 0) return;
-        var startContainer = this.ranges[0].startContainer;
-        var startOffset = this.ranges[0].startOffset;
-        var endContainer = this.ranges[this.ranges.length - 1].endContainer;
-        var endOffset = this.ranges[this.ranges.length - 1].endOffset;
-        if (startContainer.nodeType == 1 && startContainer == endContainer) this.type = 'element';
-        else this.type = 'text';
-    };
-    this.init();
     this.createRange = function() {
-        return new KE.range(this.doc, this.sel);
+        this.sel = win.getSelection ? win.getSelection() : doc.selection;
+        var $range = new KE.range(doc);
+        return $range.selectedRange(this.sel);
     };
     this.removeAllRanges = function() {
         this.ranges = [];
     };
     this.addRange = function($range) {
         this.ranges.push($range);
+    };
+    this.select = function() {
+        if (this.ranges.length == 0) return;
         var startContainer = this.ranges[0].startContainer;
         var startOffset = this.ranges[0].startOffset;
         var endContainer = this.ranges[this.ranges.length - 1].endContainer;
         var endOffset = this.ranges[this.ranges.length - 1].endOffset;
+        //alert(startContainer.nodeValue + '<-->' + startOffset);
+        //alert(endContainer.nodeValue + '<-->' + endOffset);
         if (KE.browser == 'IE') {
-            var startRange = this.doc.createTextRange();
-            startRange.moveToElementText(startContainer.parentNode);
-            startRange.moveStart('character', startOffset);
+            var startRange = this.sel.createRange();
+            if (startContainer.nodeType == 1) {
+                startRange.moveToElementText(startContainer);
+            } else {
+                startRange.moveToElementText(startContainer.parentNode);
+                startRange.moveStart('character', startOffset);
+            }
             startRange.collapse(true);
-            var endRange = this.doc.createTextRange();
-            endRange.moveToElementText(endContainer.parentNode);
-            endRange.moveStart('character', endOffset);
-            endRange.collapse(true);
-            var range = this.doc.createTextRange();
+            var endRange = this.sel.createRange();
+            if (endContainer.nodeType == 1) {
+                endRange.moveToElementText(endContainer);
+            } else {
+                endRange.moveToElementText(endContainer.parentNode);
+                endRange.moveStart('character', endOffset);
+                endRange.collapse(true);
+            }
+            var range = this.sel.createRange();
             range.setEndPoint('StartToStart', startRange);
-            range.setEndPoint('EndToStart', endRange);
+            range.setEndPoint('EndToEnd', endRange);
             range.select();
         } else {
-            var range = this.doc.createRange();
+            var range = doc.createRange();
             range.setStart(startContainer, startOffset);
             range.setEnd(endContainer, endOffset);
+            this.sel.removeAllRanges();
             this.sel.addRange(range);
         }
     };
 };
 
-KE.range = function(doc, sel) {
-    this.collapsed;
+KE.range = function(doc) {
     this.startContainer;
     this.startOffset;
     this.endContainer;
     this.endOffset;
-    this.doc = doc;
-    this.sel = sel;
-    this.init = function() {
+    this.range;
+    this.selectedRange = function(sel) {
         var range;
-        try {
-            if (this.sel.rangeCount > 0) {
-                range = this.sel.getRangeAt(0);
-            } else {
-                range = this.sel.createRange ? this.sel.createRange() : this.doc.createRange();
-            }
-        } catch(e) {}
-        if (!range) {
-            range = (KE.browser == 'IE') ? this.doc.body.createTextRange() : this.doc.createRange();
+        if (sel.rangeCount > 0) {
+            range = sel.getRangeAt(0);
+        } else {
+            range = sel.createRange ? sel.createRange() : doc.createRange();
         }
+        this.range = range;
         if (KE.browser == 'IE') {
-            if (this.sel.type.toLowerCase() == 'control') {
+            if (sel.type.toLowerCase() == 'control') {
                 var el = range.item(0);
                 this.startContainer = el;
                 this.startOffset = 0;
                 this.endContainer = el;
                 this.endOffset = 0;
-            } else if (this.sel.type.toLowerCase() == 'text') {
+            } else if (sel.type.toLowerCase() == 'text') {
                 var getStartEnd = function(isStarted) {
                     var pointRange = range.duplicate();
                     pointRange.collapse(isStarted);
@@ -313,14 +310,20 @@ KE.range = function(doc, sel) {
             this.endContainer = range.endContainer;
             this.endOffset = range.endOffset;
         }
-        this.range = range;
+        return this;
     };
-    this.init();
+
     this.selectNode = function(node) {
-        if (KE.browser == 'IE') {
-            this.range.moveToElementText(node);
+        if (node.nodeType == 3) {
+            this.startContainer = node;
+            this.startOffset = 0;
+            this.endContainer = node;
+            this.endOffset = node.nodeValue.length;
         } else {
-            this.range.selectNode(node);
+            this.startContainer = node;
+            this.startOffset = 0;
+            this.endContainer = node;
+            this.endOffset = 0;
         }
     };
 };
@@ -335,12 +338,20 @@ KE.dom = function(id) {
     this.endContainer = this.$range.endContainer;
     this.endOffset = this.$range.endOffset;
     this.nodes = [];
+
     this.getParentElement = function() {
-        if (this.startContainer.parentNode == this.endContainer.parentNode) {
-            return this.startContainer.parentNode;
-        } else {
-            return this.doc.body;
+        var node = this.startContainer;
+        var nodeList = [];
+        while (node != null && node.tagName != 'body') {
+            node = node.parentNode;
+            nodeList.push(node);
         }
+        node = this.endContainer;
+        while (node != null && node.tagName != 'body') {
+            node = node.parentNode;
+            if (KE.util.inArray(node, nodeList)) return node;
+        }
+        return this.doc.body;
     };
     this.setAttributes = function(el, attr) {
         for (var i = 0, len = attr.length; i < len; i++) {
@@ -362,7 +373,7 @@ KE.dom = function(id) {
         return el;
     };
     this.addRanges = function(node) {
-        var $range = this.$sel.createRange();
+        var $range = new KE.range(this.doc);
         $range.selectNode(node);
         this.$sel.addRange($range);
     };
@@ -370,19 +381,22 @@ KE.dom = function(id) {
         var isFull = (startOffset == 0 && endOffset == node.nodeValue.length);
         if (isFull && node.parentNode.tagName.toLowerCase() == element.tagName.toLowerCase()) {
             this.setAttributes(node.parentNode, attributes);
-            return node.parentNode;
+            return node;
         } else {
             var el = element.cloneNode(true);
             if (isFull) {
-                el.innerHTML = node.nodeValue;
+                var cloneNode = node.cloneNode(true);
+                el.appendChild(cloneNode);
                 node.parentNode.replaceChild(el, node);
+                return cloneNode;
             } else {
                 var centerNode = node.splitText(startOffset);
                 centerNode.splitText(endOffset - startOffset);
-                el.innerHTML = centerNode.nodeValue;
+                var cloneNode = centerNode.cloneNode(true);
+                el.appendChild(cloneNode);
                 centerNode.parentNode.replaceChild(el, centerNode);
+                return cloneNode;
             }
-            return el;
         }
     };
     this.wrapElement = function(srcElement, element, attributes) {
@@ -436,12 +450,14 @@ KE.dom = function(id) {
         return true;
     };
     this.wrap = function(tagName, attributes) {
+        if (KE.browser == 'IE') this.$range.range.select();
         var element = KE.$$(tagName, this.doc);
         this.setAttributes(element, attributes);
         var parentNode = this.getParentElement();
         if (!this.isStarted && parentNode == this.startContainer) this.isStarted = true;
         this.wrapChildNodes(parentNode, element, attributes);
         this.wrapElement(parentNode, element, attributes);
+        this.$sel.select();
     };
     this.removeFormat = function(tags) {
         if (this.startContainer.nodeType == 3 && KE.util.inArray(this.startContainer.parentNode.tagName.toLowerCase(), tags)) {
