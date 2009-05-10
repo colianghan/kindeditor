@@ -130,7 +130,11 @@ KE.setting = {
         ["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
     ],
     htmlTags : {
-        font : ['color', 'size', 'face', '.background-color'],
+        font : [
+            'color', 'size', 'face', '.background-color',
+            '.color', '.background-color', '.font-size', '.font-family',
+            '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
+        ],
         span : [
             '.color', '.background-color', '.font-size', '.font-family',
             '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
@@ -291,7 +295,7 @@ KE.range = function(doc) {
                 return true;
             }
         });
-        return parentNode ? parentNode : this.doc.body;
+        return parentNode ? parentNode : doc.body;
     };
     this.getParentOffset = function(node) {
         var offset = 0;
@@ -307,10 +311,6 @@ KE.range = function(doc) {
             sibling = sibling.previousSibling;
         }
         return offset;
-    };
-    this.selectNode = function(node) {
-        this.setStart(node, 0);
-        this.setEnd(node, node.nodeType == 1 ? 0 : node.nodeValue.length);
     };
     this.setStart = function(startContainer, startOffset) {
         this.startContainer = startContainer;
@@ -347,6 +347,10 @@ KE.range = function(doc) {
             this.range.setEnd(endContainer, endOffset);
         }
     };
+    this.selectNode = function(node) {
+        this.setStart(node, 0);
+        this.setEnd(node, node.nodeType == 1 ? 0 : node.nodeValue.length);
+    };
     this.select = function() {
         if (KE.browser == 'IE') this.range.select();
     };
@@ -355,8 +359,8 @@ KE.range = function(doc) {
 KE.cmd = function(id) {
     this.isStarted = false;
     this.doc = KE.g[id].iframeDoc;
-    this.$sel = KE.g[id].selection;
-    this.$range = KE.g[id].range;
+    this.$sel = KE.g[id].$selection;
+    this.$range = KE.g[id].$range;
     this.$ranges = [];
     this.startContainer = this.$range.startContainer;
     this.startOffset = this.$range.startOffset;
@@ -366,13 +370,7 @@ KE.cmd = function(id) {
         for (var i = 0, len = attr.length; i < len; i++) {
             KE.each(attr[i], function(key, value) {
                 if (key.charAt(0) == '.') {
-                    var key = key.substr(1);
-                    var arr = key.split('-');
-                    var jsKey = '';
-                    for (var j = 0, l = arr.length; j < l; j++) {
-                        if (j == 0) jsKey += arr[j];
-                        else jsKey += arr[j].charAt(0).toUpperCase() + arr[j].substr(1);
-                    }
+                    var jsKey = KE.util.getJsKey(key.substr(1));
                     eval('el.style.' + jsKey + ' = value;');
                 } else {
                     el.setAttribute(key, value);
@@ -475,26 +473,6 @@ KE.cmd = function(id) {
         this.wrapElement(parentNode, element, attributes);
         this.select();
     };
-    this.removeFormat = function(tags) {
-        if (this.startContainer.nodeType == 3 && KE.util.inArray(this.startContainer.parentNode.tagName.toLowerCase(), tags)) {
-            if (this.startContainer == this.endContainer) {
-                var parentNode = this.startContainer.parentNode;
-                var leftEl = parentNode.cloneNode(true);
-                var rightEl = parentNode.cloneNode(true);
-                var node = this.startContainer.splitText(this.startOffset);
-                leftEl.innerHTML = this.startContainer.nodeValue;
-                var rightNode = node.splitText(this.endOffset - this.startOffset);
-                rightEl.innerHTML = rightNode.nodeValue;
-                var centerNode = node.cloneNode(true);
-                parentNode.parentNode.replaceChild(rightEl, parentNode);
-                rightEl.parentNode.insertBefore(centerNode, rightEl);
-                rightEl.parentNode.insertBefore(leftEl, centerNode);
-                var $range = new KE.range(this.doc);
-                $range.selectNode(centerNode);
-                this.$sel.addRange($range);
-            }
-        }
-    };
 }
 
 KE.util = {
@@ -519,6 +497,14 @@ KE.util = {
     inArray : function(str, arr) {
         for (var i = 0; i < arr.length; i++) {if (str == arr[i]) return true;}
         return false;
+    },
+    getJsKey : function(key) {
+        var arr = key.split('-');
+        key = '';
+        for (var i = 0, len = arr.length; i < len; i++) {
+            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
+        }
+        return key;
     },
     escape : function(html) {
         html = html.replace(/&/g, "&amp;");
@@ -732,18 +718,18 @@ KE.util = {
     selection : function(id) {
         var win = KE.g[id].iframeWin;
         var doc = KE.g[id].iframeDoc;
-        KE.g[id].selection = new KE.selection(win, doc);
-        KE.g[id].range = KE.g[id].selection.getRange();
+        KE.g[id].$selection = new KE.selection(win, doc);
+        KE.g[id].$range = KE.g[id].$selection.getRange();
     },
     select : function(id) {
-        KE.g[id].range.select();
+        KE.g[id].$range.select();
     },
     pToBr : function(id) {
         if(KE.browser == 'IE') {
             KE.event.add(KE.g[id].iframeDoc, 'keydown', function(e) {
                 if (e.keyCode == 13) {
                     KE.util.selection(id);
-                    if(KE.g[id].range.range.parentElement().tagName != 'LI') {
+                    if(KE.g[id].$range.range.parentElement().tagName != 'LI') {
                         KE.util.insertHtml(id, '<br />');
                         return false;
                     }
@@ -761,10 +747,10 @@ KE.util = {
         if (html == '') return;
         KE.util.select(id);
         if (KE.browser == 'IE') {
-            if (KE.g[id].selection.sel.type.toLowerCase() == 'control') {
-                KE.g[id].range.range.item(0).outerHTML = html;
+            if (KE.g[id].$selection.sel.type.toLowerCase() == 'control') {
+                KE.g[id].$range.range.item(0).outerHTML = html;
             } else {
-                KE.g[id].range.range.pasteHTML(html);
+                KE.g[id].$range.range.pasteHTML(html);
             }
             KE.history.add(id, false);
         } else {
@@ -1638,8 +1624,60 @@ KE.plugin['print'] = {
 KE.plugin['removeformat'] = {
     click : function(id) {
         KE.util.selection(id);
-        var cmd = new KE.cmd(id);
-        cmd.removeFormat(['span', 'font', 'b', 'strong', 'u', 'i', 'strike', 'sub', 'sup']);
+        var doc = KE.g[id].iframeDoc;
+        var $range = KE.g[id].$range;
+        var startContainer = $range.startContainer;
+        var startOffset = $range.startOffset;
+        var endContainer = $range.endContainer;
+        var endOffset = $range.endOffset;
+        var parentNode = $range.getParentElement();
+        var replaceTagName = function(parent, fromTagName, toTagName) {
+            if (KE.browser != 'IE') return;
+            $range.select();
+            var replaceNodes = function(node) {
+                if (node.tagName.toLowerCase() == fromTagName) {
+                    var el = KE.$$(toTagName, doc);
+                    el.style.cssText = node.style.cssText;
+                    for (var j = 0, l = node.attributes.length; j < l; j++){
+                        var key = node.attributes[j].nodeName;
+                        if (key != 'style') {
+                            var value = node.attributes[j].nodeValue;
+                            el.setAttribute(key, value);
+                        }
+                    }
+                    var cloneNode = node.cloneNode(true);
+                    var childNodes = cloneNode.childNodes;
+                    for (var i = 0; i < childNodes.length; i++) {
+                        var childNode = childNodes[i];
+                        var srcNode = node.childNodes[i];
+                        if (srcNode == $range.startContainer) startContainer = childNode;
+                        if (srcNode == $range.endContainer) endContainer = childNode;
+                        el.appendChild(childNode);
+                    }
+                    if (node == $range.startContainer) startContainer = el;
+                    if (node == $range.endContainer) endContainer = el;
+                    node.parentNode.replaceChild(el, node);
+                }
+                var nodes = parentNode.childNodes;
+                for (var i = 0; i < nodes.length; i++) {
+                    var node = nodes[i];
+                    if (node.nodeType == 1) {
+                        replaceNodes(node);
+                    }
+                }
+            }
+            replaceNodes(parent);
+            $range.setStart(startContainer, startOffset);
+            $range.setEnd(endContainer, endOffset);
+            $range.select();
+        }
+        try {
+            alert(parentNode.innerHTML);
+            replaceTagName(parentNode, 'span', 'font');
+            KE.g[id].iframeDoc.execCommand('removeformat', false, null);
+            alert(parentNode.innerHTML);
+            replaceTagName(parentNode, 'font', 'span');
+        } catch(e) {}
         KE.history.add(id, false);
         KE.util.focus(id);
     }
@@ -1968,7 +2006,7 @@ KE.plugin['link'] = {
     exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
-        var range = KE.g[id].range;
+        var range = KE.g[id].$range.range;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('hyperLink', dialogDoc).value;
         var target = KE.$('linkType', dialogDoc).value;
