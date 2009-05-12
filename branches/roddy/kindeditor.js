@@ -470,8 +470,73 @@ KE.cmd = function(id) {
     };
     this.remove = function(tagNames, attributes) {
         this.$range.select();
-        var parentNode = this.$range.getParentElement();
         //this.doc.execCommand('removeformat', false, null);
+        var startContainer = this.startContainer;
+        var startOffset = this.startOffset;
+        var endContainer = this.endContainer;
+        var endOffset = this.endOffset;
+        var parentNode = this.$range.getParentElement();
+        var getBreakParent = function(node) {
+            var parent;
+            while (node != null) {
+                node = node.parentNode;
+                if (KE.util.inArray(node.tagName.toLowerCase(), tagNames)) {
+                    parent = node;
+                } else {
+                    break;
+                }
+            }
+            return parent;
+        };
+        var getBreakNode = function(parent, isStart) {
+            if (!parent) return;
+            var isStarted = false;
+            var container = isStart ? startContainer : endContainer;
+            var offset = isStart ? startOffset : endOffset;
+            var breakNode = function(parent, cloneParent) {
+                if (!cloneParent) return;
+                var sibling = isStart ? parent.firstChild : parent.lastChild;
+                var cloneSibling = isStart ? cloneParent.firstChild : cloneParent.lastChild;
+                if (!cloneSibling) return;
+                while (sibling != null) {
+                    if (sibling == startContainer) isStarted = true;
+                    if (isStarted) {
+                        if (sibling.nodeType == 1) {
+                            parent.removeChild(cloneSibling);
+                        } else if (sibling.nodeType == 3) {
+                            if (sibling == container) {
+                                var rightNode = cloneSibling.splitText(offset);
+                                if (isStart) parent.removeChild(rightNode);
+                                else parent.removeChild(cloneSibling);
+                            } else {
+                                parent.removeChild(cloneSibling);
+                            }
+                        }
+                    } else {
+                        if (sibling.nodeType == 1) {
+                            if (sibling.hasChildNodes) {
+                                breakNode(sibling, cloneSibling);
+                            }
+                        }
+                    }
+                    sibling = isStart ? sibling.nextSibling : sibling.previousSibling;
+                    cloneSibling = isStart ? cloneSibling.nextSibling : cloneSibling.previousSibling;
+                }
+            }
+            var cloneParent = parent.cloneNode(true);
+            breakNode(parent, cloneParent);
+            return cloneParent;
+        }
+        var startParent = getBreakParent(startContainer);
+        var endParent = getBreakParent(endContainer);
+        var startBreakNode = getBreakNode(startParent, true);
+        var endBreakNode = getBreakNode(endParent, false);
+        var node = document.createTextNode('aaa');
+        startParent.parentNode.replaceChild(startBreakNode, startParent);
+        startBreakNode.parentNode.appendChild(node);
+        startBreakNode.parentNode.appendChild(endBreakNode);
+        //alert(startBreakNode.outerHTML);
+        //alert(endBreakNode.outerHTML);
     };
 }
 
