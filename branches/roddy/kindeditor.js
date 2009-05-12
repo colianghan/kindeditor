@@ -130,11 +130,7 @@ KE.setting = {
         ["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
     ],
     htmlTags : {
-        font : [
-            'color', 'size', 'face', '.background-color',
-            '.color', '.background-color', '.font-size', '.font-family',
-            '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
-        ],
+        font : ['color', 'size', 'face', '.background-color'],
         span : [
             '.color', '.background-color', '.font-size', '.font-family',
             '.font-weight', '.font-style', '.text-decoration', '.vertical-align'
@@ -441,8 +437,7 @@ KE.cmd = function(id) {
             this.addRanges(rangeNode);
             return false;
         } else {
-            var rangeNode = this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
-            this.addRanges(rangeNode);
+            this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
         }
         return true;
     }
@@ -472,6 +467,11 @@ KE.cmd = function(id) {
         this.wrapChildNodes(parentNode, element, attributes);
         this.wrapElement(parentNode, element, attributes);
         this.select();
+    };
+    this.remove = function(tagNames, attributes) {
+        this.$range.select();
+        var parentNode = this.$range.getParentElement();
+        //this.doc.execCommand('removeformat', false, null);
     };
 }
 
@@ -756,11 +756,6 @@ KE.util = {
         } else {
             this.execCommand(id, 'inserthtml', html);
         }
-    },
-    wrap : function(id, tagName, attributes) {
-        var cmd = new KE.cmd(id);
-        cmd.wrap(tagName, attributes);
-        KE.history.add(id, false);
     },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
@@ -1510,7 +1505,9 @@ KE.plugin['bgcolor'] = {
         menu.picker();
     },
     exec : function(id, value) {
-        KE.util.wrap(id, 'span', [{'.background-color': value}]);
+        var cmd = new KE.cmd(id);
+        cmd.wrap('span', [{'.background-color': value}]);
+        KE.history.add(id, false);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -1559,7 +1556,9 @@ KE.plugin['fontname'] = {
         menu.show();
     },
     exec : function(id, value) {
-        KE.util.wrap(id, 'span', [{'.font-family': value}]);
+        var cmd = new KE.cmd(id);
+        cmd.wrap('span', [{'.font-family': value}]);
+        KE.history.add(id, false);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -1583,7 +1582,9 @@ KE.plugin['fontsize'] = {
         menu.show();
     },
     exec : function(id, value) {
-        KE.util.wrap(id, 'span', [{'.font-size': value}]);
+        var cmd = new KE.cmd(id);
+        cmd.wrap('span', [{'.font-size': value}]);
+        KE.history.add(id, false);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
@@ -1624,60 +1625,11 @@ KE.plugin['print'] = {
 KE.plugin['removeformat'] = {
     click : function(id) {
         KE.util.selection(id);
-        var doc = KE.g[id].iframeDoc;
-        var $range = KE.g[id].$range;
-        var startContainer = $range.startContainer;
-        var startOffset = $range.startOffset;
-        var endContainer = $range.endContainer;
-        var endOffset = $range.endOffset;
-        var parentNode = $range.getParentElement();
-        var replaceTagName = function(parent, fromTagName, toTagName) {
-            if (KE.browser != 'IE') return;
-            $range.select();
-            var replaceNodes = function(node) {
-                if (node.tagName.toLowerCase() == fromTagName) {
-                    var el = KE.$$(toTagName, doc);
-                    el.style.cssText = node.style.cssText;
-                    for (var j = 0, l = node.attributes.length; j < l; j++){
-                        var key = node.attributes[j].nodeName;
-                        if (key != 'style') {
-                            var value = node.attributes[j].nodeValue;
-                            el.setAttribute(key, value);
-                        }
-                    }
-                    var cloneNode = node.cloneNode(true);
-                    var childNodes = cloneNode.childNodes;
-                    for (var i = 0; i < childNodes.length; i++) {
-                        var childNode = childNodes[i];
-                        var srcNode = node.childNodes[i];
-                        if (srcNode == $range.startContainer) startContainer = childNode;
-                        if (srcNode == $range.endContainer) endContainer = childNode;
-                        el.appendChild(childNode);
-                    }
-                    if (node == $range.startContainer) startContainer = el;
-                    if (node == $range.endContainer) endContainer = el;
-                    node.parentNode.replaceChild(el, node);
-                }
-                var nodes = parentNode.childNodes;
-                for (var i = 0; i < nodes.length; i++) {
-                    var node = nodes[i];
-                    if (node.nodeType == 1) {
-                        replaceNodes(node);
-                    }
-                }
-            }
-            replaceNodes(parent);
-            $range.setStart(startContainer, startOffset);
-            $range.setEnd(endContainer, endOffset);
-            $range.select();
-        }
-        try {
-            alert(parentNode.innerHTML);
-            replaceTagName(parentNode, 'span', 'font');
-            KE.g[id].iframeDoc.execCommand('removeformat', false, null);
-            alert(parentNode.innerHTML);
-            replaceTagName(parentNode, 'font', 'span');
-        } catch(e) {}
+        var cmd = new KE.cmd(id);
+        cmd.remove(
+            ['b', 'del', 'em', 'font', 'i', 'span', 'strike', 'strong', 'sub', 'sup', 'u'],
+            ['class', 'style']
+        );
         KE.history.add(id, false);
         KE.util.focus(id);
     }
@@ -1721,7 +1673,9 @@ KE.plugin['textcolor'] = {
         menu.picker();
     },
     exec : function(id, value) {
-        KE.util.wrap(id, 'span', [{'.color': value}]);
+        var cmd = new KE.cmd(id);
+        cmd.wrap('span', [{'.color': value}]);
+        KE.history.add(id, false);
         KE.layout.hide(id);
         KE.util.focus(id);
     }
