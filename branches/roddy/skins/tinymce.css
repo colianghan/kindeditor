@@ -255,6 +255,7 @@
     border-collapse:separate;
 }
 .ke-toolbar-close {
+    dispaly: block;
     background-position: -902px -2px;
     width: 16px;
     height: 16px;

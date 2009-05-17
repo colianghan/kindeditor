@@ -193,8 +193,9 @@ KE.each = function(obj, func) {
 
 KE.selection = function(win, doc) {
     this.sel;
-    this.$range;
-    this.getRange = function() {
+    this.range;
+    this.keRange;
+    this.init = function() {
         var sel = win.getSelection ? win.getSelection() : doc.selection;
         var range;
         if (sel.rangeCount > 0) {
@@ -203,32 +204,17 @@ KE.selection = function(win, doc) {
             range = sel.createRange ? sel.createRange() : doc.createRange();
         }
         this.sel = sel;
-        this.$range = new KE.range(doc);
-        this.$range.setRange(range);
-        return this.$range;
-    };
-    this.addRange = function($range) {
-        if (KE.browser == 'IE') {
-            $range.range.select();
-        } else {
-            this.sel.removeAllRanges();
-            this.sel.addRange($range.range);
-        }
-    };
-};
-
-KE.range = function(doc) {
-    this.range = doc.createRange ? doc.createRange() : doc.body.createTextRange();
-    this.setRange = function(range) {
+        this.range = range;
+        var startNode, startPos, endNode, endPos;
         if (KE.browser == 'IE') {
             if (range.item) {
                 var el = range.item(0);
-                this.startContainer = this.endContainer = el;
-                this.startOffset = this.endOffset = 0;
+                startNode = endNode = el;
+                startPos = endPos = 0;
             } else {
-                var getStartEnd = function(isStarted) {
+                var getStartEnd = function(isStart) {
                     var pointRange = range.duplicate();
-                    pointRange.collapse(isStarted);
+                    pointRange.collapse(isStart);
                     var parentNode = pointRange.parentElement();
                     var nodes = parentNode.childNodes;
                     var testRange;
@@ -240,7 +226,7 @@ KE.range = function(doc) {
                             testRange.collapse();
                             var cmp = testRange.compareEndPoints('StartToStart', pointRange);
                             if (cmp > 0) break;
-                            else if (cmp == 0) return {container: node, offset: i};
+                            else if (cmp == 0) return {node: node, pos: 0};
                             testRange = null;
                         }
                     }
@@ -254,25 +240,86 @@ KE.range = function(doc) {
                     while (offset > 0) {
                         offset -= nodes[--i].nodeValue.length;
                     }
-                    if (offset == 0) return {container: parentNode, offset: i};
-                    else return {container: nodes[i], offset: -offset};
+                    if (offset == 0) return {node: parentNode, pos: 0};
+                    else return {node: nodes[i], pos: -offset};
                 };
                 var start = getStartEnd(true);
                 var end = getStartEnd(false);
-                this.startContainer = start.container;
-                this.startOffset = start.offset;
-                this.endContainer = end.container;
-                this.endOffset = end.offset;
+                startNode = start.node;
+                startPos = start.pos;
+                endNode = end.node;
+                endPos = end.pos;
             }
         } else {
-            this.startContainer = range.startContainer;
-            this.startOffset = range.startOffset;
-            this.endContainer = range.endContainer;
-            this.endOffset = range.endOffset;
+            //alert(range.startContainer.nodeValue + '<->' + range.startContainer.innerHTML + '<->' + range.startOffset);
+            //alert(range.endContainer.nodeValue + '<->' + range.endContainer.innerHTML + '<->' + range.endOffset);
+            if (range.startContainer.nodeType == 1) {
+                startNode = range.startContainer.childNodes[range.startOffset];
+                startPos = 0;
+            } else {
+                startNode = range.startContainer;
+                startPos = range.startOffset;
+            }
+            if (range.endContainer.nodeType == 1) {
+                endNode = range.endContainer.childNodes[range.endOffset] || range.endContainer.lastChild;
+                endPos = 0;
+            } else {
+                endNode = range.endContainer;
+                endPos = range.endOffset;
+            }
         }
-        this.range = range;
+        //alert(endNode.nodeValue + '<-->' + endNode.tagName);
+        var keRange = new KE.range(doc);
+        keRange.setStart(startNode, startPos);
+        keRange.setEnd(endNode, endPos);
+        this.keRange = keRange;
     };
-    this.setRange(this.range);
+    this.init();
+    this.addRange = function(keRange) {
+        //alert(keRange.startNode.nodeValue + '<->' + keRange.startNode.tagName + '<->' + keRange.startPos);
+        //alert(keRange.endNode.nodeValue + '<->' + keRange.endNode.tagName + '<->' + keRange.endPos);
+        if (KE.browser == 'IE') {
+            var getEndRange = function(isStart) {
+                var range = KE.util.createRange(doc);
+                var node = isStart ? keRange.startNode : keRange.endNode;
+                if (node.nodeType == 1) {
+                    range.moveToElementText(node);
+                    range.collapse(isStart);
+                } else {
+                    var offset = KE.util.getParentOffset(doc, node);
+                    range.moveToElementText(node.parentNode);
+                    var pos = isStart ? keRange.startPos : keRange.endPos;
+                    range.moveStart('character', offset + pos);
+                }
+                return range;
+            }
+            this.range.setEndPoint('StartToStart', getEndRange(true));
+            this.range.setEndPoint('EndToStart', getEndRange(false));
+            this.range.select();
+        } else {
+            if (keRange.startNode.nodeType == 1) {
+                this.range.setStartBefore(keRange.startNode);
+            } else {
+                this.range.setStart(keRange.startNode, keRange.startPos);
+            }
+            if (keRange.endNode.nodeType == 1) {
+                this.range.setEndAfter(keRange.endNode);
+            } else {
+                this.range.setEnd(keRange.endNode, keRange.endPos);
+            }
+            this.sel.removeAllRanges();
+            this.sel.addRange(this.range);
+        }
+        this.keRange = keRange;
+    };
+};
+
+KE.range = function(doc) {
+    this.startNode;
+    this.startPos;
+    this.endNode;
+    this.endPos;
+    this.collapsed = false;
     this.getParentElement = function() {
         var scanParents = function(node, func) {
             while (node != null && node.tagName != 'body') {
@@ -281,11 +328,11 @@ KE.range = function(doc) {
             }
         }
         var nodeList = [];
-        scanParents(this.startContainer, function(node) {
+        scanParents(this.startNode, function(node) {
             nodeList.push(node);
         });
         var parentNode;
-        scanParents(this.endContainer, function(node) {
+        scanParents(this.endNode, function(node) {
             if (KE.util.inArray(node, nodeList)) {
                 parentNode = node;
                 return true;
@@ -293,75 +340,97 @@ KE.range = function(doc) {
         });
         return parentNode ? parentNode : doc.body;
     };
-    this.getParentOffset = function(node) {
-        var offset = 0;
-        var sibling = node.previousSibling;
-        while (sibling != null) {
-            if (sibling.nodeType == 1) {
-                var nodeRange = this.range.duplicate();
-                nodeRange.moveToElementText(sibling);
-                offset += nodeRange.text.length;
-            } else {
-                offset += sibling.nodeValue.length;
-            }
-            sibling = sibling.previousSibling;
-        }
-        return offset;
-    };
-    this.setStart = function(startContainer, startOffset) {
-        this.startContainer = startContainer;
-        this.startOffset = startOffset;
-        if (KE.browser == 'IE') {
-            var range = this.range.duplicate();
-            if (startContainer.nodeType == 1) {
-                range.moveToElementText(startContainer);
-            } else {
-                var offset = this.getParentOffset(startContainer);
-                range.moveToElementText(startContainer.parentNode);
-                range.moveStart('character', offset + startOffset);
-            }
-            this.range.setEndPoint('StartToStart', range);
+    this.collapse = function(isStart) {
+        if (isStart) {
+            this.endNode = this.startNode;
+            this.endPos = this.startPos;
         } else {
-            this.range.setStart(startContainer, startOffset);
+            this.startNode = this.endNode;
+            this.startPos = this.endPos;
+        }
+        this.collapsed = true;
+    };
+    this.comparePoints = function(how, range) {
+        var getOffsetCount = function(node) {
+            var count = 0;
+            while (node != null && node.nodeType == 1 && node.tagName.toLowerCase() == 'body') {
+                var sibling = node.previousSibling;
+                if (sibling == null) node = node.parentNode;
+                else node = sibling;
+                count++;
+            }
+            return count;
+        }
+        var compareNodes = function(node1, pos1, node2, pos2) {
+            var cmp;
+            var count1 = getOffsetCount(node1);
+            var count2 = getOffsetCount(node2);
+            if (count1 > count2) {
+                cmp = 1;
+            } else if (count1 == count2) {
+                if (pos1 > pos2) cmp = 1;
+                else if (pos1 == pos2) cmp = 0;
+                else cmp = -1;
+            } else {
+                cmp = -1;
+            }
+            return cmp;
+        }
+        if (how == 'START_TO_START') return compareNodes(this.startNode, this.startPos, range.startNode, range.startPos);
+        else if (how == 'START_TO_END') return compareNodes(this.startNode, this.startPos, range.endNode, range.endPos);
+        else if (how == 'END_TO_START') return compareNodes(this.endNode, this.endPos, range.startNode, range.startPos);
+        else if (how == 'END_TO_END') return compareNodes(this.endNode, this.endPos, range.endNode, range.endPos);
+    };
+    this.setStart = function(node, pos) {
+        this.startNode = node;
+        this.startPos = pos;
+        if (!this.endNode) {
+            this.endNode = node;
+            this.endPos = pos;
         }
     };
-    this.setEnd = function(endContainer, endOffset) {
-        this.endContainer = endContainer;
-        this.endOffset = endOffset;
-        if (KE.browser == 'IE') {
-            var range = this.range.duplicate();
-            if (endContainer.nodeType == 1) {
-                range.moveToElementText(endContainer);
-                range.collapse(false);
-            } else {
-                var offset = this.getParentOffset(endContainer);
-                range.moveToElementText(endContainer.parentNode);
-                range.moveStart('character', offset + endOffset);
-            }
-            this.range.setEndPoint('EndToStart', range);
-        } else {
-            this.range.setEnd(endContainer, endOffset);
+    this.setEnd = function(node, pos) {
+        this.endNode = node;
+        this.endPos = pos;
+        if (!this.startNode) {
+            this.startNode = node;
+            this.startPos = pos;
         }
     };
     this.selectNode = function(node) {
-        this.setStart(node, 0);
-        this.setEnd(node, node.nodeType == 1 ? 0 : node.nodeValue.length);
+        if (node.nodeType == 1) {
+            if (node.hasChildNodes) {
+                this.setStart(node.firstChild, 0);
+                this.setEnd(node.lastChild, node.lastChild.nodeType == 1 ? 0 : node.lastChild.nodeValue.length);
+            } else {
+                this.setStart(node, 0);
+                this.setEnd(node, 0);
+            }
+        } else {
+            this.setStart(node, 0);
+            this.setEnd(node, node.nodeValue.length);
+        }
     };
-    this.select = function() {
-        if (KE.browser == 'IE') this.range.select();
+    this.cloneRange = function() {
+        var range = new KE.range(doc);
+        range.collapsed = this.collapsed;
+        range.setStart(this.startNode, this.startPos);
+        range.setEnd(this.endNode, this.endPos);
+        return range;
     };
 };
 
 KE.cmd = function(id) {
     this.isStarted = false;
     this.doc = KE.g[id].iframeDoc;
-    this.$sel = KE.g[id].$selection;
-    this.$range = KE.g[id].$range;
-    this.$ranges = [];
-    this.startContainer = this.$range.startContainer;
-    this.startOffset = this.$range.startOffset;
-    this.endContainer = this.$range.endContainer;
-    this.endOffset = this.$range.endOffset;
+    this.keSel = KE.g[id].keSel;
+    this.keRange = KE.g[id].keRange;
+    this.startNode = this.keRange.startNode;
+    this.startPos = this.keRange.startPos;
+    this.endNode = this.keRange.endNode;
+    this.endPos = this.keRange.endPos;
+    //alert(this.keRange.startNode.nodeValue + '<-1->' + this.keRange.startNode.tagName);
+    //alert(this.keRange.endNode.nodeValue + '<-1->' + this.keRange.endNode.tagName);
     this.setAttributes = function(el, attr) {
         for (var i = 0, len = attr.length; i < len; i++) {
             KE.each(attr[i], function(key, value) {
@@ -375,18 +444,6 @@ KE.cmd = function(id) {
         }
         return el;
     };
-    this.addRanges = function(node) {
-        var $range = new KE.range(this.doc);
-        $range.selectNode(node);
-        this.$ranges.push($range);
-    };
-    this.select = function() {
-        if (this.$ranges.length == 0) return;
-        var $range = new KE.range(this.doc);
-        $range.setStart(this.$ranges[0].startContainer, this.$ranges[0].startOffset);
-        $range.setEnd(this.$ranges[this.$ranges.length - 1].endContainer, this.$ranges[this.$ranges.length - 1].endOffset);
-        this.$sel.addRange($range);
-    };
     this.wrapTextNode = function(node, startOffset, endOffset, element, attributes) {
         var isFull = (startOffset == 0 && endOffset == node.nodeValue.length);
         if (isFull && node.parentNode.tagName.toLowerCase() == element.tagName.toLowerCase()) {
@@ -398,43 +455,43 @@ KE.cmd = function(id) {
                 var cloneNode = node.cloneNode(true);
                 el.appendChild(cloneNode);
                 node.parentNode.replaceChild(el, node);
-                return cloneNode;
+                return el;
             } else {
                 var centerNode = node.splitText(startOffset);
                 centerNode.splitText(endOffset - startOffset);
                 var cloneNode = centerNode.cloneNode(true);
                 el.appendChild(cloneNode);
                 centerNode.parentNode.replaceChild(el, centerNode);
-                return cloneNode;
+                return el;
             }
         }
     };
     this.wrapElement = function(srcElement, element, attributes) {
-        if (srcElement == this.startContainer && srcElement == this.endContainer) {
+        if (srcElement == this.startNode && srcElement == this.endNode) {
             if (srcElement.tagName.toLowerCase() == element.tagName.toLowerCase()) {
                 this.setAttributes(srcElement, attributes);
             }
-            this.addRanges(srcElement);
+            this.keRange.selectNode(srcElement);
             return false;
-        } else if (srcElement == this.startContainer) {
-            this.addRanges(srcElement);
-        } else if (srcElement == this.endContainer) {
-            this.addRanges(srcElement);
+        } else if (srcElement == this.startNode) {
+            this.keRange.setStart(srcElement, 0);
+        } else if (srcElement == this.endNode) {
+            this.keRange.setEnd(srcElement, 0);
             return false;
         }
         return true;
     };
     this.wrapText = function(node, element, attributes) {
-        if (node == this.startContainer && node == this.endContainer) {
-            var rangeNode = this.wrapTextNode(node, this.startOffset, this.endOffset, element, attributes);
-            this.addRanges(rangeNode);
+        if (node == this.startNode && node == this.endNode) {
+            var rangeNode = this.wrapTextNode(node, this.startPos, this.endPos, element, attributes);
+            this.keRange.selectNode(rangeNode);
             return false;
-        } else if (node == this.startContainer) {
-            var rangeNode = this.wrapTextNode(node, this.startOffset, node.nodeValue.length, element, attributes);
-            this.addRanges(rangeNode);
-        } else if (node == this.endContainer) {
-            var rangeNode = this.wrapTextNode(node, 0, this.endOffset, element, attributes);
-            this.addRanges(rangeNode);
+        } else if (node == this.startNode) {
+            var rangeNode = this.wrapTextNode(node, this.startPos, node.nodeValue.length, element, attributes);
+            this.keRange.setStart(rangeNode, 0);
+        } else if (node == this.endNode) {
+            var rangeNode = this.wrapTextNode(node, 0, this.endPos, element, attributes);
+            this.keRange.setEnd(rangeNode, 0);
             return false;
         } else {
             this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
@@ -446,7 +503,7 @@ KE.cmd = function(id) {
         var nodes = parentNode.childNodes;
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
-            if (!this.isStarted && node == this.startContainer) this.isStarted = true;
+            if (!this.isStarted && node == this.startNode) this.isStarted = true;
             if (node.nodeType == 1) {
                 if (!this.wrapChildNodes(node, element, attributes)) return false;
                 if (!this.wrapElement(node, element, attributes)) return false;
@@ -459,14 +516,16 @@ KE.cmd = function(id) {
         return true;
     };
     this.wrap = function(tagName, attributes) {
-        this.$range.select();
+        if (KE.browser == 'IE') this.keSel.range.select();
         var element = KE.$$(tagName, this.doc);
         this.setAttributes(element, attributes);
-        var parentNode = this.$range.getParentElement();
-        if (!this.isStarted && parentNode == this.startContainer) this.isStarted = true;
+        var parentNode = this.keRange.getParentElement();
+        if (parentNode == this.startNode) this.isStarted = true;
         this.wrapChildNodes(parentNode, element, attributes);
         this.wrapElement(parentNode, element, attributes);
-        this.select();
+        //alert(this.keRange.startNode.nodeValue + '<-->' + this.keRange.startNode.tagName);
+        //alert(this.keRange.endNode.nodeValue + '<-->' + this.keRange.endNode.tagName);
+        this.keSel.addRange(this.keRange);
     };
     this.remove = function(tagNames, attributes) {
         this.$range.select();
@@ -646,6 +705,33 @@ KE.util = {
         }
         return KE.util.rgbToHex(val);
     },
+    createRange : function(doc) {
+        return doc.createRange ? doc.createRange() : doc.body.createTextRange();
+    },
+    getParentOffset : function(doc, node) {
+        var offset = 0;
+        var sibling = node.previousSibling;
+        while (sibling != null) {
+            if (sibling.nodeType == 1) {
+                var nodeRange = KE.util.createRange(doc);
+                nodeRange.moveToElementText(sibling);
+                offset += nodeRange.text.length;
+            } else {
+                offset += sibling.nodeValue.length;
+            }
+            sibling = sibling.previousSibling;
+        }
+        return offset;
+    },
+    getElementIndex : function(el) {
+        var sibling = el.previousSibling;
+        var i = 0;
+        while (sibling != null) {
+            sibling = sibling.previousSibling;
+            i++;
+        }
+        return i;
+    },
     showBottom : function(id) {
         KE.g[id].bottom.style.display = 'block';
     },
@@ -783,18 +869,20 @@ KE.util = {
     selection : function(id) {
         var win = KE.g[id].iframeWin;
         var doc = KE.g[id].iframeDoc;
-        KE.g[id].$selection = new KE.selection(win, doc);
-        KE.g[id].$range = KE.g[id].$selection.getRange();
+        KE.g[id].keSel = new KE.selection(win, doc);
+        KE.g[id].keRange = KE.g[id].keSel.keRange;
+        KE.g[id].sel = KE.g[id].keSel.sel;
+        KE.g[id].range = KE.g[id].keSel.range;
     },
     select : function(id) {
-        KE.g[id].$range.select();
+        if (KE.browser == 'IE') KE.g[id].range.select();
     },
     pToBr : function(id) {
         if(KE.browser == 'IE') {
             KE.event.add(KE.g[id].iframeDoc, 'keydown', function(e) {
                 if (e.keyCode == 13) {
                     KE.util.selection(id);
-                    if(KE.g[id].$range.range.parentElement().tagName != 'LI') {
+                    if(KE.g[id].keRange.parentElement().tagName != 'LI') {
                         KE.util.insertHtml(id, '<br />');
                         return false;
                     }
@@ -812,10 +900,10 @@ KE.util = {
         if (html == '') return;
         KE.util.select(id);
         if (KE.browser == 'IE') {
-            if (KE.g[id].$selection.sel.type.toLowerCase() == 'control') {
-                KE.g[id].$range.range.item(0).outerHTML = html;
+            if (KE.g[id].sel.type.toLowerCase() == 'control') {
+                KE.g[id].range.item(0).outerHTML = html;
             } else {
-                KE.g[id].$range.range.pasteHTML(html);
+                KE.g[id].range.pasteHTML(html);
             }
             KE.history.add(id, false);
         } else {
@@ -1081,15 +1169,14 @@ KE.dialog = function(arg){
         var titleDiv = KE.$$('div');
         titleDiv.className = 'ke-dialog-title';
         titleDiv.innerHTML = arg.title;
-        var img = KE.$$('img');
-        img.src = KE.g[id].skinsPath + 'spacer.gif';
+        var span = KE.$$('span');
         var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
-        img.style.backgroundImage = "url(" + url + ")";
-        img.className = "ke-toolbar-close";
-        img.alt = KE.lang['close'];
-        img.title = KE.lang['close'];
-        img.onclick = new Function("KE.layout.hide('" + id + "')");
-        titleDiv.appendChild(img);
+        span.style.backgroundImage = "url(" + url + ")";
+        span.className = "ke-toolbar-close";
+        span.alt = KE.lang['close'];
+        span.title = KE.lang['close'];
+        span.onclick = new Function("KE.layout.hide('" + id + "')");
+        titleDiv.appendChild(span);
         KE.util.drag(id, titleDiv, div, function(objTop, objLeft, objWidth, objHeight, top, left) {
             div.style.top = (objTop + top) + 'px';
             div.style.left = (objLeft + left) + 'px';
@@ -2025,7 +2112,7 @@ KE.plugin['link'] = {
     exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
-        var range = KE.g[id].$range.range;
+        var range = KE.g[id].range;
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('hyperLink', dialogDoc).value;
         var target = KE.$('linkType', dialogDoc).value;
