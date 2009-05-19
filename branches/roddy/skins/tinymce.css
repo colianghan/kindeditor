@@ -255,7 +255,7 @@
     border-collapse:separate;
 }
 .ke-toolbar-close {
-    dispaly: block;
+    display: block;
     background-position: -902px -2px;
     width: 16px;
     height: 16px;
@@ -294,6 +294,7 @@
     padding:0;
 }
 .ke-bottom-right-img {
+    display: block;
     background-position: -810px -10px;
     width: 10px;
     height: 10px;

@@ -299,14 +299,14 @@ KE.selection = function(win, doc) {
             this.range.select();
         } else {
             if (keRange.startNode.nodeType == 1) {
-                var firstChild = keRange.startNode.firstChild;
-                this.range.setStart(firstChild, 0);
+                var node = keRange.startNode.firstChild || keRange.startNode;
+                this.range.setStart(node, 0);
             } else {
                 this.range.setStart(keRange.startNode, keRange.startPos);
             }
             if (keRange.endNode.nodeType == 1) {
-                var lastChild = keRange.endNode.lastChild;
-                this.range.setEnd(lastChild, lastChild.nodeType == 1 ? 0 : lastChild.nodeValue.length);
+                var node = keRange.endNode.lastChild || keRange.endNode;
+                this.range.setEnd(node, node.nodeType == 1 ? 0 : node.nodeValue.length);
             } else {
                 this.range.setEnd(keRange.endNode, keRange.endPos);
             }
@@ -357,11 +357,11 @@ KE.range = function(doc) {
         var compareNodes = function(node1, pos1, node2, pos2) {
             var cmp;
             if (KE.browser == 'IE') {
-                var getStartRange = function(node, pos) {
+                var getStartRange = function(node, pos, isStart) {
                     var range = KE.util.createRange(doc);
                     if (node.nodeType == 1) {
                         range.moveToElementText(node);
-                        range.collapse(false);
+                        range.collapse(isStart);
                     } else {
                         var offset = KE.util.getParentOffset(doc, node);
                         range.moveToElementText(node.parentNode);
@@ -370,17 +370,24 @@ KE.range = function(doc) {
                     }
                     return range;
                 }
-                var range1 = getStartRange(node1, pos1);
-                var range2 = getStartRange(node2, pos2);
-                return range1.compareEndPoints('EndToEnd', range2);
+                var range1, range2;
+                if (how == 'START_TO_START' || how == 'START_TO_END') range1 = getStartRange(node1, pos1, true);
+                else range1 = getStartRange(node1, pos1, false);
+                if (how == 'START_TO_START' || how == 'END_TO_START') range2 = getStartRange(node2, pos2, true);
+                else range2 = getStartRange(node2, pos2, false);
+                return range1.compareEndPoints('StartToStart', range2);
             } else {
                 var range1 = KE.util.createRange(doc);
                 range1.selectNode(node1);
+                if (how == 'START_TO_START' || how == 'START_TO_END') range1.collapse(true);
+                else range1.collapse(false);
                 var range2 = KE.util.createRange(doc);
                 range2.selectNode(node2);
-                if (range1.compareBoundaryPoints(Range.END_TO_END, range2) > 0) {
+                if (how == 'START_TO_START' || how == 'END_TO_START') range2.collapse(true);
+                else range2.collapse(false);
+                if (range1.compareBoundaryPoints(Range.START_TO_START, range2) > 0) {
                     cmp = 1;
-                } else if (range1.compareBoundaryPoints(Range.END_TO_END, range2) == 0) {
+                } else if (range1.compareBoundaryPoints(Range.START_TO_START, range2) == 0) {
                     if (pos1 > pos2) cmp = 1;
                     else if (pos1 == pos2) cmp = 0;
                     else cmp = -1;
@@ -391,9 +398,9 @@ KE.range = function(doc) {
             return cmp;
         }
         if (how == 'START_TO_START') return compareNodes(this.startNode, this.startPos, range.startNode, range.startPos);
-        else if (how == 'START_TO_END') return compareNodes(this.startNode, this.startPos, range.endNode, range.endPos);
-        else if (how == 'END_TO_START') return compareNodes(this.endNode, this.endPos, range.startNode, range.startPos);
-        else if (how == 'END_TO_END') return compareNodes(this.endNode, this.endPos, range.endNode, range.endPos);
+        if (how == 'START_TO_END') return compareNodes(this.startNode, this.startPos, range.endNode, range.endPos);
+        if (how == 'END_TO_START') return compareNodes(this.endNode, this.endPos, range.startNode, range.startPos);
+        if (how == 'END_TO_END') return compareNodes(this.endNode, this.endPos, range.endNode, range.endPos);
     };
     this.setStart = function(node, pos) {
         this.startNode = node;
@@ -1437,12 +1444,11 @@ KE.create = function(id, mode) {
     bottomLeft.className = 'ke-bottom-left';
     var bottomRight = row.insertCell(1);
     bottomRight.className = 'ke-bottom-right';
-    var img = KE.$$('img');
+    var span = KE.$$('span');
     var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
-    img.style.backgroundImage = "url(" + url + ")";
-    img.src = KE.g[id].skinsPath + 'spacer.gif';
-    img.className = 'ke-bottom-right-img';
-    bottomRight.appendChild(img);
+    span.style.backgroundImage = "url(" + url + ")";
+    span.className = 'ke-bottom-right-img';
+    bottomRight.appendChild(span);
     container.appendChild(bottom);
     var hideDiv = KE.$$('div');
     hideDiv.style.display = 'none';
