@@ -436,6 +436,83 @@ KE.range = function(doc) {
         range.setEnd(this.endNode, this.endPos);
         return range;
     };
+    this.extractContents = function(isDelete) {
+        isDelete = (isDelete === false) ? false : true;
+        var thisRange = this;
+        var startNode = this.startNode;
+        var startPos = this.startPos;
+        var endNode = this.endNode;
+        var endPos = this.endPos;
+        var extractTextNode = function(node, startPos, endPos) {
+            var nextNode = node.nextSibling;
+            var cloneNode = node.cloneNode(true);
+            var centerNode = cloneNode.splitText(startPos);
+            centerNode.splitText(endPos - startPos);
+            if (isDelete) {
+                var center = node;
+                if (startPos > 0) center = node.splitText(startPos);
+                if (endPos < node.nodeValue.length) center.splitText(endPos - startPos);
+                center.parentNode.removeChild(center);
+            }
+            return centerNode;
+        };
+        var isStarted = false;
+        var isEnd = false;
+        var extractNodes = function(parent, frag) {
+            if (!parent.hasChildNodes) return true;
+            var node = parent.firstChild;
+            while (node != null) {
+                if (node == startNode) isStarted = true;
+                if (node == endNode) isEnd = true;
+                var nextNode = node.nextSibling;
+                if (node.nodeType == 1) {
+                    var range = new KE.range(doc);
+                    range.selectNode(node);
+                    if (isStarted && range.comparePoints('END_TO_END', thisRange) <= 0) {
+                        var cloneNode = node.cloneNode(true);
+                        frag.appendChild(node.cloneNode(true));
+                        if (isDelete) {
+                            var nextNode = node.nextSibling;
+                            node.parentNode.removeChild(node);
+                        }
+                    } else {
+                        var childFlag = KE.$$(node.tagName);
+                        if (range.comparePoints('END_TO_START', thisRange) > 0) frag.appendChild(childFlag);
+                        if (!extractNodes(node, childFlag)) return false;
+                    }
+                } else {
+                    if (isStarted) {
+                        var textNode;
+                        if (node == startNode && node == endNode) {
+                            textNode = extractTextNode(node, startPos, endPos);
+                            frag.appendChild(textNode);
+                            return false;
+                        } else if (node == startNode) {
+                            textNode = extractTextNode(node, startPos, node.nodeValue.length);
+                            frag.appendChild(textNode);
+                        } else if (node == endNode) {
+                            textNode = extractTextNode(node, 0, endPos);
+                            frag.appendChild(textNode);
+                            return false;
+                        } else {
+                            textNode = extractTextNode(node, 0, node.nodeValue.length);
+                            frag.appendChild(textNode);
+                        }
+                    }
+                }
+                node = nextNode;
+                if (isEnd) return false;
+            }
+            return true;
+        }
+        var parentNode = this.getParentElement();
+        var docFrag = KE.$$(parentNode.tagName);
+        extractNodes(parentNode, docFrag);
+        return docFrag;
+    };
+    this.cloneContents = function() {
+        return this.extractContents(false);
+    };
 };
 
 KE.cmd = function(id) {
@@ -460,8 +537,8 @@ KE.cmd = function(id) {
         }
         return el;
     };
-    this.wrapTextNode = function(node, startOffset, endOffset, element, attributes) {
-        var isFull = (startOffset == 0 && endOffset == node.nodeValue.length);
+    this.wrapTextNode = function(node, startPos, endPos, element, attributes) {
+        var isFull = (startPos == 0 && endPos == node.nodeValue.length);
         var range = new KE.range(this.doc);
         range.selectNode(node.parentNode);
         if (isFull && node.parentNode.tagName == element.tagName && range.comparePoints('END_TO_END', this.keRange) <= 0) {
@@ -475,8 +552,9 @@ KE.cmd = function(id) {
                 node.parentNode.replaceChild(el, node);
                 return cloneNode;
             } else {
-                var centerNode = node.splitText(startOffset);
-                centerNode.splitText(endOffset - startOffset);
+                var centerNode = node;
+                if (startPos > 0) centerNode = node.splitText(startPos);
+                if (endPos < node.nodeValue.length) centerNode.splitText(endPos - startPos);
                 var cloneNode = centerNode.cloneNode(true);
                 el.appendChild(cloneNode);
                 centerNode.parentNode.replaceChild(el, centerNode);
@@ -523,7 +601,6 @@ KE.cmd = function(id) {
                 if (!this.wrapChildNodes(node, element, attributes)) return false;
                 if (!this.wrapElement(node, element, attributes)) return false;
             } else if (node.nodeType == 3) {
-                if (!node.nodeValue || node.nodeValue.match(/^\r\n|\n|\r$/i)) continue;
                 if (!this.isStarted) continue;
                 if (!this.wrapText(node, element, attributes)) return false;
             }
@@ -539,7 +616,11 @@ KE.cmd = function(id) {
         this.keSel.addRange(this.keRange);
     };
     this.remove = function(tagNames, attributes) {
-        if (KE.browser == 'IE') this.keSel.range.select();
+        this.keSel.focus();
+        var frag = this.keRange.extractContents();
+        //var frag = this.keRange.cloneContents();
+        alert(frag.innerHTML);
+        return;
         //this.doc.execCommand('removeformat', false, null);
         var startNode = this.startNodes;
         var startPos = this.startPos;
