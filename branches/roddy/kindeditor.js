@@ -476,7 +476,7 @@ KE.range = function(doc) {
                             node.parentNode.removeChild(node);
                         }
                     } else {
-                        var childFlag = KE.$$(node.tagName);
+                        var childFlag = node.cloneNode(false);
                         if (range.comparePoints('END_TO_START', thisRange) > 0) frag.appendChild(childFlag);
                         if (!extractNodes(node, childFlag)) return false;
                     }
@@ -506,7 +506,7 @@ KE.range = function(doc) {
             return true;
         }
         var parentNode = this.getParentElement();
-        var docFrag = KE.$$(parentNode.tagName);
+        var docFrag = parentNode.cloneNode(false);
         extractNodes(parentNode, docFrag);
         return docFrag;
     };
@@ -617,18 +617,13 @@ KE.cmd = function(id) {
     };
     this.remove = function(tagNames, attributes) {
         this.keSel.focus();
-        var frag = this.keRange.extractContents();
-        //var frag = this.keRange.cloneContents();
-        alert(frag.innerHTML);
-        return;
-        //this.doc.execCommand('removeformat', false, null);
-        var startNode = this.startNodes;
+        var doc = this.doc;
+        var startNode = this.startNode;
         var startPos = this.startPos;
         var endNode = this.endNode;
         var endPos = this.endPos;
-        var parentNode = this.keRange.getParentElement();
-        var getBreakParent = function(node) {
-            var parent;
+        var getNodeParent = function(node) {
+            var parent = null;
             while (node != null) {
                 node = node.parentNode;
                 if (KE.util.inArray(node.tagName.toLowerCase(), tagNames)) {
@@ -639,55 +634,101 @@ KE.cmd = function(id) {
             }
             return parent;
         };
-        var getBreakNode = function(parent, isStart) {
-            if (!parent) return;
-            var isStarted = false;
-            var container = isStart ? startNode : endNode;
-            var offset = isStart ? startPos : endPos;
-            var breakNode = function(parent, cloneParent) {
-                if (!cloneParent) return;
-                var sibling = isStart ? parent.firstChild : parent.lastChild;
-                var cloneSibling = isStart ? cloneParent.firstChild : cloneParent.lastChild;
-                if (!cloneSibling) return;
-                while (sibling != null) {
-                    if (sibling == startNode) isStarted = true;
-                    if (isStarted) {
-                        if (sibling.nodeType == 1) {
-                            parent.removeChild(cloneSibling);
-                        } else if (sibling.nodeType == 3) {
-                            if (sibling == container) {
-                                var rightNode = cloneSibling.splitText(offset);
-                                if (isStart) parent.removeChild(rightNode);
-                                else parent.removeChild(cloneSibling);
-                            } else {
-                                parent.removeChild(cloneSibling);
-                            }
-                        }
-                    } else {
-                        if (sibling.nodeType == 1) {
-                            if (sibling.hasChildNodes) {
-                                breakNode(sibling, cloneSibling);
-                            }
-                        }
-                    }
-                    sibling = isStart ? sibling.nextSibling : sibling.previousSibling;
-                    cloneSibling = isStart ? cloneSibling.nextSibling : cloneSibling.previousSibling;
-                }
+        var startParent = getNodeParent(startNode);
+        var endParent = getNodeParent(endNode);
+        if (startParent != null && endParent != null && startParent == endParent) {
+            var leftRange = new KE.range(doc);
+            leftRange.selectNode(startParent);
+            leftRange.setEnd(startNode, startPos);
+            var rightRange = new KE.range(doc);
+            rightRange.selectNode(startParent);
+            rightRange.setStart(endNode, endPos);
+            var leftNode = leftRange.cloneContents();
+            var centerNode = this.keRange.cloneContents();
+            var rightNode = rightRange.cloneContents();
+            startParent.parentNode.replaceChild(rightNode, startParent);
+            rightNode.parentNode.insertBefore(centerNode, rightNode);
+            centerNode.parentNode.insertBefore(leftNode, centerNode);
+            this.keRange.selectNode(centerNode);
+            this.keSel.addRange(this.keRange);
+        } else {
+            if (startParent != null) {
+                var leftRange = new KE.range(doc);
+                leftRange.selectNode(startParent);
+                leftRange.setEnd(startNode, startPos);
+                var rightRange = new KE.range(doc);
+                rightRange.selectNode(startParent);
+                rightRange.setStart(startNode, startPos);
+                var leftNode = leftRange.cloneContents();
+                var rightNode = rightRange.cloneContents();
+                startParent.parentNode.replaceChild(rightNode, startParent);
+                rightNode.parentNode.insertBefore(leftNode, rightNode);
+                this.keRange.setStart(rightNode, 0);
             }
-            var cloneParent = parent.cloneNode(true);
-            breakNode(parent, cloneParent);
-            return cloneParent;
+            if (endParent != null) {
+                var leftRange = new KE.range(doc);
+                leftRange.selectNode(endParent);
+                leftRange.setEnd(endNode, endPos);
+                var rightRange = new KE.range(doc);
+                rightRange.selectNode(endParent);
+                rightRange.setStart(endNode, endPos);
+                var leftNode = leftRange.cloneContents();
+                var rightNode = rightRange.cloneContents();
+                endParent.parentNode.replaceChild(rightNode, endParent);
+                rightNode.parentNode.insertBefore(leftNode, rightNode);
+                this.keRange.setEnd(leftNode, leftNode.nodeType == 1 ? 0 : leftNode.nodeValue.length);
+            }
+            this.keSel.addRange(this.keRange);
         }
-        var startParent = getBreakParent(startNode);
-        var endParent = getBreakParent(endNode);
-        var startBreakNode = getBreakNode(startParent, true);
-        var endBreakNode = getBreakNode(endParent, false);
-        var node = document.createTextNode('aaa');
-        //startParent.parentNode.replaceChild(startBreakNode, startParent);
-        //startBreakNode.parentNode.appendChild(node);
-        //startBreakNode.parentNode.appendChild(endBreakNode);
-        //alert(startBreakNode.outerHTML);
-        //alert(endBreakNode.outerHTML);
+        var keRange = this.keRange;
+        var startNode = keRange.startNode;
+        var startPos = keRange.startPos;
+        var endNode = keRange.endNode;
+        var endPos = keRange.endPos;
+        var isStarted = false;
+        var isEnd = false;
+        var removeParentElement = function(parent) {
+        };
+        var removeNodes = function(parent) {
+            if (!parent.hasChildNodes) return true;
+            var node = parent.firstChild;
+            while (node != null) {
+                if (node == startNode) isStarted = true;
+                if (node == endNode) isEnd = true;
+                if (isStarted && KE.util.inArray(parent.tagName.toLowerCase(), tagNames)) {
+                    if (parent.parentNode && parent.hasChildNodes) {
+                        var child = parent.firstChild;
+                        var firstNode, i = 0;
+                        while (child != null) {
+                            var cloneNode = child.cloneNode(true);
+                            if (i == 0) firstNode = cloneNode;
+                            parent.parentNode.insertBefore(cloneNode, parent);
+                            if (child == startNode) {
+                                startNode = cloneNode;
+                                startPos = 0;
+                                keRange.setStart(startNode, startPos);
+                            }
+                            if (child == endNode) {
+                                endNode = cloneNode;
+                                endPos = endNode.nodeType == 1 ? 0 : endNode.nodeValue.length;
+                                keRange.setEnd(endNode, endPos);
+                            }
+                            child = child.nextSibling;
+                            i++;
+                        }
+                        node = firstNode;
+                        parent.parentNode.removeChild(parent);
+                    }
+                }
+                if (node.nodeType == 1 && !removeNodes(node)) return false;
+                node = node.nextSibling;
+                if (isEnd) return false;
+            }
+            return true;
+        };
+        var parentNode = this.keRange.getParentElement();
+        removeNodes(parentNode);
+        this.keSel.addRange(keRange);
     };
 }
 
