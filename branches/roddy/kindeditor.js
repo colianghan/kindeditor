@@ -98,7 +98,6 @@ KE.setting = {
     autoOnsubmitMode : true,
     resizeMode : 2,
     filterMode : true,
-    bbcodeMode : false,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
@@ -340,11 +339,6 @@ KE.range = function(doc) {
             this.startPos = this.endPos;
         }
         this.collapsed = true;
-    };
-    this.isPointInRange = function(node, pos) {
-        var range = new KE.range(doc);
-        range.setStart(node, pos);
-        if (this.comparePoints('START_TO_START', range) < 0 && this.comparePoints('END_TO_START', range) > 0) return true;
     };
     this.comparePoints = function(how, range) {
         var compareNodes = function(nodeA, posA, nodeB, posB) {
@@ -603,14 +597,14 @@ KE.cmd = function(id) {
         }
         return true;
     }
-    this.wrapChildNodes = function(parentNode, element, attributes) {
+    this.wrapNodes = function(parentNode, element, attributes) {
         if (!parentNode.hasChildNodes) return true;
         var nodes = parentNode.childNodes;
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             if (node == this.startNode) this.isStarted = true;
             if (node.nodeType == 1) {
-                if (!this.wrapChildNodes(node, element, attributes)) return false;
+                if (!this.wrapNodes(node, element, attributes)) return false;
                 if (!this.wrapElement(node, element, attributes)) return false;
             } else if (node.nodeType == 3) {
                 if (!this.isStarted) continue;
@@ -624,7 +618,7 @@ KE.cmd = function(id) {
         var element = KE.$$(tagName, this.doc);
         this.mergeAttributes(element, attributes);
         var parentNode = this.keRange.getParentElement();
-        this.wrapChildNodes(parentNode, element, attributes);
+        this.wrapNodes(parentNode, element, attributes);
         this.keSel.addRange(this.keRange);
     };
     this.getNodeParent = function(tagNames, node) {
@@ -639,53 +633,78 @@ KE.cmd = function(id) {
         }
         return parent;
     };
-    this.splitNodeParent = function(tagNames, node, pos, isStart) {
-        var parent = this.getNodeParent(tagNames, node);
-        if (parent == null) return;
+    this.splitNodeParent = function(parent, node, pos, isStart) {
         var leftRange = new KE.range(this.doc);
         leftRange.selectNode(parent.firstChild);
         leftRange.setEnd(node, pos);
-        var leftNode = leftRange.extractContents();
-        parent.parentNode.insertBefore(leftNode, parent);
-        return isStart ? parent : leftNode;
+        var leftFrag = leftRange.extractContents();
+        parent.parentNode.insertBefore(leftFrag, parent);
+        return {left : leftFrag, right : parent};
+    };
+    this.removeNodes = function(parent, tagNames, attributes) {
+        if (!parent.hasChildNodes) return true;
+        var node = parent.firstChild;
+        while (node != null) {
+            if (node == this.startNode) this.isStarted = true;
+            var nextNode = node.nextSibling;
+            var range = new KE.range(this.doc);
+            range.selectTextNode(node);
+            if (this.isStarted && range.comparePoints('START_TO_END', this.keRange) < 0) {
+                if (KE.util.inArray(parent.tagName.toLowerCase(), tagNames)) {
+                    var cloneNode = node.cloneNode(true);
+                    if (node == this.startNode) this.keRange.setStart(cloneNode, 0);
+                    if (node == this.endNode) this.keRange.setEnd(cloneNode, cloneNode.nodeType == 1 ? 0 : cloneNode.nodeValue.length);
+                    parent.parentNode.insertBefore(cloneNode, parent);
+                    if (parent.childNodes.length == 1) {
+                        parent.parentNode.removeChild(parent);
+                    } else {
+                        node.parentNode.removeChild(node);
+                    }
+                    if (cloneNode.nodeType == 1) this.removeNodes(cloneNode, tagNames, attributes);
+                } else {
+                    if (node.nodeType == 1) this.removeNodes(node, tagNames, attributes);
+                }
+            }
+            node = nextNode;
+        }
     };
     this.remove = function(tagNames, attributes) {
+        var startNode = this.startNode;
+        var endNode = this.endNode;
+        var startPos = this.startPos;
+        var endPos = this.endPos;
         this.keSel.focus();
-        var startNode = this.splitNodeParent(tagNames, this.startNode, this.startPos, true);
-        if (startNode) this.keRange.setStart(startNode, 0);
-        var endNode = this.splitNodeParent(tagNames, this.endNode, this.endPos, false);
-        if (endNode) this.keRange.setEnd(endNode, 0);
-        alert(this.keRange.cloneContents().innerHTML);
-        return;
-        var removeNodes = function(parent) {
-            if (!parent.hasChildNodes) return true;
-            var node = parent.firstChild;
-            while (node != null) {
-                var nextNode = node.nextSibling;
-                var range = new KE.range(doc);
-                range.selectTextNode(node);
-                if (keRange.isPointInRange(range.startNode, range.startPos) || keRange.isPointInRange(range.endNode, range.endPos)) {
-                    if (KE.util.inArray(parent.tagName.toLowerCase(), tagNames)) {
-                        var cloneNode = node.cloneNode(true);
-                        if (node == startNode) keRange.setStart(cloneNode, 0);
-                        if (node == endNode) keRange.setEnd(cloneNode, cloneNode.nodeType == 1 ? 0 : cloneNode.nodeValue.length);
-                        parent.parentNode.insertBefore(cloneNode, parent);
-                        if (parent.childNodes.length == 1) {
-                            parent.parentNode.removeChild(parent);
-                        } else {
-                            node.parentNode.removeChild(node);
-                        }
-                        if (cloneNode.nodeType == 1) removeNodes(cloneNode);
-                    } else {
-                        if (node.nodeType == 1) removeNodes(node);
-                    }
-                }
-                node = nextNode;
+        var startParent = this.getNodeParent(tagNames, startNode);
+        var endParent = this.getNodeParent(tagNames, endNode);
+        if (startParent) {
+            var startFrags = this.splitNodeParent(startParent, startNode, startPos, true);
+            this.keRange.setStart(startFrags.right, 0);
+            if (this.startNode == this.endNode) {
+                this.keRange.setEnd(startFrags.right, 0);
+                var range = new KE.range(this.doc);
+                range.setTextStart(startFrags.left, 0);
+                range.setTextEnd(startFrags.left, 0);
+                endPos -= range.endNode.nodeValue.length;
+                range.setTextStart(startFrags.right, 0);
+                range.setTextEnd(startFrags.right, 0);
+                endNode = range.startNode;
             }
-        };
+        }
+        if (endParent) {
+            var endFrags = this.splitNodeParent(endParent, endNode, endPos, false);
+            this.keRange.setEnd(endFrags.left, 0);
+            if (startParent == endParent) {
+                this.keRange.setStart(endFrags.left, 0);
+            }
+        }
+        this.startNode = this.keRange.startNode;
+        this.endNode = this.keRange.endNode;
+        //alert(keRange.startNode.innerHTML);
+        //alert(keRange.endNode.innerHTML);
         var parentNode = this.keRange.getParentElement();
-        removeNodes(parentNode);
-        this.keSel.addRange(keRange);
+        //alert(parentNode.innerHTML);
+        this.removeNodes(parentNode, tagNames, attributes);
+        this.keSel.addRange(this.keRange);
     };
 }
 
@@ -797,6 +816,14 @@ KE.util = {
     },
     createRange : function(doc) {
         return doc.createRange ? doc.createRange() : doc.body.createTextRange();
+    },
+    getNodeTextLength : function(node) {
+        if (node.nodeType == 1) {
+            var html = node.innerHTML;
+            return html.replace(/<.*?>/ig, "").length;
+        } else {
+            return node.nodeValue.length;
+        }
     },
     getParentOffset : function(doc, node) {
         var offset = 0;
@@ -921,7 +948,6 @@ KE.util = {
         if (KE.g[id].wyswygMode) {
             if (filterMode) {
                 data = KE.util.outputHtml(id, KE.g[id].iframeDoc.body);
-                data = KE.g[id].bbcodeMode ? KE.util.htmlToBbcode(data) : data;
             } else {
                 data = KE.g[id].iframeDoc.body.innerHTML;
             }
@@ -1093,54 +1119,6 @@ KE.util = {
         scanNodes(element);
         var html = htmlList.join('');
         return html;
-    },
-    htmlToBbcode : function(str) {
-        str = str.replace(/\r\n|\n|\r/gi, "");
-        str = str.replace(/<strong>(.*?)<\/strong>/gi, "[b]$1[/b]");
-        str = str.replace(/<b>(.*?)<\/b>/gi, "[b]$1[/b]");
-        str = str.replace(/<span.*?style="font-weight:\s?bold;">(.*?)<\/span>/gi, "[b]$1[/b]");
-        str = str.replace(/<font.*?color=\"(.*?)\">(.*?)<\/font>/gi, "[color=$1]$2[/color]");
-        str = str.replace(/<span.*?style="color:\s?(.*?);">(.*?)<\/span>/gi, "[color=$1]$2[/color]");
-        str = str.replace(/<font.*?size=\"(.*?)\">(.*?)<\/font>/gi, "[size=$1]$2[/size]");
-        str = str.replace(/<span.*?style="font-size:\s?(.*?);">(.*?)<\/span>/gi, "[size=$1]$2[/size]");
-        str = str.replace(/<em>(.*?)<\/em>/gi, "[i]$1[/i]");
-        str = str.replace(/<i>(.*?)<\/i>/gi, "[i]$1[/i]");
-        str = str.replace(/<span.*?style="text-decoration:\s?underline;">(.*?)<\/span>/gi, "[u]$1[/u]");
-        str = str.replace(/<u>(.*?)<\/u>/gi, "[u]$1[/u]");
-        str = str.replace(/<ul>(.*?)<\/ul>/gi, "[list]$1[/list]");
-        str = str.replace(/<li>(.*?)<\/li>/gi, "[*]$1[/*]");
-        str = str.replace(/<ol>(.*?)<\/ol>/gi, "[list=1]$1[/list]");
-        str = str.replace(/<img.*?src="(.*?)".*?>/gi, "[img]$1[/img]");
-        str = str.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/gi, "[url=$1]$2[/url]");
-        str = str.replace(/<blockquote.*?>(.*?)<\/blockquote>/gi, "[quote]$1[/quote]");
-        str = str.replace(/<br.*?>/gi, "\n");
-        str = str.replace(/<p>/gi, "");
-        str = str.replace(/<\/p>/gi, "\n\n");
-        str = str.replace(/<.*?>/gi, "");
-        str = str.replace(/&nbsp;/gi, " ");
-        str = str.replace(/&lt;/gi, "<");
-        str = str.replace(/&gt;/gi, ">");
-        str = str.replace(/&amp;/gi, "&");
-        return str;
-    },
-    bbcodeToHtml : function(str) {
-        str = str.replace(/&/gi, "&amp;");
-        str = str.replace(/ /gi, "&nbsp;");
-        str = str.replace(/</gi, "&lt;");
-        str = str.replace(/>/gi, "&gt;");
-        str = str.replace(/\[b\](.*?)\[\/b\]/gi, "<strong>$1</strong>");
-        str = str.replace(/\[color=(.*?)\](.*?)\[\/color\]/gi, "<font color=\"$1\">$2</font>");
-        str = str.replace(/\[size=(.*?)\](.*?)\[\/size\]/gi, "<font size=\"$1\">$2</font>");
-        str = str.replace(/\[i\](.*?)\[\/i\]/gi, "<em>$1</em>");
-        str = str.replace(/\[u\](.*?)\[\/u\]/gi, "<u>$1</u>");
-        str = str.replace(/\[list\](.*?)\[\/list\]/gi, "<ul>$1</ul>");
-        str = str.replace(/\[list=1\](.*?)\[\/list\]/gi, "<ol>$1</ol>");
-        str = str.replace(/\[\*\](.*?)\[\/\*\]/gi, "<li>$1</li>");
-        str = str.replace(/\[img\](.*?)\[\/img\]/gi, "<img src=\"$1\" />");
-        str = str.replace(/\[url=(.*?)\](.*?)\[\/url\]/gi, "<a href=\"$1\">$2</a>");
-        str = str.replace(/\[quote\](.*?)\[\/quote\]/gi, "<blockquote>$1</blockquote>");
-        str = str.replace(/\r\n|\n|\r/gi, "<br />");
-        return str;
     }
 };
 
@@ -1571,8 +1549,7 @@ KE.create = function(id, mode) {
     if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
     setTimeout(
         function(){
-            var value = srcTextarea.value;
-            if (srcTextarea.value) iframeDoc.body.innerHTML = KE.g[id].bbcodeMode ? KE.util.bbcodeToHtml(value) : value;
+            if (srcTextarea.value) iframeDoc.body.innerHTML = srcTextarea.value;
             KE.history.add(id, false);
         }, 1);
 };
@@ -1582,7 +1559,6 @@ KE.init = function(config) {
     config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? KE.setting.autoOnsubmitMode : config.autoOnsubmitMode;
     config.resizeMode = (typeof config.resizeMode == "undefined") ? KE.setting.resizeMode : config.resizeMode;
     config.filterMode = (typeof config.filterMode == "undefined") ? KE.setting.filterMode : config.filterMode;
-    config.bbcodeMode = (typeof config.bbcodeMode == "undefined") ? KE.setting.bbcodeMode : config.bbcodeMode;
     config.skinType = config.skinType || KE.setting.skinType;
     config.cssPath = config.cssPath || KE.setting.cssPath;
     config.skinsPath = config.skinsPath || KE.setting.skinsPath;
@@ -1841,11 +1817,10 @@ KE.plugin['hr'] = {
 
 KE.plugin['preview'] = {
     click : function(id) {
-        var value = KE.util.getData(id);
         var dialog = new KE.dialog({
             id : id,
             cmd : 'preview',
-            html : KE.g[id].bbcodeMode ? KE.util.bbcodeToHtml(value) : value,
+            html : KE.util.getData(id),
             width : 600,
             height : 400,
             useFrameCSS : true,
@@ -1882,9 +1857,7 @@ KE.plugin['source'] = {
         if (obj.wyswygMode) {
             KE.layout.hide(id);
             if (KE.g[id].filterMode) {
-                var html = KE.util.outputHtml(id, obj.iframeDoc.body);
-                html = obj.bbcodeMode ? KE.util.htmlToBbcode(html) : html;
-                obj.newTextarea.value = html;
+                obj.newTextarea.value = KE.util.outputHtml(id, obj.iframeDoc.body);
             } else {
                 obj.newTextarea.value = obj.iframeDoc.body.innerHTML;
             }
@@ -1893,8 +1866,7 @@ KE.plugin['source'] = {
             KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
             obj.wyswygMode = false;
         } else {
-            var html = obj.newTextarea.value;
-            obj.iframeDoc.body.innerHTML = obj.bbcodeMode ? KE.util.bbcodeToHtml(html) : html;
+            obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
             obj.iframe.style.display = 'block';
             obj.newTextarea.style.display = 'none';
             KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
