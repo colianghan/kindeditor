@@ -224,7 +224,7 @@ KE.selection = function(win, doc) {
                             testRange.collapse();
                             var cmp = testRange.compareEndPoints('StartToStart', pointRange);
                             if (cmp > 0) break;
-                            else if (cmp == 0) {
+                            if (cmp == 0) {
                                 var tempRange = new KE.range(doc);
                                 tempRange.selectTextNode(node);
                                 return {node: tempRange.startNode, pos: tempRange.startPos};
@@ -292,14 +292,14 @@ KE.selection = function(win, doc) {
             tempRange.selectTextNode(startNode);
             startNode = tempRange.startNode;
             startPos = tempRange.startPos;
-        };
+        }
         if (endNode.nodeType == 3 && endPos == 0) {
             endNode = KE.util.getPrevNode(endNode);
             var tempRange = new KE.range(doc);
             tempRange.selectTextNode(endNode);
             endNode = tempRange.endNode;
             endPos = tempRange.endPos;
-        };
+        }
         var keRange = new KE.range(doc);
         keRange.setTextStart(startNode, startPos);
         keRange.setTextEnd(endNode, endPos);
@@ -349,36 +349,25 @@ KE.range = function(doc) {
     this.startPos = null;
     this.endNode = null;
     this.endPos = null;
-    this.collapsed = false;
     this.getParentElement = function() {
-        var scanParents = function(node, func) {
+        var scanParent = function(node, func) {
             while (node != null && node.tagName != 'body') {
                 node = node.parentNode;
                 if (func(node)) return;
             }
         }
         var nodeList = [];
-        scanParents(this.startNode, function(node) {
+        scanParent(this.startNode, function(node) {
             nodeList.push(node);
         });
         var parentNode;
-        scanParents(this.endNode, function(node) {
+        scanParent(this.endNode, function(node) {
             if (KE.util.inArray(node, nodeList)) {
                 parentNode = node;
                 return true;
             }
         });
         return parentNode ? parentNode : doc.body;
-    };
-    this.collapse = function(isStart) {
-        if (isStart) {
-            this.endNode = this.startNode;
-            this.endPos = this.startPos;
-        } else {
-            this.startNode = this.endNode;
-            this.startPos = this.endPos;
-        }
-        this.collapsed = true;
     };
     this.comparePoints = function(how, range) {
         var compareNodes = function(nodeA, posA, nodeB, posB) {
@@ -475,13 +464,6 @@ KE.range = function(doc) {
         this.setTextStart(node, 0);
         this.setTextEnd(node, node.nodeType == 1 ? 0 : node.nodeValue.length);
     };
-    this.cloneRange = function() {
-        var range = new KE.range(doc);
-        range.collapsed = this.collapsed;
-        range.setStart(this.startNode, this.startPos);
-        range.setEnd(this.endNode, this.endPos);
-        return range;
-    };
     this.extractContents = function(isDelete) {
         isDelete = (isDelete === false) ? false : true;
         var thisRange = this;
@@ -490,13 +472,14 @@ KE.range = function(doc) {
         var endNode = this.endNode;
         var endPos = this.endPos;
         var extractTextNode = function(node, startPos, endPos) {
+            var length = node.nodeValue.length;
             var cloneNode = node.cloneNode(true);
             var centerNode = cloneNode.splitText(startPos);
             centerNode.splitText(endPos - startPos);
             if (isDelete) {
                 var center = node;
                 if (startPos > 0) center = node.splitText(startPos);
-                if (endPos < node.nodeValue.length) center.splitText(endPos - startPos);
+                if (endPos < length) center.splitText(endPos - startPos);
                 center.parentNode.removeChild(center);
             }
             return centerNode;
@@ -504,7 +487,7 @@ KE.range = function(doc) {
         var isStarted = false;
         var isEnd = false;
         var extractNodes = function(parent, frag) {
-            if (!parent.hasChildNodes) return true;
+            if (KE.util.getNodeType(parent) != 1) return true;
             var node = parent.firstChild;
             while (node != null) {
                 if (node == startNode) isStarted = true;
@@ -516,13 +499,13 @@ KE.range = function(doc) {
                     range.selectNode(node);
                     if (isStarted && range.comparePoints('END_TO_END', thisRange) < 0) {
                         var cloneNode = node.cloneNode(true);
-                        frag.appendChild(node.cloneNode(true));
+                        frag.appendChild(cloneNode);
                         if (isDelete) {
                             node.parentNode.removeChild(node);
                         }
                     } else {
                         var childFlag = node.cloneNode(false);
-                        if (isStarted) frag.appendChild(childFlag);
+                        frag.appendChild(childFlag);
                         if (!extractNodes(node, childFlag)) return false;
                     }
                 } else if (type == 3) {
@@ -557,6 +540,10 @@ KE.range = function(doc) {
     };
     this.cloneContents = function() {
         return this.extractContents(false);
+    };
+    this.getText = function() {
+        var html = this.cloneContents().innerHTML;
+        return html.replace(/<.*?>/g, "");
     };
 };
 
@@ -659,13 +646,14 @@ KE.cmd = function(id) {
     };
     this.wrap = function(tagName, attributes) {
         this.keSel.focus();
+        if (this.keSel.keRange.getText() === '') return;
         var element = KE.$$(tagName, this.doc);
         this.mergeAttributes(element, attributes);
         var parentNode = this.keRange.getParentElement();
         this.wrapNodes(parentNode, element, attributes);
         this.keSel.addRange(this.keRange);
     };
-    this.getNodeParent = function(tagNames, node) {
+    this.getTopParent = function(tagNames, node) {
         var parent = null;
         while (node != null) {
             node = node.parentNode;
@@ -742,8 +730,9 @@ KE.cmd = function(id) {
         var startPos = this.startPos;
         var endPos = this.endPos;
         this.keSel.focus();
-        var startParent = this.getNodeParent(tagNames, startNode);
-        var endParent = this.getNodeParent(tagNames, endNode);
+        if (this.keSel.keRange.getText() === '') return;
+        var startParent = this.getTopParent(tagNames, startNode);
+        var endParent = this.getTopParent(tagNames, endNode);
         if (startParent) {
             var startFrags = this.splitNodeParent(startParent, startNode, startPos);
             this.keRange.setStart(startFrags.right, 0);
@@ -894,7 +883,7 @@ KE.util = {
         return doc.createRange ? doc.createRange() : doc.body.createTextRange();
     },
     getNodeType : function(node) {
-        return node.tagName == 'IMG' ? 2 : node.nodeType;
+        return (node.tagName && KE.util.inArray(node.tagName.toLowerCase(), ['img', 'embed'])) ? 88 : node.nodeType;
     },
     getNodeTextLength : function(node) {
         var type = KE.util.getNodeType(node);
