@@ -269,7 +269,7 @@ KE.selection = function(win, doc) {
                 tempRange.selectTextNode(startNode);
                 startNode = tempRange.endNode;
                 startPos = tempRange.endPos;
-            } else {
+            } else if (startNode.childNodes[startPos + 1]) {
                 startNode = startNode.childNodes[startPos + 1];
                 var tempRange = new KE.range(doc);
                 tempRange.selectTextNode(startNode);
@@ -421,7 +421,7 @@ KE.range = function(doc) {
     };
     this.setTextStart = function(node, pos) {
         var setFirstTextNode = function() {
-            if (KE.util.getNodeType(node) == 1) {
+            if (KE.util.getNodeType(node) == 1 && node.firstChild) {
                 node = node.firstChild;
                 setFirstTextNode(node);
             }
@@ -439,7 +439,7 @@ KE.range = function(doc) {
     };
     this.setTextEnd = function(node, pos) {
         var setEndTextNode = function() {
-            if (KE.util.getNodeType(node) == 1) {
+            if (KE.util.getNodeType(node) == 1 && node.lastChild) {
                 node = node.lastChild;
                 pos = node.nodeType == 1 ? 0 : node.nodeValue.length;
                 setEndTextNode(node);
