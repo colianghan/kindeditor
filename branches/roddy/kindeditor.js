@@ -97,7 +97,7 @@ KE.setting = {
     wyswygMode : true,
     autoOnsubmitMode : true,
     resizeMode : 2,
-    filterMode : true,
+    filterMode : false,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
