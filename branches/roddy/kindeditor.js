@@ -879,6 +879,24 @@ KE.util = {
         }
         return KE.util.rgbToHex(val);
     },
+    htmlToXhtml : function(html) {
+        var noEndTags = ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'];
+        for (var i = 0, len = noEndTags.length; i < len; i++) {
+            html = html.replace(new RegExp("<(" + noEndTags[i] + ")\\s+(.*?[^\\/])>", "gi"), "<$1 $2 />");
+            html = html.replace(new RegExp("<(" + noEndTags[i] + ")>", "gi"), "<$1 />");
+        }
+        html = html.replace(/<(\w+)(.*?)>/g, function($0, $1, $2) {
+            var attribute = $2;
+            attribute = attribute.replace(/(\w+)=(\w+)/gi, function($0, $1, $2) {
+                return $1.toLowerCase() + '=' + ($2.charAt(0) === '"' ? $2 : '"' + $2 + '"');
+            });
+            return '<' + $1.toLowerCase() + attribute + '>';
+        });
+        html = html.replace(/(<\/\w+>)/g, function($0, $1) {
+            return $1.toLowerCase();
+        });
+        return html;
+    },
     createRange : function(doc) {
         return doc.createRange ? doc.createRange() : doc.body.createTextRange();
     },
@@ -1021,12 +1039,12 @@ KE.util = {
     },
     getData : function(id, filterMode) {
         var data;
-        filterMode = (typeof filterMode == "undefined") ? true : filterMode;
+        filterMode = (typeof filterMode == "undefined") ? KE.g[id].filterMode : filterMode;
         if (KE.g[id].wyswygMode) {
             if (filterMode) {
                 data = KE.util.outputHtml(id, KE.g[id].iframeDoc.body);
             } else {
-                data = KE.g[id].iframeDoc.body.innerHTML;
+                data = KE.util.htmlToXhtml(KE.g[id].iframeDoc.body.innerHTML);
             }
         } else {
             data = KE.g[id].newTextarea.value;
@@ -1200,15 +1218,13 @@ KE.util = {
 };
 
 KE.layout = {
-    show : function(id, div)
-    {
+    show : function(id, div) {
         KE.layout.hide(id);
         KE.g[id].hideDiv.appendChild(div);
         KE.g[id].hideDiv.style.display = 'block';
         KE.g[id].layoutDiv = div;
     },
-    hide : function(id)
-    {
+    hide : function(id) {
         try {
             KE.g[id].hideDiv.removeChild(KE.g[id].layoutDiv);
         } catch (e) {}
@@ -1216,8 +1232,7 @@ KE.layout = {
         KE.g[id].maskDiv.style.display = 'none';
         KE.util.focus(id);
     },
-    make : function(id)
-    {
+    make : function(id) {
         var div = KE.$$('div');
         div.style.position = 'absolute';
         div.style.zIndex = 19811214;
@@ -1234,8 +1249,7 @@ KE.menu = function(arg){
     div.style.top = pos.y + obj[0].offsetHeight + 'px';
     div.style.left = pos.x + 'px';
     this.div = div;
-    this.add = function(html, event)
-    {
+    this.add = function(html, event) {
         var cDiv = KE.$$('div');
         cDiv.className = 'ke-menu-noselected';
         cDiv.style.width = this.arg.width;
@@ -1245,20 +1259,16 @@ KE.menu = function(arg){
         cDiv.innerHTML = html;
         this.append(cDiv);
     };
-    this.append = function(el)
-    {
+    this.append = function(el) {
         this.div.appendChild(el);
     };
-    this.insert = function(html)
-    {
+    this.insert = function(html) {
         this.div.innerHTML = html;
     };
-    this.show = function()
-    {
+    this.show = function() {
         KE.layout.show(this.arg.id, this.div);
     };
-    this.picker = function()
-    {
+    this.picker = function() {
         var colorTable = KE.setting.colorTable;
         var table = KE.$$('table');
         table.cellPadding = 0;
@@ -1897,7 +1907,7 @@ KE.plugin['preview'] = {
         var dialog = new KE.dialog({
             id : id,
             cmd : 'preview',
-            html : KE.util.getData(id),
+            html : KE.util.getData(id, KE.g[id].filterMode),
             width : 600,
             height : 400,
             useFrameCSS : true,
@@ -1936,7 +1946,7 @@ KE.plugin['source'] = {
             if (KE.g[id].filterMode) {
                 obj.newTextarea.value = KE.util.outputHtml(id, obj.iframeDoc.body);
             } else {
-                obj.newTextarea.value = obj.iframeDoc.body.innerHTML;
+                obj.newTextarea.value = KE.util.htmlToXhtml(obj.iframeDoc.body.innerHTML);
             }
             obj.iframe.style.display = 'none';
             obj.newTextarea.style.display = 'block';
