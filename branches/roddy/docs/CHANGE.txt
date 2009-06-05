@@ -9,9 +9,10 @@ ver 3.2
 3. htmlTags属性一次可定义多个标记。
 4. 修改了过滤一些代码后HTML代码有偏移的问题。
 5. Firefox等浏览器上颜色可以输出统一的十六进制颜色。
-6. KE.lang里的有些定义表移动到KE.setting里。
+6. KE.lang里的有些定义移动到KE.setting里。
 7. 修复了在IE上点击工具栏图标时失去焦点的问题。
-8. 修改了默认风格。
+8. filterMode为false的时候输出XHTML，并支持siteDomain设定。
+9. 修改了默认风格。
 
 ver 3.1 (2009-03-01)
 1. 合并了javascript文件，删除了build目录，只保留kindeditor.js非压缩格式。

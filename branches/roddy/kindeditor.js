@@ -97,7 +97,7 @@ KE.setting = {
     wyswygMode : true,
     autoOnsubmitMode : true,
     resizeMode : 2,
-    filterMode : false,
+    filterMode : true,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
@@ -879,27 +879,6 @@ KE.util = {
         }
         return KE.util.rgbToHex(val);
     },
-    htmlToXhtml : function(html) {
-        var noEndTags = ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'];
-        for (var i = 0, len = noEndTags.length; i < len; i++) {
-            html = html.replace(new RegExp("<(" + noEndTags[i] + ")\\s+(.*?[^\\/])>", "gi"), "<$1 $2 />");
-            html = html.replace(new RegExp("<(" + noEndTags[i] + ")>", "gi"), "<$1 />");
-        }
-        html = html.replace(/<(\w+)(.*?)>/g, function($0, $1, $2) {
-            var attr = $2;
-            attr = attr.replace(/(\w+)=([^\s]+)/gi, function($0, $1, $2) {
-                return $1.toLowerCase() + '=' + ($2.charAt(0) === '"' ? $2 : '"' + $2 + '"');
-            });
-            attr = attr.replace(/\s+style=".*?"/gi, function($0) {
-                return KE.util.rgbToHex($0.toLowerCase());
-            });
-            return '<' + $1.toLowerCase() + attr + '>';
-        });
-        html = html.replace(/(<\/\w+>)/g, function($0, $1) {
-            return $1.toLowerCase();
-        });
-        return html;
-    },
     createRange : function(doc) {
         return doc.createRange ? doc.createRange() : doc.body.createTextRange();
     },
@@ -1047,7 +1026,7 @@ KE.util = {
             if (filterMode) {
                 data = KE.util.outputHtml(id, KE.g[id].iframeDoc.body);
             } else {
-                data = KE.util.htmlToXhtml(KE.g[id].iframeDoc.body.innerHTML);
+                data = KE.util.htmlToXhtml(id, KE.g[id].iframeDoc.body.innerHTML);
             }
         } else {
             data = KE.g[id].newTextarea.value;
@@ -1124,6 +1103,47 @@ KE.util = {
             this.execCommand(id, 'inserthtml', html);
         }
     },
+    removeDomain : function(id, tagName, key, url) {
+        if ((tagName == 'a' && key == 'href') || (tagName == 'img' && key == 'src') || (tagName == 'embed' && key == 'src')) {
+            var domains = KE.g[id].siteDomains;
+            for (var i = 0, len = domains.length; i < len; i++) {
+                var domain = "http://" + domains[i];
+                if (url.indexOf(domain) == 0) return url.substr(domain.length);
+            }
+        }
+        return url;
+    },
+    htmlToXhtml : function(id, html) {
+        var noEndTags = ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'];
+        for (var i = 0, len = noEndTags.length; i < len; i++) {
+            html = html.replace(new RegExp("<(" + noEndTags[i] + ")\\s+(.*?[^\\/])>", "gi"), "<$1 $2 />");
+            html = html.replace(new RegExp("<(" + noEndTags[i] + ")>", "gi"), "<$1 />");
+        }
+        html = html.replace(/<(\w+)(.*?)>/g, function($0, $1, $2) {
+            var tagName = $1.toLowerCase();
+            var attr = $2;
+            attr = attr.replace(/(\w+)=([^\s]+)/gi, function($0, $1, $2) {
+                var key = $1.toLowerCase();
+                var val = $2;
+                var first = $2.charAt(0);
+                var last = $2.charAt($2.length - 1);
+                if (first === '"' && last === '"') {
+                    val = '"' + KE.util.removeDomain(id, tagName, key, val.substr(1, val.length - 2)) + '"';
+                } else if (first !== '"' && last !== '"') {
+                    val = '"' + KE.util.removeDomain(id, tagName, key, val) + '"';
+                }
+                return key + '=' + val;
+            });
+            attr = attr.replace(/\s+style=".*?"/gi, function($0) {
+                return KE.util.rgbToHex($0.toLowerCase());
+            });
+            return '<' + tagName + attr + '>';
+        });
+        html = html.replace(/(<\/\w+>)/g, function($0, $1) {
+            return $1.toLowerCase();
+        });
+        return html;
+    },
     outputHtml : function(id, element) {
         var newHtmlTags = [];
         KE.each(KE.g[id].htmlTags, function(key, val) {
@@ -1153,14 +1173,6 @@ KE.util = {
                 htmlList.push(html);
             }
         };
-        var removeDomain = function(id, url) {
-            var domains = KE.g[id].siteDomains;
-            for (var i = 0, len = domains.length; i < len; i++) {
-                var domain = "http://" + domains[i];
-                if (url.indexOf(domain) == 0) return url.substr(domain.length);
-            }
-            return url;
-        };
         var scanNodes = function(el) {
             var nodes = el.childNodes;
             for (var i = 0, len = nodes.length; i < len; i++) {
@@ -1184,8 +1196,7 @@ KE.util = {
                                 var val = node.getAttribute(attr);
                                 if (val != null && val !== '') {
                                     if (typeof val == 'string' && val.match(/^javascript:/)) val = '';
-                                    if ((tagName == 'a' && attr == 'href') || (tagName == 'img' && attr == 'src') ||
-                                        (tagName == 'embed' && attr == 'src')) val = removeDomain(id, val);
+                                    val = KE.util.removeDomain(id, tagName, attr, val);
                                     if (typeof val == 'string') val = val.toLowerCase();
                                     attrStr += ' ' + attr + '="' + val + '"';
                                 }
@@ -1949,7 +1960,7 @@ KE.plugin['source'] = {
             if (KE.g[id].filterMode) {
                 obj.newTextarea.value = KE.util.outputHtml(id, obj.iframeDoc.body);
             } else {
-                obj.newTextarea.value = KE.util.htmlToXhtml(obj.iframeDoc.body.innerHTML);
+                obj.newTextarea.value = KE.util.htmlToXhtml(id, obj.iframeDoc.body.innerHTML);
             }
             obj.iframe.style.display = 'none';
             obj.newTextarea.style.display = 'block';
