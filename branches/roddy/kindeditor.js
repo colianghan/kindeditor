@@ -886,11 +886,14 @@ KE.util = {
             html = html.replace(new RegExp("<(" + noEndTags[i] + ")>", "gi"), "<$1 />");
         }
         html = html.replace(/<(\w+)(.*?)>/g, function($0, $1, $2) {
-            var attribute = $2;
-            attribute = attribute.replace(/(\w+)=(\w+)/gi, function($0, $1, $2) {
+            var attr = $2;
+            attr = attr.replace(/(\w+)=([^\s]+)/gi, function($0, $1, $2) {
                 return $1.toLowerCase() + '=' + ($2.charAt(0) === '"' ? $2 : '"' + $2 + '"');
             });
-            return '<' + $1.toLowerCase() + attribute + '>';
+            attr = attr.replace(/\s+style=".*?"/gi, function($0) {
+                return KE.util.rgbToHex($0.toLowerCase());
+            });
+            return '<' + $1.toLowerCase() + attr + '>';
         });
         html = html.replace(/(<\/\w+>)/g, function($0, $1) {
             return $1.toLowerCase();
