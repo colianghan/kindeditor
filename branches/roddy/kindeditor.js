@@ -1153,27 +1153,27 @@ KE.util = {
             }
         });
         var htmlList = [];
-        var startTags = [];
-        var setStartTag = function(tagName, attrStr, styleStr, isEnd) {
-            var html = '';
-            html += '<' + tagName;
-            if (attrStr) html += attrStr;
-            if (styleStr) html += ' style="' + styleStr + '"';
-            html += isEnd ? ' />' : '>';
-            if (KE.browser == 'IE' && isEnd && KE.util.inArray(tagName, ['br', 'hr'])) html += "\n";
-            if (typeof newHtmlTags[tagName] == 'object') htmlList.push(html);
-            if (!isEnd) startTags.push(tagName);
-        };
-        var setEndTag = function() {
-            if (startTags.length > 0) {
-                var tagName = startTags.pop();
-                if (typeof newHtmlTags[tagName] != 'object') return;
-                var html = '</' + tagName + '>';
-                if (KE.browser == 'IE' && KE.util.inArray(tagName, ['p', 'div', 'table', 'ol', 'ul'])) html += "\n";
-                htmlList.push(html);
-            }
-        };
         var scanNodes = function(el) {
+            var startTags = [];
+            var setStartTag = function(tagName, attrStr, styleStr, isEnd) {
+                var html = '';
+                html += '<' + tagName;
+                if (attrStr) html += attrStr;
+                if (styleStr) html += ' style="' + styleStr + '"';
+                html += isEnd ? ' />' : '>';
+                if (KE.browser == 'IE' && isEnd && KE.util.inArray(tagName, ['br', 'hr'])) html += "\n";
+                if (typeof newHtmlTags[tagName] == 'object') htmlList.push(html);
+                if (!isEnd) startTags.push(tagName);
+            };
+            var setEndTag = function() {
+                if (startTags.length > 0) {
+                    var tagName = startTags.pop();
+                    if (typeof newHtmlTags[tagName] != 'object') return;
+                    var html = '</' + tagName + '>';
+                    if (KE.browser == 'IE' && KE.util.inArray(tagName, ['p', 'div', 'table', 'ol', 'ul'])) html += "\n";
+                    htmlList.push(html);
+                }
+            };
             var nodes = el.childNodes;
             for (var i = 0, len = nodes.length; i < len; i++) {
                 var node = nodes[i];
@@ -1211,7 +1211,6 @@ KE.util = {
                             var prevHtml = htmlList[htmlList.length - 1];
                             if (prevHtml.match(/^<p|^<div/) != null) {
                                 htmlList.push("&nbsp;");
-                                setEndTag();
                             }
                         }
                     }
@@ -1222,6 +1221,7 @@ KE.util = {
                 default:
                     break;
                 }
+                setEndTag();
             }
             setEndTag();
         };
