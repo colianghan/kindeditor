@@ -128,6 +128,7 @@ KE.setting = {
         ["#EDFFCF","#DFFEAA","#D1FD88","#BEFA5A","#A8F32A","#8FD80A","#79C101","#3FA701","#307F00","#156200"],
         ["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
     ],
+    noEndTags : ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'],
     htmlTags : {
         font : ['color', 'size', 'face', '.background-color'],
         span : [
@@ -214,40 +215,41 @@ KE.selection = function(win, doc) {
                     pointRange.collapse(isStart);
                     var parentNode = pointRange.parentElement();
                     var nodes = parentNode.childNodes;
-                    var testRange;
+                    var startNode;
+                    var startPos = 0;
+                    var offset = 0;
+                    var isEnd = false;
                     for (var i = 0, len = nodes.length; i < len; i++) {
                         var node = nodes[i];
-                        var type = KE.util.getNodeType(node);
-                        if (type == 1) {
-                            testRange = range.duplicate();
-                            testRange.moveToElementText(node);
-                            testRange.collapse();
-                            var cmp = testRange.compareEndPoints('StartToStart', pointRange);
-                            if (cmp > 0) break;
-                            if (cmp == 0) {
-                                var tempRange = new KE.range(doc);
-                                tempRange.selectTextNode(node);
-                                return {node: tempRange.startNode, pos: tempRange.startPos};
-                            }
-                            testRange = null;
-                        }
-                    }
-                    if (!testRange) {
-                        testRange = range.duplicate();
+                        var length;
+                        var testRange = range.duplicate();
                         testRange.moveToElementText(parentNode);
-                        testRange.collapse(false);
+                        testRange.moveStart('character', offset);
+                        var cmp = testRange.compareEndPoints('StartToStart', pointRange);
+                        if (cmp > 0) isEnd = true;
+                        else if (cmp == 0) {
+                            isEnd = true;
+                            if (isStart) startNode = node;
+                        }
+                        if (node.nodeType == 1) {
+                            var testRange = range.duplicate();
+                            testRange.moveToElementText(node);
+                            length = testRange.text.length;
+                            if (isEnd) startPos += length;
+                            else startPos = 0;
+                        } else if (node.nodeType == 3) {
+                            if (!isEnd) startNode = node;
+                            length = node.nodeValue.length;
+                            startPos += length;
+                        }
+                        offset += length;
                     }
+                    var testRange = range.duplicate();
+                    testRange.moveToElementText(parentNode);
+                    testRange.collapse(false);
                     testRange.setEndPoint('StartToStart', pointRange);
-                    var offset = testRange.text.length;
-                    while (offset > 0) {
-                        var node = nodes[--i];
-                        if (node.nodeType == 3) offset -= node.nodeValue.length;
-                    }
-                    if (offset == 0) {
-                        return {node: parentNode, pos: --i};
-                    } else {
-                        return {node: nodes[i], pos: -offset};
-                    }
+                    startPos -= testRange.text.length;
+                    return {node: startNode, pos: startPos};
                 };
                 var start = getStartEnd(true);
                 var end = getStartEnd(false);
@@ -262,44 +264,8 @@ KE.selection = function(win, doc) {
             endNode = range.endContainer;
             endPos = range.endOffset;
         }
-        if (KE.util.getNodeType(startNode) == 1) {
-            if (startNode.childNodes[startPos]) {
-                startNode = startNode.childNodes[startPos];
-                var tempRange = new KE.range(doc);
-                tempRange.selectTextNode(startNode);
-                startNode = tempRange.endNode;
-                startPos = tempRange.endPos;
-            } else if (startNode.childNodes[startPos + 1]) {
-                startNode = startNode.childNodes[startPos + 1];
-                var tempRange = new KE.range(doc);
-                tempRange.selectTextNode(startNode);
-                startNode = tempRange.startNode;
-                startPos = tempRange.startPos;
-            }
-        }
-        if (KE.util.getNodeType(endNode) == 1) {
-            if (endNode.childNodes[endPos]) {
-                endNode = endNode.childNodes[endPos];
-                var tempRange = new KE.range(doc);
-                tempRange.selectTextNode(endNode);
-                endNode = tempRange.endNode;
-                endPos = tempRange.endPos;
-            }
-        }
-        if (startNode.nodeType == 3 && startPos == startNode.nodeValue.length) {
-            startNode = KE.util.getNextNode(startNode);
-            var tempRange = new KE.range(doc);
-            tempRange.selectTextNode(startNode);
-            startNode = tempRange.startNode;
-            startPos = tempRange.startPos;
-        }
-        if (endNode.nodeType == 3 && endPos == 0) {
-            endNode = KE.util.getPrevNode(endNode);
-            var tempRange = new KE.range(doc);
-            tempRange.selectTextNode(endNode);
-            endNode = tempRange.endNode;
-            endPos = tempRange.endPos;
-        }
+        alert(startNode.nodeValue + '<-->' + endNode.nodeValue);
+        alert(startPos + '<-->' + endPos);
         var keRange = new KE.range(doc);
         keRange.setTextStart(startNode, startPos);
         keRange.setTextEnd(endNode, endPos);
@@ -368,6 +334,31 @@ KE.range = function(doc) {
             }
         });
         return parentNode ? parentNode : doc.body;
+    };
+    this.getNodeList = function() {
+        var parentNode = this.getParentElement();
+        var nodeList = [];
+        var keRange = this;
+        var startNode = this.startNode;
+        var isStarted = false;
+        if (parentNode == startNode) isStarted = true;
+        if (isStarted) nodeList.push(parentNode);
+        var walkNodes = function(parent) {
+            if (KE.util.getNodeType(parent) != 1) return true;
+            var node = parent.firstChild;
+            while (node != null) {
+                if (node == startNode) isStarted = true;
+                var range = new KE.range(doc);
+                range.selectTextNode(node);
+                if (range.comparePoints('START_TO_END', keRange) >= 0) return false;
+                if (isStarted) nodeList.push(node);
+                if (!walkNodes(node)) return false;
+                node = node.nextSibling;
+            }
+            return true;
+        }
+        walkNodes(parentNode);
+        return nodeList;
     };
     this.comparePoints = function(how, range) {
         var compareNodes = function(nodeA, posA, nodeB, posB) {
@@ -592,8 +583,10 @@ KE.cmd = function(id) {
                 if (startPos > 0) centerNode = node.splitText(startPos);
                 if (endPos < length) centerNode.splitText(endPos - startPos);
                 var cloneNode = centerNode.cloneNode(true);
-                el.appendChild(cloneNode);
-                centerNode.parentNode.replaceChild(el, centerNode);
+                if (cloneNode) {
+                    el.appendChild(cloneNode);
+                    centerNode.parentNode.replaceChild(el, centerNode);
+                }
                 return cloneNode;
             }
         }
@@ -613,14 +606,14 @@ KE.cmd = function(id) {
     this.wrapText = function(node, element, attributes) {
         if (node == this.startNode && node == this.endNode) {
             var rangeNode = this.wrapTextNode(node, this.startPos, this.endPos, element, attributes);
-            this.keRange.selectTextNode(rangeNode);
+            if (rangeNode) this.keRange.selectTextNode(rangeNode);
             return false;
         } else if (node == this.startNode) {
             var rangeNode = this.wrapTextNode(node, this.startPos, node.nodeValue.length, element, attributes);
-            this.keRange.setTextStart(rangeNode, 0);
+            if (rangeNode) this.keRange.setTextStart(rangeNode, 0);
         } else if (node == this.endNode) {
             var rangeNode = this.wrapTextNode(node, 0, this.endPos, element, attributes);
-            this.keRange.setTextEnd(rangeNode, rangeNode.nodeValue.length);
+            if (rangeNode) this.keRange.setTextEnd(rangeNode, rangeNode.nodeValue.length);
             return false;
         } else {
             this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
@@ -665,64 +658,15 @@ KE.cmd = function(id) {
         }
         return parent;
     };
-    this.trimNodes = function(parent) {
-        if (KE.util.getNodeType(parent) != 1) return;
-        if (KE.util.getNodeTextLength(parent) == 0) {
-            parent.parentNode.removeChild(parent);
-            return;
-        }
-        var node = parent.firstChild;
-        while (node != null) {
-            var nextNode = node.nextSibling;
-            this.trimNodes(node);
-            node = nextNode;
-        }
-    };
     this.splitNodeParent = function(parent, node, pos) {
         var leftRange = new KE.range(this.doc);
         leftRange.selectNode(parent.firstChild);
         leftRange.setEnd(node, pos);
         var leftFrag = leftRange.extractContents();
         parent.parentNode.insertBefore(leftFrag, parent);
-        this.trimNodes(leftFrag);
-        this.trimNodes(parent);
+        KE.util.trimNodes(leftFrag);
+        KE.util.trimNodes(parent);
         return {left : leftFrag, right : parent};
-    };
-    this.getNodeList = function(parentNode) {
-        var nodeList = [];
-        var doc = this.doc;
-        var keRange = this.keRange;
-        var startNode = this.startNode;
-        var isStarted = false;
-        if (parentNode == startNode) isStarted = true;
-        if (isStarted) nodeList.push(parentNode);
-        var walkNodes = function(parent) {
-            if (KE.util.getNodeType(parent) != 1) return true;
-            var node = parent.firstChild;
-            while (node != null) {
-                if (node == startNode) isStarted = true;
-                var range = new KE.range(doc);
-                range.selectTextNode(node);
-                if (range.comparePoints('START_TO_END', keRange) >= 0) return false;
-                if (isStarted) nodeList.push(node);
-                if (!walkNodes(node)) return false;
-                node = node.nextSibling;
-            }
-            return true;
-        }
-        walkNodes(parentNode);
-        return nodeList;
-    };
-    this.removeParent = function(parent) {
-        if (parent.hasChildNodes) {
-            var node = parent.firstChild;
-            while (node != null) {
-                var nextNode = node.nextSibling;
-                parent.parentNode.insertBefore(node, parent);
-                node = nextNode;
-            }
-        }
-        parent.parentNode.removeChild(parent);
     };
     this.remove = function(tagNames, attributes) {
         var startNode = this.startNode;
@@ -754,19 +698,13 @@ KE.cmd = function(id) {
                 this.keRange.setStart(endFrags.left, 0);
             }
         }
-        this.startNode = this.keRange.startNode;
-        this.startPos = this.keRange.startPos;
-        this.endNode = this.keRange.endNode;
-        this.endPos = this.keRange.endPos;
-        var parentNode = this.keRange.getParentElement();
-        this.keRange.setTextStart(this.startNode, this.startPos);
-        this.keRange.setTextEnd(this.endNode, this.endPos);
-
-        var nodeList = this.getNodeList(parentNode);
+        var nodeList = this.keRange.getNodeList();
+        this.keRange.setTextStart(this.keRange.startNode, this.keRange.startPos);
+        this.keRange.setTextEnd(this.keRange.endNode, this.keRange.endPos);
         for (var i = 0; i < nodeList.length; i++) {
             var node = nodeList[i];
             if (node.nodeType == 1 && KE.util.inArray(node.tagName.toLowerCase(), tagNames)) {
-                this.removeParent(node);
+                KE.util.removeParent(node);
             }
         }
         this.keSel.addRange(this.keRange);
@@ -883,7 +821,7 @@ KE.util = {
         return doc.createRange ? doc.createRange() : doc.body.createTextRange();
     },
     getNodeType : function(node) {
-        return (node.tagName && KE.util.inArray(node.tagName.toLowerCase(), ['img', 'embed'])) ? 88 : node.nodeType;
+        return (node.tagName && KE.util.inArray(node.tagName.toLowerCase(), KE.setting.noEndTags)) ? 88 : node.nodeType;
     },
     getNodeTextLength : function(node) {
         var type = KE.util.getNodeType(node);
@@ -892,22 +830,6 @@ KE.util = {
             return html.replace(/<.*?>/ig, "").length;
         } else if (type == 3) {
             return node.nodeValue.length;
-        }
-    },
-    getPrevNode : function(node) {
-        while (node) {
-            var sibling = node.previousSibling;
-            if (sibling) return sibling;
-            if (!sibling) sibling = node.parentNode;
-            node = sibling;
-        }
-    },
-    getNextNode : function(node) {
-        while (node) {
-            var sibling = node.nextSibling;
-            if (sibling) return sibling;
-            if (!sibling) sibling = node.parentNode;
-            node = sibling;
         }
     },
     getParentOffset : function(doc, node) {
@@ -925,6 +847,30 @@ KE.util = {
             sibling = sibling.previousSibling;
         }
         return offset;
+    },
+    trimNodes : function(parent) {
+        if (KE.util.getNodeType(parent) != 1) return;
+        if (KE.util.getNodeTextLength(parent) == 0) {
+            parent.parentNode.removeChild(parent);
+            return;
+        }
+        var node = parent.firstChild;
+        while (node != null) {
+            var nextNode = node.nextSibling;
+            KE.util.trimNodes(node);
+            node = nextNode;
+        }
+    },
+    removeParent : function(parent) {
+        if (parent.hasChildNodes) {
+            var node = parent.firstChild;
+            while (node != null) {
+                var nextNode = node.nextSibling;
+                parent.parentNode.insertBefore(node, parent);
+                node = nextNode;
+            }
+        }
+        parent.parentNode.removeChild(parent);
     },
     showBottom : function(id) {
         KE.g[id].bottom.style.display = 'block';
@@ -1026,7 +972,7 @@ KE.util = {
             if (filterMode) {
                 data = KE.util.outputHtml(id, KE.g[id].iframeDoc.body);
             } else {
-                data = KE.util.htmlToXhtml(id, KE.g[id].iframeDoc.body.innerHTML);
+                data = KE.util.htmlToXhtml(id, KE.g[id].iframeDoc.body);
             }
         } else {
             data = KE.g[id].newTextarea.value;
@@ -1113,11 +1059,13 @@ KE.util = {
         }
         return url;
     },
-    htmlToXhtml : function(id, html) {
-        var noEndTags = ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'];
-        for (var i = 0, len = noEndTags.length; i < len; i++) {
-            html = html.replace(new RegExp("<(" + noEndTags[i] + ")\\s+(.*?[^\\/])>", "gi"), "<$1 $2 />");
-            html = html.replace(new RegExp("<(" + noEndTags[i] + ")>", "gi"), "<$1 />");
+    htmlToXhtml : function(id, element) {
+        KE.util.trimNodes(element);
+        var html = element.innerHTML;
+        var tags = KE.setting.noEndTags;
+        for (var i = 0, len = tags.length; i < len; i++) {
+            html = html.replace(new RegExp("<(" + tags[i] + ")\\s+(.*?[^\\/])>", "gi"), "<$1 $2 />");
+            html = html.replace(new RegExp("<(" + tags[i] + ")>", "gi"), "<$1 />");
         }
         html = html.replace(/<(\w+)(.*?)>/g, function($0, $1, $2) {
             var tagName = $1.toLowerCase();
@@ -1153,6 +1101,7 @@ KE.util = {
             }
         });
         var htmlList = [];
+        KE.util.trimNodes(element);
         var scanNodes = function(el) {
             var startTags = [];
             var setStartTag = function(tagName, attrStr, styleStr, isEnd) {
@@ -1960,7 +1909,7 @@ KE.plugin['source'] = {
             if (KE.g[id].filterMode) {
                 obj.newTextarea.value = KE.util.outputHtml(id, obj.iframeDoc.body);
             } else {
-                obj.newTextarea.value = KE.util.htmlToXhtml(id, obj.iframeDoc.body.innerHTML);
+                obj.newTextarea.value = KE.util.htmlToXhtml(id, obj.iframeDoc.body);
             }
             obj.iframe.style.display = 'none';
             obj.newTextarea.style.display = 'block';
