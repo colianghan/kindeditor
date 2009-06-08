@@ -229,7 +229,7 @@ KE.selection = function(win, doc) {
                         if (cmp > 0) isEnd = true;
                         else if (cmp == 0) {
                             isEnd = true;
-                            if (isStart) startNode = node;
+                            startNode = node;
                         }
                         if (node.nodeType == 1) {
                             var testRange = range.duplicate();
@@ -244,11 +244,18 @@ KE.selection = function(win, doc) {
                         }
                         offset += length;
                     }
-                    var testRange = range.duplicate();
-                    testRange.moveToElementText(parentNode);
-                    testRange.collapse(false);
-                    testRange.setEndPoint('StartToStart', pointRange);
-                    startPos -= testRange.text.length;
+                    if (startNode.nodeType == 1) {
+                        var keRange = new KE.range(doc);
+                        keRange.selectTextNode(startNode);
+                        startNode = keRange.startNode;
+                        startPos = 0;
+                    } else {
+                        var testRange = range.duplicate();
+                        testRange.moveToElementText(parentNode);
+                        testRange.collapse(false);
+                        testRange.setEndPoint('StartToStart', pointRange);
+                        startPos -= testRange.text.length;
+                    }
                     return {node: startNode, pos: startPos};
                 };
                 var start = getStartEnd(true);
@@ -277,11 +284,10 @@ KE.selection = function(win, doc) {
             var getEndRange = function(isStart) {
                 var range = KE.util.createRange(doc);
                 var node = isStart ? keRange.startNode : keRange.endNode;
-                var type = KE.util.getNodeType(node);
-                if (type == 1) {
+                if (node.nodeType == 1) {
                     range.moveToElementText(node);
                     range.collapse(isStart);
-                } else if (type == 3) {
+                } else if (node.nodeType == 3) {
                     var offset = KE.util.getParentOffset(doc, node);
                     range.moveToElementText(node.parentNode);
                     var pos = isStart ? keRange.startPos : keRange.endPos;
