@@ -271,8 +271,6 @@ KE.selection = function(win, doc) {
             endNode = range.endContainer;
             endPos = range.endOffset;
         }
-        alert(startNode.nodeValue + '<-->' + endNode.nodeValue);
-        alert(startPos + '<-->' + endPos);
         var keRange = new KE.range(doc);
         keRange.setTextStart(startNode, startPos);
         keRange.setTextEnd(endNode, endPos);
@@ -685,15 +683,19 @@ KE.cmd = function(id) {
         var endParent = this.getTopParent(tagNames, endNode);
         if (startParent) {
             var startFrags = this.splitNodeParent(startParent, startNode, startPos);
-            this.keRange.setStart(startFrags.right, 0);
+            var rightNode = startFrags.right;
+            if (KE.util.getNodeTextLength(rightNode) == 0) {
+                rightNode = startFrags.right.nextSibling;
+            }
+            this.keRange.setStart(rightNode, 0);
             if (startNode == endNode) {
-                this.keRange.setEnd(startFrags.right, 0);
+                this.keRange.setEnd(rightNode, 0);
                 var range = new KE.range(this.doc);
                 range.setTextStart(startFrags.left, 0);
                 range.setTextEnd(startFrags.left, 0);
                 if (startPos > 0) endPos -= range.endNode.nodeValue.length;
-                range.setTextStart(startFrags.right, 0);
-                range.setTextEnd(startFrags.right, 0);
+                range.setTextStart(rightNode, 0);
+                range.setTextEnd(rightNode, 0);
                 endNode = range.startNode;
             }
         }
