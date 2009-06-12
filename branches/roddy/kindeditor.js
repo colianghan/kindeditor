@@ -194,13 +194,15 @@ KE.each = function(obj, func) {
 KE.selection = function(win, doc) {
     this.sel = null;
     this.range = null;
-    this.keRange == null;
+    this.keRange = null;
     this.init = function() {
         var sel = win.getSelection ? win.getSelection() : doc.selection;
-        var range = null;
-        if (sel.rangeCount > 0) range = sel.getRangeAt(0);
-        else range = sel.createRange();
-        if (range == null) range = KE.util.createRange(doc);
+        var range;
+        try {
+            if (sel.rangeCount > 0) range = sel.getRangeAt(0);
+            else range = sel.createRange();
+        } catch(e) {}
+        if (!range) range = KE.util.createRange(doc);
         this.sel = sel;
         this.range = range;
         var startNode, startPos, endNode, endPos;
@@ -215,6 +217,7 @@ KE.selection = function(win, doc) {
                     pointRange.collapse(isStart);
                     var parentNode = pointRange.parentElement();
                     var nodes = parentNode.childNodes;
+                    if (nodes.length == 0) return {node: parentNode, pos: 0};
                     var startNode;
                     var startPos = 0;
                     var offset = 0;
@@ -858,7 +861,7 @@ KE.util = {
     },
     trimNodes : function(parent) {
         if (KE.util.getNodeType(parent) != 1) return;
-        if (KE.util.getNodeTextLength(parent) == 0) {
+        if (parent.tagName != "BODY" && KE.util.getNodeTextLength(parent) == 0) {
             parent.parentNode.removeChild(parent);
             return;
         }
@@ -1607,7 +1610,7 @@ KE.create = function(id, mode) {
     if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
     setTimeout(
         function(){
-            if (srcTextarea.value) iframeDoc.body.innerHTML = srcTextarea.value;
+            if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
             KE.history.add(id, false);
         }, 1);
 };
