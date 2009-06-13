@@ -951,6 +951,7 @@ KE.util = {
         html += '<head>';
         html += '<base href="' + KE.htmlPath + '" />';
         html += '<title>editor</title>';
+        html += '<link href="' + KE.g[id].skinsPath + '/editor.css" rel="stylesheet" type="text/css" />';
         if (KE.g[id].cssPath) {
             html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
         }
@@ -1051,8 +1052,9 @@ KE.util = {
             KE.event.add(KE.g[id].iframeDoc, 'keydown', function(e) {
                 if (e.keyCode == 13) {
                     KE.util.selection(id);
-                    if(KE.g[id].keRange.parentElement().tagName != 'LI') {
+                    if(KE.g[id].range.parentElement().tagName != 'LI') {
                         KE.util.insertHtml(id, '<br />');
+                        KE.util.select(id);
                         return false;
                     }
                 }
