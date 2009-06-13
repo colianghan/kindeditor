@@ -317,6 +317,11 @@
     padding: 0;
     background-color: #FFFFFF;
 }
+.ke-common-icon {
+    display: block;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
 .ke-icon {
     display: block;
     border: 1px solid #F0F0EE;
@@ -324,10 +329,13 @@
     margin: 1px;
     cursor: pointer;
 }
-.ke-common-icon {
+.ke-icon-on {
     display: block;
-    background-repeat: no-repeat;
-    overflow: hidden;
+    border: 1px solid #1F3D74;
+    background-color: #B2BBD0;
+    padding: 0px;
+    margin: 1px;
+    cursor: pointer;
 }
 .ke-icon-selected {
     display: block;

@@ -314,20 +314,27 @@
     padding: 0;
     background-color: #FFFFFF;
 }
+.ke-common-icon {
+    display: block;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
 .ke-icon {
     display: block;
     border: 1px solid #F0F0EE;
     padding: 2px 3px;
     cursor: pointer;
 }
-.ke-common-icon {
+.ke-icon-on {
     display: block;
-    background-repeat: no-repeat;
-    overflow: hidden;
+    border: 1px solid #1F3D74;
+    padding: 2px 3px;
+    cursor: pointer;
 }
 .ke-icon-selected {
     display: block;
     border: 1px solid #1F3D74;
+    background-color: #DDDDDD;
     padding: 2px 3px;
     cursor: pointer;
 }

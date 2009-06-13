@@ -1065,6 +1065,7 @@ KE.util = {
         try {
             KE.g[id].iframeDoc.execCommand(cmd, false, value);
         } catch(e) {}
+        KE.toolbar.updateCommandState(id);
         KE.history.add(id, false);
     },
     insertHtml : function(id, html) {
@@ -1402,6 +1403,45 @@ KE.dialog = function(arg){
 };
 
 KE.toolbar = {
+    updateCommandState : function(id) {
+        var cmdList = [
+            'justifyleft', 'justifycenter', 'justifyright',
+            'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
+            'bold', 'italic', 'underline', 'strikethrough'
+        ];
+        for (var i = 0; i < cmdList.length; i++) {
+            var cmd = cmdList[i];
+            var state = false;
+            try {
+                state = KE.g[id].iframeDoc.queryCommandState(cmd);
+            } catch(e) {}
+            if (state) {
+                KE.toolbar.select(id, cmd);
+            } else {
+                KE.toolbar.unselect(id, cmd);
+            }
+        }
+    },
+    isSelected : function(id, cmd) {
+        if (KE.plugin[cmd] && KE.plugin[cmd].isSelected) return true;
+        else return false;
+    },
+    select : function(id, cmd) {
+        var arr = KE.g[id].toolbarIcon[cmd];
+        var a = arr[0];
+        var span = arr[1];
+        a.className = "ke-icon-selected";
+        a.onmouseover = null;
+        a.onmouseout = null;
+    },
+    unselect : function(id, cmd) {
+        var arr = KE.g[id].toolbarIcon[cmd];
+        var a = arr[0];
+        var span = arr[1];
+        a.className = "ke-icon";
+        a.onmouseover = function(){ this.className = "ke-icon-on"; };
+        a.onmouseout = function(){ this.className = "ke-icon"; };
+    },
     able : function(id, arr) {
         KE.each(KE.g[id].toolbarIcon, function(cmd, obj) {
             if (!KE.util.inArray(cmd, arr)) {
@@ -1410,7 +1450,7 @@ KE.toolbar = {
                 a.className = 'ke-icon';
                 KE.util.setOpacity(span, 100);
                 a.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '");');
-                a.onmouseover = function(){ this.className = "ke-icon-selected"; };
+                a.onmouseover = function(){ this.className = "ke-icon-on"; };
                 a.onmouseout = function(){ this.className = "ke-icon"; };
             }
         });
@@ -1464,7 +1504,7 @@ KE.toolbar = {
             a.className = 'ke-icon';
             a.href = 'javascript:;';
             a.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '");');
-            a.onmouseover = function(){ this.className = "ke-icon-selected"; };
+            a.onmouseover = function(){ this.className = "ke-icon-on"; };
             a.onmouseout = function(){ this.className = "ke-icon"; };
             a.hidefocus = true;
             a.title = KE.lang[cmd];
@@ -1477,6 +1517,7 @@ KE.toolbar = {
             a.appendChild(span);
             cell.appendChild(a);
             KE.g[id].toolbarIcon[cmd] = [a, span];
+            if (KE.toolbar.isSelected(id, cmd)) KE.toolbar.select(id, cmd);
         }
         return toolbar;
     }
@@ -1594,6 +1635,7 @@ KE.create = function(id, mode) {
         newTextarea.style.display = 'block';
         iframe.style.display = 'none';
         KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
+        KE.toolbar.select(id, 'source');
     }
     if (KE.g[id].autoOnsubmitMode) {
         var form = srcTextarea.parentNode;
@@ -1603,6 +1645,7 @@ KE.create = function(id, mode) {
         }
     }
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
+    KE.event.add(iframeDoc, 'click', new Function('KE.toolbar.updateCommandState("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(iframeDoc, 'keyup', new Function('KE.history.add("' + id + '", true)'));
     KE.event.add(newTextarea, 'keyup', new Function('KE.history.add("' + id + '", true)'));
@@ -1764,12 +1807,12 @@ KE.plugin['fullscreen'] = {
     click : function(id) {
         var obj = KE.g[id];
         var resizeListener = function(event) {
-            if (obj.fullscreenMode) {
+            if (this.fullscreen) {
                 KE.plugin["fullscreen"].resetFull(id);
             }
         }
-        if (obj.fullscreenMode) {
-            obj.fullscreenMode = false;
+        if (this.isSelected) {
+            this.isSelected = false;
             KE.util.setData(id);
             KE.remove(id, 1);
             KE.create(id, 2);
@@ -1778,8 +1821,9 @@ KE.plugin['fullscreen'] = {
             KE.util.resize(id, parseInt(this.width), parseInt(this.height));
             if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
             KE.event.remove(window, 'resize', resizeListener);
+            KE.toolbar.unselect(id, "fullscreen");
         } else {
-            obj.fullscreenMode = true;
+            this.isSelected = true;
             KE.util.setData(id);
             this.width = obj.container.style.width;
             this.height = obj.container.style.height;
@@ -1791,6 +1835,7 @@ KE.plugin['fullscreen'] = {
             div.style.position = 'absolute';
             this.resetFull(id);
             KE.event.add(window, 'resize', resizeListener);
+            KE.toolbar.select(id, "fullscreen");
         }
     }
 };
@@ -1934,7 +1979,15 @@ KE.plugin['removeformat'] = {
 KE.plugin['source'] = {
     click : function(id) {
         var obj = KE.g[id];
-        if (obj.wyswygMode) {
+        if (!obj.wyswygMode) {
+            obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
+            obj.iframe.style.display = 'block';
+            obj.newTextarea.style.display = 'none';
+            KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
+            obj.wyswygMode = true;
+            this.isSelected = false;
+            KE.toolbar.unselect(id, "source");
+        } else {
             KE.layout.hide(id);
             if (KE.g[id].filterMode) {
                 obj.newTextarea.value = KE.util.outputHtml(id, obj.iframeDoc.body);
@@ -1945,12 +1998,8 @@ KE.plugin['source'] = {
             obj.newTextarea.style.display = 'block';
             KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
             obj.wyswygMode = false;
-        } else {
-            obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
-            obj.iframe.style.display = 'block';
-            obj.newTextarea.style.display = 'none';
-            KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
-            obj.wyswygMode = true;
+            this.isSelected = true;
+            KE.toolbar.select(id, "source");
         }
         KE.util.focus(id);
     }
