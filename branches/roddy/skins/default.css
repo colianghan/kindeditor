@@ -322,26 +322,30 @@
 .ke-icon {
     display: block;
     border: 1px solid #F0F0EE;
-    padding: 2px 3px;
+    padding: 1px 2px;
+    margin: 1px;
     cursor: pointer;
 }
 .ke-icon-on {
     display: block;
     border: 1px solid #1F3D74;
-    padding: 2px 3px;
+    padding: 1px 2px;
+    margin: 1px;
     cursor: pointer;
 }
 .ke-icon-selected {
     display: block;
     border: 1px solid #1F3D74;
     background-color: #DDDDDD;
-    padding: 2px 3px;
+    padding: 1px 2px;
+    margin: 1px;
     cursor: pointer;
 }
 .ke-icon-disabled {
     display: block;
     border: 1px solid #F0F0EE;
-    padding: 2px 3px;
+    padding: 1px 2px;
+    margin: 1px;
     cursor: default;
 }
 .ke-menu {

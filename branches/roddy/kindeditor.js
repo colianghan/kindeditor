@@ -946,12 +946,14 @@ KE.util = {
             };
         }
     },
-    getFullHtml : function(id) {
+    getFullHtml : function(id, useEditorCss) {
         var html = '<html>';
         html += '<head>';
         html += '<base href="' + KE.htmlPath + '" />';
         html += '<title>editor</title>';
-        html += '<link href="' + KE.g[id].skinsPath + '/editor.css" rel="stylesheet" type="text/css" />';
+        if (useEditorCss) {
+            html += '<link href="' + KE.g[id].skinsPath + '/editor.css" rel="stylesheet" type="text/css" />';
+        }
         if (KE.g[id].cssPath) {
             html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
         }
@@ -1065,7 +1067,7 @@ KE.util = {
         try {
             KE.g[id].iframeDoc.execCommand(cmd, false, value);
         } catch(e) {}
-        KE.toolbar.updateCommandState(id);
+        KE.toolbar.updateState(id);
         KE.history.add(id, false);
     },
     insertHtml : function(id, html) {
@@ -1384,7 +1386,7 @@ KE.dialog = function(arg){
         else if (noButton) noButton.focus();
         if (typeof arg.html != "undefined") {
             var dialogDoc = KE.util.getIframeDoc(dialog);
-            var html = KE.util.getFullHtml(id);
+            var html = KE.util.getFullHtml(id, false);
             dialogDoc.open();
             dialogDoc.write(html);
             dialogDoc.close();
@@ -1403,7 +1405,7 @@ KE.dialog = function(arg){
 };
 
 KE.toolbar = {
-    updateCommandState : function(id) {
+    updateState : function(id) {
         var cmdList = [
             'justifyleft', 'justifycenter', 'justifyright',
             'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript','superscript',
@@ -1626,7 +1628,7 @@ KE.create = function(id, mode) {
     var iframeWin = iframe.contentWindow;
     var iframeDoc = KE.util.getIframeDoc(iframe);
     iframeDoc.designMode = "On";
-    var html = KE.util.getFullHtml(id);
+    var html = KE.util.getFullHtml(id, true);
     iframeDoc.open();
     iframeDoc.write(html);
     iframeDoc.close();
@@ -1645,9 +1647,10 @@ KE.create = function(id, mode) {
         }
     }
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
-    KE.event.add(iframeDoc, 'click', new Function('KE.toolbar.updateCommandState("' + id + '")'));
-    KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
+    KE.event.add(iframeDoc, 'click', new Function('KE.toolbar.updateState("' + id + '")'));
     KE.event.add(iframeDoc, 'keyup', new Function('KE.history.add("' + id + '", true)'));
+    KE.event.add(iframeDoc, 'keyup', new Function('KE.toolbar.updateState("' + id + '")'));
+    KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(newTextarea, 'keyup', new Function('KE.history.add("' + id + '", true)'));
     KE.g[id].container = container;
     KE.g[id].toolbarDiv = toolbarDiv;
