@@ -1975,6 +1975,7 @@ KE.plugin['removeformat'] = {
         var cmd = new KE.cmd(id);
         cmd.remove(KE.setting.textTags, ['class', 'style']);
         KE.history.add(id, false);
+        KE.toolbar.updateState(id);
         KE.util.focus(id);
     }
 };
