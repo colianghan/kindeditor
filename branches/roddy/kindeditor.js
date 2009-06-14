@@ -947,19 +947,19 @@ KE.util = {
         }
     },
     getFullHtml : function(id, useEditorCss) {
-        var html = '<html>';
+        var html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
+        html += '<html xmlns="http://www.w3.org/1999/xhtml">';
         html += '<head>';
-        html += '<base href="' + KE.htmlPath + '" />';
-        html += '<title>editor</title>';
+        html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+        html += '<title>KindEditor</title>';
         if (useEditorCss) {
-            html += '<link href="' + KE.g[id].skinsPath + '/editor.css" rel="stylesheet" type="text/css" />';
+            html += '<link href="' + KE.g[id].skinsPath + 'editor.css" rel="stylesheet" type="text/css" />';
         }
         if (KE.g[id].cssPath) {
             html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
         }
         html += '</head>';
-        html += '<body>';
-        html += '</body>';
+        html += '<body></body>';
         html += '</html>';
         return html;
     },
@@ -1429,17 +1429,13 @@ KE.toolbar = {
         else return false;
     },
     select : function(id, cmd) {
-        var arr = KE.g[id].toolbarIcon[cmd];
-        var a = arr[0];
-        var span = arr[1];
+        var a = KE.g[id].toolbarIcon[cmd][0];
         a.className = "ke-icon-selected";
         a.onmouseover = null;
         a.onmouseout = null;
     },
     unselect : function(id, cmd) {
-        var arr = KE.g[id].toolbarIcon[cmd];
-        var a = arr[0];
-        var span = arr[1];
+        var a = KE.g[id].toolbarIcon[cmd][0];
         a.className = "ke-icon";
         a.onmouseover = function(){ this.className = "ke-icon-on"; };
         a.onmouseout = function(){ this.className = "ke-icon"; };

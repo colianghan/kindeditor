@@ -7,7 +7,7 @@
 </head>
 <body>
 <?php
-   echo(stripslashes($_POST['content']));
+     echo($_POST['content']);
 ?>
 <center>
 <br />
