@@ -128,7 +128,7 @@ KE.setting = {
         ["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
     ],
     noEndTags : ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'],
-    textTags : ['b', 'del', 'em', 'font', 'i', 'span', 'strike', 'strong', 'sub', 'sup', 'u'],
+    inlineTags : ['b', 'del', 'em', 'font', 'i', 'span', 'strike', 'strong', 'sub', 'sup', 'u'],
     htmlTags : {
         font : ['color', 'size', 'face', '.background-color'],
         span : [
@@ -887,7 +887,7 @@ KE.util = {
     },
     trimNodes : function(parent) {
         if (KE.util.getNodeType(parent) != 1) return;
-        if (KE.util.inArray(parent.tagName.toLowerCase(), KE.setting.textTags) && KE.util.getNodeTextLength(parent) == 0) {
+        if (KE.util.inArray(parent.tagName.toLowerCase(), KE.setting.inlineTags) && KE.util.getNodeTextLength(parent) == 0) {
             parent.parentNode.removeChild(parent);
             return;
         }
@@ -2000,7 +2000,7 @@ KE.plugin['removeformat'] = {
     click : function(id) {
         KE.util.selection(id);
         var cmd = new KE.cmd(id);
-        cmd.remove(KE.setting.textTags, ['class', 'style']);
+        cmd.remove(KE.setting.inlineTags, ['class', 'style']);
         KE.history.add(id, false);
         KE.toolbar.updateState(id);
         KE.util.focus(id);
