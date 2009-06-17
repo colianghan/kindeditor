@@ -975,7 +975,7 @@ KE.util = {
             html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
         }
         html += '</head>';
-        html += '<body></body>';
+        html += '<body class="ke-content"></body>';
         html += '</html>';
         return html;
     },
