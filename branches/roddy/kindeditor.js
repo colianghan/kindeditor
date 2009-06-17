@@ -183,6 +183,22 @@ KE.event = {
         } else if (el.detachEvent){
             el.detachEvent('on' + event, listener);
         }
+    },
+    input : function(el, func) {
+        this.add(el, 'keyup', function(e) {
+            if (!e.ctrlKey && !e.shiftKey && !e.altKey && (e.keyCode < 16 || e.keyCode > 18)) {
+                func(e);
+                return false;
+            }
+        });
+    },
+    ctrl : function(el, key, func) {
+        this.add(el, 'keydown', function(e) {
+            if (e.ctrlKey && e.keyCode == key.toUpperCase().charCodeAt(0) && !e.shiftKey && !e.altKey) {
+                func(e);
+                return false;
+            }
+        });
     }
 };
 
@@ -1644,10 +1660,10 @@ KE.create = function(id, mode) {
     }
     KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
     KE.event.add(iframeDoc, 'click', new Function('KE.toolbar.updateState("' + id + '")'));
-    KE.event.add(iframeDoc, 'keyup', new Function('KE.history.add("' + id + '", true)'));
+    KE.event.input(iframeDoc, new Function('KE.history.add("' + id + '", true)'));
     KE.event.add(iframeDoc, 'keyup', new Function('KE.toolbar.updateState("' + id + '")'));
     KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
-    KE.event.add(newTextarea, 'keyup', new Function('KE.history.add("' + id + '", true)'));
+    KE.event.input(newTextarea, new Function('KE.history.add("' + id + '", true)'));
     KE.g[id].container = container;
     KE.g[id].toolbarDiv = toolbarDiv;
     KE.g[id].formDiv = formDiv;
@@ -1672,6 +1688,9 @@ KE.create = function(id, mode) {
         KE.util.resize(id, objWidth, objHeight + top);
     }, true);
     if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
+    KE.each(KE.plugin, function(key, val) {
+        if (KE.plugin[key].init) KE.plugin[key].init(id);
+    });
     setTimeout(
         function(){
             if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
@@ -1721,12 +1740,24 @@ KE.plugin['about'] = {
 };
 
 KE.plugin['undo'] = {
+    init : function(id) {
+        KE.event.ctrl(KE.g[id].iframeDoc, 'Z', function(e) {
+            KE.plugin['undo'].click(id);
+            KE.util.focus(id);
+        });
+    },
     click : function(id) {
         KE.history.undo(id);
     }
 };
 
 KE.plugin['redo'] = {
+    init : function(id) {
+        KE.event.ctrl(KE.g[id].iframeDoc, 'Y', function(e) {
+            KE.plugin['redo'].click(id);
+            KE.util.focus(id);
+        });
+    },
     click : function(id) {
         KE.history.redo(id);
     }
@@ -1805,8 +1836,9 @@ KE.plugin['fullscreen'] = {
     },
     click : function(id) {
         var obj = KE.g[id];
-        var resizeListener = function(event) {
-            if (this.fullscreen) {
+        var self = this;
+        var resizeListener = function(e) {
+            if (self.isSelected) {
                 KE.plugin["fullscreen"].resetFull(id);
             }
         }
