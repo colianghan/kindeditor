@@ -87,6 +87,7 @@ KE.htmlPath = (function() {
 KE.browser = (function() {
     var ua = navigator.userAgent.toLowerCase();
     if (ua.indexOf("msie") > -1) return 'IE';
+    else if (ua.indexOf("webkit") > -1) return 'WEBKIT';
     else if (ua.indexOf("gecko") > -1) return 'GECKO';
     else if (ua.indexOf("opera") > -1) return 'OPERA';
     else return "";
@@ -212,9 +213,10 @@ KE.eachNode = function(node, func) {
         if (KE.util.getNodeType(parent) != 1) return true;
         var n = parent.firstChild;
         while (n != null) {
+            var next = n.nextSibling;
             if (!func(n)) return false;
             if (!walkNodes(n)) return false;
-            n = n.nextSibling;
+            n = next;
         }
         return true;
     };
@@ -310,6 +312,7 @@ KE.selection = function(win, doc) {
     };
     this.init();
     this.addRange = function(keRange) {
+        this.keRange = keRange;
         if (KE.browser == 'IE') {
             var getEndRange = function(isStart) {
                 var range = KE.util.createRange(doc);
@@ -326,9 +329,19 @@ KE.selection = function(win, doc) {
                 return range;
             }
             if (!this.range.item) {
-                this.range.setEndPoint('StartToStart', getEndRange(true));
-                this.range.setEndPoint('EndToStart', getEndRange(false));
-                this.range.select();
+                var node = keRange.startNode;
+                if (node == keRange.endNode && KE.util.getNodeType(node) == 1 && KE.util.getNodeTextLength(node) == 0) {
+                    var temp = doc.createTextNode(" ");
+                    node.appendChild(temp);
+                    this.range.moveToElementText(node);
+                    this.range.collapse(false);
+                    this.range.select();
+                    node.removeChild(temp);
+                } else {
+                    this.range.setEndPoint('StartToStart', getEndRange(true));
+                    this.range.setEndPoint('EndToStart', getEndRange(false));
+                    this.range.select();
+                }
             }
         } else {
             var range = new KE.range(doc);
@@ -339,7 +352,6 @@ KE.selection = function(win, doc) {
             this.sel.removeAllRanges();
             this.sel.addRange(this.range);
         }
-        this.keRange = keRange;
     };
     this.focus = function() {
         if (KE.browser == 'IE' && this.range != null) this.range.select();
@@ -570,14 +582,9 @@ KE.range = function(doc) {
 };
 
 KE.cmd = function(id) {
-    this.isStarted = false;
     this.doc = KE.g[id].iframeDoc;
     this.keSel = KE.g[id].keSel;
     this.keRange = KE.g[id].keRange;
-    this.startNode = this.keRange.startNode;
-    this.startPos = this.keRange.startPos;
-    this.endNode = this.keRange.endNode;
-    this.endPos = this.keRange.endPos;
     this.mergeAttributes = function(el, attr) {
         for (var i = 0, len = attr.length; i < len; i++) {
             KE.each(attr[i], function(key, value) {
@@ -630,74 +637,52 @@ KE.cmd = function(id) {
             }
         }
     };
-    this.wrapElement = function(srcElement, element, attributes) {
-        if (srcElement == this.startNode && srcElement == this.endNode) {
-            this.keRange.selectNode(srcElement);
-            return false;
-        } else if (srcElement == this.startNode) {
-            this.keRange.setStart(srcElement, 0);
-        } else if (srcElement == this.endNode) {
-            this.keRange.setEnd(srcElement, 0);
-            return false;
-        }
-        return true;
-    };
-    this.wrapText = function(node, element, attributes) {
-        if (node == this.startNode && node == this.endNode) {
-            var rangeNode = this.wrapTextNode(node, this.startPos, this.endPos, element, attributes);
-            this.keRange.selectNode(rangeNode);
-            return false;
-        } else if (node == this.startNode) {
-            var rangeNode = this.wrapTextNode(node, this.startPos, node.nodeValue.length, element, attributes);
-            this.keRange.setStart(rangeNode, 0);
-        } else if (node == this.endNode) {
-            var rangeNode = this.wrapTextNode(node, 0, this.endPos, element, attributes);
-            this.keRange.setEnd(rangeNode, rangeNode.nodeType == 1 ? 0 : rangeNode.nodeValue.length);
-            return false;
-        } else {
-            this.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
-        }
-        return true;
-    }
-    this.wrapNodes = function(parentNode, element, attributes) {
-        if (!parentNode.hasChildNodes) return true;
-        var nodes = parentNode.childNodes;
-        for (var i = 0; i < nodes.length; i++) {
-            var node = nodes[i];
-            if (node == this.startNode) this.isStarted = true;
-            var type = KE.util.getNodeType(node);
-            if (type == 1) {
-                if (!this.wrapNodes(node, element, attributes)) return false;
-                if (!this.wrapElement(node, element, attributes)) return false;
-            } else if (type == 3) {
-                if (!this.isStarted) continue;
-                if (!this.wrapText(node, element, attributes)) return false;
-            }
-        }
-        return true;
-    };
     this.wrap = function(tagName, attributes) {
         this.keSel.focus();
         var element = KE.$$(tagName, this.doc);
         this.mergeAttributes(element, attributes);
-        var parentNode = this.keRange.getParentElement();
-        //this.wrapNodes(parentNode, element, attributes);
-        var startNode = this.startNode;
+        var keRange = this.keRange;
+        var startNode = keRange.startNode;
+        var startPos = keRange.startPos;
+        var endNode = keRange.endNode;
+        var endPos = keRange.endPos;
+        var parentNode = keRange.getParentElement();
         var isStarted = false;
         var self = this;
         KE.eachNode(parentNode, function(node) {
             if (node == startNode) isStarted = true;
             var type = KE.util.getNodeType(node);
             if (type == 1) {
-                if (!self.wrapElement(node, element, attributes)) return false;
+                if (node == startNode && node == endNode) {
+                    keRange.selectNode(node);
+                    return false;
+                } else if (node == startNode) {
+                    keRange.setStart(node, 0);
+                } else if (node == endNode) {
+                    keRange.setEnd(node, 0);
+                    return false;
+                }
             } else if (type == 3) {
                 if (isStarted) {
-                    if (!self.wrapText(node, element, attributes)) return false;
+                    if (node == startNode && node == endNode) {
+                        var rangeNode = self.wrapTextNode(node, startPos, endPos, element, attributes);
+                        keRange.selectNode(rangeNode);
+                        return false;
+                    } else if (node == startNode) {
+                        var rangeNode = self.wrapTextNode(node, startPos, node.nodeValue.length, element, attributes);
+                        keRange.setStart(rangeNode, 0);
+                    } else if (node == endNode) {
+                        var rangeNode = self.wrapTextNode(node, 0, endPos, element, attributes);
+                        keRange.setEnd(rangeNode, rangeNode.nodeType == 1 ? 0 : rangeNode.nodeValue.length);
+                        return false;
+                    } else {
+                        self.wrapTextNode(node, 0, node.nodeValue.length, element, attributes);
+                    }
                 }
             }
             return true;
         });
-        this.keSel.addRange(this.keRange);
+        this.keSel.addRange(keRange);
     };
     this.getTopParent = function(tagNames, node) {
         var parent = null;
@@ -720,19 +705,20 @@ KE.cmd = function(id) {
         return {left : leftFrag, right : parent};
     };
     this.remove = function(tagNames, attributes) {
-        var startNode = this.startNode;
-        var endNode = this.endNode;
-        var startPos = this.startPos;
-        var endPos = this.endPos;
+        var keRange = this.keRange;
+        var startNode = keRange.startNode;
+        var startPos = keRange.startPos;
+        var endNode = keRange.endNode;
+        var endPos = keRange.endPos;
         this.keSel.focus();
-        if (this.keSel.keRange.getText() === '') return;
+        if (keRange.getText() === '') return;
         var startParent = this.getTopParent(tagNames, startNode);
         var endParent = this.getTopParent(tagNames, endNode);
         if (startParent) {
             var startFrags = this.splitNodeParent(startParent, startNode, startPos);
-            this.keRange.setStart(startFrags.right, 0);
+            keRange.setStart(startFrags.right, 0);
             if (startNode == endNode && KE.util.getNodeTextLength(startFrags.right) > 0) {
-                this.keRange.selectNode(startFrags.right);
+                keRange.selectNode(startFrags.right);
                 var range = new KE.range(this.doc);
                 range.selectTextNode(startFrags.left);
                 if (startPos > 0) endPos -= range.endNode.nodeValue.length;
@@ -744,12 +730,12 @@ KE.cmd = function(id) {
             var endFrags = this.splitNodeParent(endParent, endNode, endPos);
             this.keRange.setEnd(endFrags.left, 0);
             if (startParent == endParent) {
-                this.keRange.setStart(endFrags.left, 0);
+                keRange.setStart(endFrags.left, 0);
             }
         }
-        var nodeList = this.keRange.getNodeList();
-        this.keRange.setTextStart(this.keRange.startNode, this.keRange.startPos);
-        this.keRange.setTextEnd(this.keRange.endNode, this.keRange.endPos);
+        var nodeList = keRange.getNodeList();
+        keRange.setTextStart(keRange.startNode, keRange.startPos);
+        keRange.setTextEnd(keRange.endNode, keRange.endPos);
         for (var i = 0; i < nodeList.length; i++) {
             var node = nodeList[i];
             if (node.nodeType == 1) {
@@ -763,7 +749,7 @@ KE.cmd = function(id) {
             }
         }
         try {
-            this.keSel.addRange(this.keRange);
+            this.keSel.addRange(keRange);
         } catch(e) {}
     };
 }
@@ -911,12 +897,10 @@ KE.util = {
             parent.parentNode.removeChild(parent);
             return;
         }
-        var node = parent.firstChild;
-        while (node != null) {
-            var nextNode = node.nextSibling;
+        KE.eachNode(parent, function(node) {
             KE.util.trimNodes(node);
-            node = nextNode;
-        }
+            return true;
+        });
     },
     removeParent : function(parent) {
         if (parent.hasChildNodes) {
@@ -1130,7 +1114,7 @@ KE.util = {
         return url;
     },
     htmlToXhtml : function(id, element) {
-        //KE.util.trimNodes(element);
+        KE.util.trimNodes(element);
         var html = element.innerHTML;
         var tags = KE.setting.noEndTags;
         for (var i = 0, len = tags.length; i < len; i++) {
