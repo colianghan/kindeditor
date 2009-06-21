@@ -1448,16 +1448,20 @@ KE.toolbar = {
         else return false;
     },
     select : function(id, cmd) {
-        var a = KE.g[id].toolbarIcon[cmd][0];
-        a.className = "ke-icon-selected";
-        a.onmouseover = null;
-        a.onmouseout = null;
+        if (KE.g[id].toolbarIcon[cmd]) {
+            var a = KE.g[id].toolbarIcon[cmd][0];
+            a.className = "ke-icon-selected";
+            a.onmouseover = null;
+            a.onmouseout = null;
+        }
     },
     unselect : function(id, cmd) {
-        var a = KE.g[id].toolbarIcon[cmd][0];
-        a.className = "ke-icon";
-        a.onmouseover = function(){ this.className = "ke-icon-on"; };
-        a.onmouseout = function(){ this.className = "ke-icon"; };
+        if (KE.g[id].toolbarIcon[cmd]) {
+            var a = KE.g[id].toolbarIcon[cmd][0];
+            a.className = "ke-icon";
+            a.onmouseover = function(){ this.className = "ke-icon-on"; };
+            a.onmouseout = function(){ this.className = "ke-icon"; };
+        }
     },
     able : function(id, arr) {
         KE.each(KE.g[id].toolbarIcon, function(cmd, obj) {
@@ -1691,9 +1695,10 @@ KE.create = function(id, mode) {
         KE.util.resize(id, objWidth, objHeight + top);
     }, true);
     if (!KE.g[id].resizeMode) KE.util.hideBottom(id);
-    KE.each(KE.plugin, function(key, val) {
-        if (KE.plugin[key].init) KE.plugin[key].init(id);
-    });
+    for (var i = 0, len = KE.g[id].items.length; i < len; i++) {
+        var cmd = KE.g[id].items[i];
+        if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
+    }
     setTimeout(
         function(){
             if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
