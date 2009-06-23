@@ -254,6 +254,9 @@
     margin:0;
     border-collapse:separate;
 }
+.ke-toolbar-table td {
+    border:0;
+}
 .ke-toolbar-close {
     display: block;
     background-position: -902px -2px;
