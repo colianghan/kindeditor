@@ -98,6 +98,7 @@ KE.setting = {
     autoOnsubmitMode : true,
     resizeMode : 2,
     filterMode : true,
+    tagLineMode : false,
     skinType : 'default',
     cssPath : '',
     skinsPath : KE.scriptPath + 'skins/',
@@ -654,7 +655,8 @@ KE.cmd = function(id) {
             var type = KE.util.getNodeType(node);
             if (type == 1) {
                 if (node == startNode && node == endNode) {
-                    keRange.selectNode(node);
+                    node.appendChild(element);
+                    keRange.selectNode(element);
                     return false;
                 } else if (node == startNode) {
                     keRange.setStart(node, 0);
@@ -965,13 +967,13 @@ KE.util = {
             };
         }
     },
-    getFullHtml : function(id, useEditorCss) {
+    getFullHtml : function(id, tagLineMode) {
         var html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
         html += '<html xmlns="http://www.w3.org/1999/xhtml">';
         html += '<head>';
         html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
         html += '<title>KindEditor</title>';
-        if (useEditorCss) {
+        if (tagLineMode) {
             html += '<link href="' + KE.g[id].skinsPath + 'editor.css" rel="stylesheet" type="text/css" />';
         }
         if (KE.g[id].cssPath) {
@@ -1647,7 +1649,7 @@ KE.create = function(id, mode) {
     var iframeWin = iframe.contentWindow;
     var iframeDoc = KE.util.getIframeDoc(iframe);
     iframeDoc.designMode = "On";
-    var html = KE.util.getFullHtml(id, true);
+    var html = KE.util.getFullHtml(id, KE.g[id].tagLineMode);
     iframeDoc.open();
     iframeDoc.write(html);
     iframeDoc.close();
@@ -1711,6 +1713,7 @@ KE.init = function(config) {
     config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? KE.setting.autoOnsubmitMode : config.autoOnsubmitMode;
     config.resizeMode = (typeof config.resizeMode == "undefined") ? KE.setting.resizeMode : config.resizeMode;
     config.filterMode = (typeof config.filterMode == "undefined") ? KE.setting.filterMode : config.filterMode;
+    config.tagLineMode = (typeof config.tagLineMode == "undefined") ? KE.setting.tagLineMode : config.tagLineMode;
     config.skinType = config.skinType || KE.setting.skinType;
     config.cssPath = config.cssPath || KE.setting.cssPath;
     config.skinsPath = config.skinsPath || KE.setting.skinsPath;
