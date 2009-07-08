@@ -1200,7 +1200,6 @@ KE.util = {
                             } else {
                                 var val = node.getAttribute(attr);
                                 if (val != null && val !== '') {
-                                    if (typeof val == 'string' && val.match(/^javascript:/)) val = '';
                                     val = KE.util.removeDomain(id, tagName, attr, val);
                                     if (typeof val == 'string') val = val.toLowerCase();
                                     attrStr += ' ' + attr + '="' + val + '"';
