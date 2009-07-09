@@ -60,7 +60,6 @@ KE.lang = {
     yes : '确定',
     no : '取消',
     close : '关闭',
-    invalidSwf : "请输入有效的URL地址。\n只允许swf格式。",
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
     invalidWidth : "宽度必须为数字。",
@@ -1201,7 +1200,6 @@ KE.util = {
                                 var val = node.getAttribute(attr);
                                 if (val != null && val !== '') {
                                     val = KE.util.removeDomain(id, tagName, attr, val);
-                                    if (typeof val == 'string') val = val.toLowerCase();
                                     attrStr += ' ' + attr + '="' + val + '"';
                                 }
                             }
@@ -2179,8 +2177,8 @@ KE.plugin['flash'] = {
         dialog.show();
     },
     check : function(id, url) {
-        if (url.match(/^\w+:\/\/.{3,}(swf)(\s|$)/i) == null) {
-            alert(KE.lang['invalidSwf']);
+        if (url.match(/\w+:\/\/.{3,}/) == null) {
+            alert(KE.lang['invalidUrl']);
             window.focus();
             KE.g[id].yesButton.focus();
             return false;
