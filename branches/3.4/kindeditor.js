@@ -4,12 +4,12 @@
 * @author Roddy <luolonghao@gmail.com>
 * @site http://www.kindsoft.net/
 * @licence LGPL(http://www.opensource.org/licenses/lgpl-license.php)
-* @version 3.3
+* @version 3.4
 *******************************************************************************/
 
 var KE = {};
 
-KE.version = '3.3';
+KE.version = '3.4';
 
 KE.lang = {
     source : '切换模式',
@@ -984,23 +984,6 @@ KE.util = {
                            }
                           );
     },
-    getStyle : function(el, key) {
-        var arr = key.split('-');
-        key = "";
-        for (var i = 0, len = arr.length; i < len; i++) {
-            key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
-        }
-        var val = el.style[key];
-        if (!val) {
-            var css = el.getAttribute("style");
-            if (css) {
-                var re = new RegExp("(^|[^\w\-])" + key + "\s*:\s*([^;]+)", "ig");
-                var arr = re.exec(css);
-                if (arr) val = arr[2];
-            }
-        }
-        return KE.util.rgbToHex(val);
-    },
     createRange : function(doc) {
         return doc.createRange ? doc.createRange() : doc.body.createTextRange();
     },
@@ -1176,9 +1159,6 @@ KE.util = {
     },
     setData : function(id) {
         KE.g[id].srcTextarea.value = this.getData(id);
-    },
-    setPureData : function(id) {
-        KE.g[id].srcTextarea.value = this.getPureData(id);
     },
     focus : function(id) {
         if (KE.g[id].wyswygMode) {
