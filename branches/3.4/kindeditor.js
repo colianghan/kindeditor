@@ -2572,7 +2572,7 @@ KE.plugin['file_manager'] = {
         var dialog = new KE.dialog({
             id : id,
             cmd : 'file_manager',
-            file : 'file_manager.php',
+            file : 'file_manager/file_manager.php',
             width : 500,
             height : 400,
             title : KE.lang['file_manager'],
