@@ -44,6 +44,7 @@ KE.lang = {
     underline : '下划线',
     strikethrough : '删除线',
     removeformat : '删除格式',
+    file_manager : '文件上传管理',
     image : '插入图片',
     flash : '插入Flash',
     media : '插入多媒体',
@@ -112,7 +113,7 @@ KE.setting = {
         'superscript', 'date', 'time', '-',
         'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
         'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', 'image',
-        'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
+        'flash', 'media', 'file_manager', 'layer', 'table', 'specialchar', 'hr',
         'emoticons', 'link', 'unlink', 'about'
     ],
     colorTable : [
@@ -1402,7 +1403,11 @@ KE.dialog = function(arg){
             dialogDoc.close();
             dialogDoc.body.innerHTML = arg.html;
         } else {
-            dialog.src = KE.g[id].pluginsPath + arg.cmd + '.html';
+            if (typeof arg.file == "undefined") {
+                dialog.src = KE.g[id].pluginsPath + arg.cmd + '.html';
+            } else {
+                dialog.src = KE.g[id].pluginsPath + arg.file;
+            }
         }
         KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
         KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
@@ -2558,5 +2563,25 @@ KE.plugin['table'] = {
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
         KE.util.focus(id);
+    }
+};
+
+KE.plugin['file_manager'] = {
+    click : function(id) {
+        KE.util.selection(id);
+        var dialog = new KE.dialog({
+            id : id,
+            cmd : 'file_manager',
+            file : 'file_manager.php',
+            width : 500,
+            height : 400,
+            title : KE.lang['file_manager'],
+            yesButton : KE.lang['yes'],
+            noButton : KE.lang['no']
+        });
+        dialog.show();
+    },
+    exec : function(id) {
+        alert(1);
     }
 };
