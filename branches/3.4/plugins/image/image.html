@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>Image</title>
+        <link type="text/css" rel="stylesheet" href="./image.css" />
+        <script type="text/javascript" charset="utf-8" src="./image.js"></script>
+    </head>
+    <body>
+        <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../php/upload.php">
+            <input type="hidden" id="editorId" name="id" value="" />
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td class="left1">
+                        <select id="type" name="type">
+                            <option value="1">本地</option>
+                            <option value="2">远程</option>
+                        </select>
+                    </td>
+                    <td class="right1">
+                        <input type="file" id="imgFile" name="imgFile" style="width:220px;" />
+                        <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:220px;display:none;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="left1">说明:</td>
+                    <td class="right1">
+                        <input type="text" id="imgTitle" name="imgTitle" value="" maxlength="100" style="width:220px;" />
+                    </td>
+                </tr>
+            </table>
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td class="left2">宽度: </td>
+                    <td class="right2">
+                        <input type="text" name="imgWidth" id="imgWidth" value="0" maxlength="4" style="width:40px;" />
+                    </td>
+                    <td class="left2">高度: </td>
+                    <td class="right2">
+                        <input type="text" name="imgHeight" id="imgHeight" value="0" maxlength="4" style="width:40px;" />
+                    </td>
+                    <td class="left2">边框: </td>
+                    <td class="right2">
+                        <input type="text" name="imgBorder" id="imgBorder" value="0" maxlength="1" style="width:40px;" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>

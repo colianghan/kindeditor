@@ -1,0 +1,26 @@
+body {
+    font-size:12px;
+    margin: 0px;
+    background-color:#F0F0EE;
+    overflow: hidden;
+}
+td.left1 {
+    font-size:12px;
+    width: 50px;
+    padding: 2px;
+}
+td.right1 {
+    font-size:12px;
+    padding: 2px;
+}
+td.left2 {
+    font-size:12px;
+    width: 35px;
+    padding: 2px;
+}
+td.right2 {
+    font-size:12px;
+    padding: 2px;
+    width: 50px;
+}
+

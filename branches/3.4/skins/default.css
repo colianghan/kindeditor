@@ -407,6 +407,30 @@
     padding: 2px;
     cursor: pointer;
 }
+.ke-contextmenu {
+    border-top: 2px solid #DDDDDD;
+    border-left: 2px solid #DDDDDD;
+    border-right: 2px solid #AAAAAA;
+    border-bottom: 2px solid #AAAAAA;
+    background-color: #F0F0EE;
+    color: #222222;
+    font-size: 12px;
+    text-align: left;
+}
+.ke-contextmenu-noselected {
+    background-color: #F0F0EE;
+    color: #222222;
+    font-size: 12px;
+    padding: 2px;
+    cursor: pointer;
+}
+.ke-contextmenu-selected {
+    background-color: #1F3D74;
+    color: #FFFFFF;
+    font-size: 12px;
+    padding: 2px;
+    cursor: pointer;
+}
 .ke-dialog {
     position: absolute;
     border-top: 2px solid #DDDDDD;

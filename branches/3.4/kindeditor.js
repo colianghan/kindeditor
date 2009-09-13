@@ -61,6 +61,7 @@ KE.lang = {
     yes : '确定',
     no : '取消',
     close : '关闭',
+    editImage : '图片属性',
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
     invalidWidth : "宽度必须为数字。",
@@ -209,24 +210,26 @@ KE.event = {
             }
         });
     },
-    ready : function(func) {
+    ready : function(func, win, doc) {
+        var win = win || window;
+        var doc = doc || document;
         var loaded = false;
         var readyFunc = function() {
             if (loaded) return;
             loaded = true;
             func();
         };
-        if (document.addEventListener) {
-            this.add(document, "DOMContentLoaded", readyFunc);
-        } else if (document.attachEvent){
-            this.add(document, "readystatechange", function() {
-                if (document.readyState == "complete") readyFunc();
+        if (doc.addEventListener) {
+            this.add(doc, "DOMContentLoaded", readyFunc);
+        } else if (doc.attachEvent){
+            this.add(doc, "readystatechange", function() {
+                if (doc.readyState == "complete") readyFunc();
             });
-            if ( document.documentElement.doScroll && typeof window.frameElement === "undefined" ) {
+            if ( doc.documentElement.doScroll && typeof win.frameElement === "undefined" ) {
                 var ieReadyFunc = function() {
                     if (loaded) return;
                     try {
-                        document.documentElement.doScroll("left");
+                        doc.documentElement.doScroll("left");
                     } catch(e) {
                         setTimeout(ieReadyFunc, 0);
                         return;
@@ -236,7 +239,7 @@ KE.event = {
                 ieReadyFunc();
             }
         }
-        this.add(window, 'load', readyFunc);
+        this.add(win, 'load', readyFunc);
     }
 };
 
@@ -887,15 +890,18 @@ KE.format = {
 };
 
 KE.util = {
-    getDocumentElement : function() {
-        return (document.compatMode != "CSS1Compat") ? document.body : document.documentElement;
+    getDocumentElement : function(doc) {
+        doc = doc || document;
+        return (document.compatMode != "CSS1Compat") ? doc.body : doc.documentElement;
     },
-    getDocumentHeight : function() {
-        var el = this.getDocumentElement();
+    getDocumentHeight : function(doc) {
+        doc = doc || document;
+        var el = this.getDocumentElement(doc);
         return Math.max(el.scrollHeight, el.clientHeight);
     },
-    getDocumentWidth : function() {
-        var el = this.getDocumentElement();
+    getDocumentWidth : function(doc) {
+        doc = doc || document;
+        var el = this.getDocumentElement(doc);
         return Math.max(el.scrollWidth, el.clientWidth);
     },
     createTable : function() {
@@ -955,9 +961,10 @@ KE.util = {
         }
         return {'x' : x, 'y' : y};
     },
-    getCoords : function(ev) {
+    getCoords : function(ev, doc) {
         ev = ev || window.event;
-        var el = this.getDocumentElement();
+        doc = doc || document;
+        var el = this.getDocumentElement(doc);
         if (ev.pageX) return { x : ev.pageX, y : ev.pageY};
         return {
             x : ev.clientX + el.scrollLeft - el.clientLeft,
@@ -1297,6 +1304,30 @@ KE.menu = function(arg){
         }
         this.append(table);
         this.show();
+    };
+};
+
+KE.contextmenu = function(arg){
+    this.arg = arg;
+    var div = KE.layout.make(arg.id);
+    div.className = 'ke-contextmenu';
+    var pos = KE.util.getCoords(arg.event, KE.g[arg.id].iframeDoc);
+    var iframePos = KE.util.getElementPos(KE.g[arg.id].iframe);
+    div.style.top = pos.y + iframePos.y + 5 + 'px';
+    div.style.left = pos.x + iframePos.x + 'px';
+    this.div = div;
+    this.add = function(html, event) {
+        var cDiv = KE.$$('div');
+        cDiv.className = 'ke-contextmenu-noselected';
+        cDiv.style.width = this.arg.width;
+        cDiv.onmouseover = function() { this.className = 'ke-contextmenu-selected'; }
+        cDiv.onmouseout = function() { this.className = 'ke-contextmenu-noselected'; }
+        cDiv.onclick = event;
+        cDiv.innerHTML = html;
+        this.div.appendChild(cDiv);
+    };
+    this.show = function() {
+        KE.layout.show(this.arg.id, this.div);
     };
 };
 
@@ -1694,6 +1725,52 @@ KE.create = function(id, mode) {
         var cmd = KE.g[id].items[i];
         if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
     }
+    KE.event.add(iframeDoc, 'contextmenu', (function(id) {
+        return function(ev){
+            KE.util.selection(id);
+            var menu = new KE.contextmenu({
+                id : id,
+                event : ev,
+                width : '160px'
+            });
+            menu.add(KE.lang["cut"], (function(id){
+                return function(){
+                    KE.util.select(id);
+                    KE.plugin["cut"].click(id);
+                    KE.layout.hide(id);
+                }
+            })(id));
+            menu.add(KE.lang["copy"], (function(id){
+                return function(){
+                    KE.util.select(id);
+                    KE.plugin["copy"].click(id);
+                    KE.layout.hide(id);
+                };
+            })(id));
+            menu.add(KE.lang["paste"], (function(id){
+                return function(){
+                    KE.util.select(id);
+                    KE.plugin["paste"].click(id);
+                    KE.layout.hide(id);
+                };
+            })(id));
+            if (typeof KE.plugin['image'] != "undefined" && KE.g[id].keRange.startNode.nodeType == 1 &&
+                KE.g[id].keRange.startNode.tagName.toLowerCase() == 'img'
+            ) {
+                menu.add(KE.lang['editImage'], (function(id){
+                    return function(){
+                        KE.util.select(id);
+                        KE.layout.hide(id);
+                        KE.plugin["image"].click(id);
+                    };
+                })(id));
+            }
+            menu.show(id);
+            if (ev.preventDefault) ev.preventDefault();
+            if (ev.stopPropagation) ev.stopPropagation();
+            return false;
+        };
+    })(id));
     if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
     KE.history.add(id, false);
 };
@@ -1826,12 +1903,12 @@ KE.plugin['fullscreen'] = {
     click : function(id) {
         var obj = KE.g[id];
         var self = this;
-        var resetSize = function(id) {
+        var resetSize = function() {
             var el = KE.util.getDocumentElement();
             obj.width = el.clientWidth + 'px';
             obj.height = el.clientHeight + 'px';
         };
-        var resizeListener = function(e) {
+        var resizeListener = function() {
             if (self.isSelected) {
                 resetSize(id);
                 KE.util.resize(id, obj.width, obj.height);
@@ -2213,6 +2290,7 @@ KE.plugin['image'] = {
         var dialog = new KE.dialog({
             id : id,
             cmd : 'image',
+            file : 'image/image.html?id=' + id,
             width : 310,
             height : 90,
             title : KE.lang['image'],

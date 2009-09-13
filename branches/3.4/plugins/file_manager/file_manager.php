@@ -38,7 +38,14 @@
             }
             .file-list th {
                 font-size:12px;
-                border: 1px solid #DDDDDD;
+                font-weight:normal;
+                background-color: #DDDDDD;
+                border-top: 1px solid #F0F0EE;
+                border-left: 1px solid #F0F0EE;
+                border-bottom: 1px solid #F0F0EE;
+            }
+            .file-list th.last {
+                border: 1px solid #F0F0EE;
             }
         </style>
         <script type="text/javascript">
@@ -76,7 +83,7 @@
                 <th width="60%">名称</th>
                 <th width="10%">大小</th>
                 <th width="10%">类型</th>
-                <th width="20%">修改时间</th>
+                <th width="20%" class="last">修改时间</th>
             </tr>
             <tr>
                 <td><img src="./images/folder-16.gif" width="16" height="16" border="0" align="absmiddle" /> abcd</td>
