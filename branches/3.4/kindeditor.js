@@ -895,17 +895,15 @@ KE.util = {
         return (document.compatMode != "CSS1Compat") ? doc.body : doc.documentElement;
     },
     getDocumentHeight : function(doc) {
-        doc = doc || document;
         var el = this.getDocumentElement(doc);
         return Math.max(el.scrollHeight, el.clientHeight);
     },
     getDocumentWidth : function(doc) {
-        doc = doc || document;
         var el = this.getDocumentElement(doc);
         return Math.max(el.scrollWidth, el.clientWidth);
     },
-    createTable : function() {
-        var table = KE.$$('table');
+    createTable : function(doc) {
+        var table = KE.$$('table', doc);
         table.cellPadding = 0;
         table.cellSpacing = 0;
         table.border = 0;
@@ -2650,7 +2648,7 @@ KE.plugin['file_manager'] = {
         var dialog = new KE.dialog({
             id : id,
             cmd : 'file_manager',
-            file : 'file_manager/file_manager.php',
+            file : 'file_manager/file_manager.html?id=' + id,
             width : 500,
             height : 400,
             title : KE.lang['file_manager'],
