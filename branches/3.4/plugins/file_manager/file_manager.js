@@ -1,5 +1,6 @@
 //require lib/json2.js
 var JSON_URL = './../../php/file_manager_json.php';
+
 var KE = parent.KE;
 location.href.match(/\?id=([\w-]+)/i);
 var id = RegExp.$1;
@@ -10,6 +11,7 @@ KE.event.ready(function() {
     var orderType = KE.$('orderType', document);
     var listTable = KE.$('listTable', document);
     var viewTable = KE.$('viewTable', document);
+    var listDiv = KE.$('listDiv', document);
     var viewDiv = KE.$('viewDiv', document);
     var changeType = function(type) {
         if (type == 'VIEW') {
@@ -22,95 +24,143 @@ KE.event.ready(function() {
     };
     var insertImage = function(url, title) {
         KE.util.insertHtml(id, '<img src="' + url + '" alt="' + title + '" border="0" />');
-        KE.layout.hide(id);
-        KE.util.focus(id);
     };
     var insertFile = function(url, title) {
         KE.util.insertHtml(id, '<a href="' + url + '" target="_blank">' + title + '</a>');
-        KE.layout.hide(id);
-        KE.util.focus(id);
     };
-    var createList = function(responseText) {
-        var result = JSON.parse(responseText);
-        var path = result.path;
-        var fileList = result.file_list;
-        for (var i = 0, len = result.length; i < len; i++) {
-            var data = result[i];
-            var row = listTable.insertRow(i + 1);
-            var cell0 = row.insertCell(0);
-            var iconName = data.is_dir ? 'folder-16.gif' : 'file-16.gif';
-            var html = '';
-            if (!data.is_dir || data.has_file) html += '<a href="#">';
-            html += '<img src="./images/' + iconName + '" width="16" height="16" border="0" align="absmiddle" /> ' + data.name;
-            if (!data.is_dir || data.has_file) html += '</a>';
-            cell0.innerHTML = html;
-            var cell1 = row.insertCell(1);
-            cell1.innerHTML = data.size;
-            var cell2 = row.insertCell(2);
-            cell2.innerHTML = data.is_dir ? '文件夹' : '文件';
-            var cell3 = row.insertCell(3);
-            cell3.align = 'center';
-            cell3.innerHTML = data.datetime;
+    var makeFileTitle = function (filename, filesize, datetime) {
+        var title = filename + ' (' + Math.ceil(filesize / 1024) + 'KB, ' + datetime + ')';
+        return title;
+    };
+    var bindTitle = function (el, data) {
+        if (data.is_dir) {
+            el.title = '双击进入到' + data.filename + '文件夹';
+        } else {
+            el.title = makeFileTitle(data.filename, data.filesize, data.datetime);
         }
     };
-    var createView = function(responseText) { 
-        viewDiv.innerHTML = '';
-        var result = JSON.parse(responseText);
-        if (result.current_path) {
+    var bindEvent = function (el, result, data, createFunc) {
+        var fileUrl = result.current_url + data.filename;
+        if (data.is_dir) {
+            el.ondblclick = (function (url, path, title) {
+                return function () {
+                    reloadPage(path, orderType.value, createFunc);
+                }
+            })(fileUrl, escape(result.current_dir_path + data.filename + '/'), data.filename);
+        } else if (data.is_photo) {
+            el.ondblclick = (function (url, title) {
+                return function () {
+                    insertImage(url, title);
+                }
+            })(fileUrl, data.filename);
+        } else {
+            el.ondblclick = (function (url, title) {
+                return function () {
+                    insertFile(url, title);
+                }
+            })(fileUrl, data.filename);
+        }
+    };
+    var createCommon = function(result, createFunc) {
+        if (result.current_dir_path) {
             moveupLink.onclick = function () {
-                httpRequest('?path=' + result.moveup_path, createView);
+                reloadPage(result.moveup_dir_path, orderType.value, createFunc);
             };
         } else {
             moveupLink.onclick = null;
         }
+        var onchangeFunc = function() {
+            changeType(viewType.value);
+            if (viewType.value == 'VIEW') reloadPage(result.current_dir_path, orderType.value, createView);
+            else reloadPage(result.current_dir_path, orderType.value, createList);
+        };
+        viewType.onchange = onchangeFunc;
+        orderType.onchange = onchangeFunc;
+    };
+    var createList = function(responseText) {
+        listDiv.innerHTML = '';
+        var result = JSON.parse(responseText);
+        createCommon(result, createList);
+        var tableObj = KE.util.createTable(document);
+        var table = KE.$$('table', document);
+        table.className = 'file-list-table';
+        table.cellPadding = 0;
+        table.cellSpacing = 2;
+        table.border = 0;
+        listDiv.appendChild(table);
+        var fileList = result.file_list;
+        for (var i = 0, len = fileList.length; i < len; i++) {
+            var data = fileList[i];
+            var row = table.insertRow(i);
+            row.onmouseover = function () { this.className = 'selected'; };
+            row.onmouseout = function () { this.className = 'noselected'; };
+            var cell0 = row.insertCell(0);
+            cell0.className = 'name';
+            var iconName = data.is_dir ? 'folder-16.gif' : 'file-16.gif';
+            var img = KE.$$('img', document);
+            img.src = './images/' + iconName;
+            img.width = 16;
+            img.height = 16;
+            img.alt = data.filename;
+            cell0.appendChild(img);
+            cell0.appendChild(document.createTextNode(' ' + data.filename));
+            if (!data.is_dir || data.has_file) {
+                row.style.cursor = 'pointer';
+                img.title = data.filename;
+                cell0.title = data.filename;
+                bindEvent(cell0, result, data, createList);
+            } else {
+                img.title = '空文件夹';
+                cell0.title = '空文件夹';
+            }
+            var cell1 = row.insertCell(1);
+            cell1.className = 'size';
+            cell1.innerHTML = data.is_dir ? '-' : Math.ceil(data.filesize / 1024) + 'KB';
+            var cell2 = row.insertCell(2);
+            cell2.className = 'datetime';
+            cell2.innerHTML = data.datetime;
+        }
+    };
+    var createView = function(responseText) {
+        viewDiv.innerHTML = '';
+        var result = JSON.parse(responseText);
+        createCommon(result, createView);
         var fileList = result.file_list;
         for (var i = 0, len = fileList.length; i < len; i++) {
             var data = fileList[i];
             var div = KE.$$('div', document);
-            div.className = 'area';
+            div.className = 'file-view-area';
             viewDiv.appendChild(div);
             var tableObj = KE.util.createTable(document);
             var table = tableObj.table;
-            table.className = 'photo';
+            table.className = 'photo noselected';
+            table.onmouseover = function () { this.className = 'photo selected'; };
+            table.onmouseout = function () { this.className = 'photo noselected'; };
             var cell = tableObj.cell;
             cell.valign = 'middle';
             cell.align = 'center';
-            var icon_url = data.is_dir ? './images/folder-64.gif' : (data.is_photo ? data.url : './images/file-64.gif');
-            var file_url = data.url;
+            var fileUrl = result.current_url + data.filename;
+            var iconUrl = data.is_dir ? './images/folder-64.gif' : (data.is_photo ? fileUrl : './images/file-64.gif');
             var img = KE.$$('img', document);
-            img.src = icon_url;
-            img.width = 64;
-            img.height = 64;
-            img.alt = data.name;
-            img.title = data.name;
+            img.src = iconUrl;
+            img.width = data.is_dir ? 64 : 80;
+            img.height = data.is_dir ? 64 : 80;
+            img.alt = data.filename;
             if (!data.is_dir || data.has_file) {
-                img.style.cursor = 'pointer';
-                if (data.is_dir) {
-                    img.onclick = (function (url, path, title) {
-                        return function () {
-                            httpRequest('?path=' + path, createView);
-                        }
-                    })(file_url, data.dir_path, data.name);
-                } else if (data.is_photo) {
-                    img.onclick = (function (url, title) {
-                        return function () {
-                            insertImage(url, title);
-                        }
-                    })(file_url, data.name);
-                } else {
-                    img.onclick = (function (url, title) {
-                        return function () {
-                            insertFile(url, title);
-                        }
-                    })(file_url, data.name);                
-                }
+                table.style.cursor = 'pointer';
+                bindTitle(img, data);
+                bindTitle(table, data);
+                bindEvent(table, result, data, createView);
+            } else {
+                img.title = '空文件夹';
+                table.title = '空文件夹';
             }
             cell.appendChild(img);
             div.appendChild(table);
             var titleDiv = KE.$$('div', document);
             titleDiv.className = 'name';
-            titleDiv.title = data.name;
-            titleDiv.innerHTML = data.name;
+            titleDiv.title = data.filename;
+            titleDiv.innerHTML = data.filename;
             div.appendChild(titleDiv);
         }
     };
@@ -128,13 +178,12 @@ KE.event.ready(function() {
         };
         req.send(null);
     };
-    KE.event.add(viewType, 'change', function() {
-        changeType(viewType.value);
-        if (viewType.value == 'VIEW') httpRequest('', createView);
-        else httpRequest('', createList);
-    });
+    var reloadPage = function (path, order, func) {
+        httpRequest('?path=' + path + '&order=' + order, func);
+    };
+
     changeType('VIEW');
     viewType.value = 'VIEW';
-    httpRequest('', createView);
+    reloadPage('', orderType.value, createView);
 
 }, window, document);

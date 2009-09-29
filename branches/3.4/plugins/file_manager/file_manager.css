@@ -12,37 +12,51 @@ td {
 .top {
     background-color:#F0F0EE;
 }
-div.file-view {
+.file-view {
     overflow: scroll;
     width: 500px;
     height: 370px;
 }
-div.area {
+.file-view-area {
     float:left;
     border: 1px solid #FFFFFF;
     margin: 5px;
 }
-div.area .photo {
+.file-view-area .photo {
     width: 100px;
     height: 100px;
-    border: 1px solid #DDDDDD;
     margin: 3px;
 }
-div.area .name {
+.file-view-area .name {
     margin: 2px;
     text-align: center;
     overflow: hidden;
     width: 100px;
     height: 16px;
 }
-.file-list th {
-    font-size:12px;
-    font-weight:normal;
-    background-color: #DDDDDD;
-    border-top: 1px solid #F0F0EE;
-    border-left: 1px solid #F0F0EE;
-    border-bottom: 1px solid #F0F0EE;
+.selected {
+    border: 1px solid #888888;
+    background-color: #F0F0EE;
 }
-.file-list th.last {
-    border: 1px solid #F0F0EE;
+.noselected {
+    border: 1px solid #DDDDDD;
+    background-color: #FFFFFF;
+}
+.file-list {
+    overflow: scroll;
+    width: 500px;
+    height: 370px;
+}
+.file-list-table {
+    width: 100%;
+}
+.file-list-table .name {
+    width: 55%;
+}
+.file-list-table .size {
+    width: 15%;
+}
+.file-list-table .datetime {
+    width: 30%;
+    text-align: center;
 }

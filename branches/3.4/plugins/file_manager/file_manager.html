@@ -11,7 +11,7 @@
             <tr>
                 <td>
                     <img src="./images/go-up.gif" width="16" height="16" border="0" alt="上一级目录" align="absmiddle" />
-                    <a id="moveup" href="javascript:;">移到上一级目录</a>
+                    <a id="moveup" href="javascript:;">移到上一级文件夹</a>
                 </td>
                 <td align="center">
                     显示方式：<select id="viewType" name="viewType">
@@ -33,15 +33,15 @@
                 <td height="5"></td>
             </tr>
         </table>
-        <table id="listTable" class="file-list" border="0" cellpadding="2" cellspacing="0" width="100%" style="display:none;">
+        <table id="listTable" border="0" cellpadding="0" cellspacing="0" width="100%" style="display:none;">
             <tr>
-                <th width="50%">名称</th>
-                <th width="10%">大小</th>
-                <th width="10%">类型</th>
-                <th width="30%" class="last">修改时间</th>
+                <td>
+                    <div id="listDiv" class="file-list">
+                    </div>
+                </td>
             </tr>
         </table>
-        <table id="viewTable" border="0" cellpadding="0" cellspacing="0" style="display:none;">
+        <table id="viewTable" border="0" cellpadding="0" cellspacing="0" width="100%" style="display:none;">
             <tr>
                 <td>
                     <div id="viewDiv" class="file-view">
