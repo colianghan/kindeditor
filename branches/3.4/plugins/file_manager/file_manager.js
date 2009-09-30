@@ -165,6 +165,7 @@ KE.event.ready(function() {
         }
     };
     var httpRequest = function (param, func) {
+        KE.util.showLoadingPage(id);
         var req = window.ActiveXObject ? new ActiveXObject("Microsoft.XMLHTTP") : new XMLHttpRequest();
         var url = JSON_URL;
         url += param;
@@ -172,8 +173,10 @@ KE.event.ready(function() {
         req.open('GET', url, true);
         req.onreadystatechange = function () {
             if (req.readyState == 4) {
-                if(req.status == 200) func(req.responseText);
-                else alert("Error: status=" + req.status);
+                if(req.status == 200) {
+                    func(req.responseText);
+                    KE.util.hideLoadingPage(id);
+                }
             }
         };
         req.send(null);
@@ -185,5 +188,5 @@ KE.event.ready(function() {
     changeType('VIEW');
     viewType.value = 'VIEW';
     reloadPage('', orderType.value, createView);
-
+    KE.util.hideLoadingPage(id);
 }, window, document);

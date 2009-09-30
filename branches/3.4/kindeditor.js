@@ -62,6 +62,7 @@ KE.lang = {
     no : '取消',
     close : '关闭',
     editImage : '图片属性',
+    loading : '正在加载中...',
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
     invalidWidth : "宽度必须为数字。",
@@ -1203,6 +1204,14 @@ KE.util = {
             });
         }
     },
+    hideLoadingPage : function(id) {
+        KE.g[id].loadingTable.style.display = 'none';
+        KE.g[id].dialog.style.display = '';
+    },
+    showLoadingPage : function(id) {
+        KE.g[id].loadingTable.style.display = '';
+        KE.g[id].dialog.style.display = 'none';
+    },
     execCommand : function(id, cmd, value) {
         try {
             KE.g[id].iframeDoc.execCommand(cmd, false, value);
@@ -1377,6 +1386,20 @@ KE.dialog = function(arg){
         div.appendChild(titleDiv);
         var bodyDiv = KE.$$('div');
         bodyDiv.className = 'ke-dialog-body';
+        var loadingTable = KE.util.createTable();
+        loadingTable.table.style.width = arg.width + 'px';
+        loadingTable.table.style.height = arg.height + 'px';
+        loadingTable.cell.align = 'center';
+        loadingTable.cell.valign = 'middle';
+        loadingTable.cell.style.fontSize = '12px';
+        var loadingImg = KE.$$('img');
+        loadingImg.src = KE.g[id].skinsPath + 'loading.gif';
+        loadingImg.width = 16;
+        loadingImg.height = 16;
+        loadingImg.align = 'absmiddle';
+        loadingImg.alt = KE.lang['loading'];
+        loadingTable.cell.appendChild(loadingImg);
+        loadingTable.cell.innerHTML += ' ' + KE.lang['loading'];
         var dialog = KE.$$('iframe');
         if (arg.useFrameCSS) {
             dialog.className = 'ke-dialog-iframe';
@@ -1384,7 +1407,9 @@ KE.dialog = function(arg){
         dialog.width = arg.width + 'px';
         dialog.height = arg.height + 'px';
         dialog.setAttribute("frameBorder", "0");
+        dialog.style.display = 'none';
         bodyDiv.appendChild(dialog);
+        bodyDiv.appendChild(loadingTable.table);
         div.appendChild(bodyDiv);
 
         var bottomDiv = KE.$$('div');
@@ -1442,9 +1467,11 @@ KE.dialog = function(arg){
         KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
         KE.g[id].maskDiv.style.display = 'block';
         KE.g[id].dialog = dialog;
+        KE.g[id].loadingTable = loadingTable.table;
         KE.g[id].noButton = noButton;
         KE.g[id].yesButton = yesButton;
         KE.g[id].previewButton = previewButton;
+        if (!arg.loadingMode) KE.util.hideLoadingPage(id);
     };
 };
 
@@ -2651,6 +2678,7 @@ KE.plugin['file_manager'] = {
             file : 'file_manager/file_manager.html?id=' + id,
             width : 500,
             height : 400,
+            loadingMode : true,
             title : KE.lang['file_manager'],
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
