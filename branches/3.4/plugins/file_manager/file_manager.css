@@ -3,7 +3,7 @@ body {
     font-family: "sans serif",tahoma,verdana,helvetica;
     margin: 0;
     padding: 0;
-    background-color:#FFFFFF;
+    background-color:#F0F0EE;
     overflow: hidden;
 }
 td {
@@ -14,6 +14,7 @@ td {
 }
 .file-view {
     overflow: scroll;
+    background-color:#FFFFFF;
     width: 500px;
     height: 370px;
 }
@@ -44,6 +45,7 @@ td {
 }
 .file-list {
     overflow: scroll;
+    background-color:#FFFFFF;
     width: 500px;
     height: 370px;
 }

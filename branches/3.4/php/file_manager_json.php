@@ -92,9 +92,9 @@ function cmp_func($a, $b) {
 usort($file_list, 'cmp_func');
 
 $result = array();
-//根目录开始的上一级目录
+//相对于根目录的上一级目录
 $result['moveup_dir_path'] = $moveup_dir_path;
-//根目录开始的当前目录
+//相对于根目录的当前目录
 $result['current_dir_path'] = $current_dir_path;
 //当前目录的URL
 $result['current_url'] = $current_url;

@@ -15,11 +15,11 @@ KE.event.ready(function() {
     var viewDiv = KE.$('viewDiv', document);
     var changeType = function(type) {
         if (type == 'VIEW') {
-            viewTable.style.display = '';
-            listTable.style.display = 'none';
+            listDiv.style.display = 'none';
+            viewDiv.style.display = '';
         } else {
-            viewTable.style.display = 'none';
-            listTable.style.display = '';
+            listDiv.style.display = '';
+            viewDiv.style.display = 'none';
         }
     };
     var insertImage = function(url, title) {
@@ -81,7 +81,6 @@ KE.event.ready(function() {
         listDiv.innerHTML = '';
         var result = JSON.parse(responseText);
         createCommon(result, createList);
-        var tableObj = KE.util.createTable(document);
         var table = KE.$$('table', document);
         table.className = 'file-list-table';
         table.cellPadding = 0;
@@ -179,14 +178,12 @@ KE.event.ready(function() {
                 }
             }
         };
-        req.send(null);
+        req.send();
     };
     var reloadPage = function (path, order, func) {
         httpRequest('?path=' + path + '&order=' + order, func);
     };
-
     changeType('VIEW');
     viewType.value = 'VIEW';
     reloadPage('', orderType.value, createView);
-    KE.util.hideLoadingPage(id);
 }, window, document);

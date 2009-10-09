@@ -45,7 +45,7 @@ KE.lang = {
     strikethrough : '删除线',
     removeformat : '删除格式',
     file_manager : '文件上传管理',
-    image : '插入图片',
+    image : '插入/编辑图片',
     flash : '插入Flash',
     media : '插入多媒体',
     layer : '插入层',
@@ -155,7 +155,7 @@ KE.setting = {
         ],
         a : ['class', 'href', 'target', 'name'],
         embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess', '/'],
-        img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
+        img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', '.width', '.height', '/'],
         hr : ['class', '/'],
         br : ['/'],
         'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
@@ -2316,8 +2316,8 @@ KE.plugin['image'] = {
             id : id,
             cmd : 'image',
             file : 'image/image.html?id=' + id,
-            width : 310,
-            height : 90,
+            width : 500,
+            height : 300,
             title : KE.lang['image'],
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
@@ -2328,34 +2328,13 @@ KE.plugin['image'] = {
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var type = KE.$('type', dialogDoc).value;
         var url = '';
-        if (type == 1) {
+        if (type == 2) {
             url = KE.$('imgFile', dialogDoc).value;
         } else {
             url = KE.$('url', dialogDoc).value;
         }
-        var width = KE.$('imgWidth', dialogDoc).value;
-        var height = KE.$('imgHeight', dialogDoc).value;
-        var border = KE.$('imgBorder', dialogDoc).value;
         if (!url.match(/\.(jpg|jpeg|gif|bmp|png)(\s|$)/i)) {
             alert(KE.lang['invalidImg']);
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
-        if (width.match(/^\d+$/) == null) {
-            alert(KE.lang['invalidWidth']);
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
-        if (height.match(/^\d+$/) == null) {
-            alert(KE.lang['invalidHeight']);
-            window.focus();
-            KE.g[id].yesButton.focus();
-            return false;
-        }
-        if (border.match(/^\d+$/) == null) {
-            alert(KE.lang['invalidBorder']);
             window.focus();
             KE.g[id].yesButton.focus();
             return false;
@@ -2367,24 +2346,29 @@ KE.plugin['image'] = {
         var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var type = KE.$('type', dialogDoc).value;
         if (!this.check(id)) return false;
-        if (type == 1) {
+        if (type == 2) {
             KE.$('editorId', dialogDoc).value = id;
             dialogDoc.uploadForm.submit();
             return false;
         } else {
             var url = KE.$('url', dialogDoc).value;
-            var title = KE.$('imgTitle', dialogDoc).value;
-            var width = KE.$('imgWidth', dialogDoc).value;
-            var height = KE.$('imgHeight', dialogDoc).value;
-            var border = KE.$('imgBorder', dialogDoc).value;
-            this.insert(id, url, title, width, height, border);
+            var alignElements = dialogDoc.getElementsByName('align');
+            var align = '';
+            for (var i = 0, len = alignElements.length; i < len; i++) {
+                if (alignElements[i].checked) {
+                    align = alignElements[i].value;
+                    break;
+                }
+            }
+            this.insert(id, url, '', 0, 0, 0, align);
         }
     },
-    insert : function(id, url, title, width, height, border) {
+    insert : function(id, url, title, width, height, border, align) {
         var html = '<img src="' + url + '" ';
         if (width > 0) html += 'width="' + width + '" ';
         if (height > 0) html += 'height="' + height + '" ';
         if (title) html += 'title="' + title + '" ';
+        if (align) html += 'align="' + align + '" ';
         html += 'alt="' + title + '" ';
         html += 'border="' + border + '" />';
         KE.util.insertHtml(id, html);
