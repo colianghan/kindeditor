@@ -11,18 +11,17 @@
                 <ul>
                     <li>网络上的图片</li>
                     <li>电脑里的图片</li>
-                    <li>批量上传</li>
                 </ul>
             </div>
             <input type="hidden" id="type" name="type" value="" />
-            <div id="tab1">
+            <div id="tab1" style="display:none;">
                 <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../php/upload.php">
                     <input type="hidden" id="editorId" name="id" value="" />
                     <ul class="form">
                         <li>
                             <label for="url">图片地址</label>
                             <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:300px;" />
-                            <input type="button" id="viewImage" name="viewImage" value="浏览" />
+                            <input type="button" id="viewServer" name="viewServer" value="浏览服务器" />
                         </li>
                         <li>
                             <label for="url">对齐方式</label>
@@ -34,6 +33,9 @@
                         </li>
                     </ul>
                 </form>
+            </div>
+            <div id="tab2" style="display:none;">
+                swfupload
             </div>
         </div>
     </body>

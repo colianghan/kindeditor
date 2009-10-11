@@ -44,7 +44,6 @@ KE.lang = {
     underline : '下划线',
     strikethrough : '删除线',
     removeformat : '删除格式',
-    file_manager : '文件上传管理',
     image : '插入/编辑图片',
     flash : '插入Flash',
     media : '插入多媒体',
@@ -61,7 +60,7 @@ KE.lang = {
     yes : '确定',
     no : '取消',
     close : '关闭',
-    editImage : '图片属性',
+    editImage : '编辑图片',
     loading : '正在加载中...',
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
@@ -115,7 +114,7 @@ KE.setting = {
         'superscript', 'date', 'time', '-',
         'title', 'fontname', 'fontsize', 'textcolor', 'bgcolor', 'bold',
         'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', 'image',
-        'flash', 'media', 'file_manager', 'layer', 'table', 'specialchar', 'hr',
+        'flash', 'media', 'layer', 'table', 'specialchar', 'hr',
         'emoticons', 'link', 'unlink', 'about'
     ],
     colorTable : [
@@ -1205,12 +1204,16 @@ KE.util = {
         }
     },
     hideLoadingPage : function(id) {
-        KE.g[id].loadingTable.style.display = 'none';
-        KE.g[id].dialog.style.display = '';
+        var stack = KE.g[id].dialogStack;
+        var dialog = stack[stack.length - 1];
+        dialog.loading.style.display = 'none';
+        dialog.iframe.style.display = '';
     },
     showLoadingPage : function(id) {
-        KE.g[id].loadingTable.style.display = '';
-        KE.g[id].dialog.style.display = 'none';
+        var stack = KE.g[id].dialogStack;
+        var dialog = stack[stack.length - 1];
+        dialog.loading.style.display = '';
+        dialog.iframe.style.display = 'none';
     },
     execCommand : function(id, cmd, value) {
         try {
@@ -1237,23 +1240,31 @@ KE.util = {
 
 KE.layout = {
     show : function(id, div) {
-        KE.layout.hide(id);
+        var layout = KE.g[id].layoutStack;
+        if (layout.length < 1) {
+            KE.g[id].hideDiv.style.display = 'block';
+        }
+        layout.push(div);
         KE.g[id].hideDiv.appendChild(div);
-        KE.g[id].hideDiv.style.display = 'block';
-        KE.g[id].layoutDiv = div;
     },
     hide : function(id) {
-        try {
-            KE.g[id].hideDiv.removeChild(KE.g[id].layoutDiv);
-        } catch (e) {}
-        KE.g[id].hideDiv.style.display = 'none';
-        KE.g[id].maskDiv.style.display = 'none';
-        KE.util.focus(id);
+        var layout = KE.g[id].layoutStack;
+        if (layout.length > 0) {
+            KE.g[id].hideDiv.removeChild(layout.pop());
+            if (layout.length < 1) {
+                KE.g[id].hideDiv.style.display = 'none';
+            }
+        }
     },
     make : function(id) {
+        var layout = KE.g[id].layoutStack;
         var div = KE.$$('div');
         div.style.position = 'absolute';
-        div.style.zIndex = 19811214;
+        if (layout.length < 1) {
+            div.style.zIndex = 19811214;
+        } else {
+            div.style.zIndex = parseInt(layout[layout.length - 1].style.zIndex) + 1;
+        }
         return div;
     }
 };
@@ -1284,6 +1295,7 @@ KE.menu = function(arg){
         this.div.innerHTML = html;
     };
     this.show = function() {
+        KE.layout.hide(this.arg.id);
         KE.layout.show(this.arg.id, this.div);
     };
     this.picker = function() {
@@ -1334,6 +1346,7 @@ KE.contextmenu = function(arg){
         this.div.appendChild(cDiv);
     };
     this.show = function() {
+        KE.layout.hide(this.arg.id);
         KE.layout.show(this.arg.id, this.div);
     };
 };
@@ -1358,7 +1371,19 @@ KE.dialog = function(arg){
         var y = yDiff < 0 ? pos.y : pos.y + yDiff;
         return {'x' : x, 'y' : y};
     };
+    this.hide = function() {
+        var id = this.arg.id;
+        var stack = KE.g[id].dialogStack;
+        if (stack[stack.length - 1] != this) return false;
+        stack.pop();
+        KE.layout.hide(id);
+        if (stack.length < 1) {
+            KE.g[id].maskDiv.style.display = 'none';
+        }
+        if (this.arg.hideHandler) this.arg.hideHandler();
+    };
     this.show = function() {
+        var self = this;
         var arg = this.arg;
         var id = arg.id;
         var div = KE.layout.make(arg.id);
@@ -1366,8 +1391,14 @@ KE.dialog = function(arg){
         var pos = this.getPos();
         div.style.width = (arg.width + this.topHeight) + 'px';
         div.style.height = (arg.height + this.bottomHeight) + 'px';
-        div.style.top = pos.y + 'px';
-        div.style.left = pos.x + 'px';
+        var top = pos.y;
+        var left = pos.x;
+        if (KE.g[id].dialogStack.length > 0) {
+            top += 30;
+            left += 30;
+        }
+        div.style.top = top + 'px';
+        div.style.left = left + 'px';
         var titleDiv = KE.$$('div');
         titleDiv.className = 'ke-dialog-title';
         titleDiv.innerHTML = arg.title;
@@ -1377,7 +1408,7 @@ KE.dialog = function(arg){
         span.className = "ke-toolbar-close";
         span.alt = KE.lang['close'];
         span.title = KE.lang['close'];
-        span.onclick = new Function("KE.layout.hide('" + id + "')");
+        span.onclick = function () { self.hide(); };
         titleDiv.appendChild(span);
         KE.util.drag(id, titleDiv, div, function(objTop, objLeft, objWidth, objHeight, top, left) {
             div.style.top = (objTop + top) + 'px';
@@ -1400,15 +1431,15 @@ KE.dialog = function(arg){
         loadingImg.alt = KE.lang['loading'];
         loadingTable.cell.appendChild(loadingImg);
         loadingTable.cell.innerHTML += ' ' + KE.lang['loading'];
-        var dialog = KE.$$('iframe');
+        var iframe = KE.$$('iframe');
         if (arg.useFrameCSS) {
-            dialog.className = 'ke-dialog-iframe';
+            iframe.className = 'ke-dialog-iframe';
         }
-        dialog.width = arg.width + 'px';
-        dialog.height = arg.height + 'px';
-        dialog.setAttribute("frameBorder", "0");
-        dialog.style.display = 'none';
-        bodyDiv.appendChild(dialog);
+        iframe.width = arg.width + 'px';
+        iframe.height = arg.height + 'px';
+        iframe.setAttribute("frameBorder", "0");
+        iframe.style.display = 'none';
+        bodyDiv.appendChild(iframe);
         bodyDiv.appendChild(loadingTable.table);
         div.appendChild(bodyDiv);
 
@@ -1423,7 +1454,7 @@ KE.dialog = function(arg){
             noButton.type = 'button';
             noButton.name = 'noButton';
             noButton.value = arg.noButton;
-            noButton.onclick = new Function("KE.layout.hide('" + id + "')");
+            noButton.onclick = function () { self.hide(); };
             bottomDiv.appendChild(noButton);
         }
         if (arg.yesButton) {
@@ -1432,7 +1463,12 @@ KE.dialog = function(arg){
             yesButton.type = 'button';
             yesButton.name = 'yesButton';
             yesButton.value = arg.yesButton;
-            yesButton.onclick = new Function("KE.plugin['" + arg.cmd  + "'].exec('" + id + "')");
+            yesButton.onclick = function() {
+                var stack = KE.g[id].dialogStack;
+                if (stack[stack.length - 1] == self) {
+                    KE.plugin[arg.cmd].exec(id);
+                }
+            };
             bottomDiv.appendChild(yesButton);
         }
         if (arg.previewButton) {
@@ -1441,7 +1477,12 @@ KE.dialog = function(arg){
             previewButton.type = 'button';
             previewButton.name = 'previewButton';
             previewButton.value = arg.previewButton;
-            previewButton.onclick = new Function("KE.plugin['" + arg.cmd  + "'].preview('" + id + "')");
+            previewButton.onclick = function() {
+                var stack = KE.g[id].dialogStack;
+                if (stack[stack.length - 1] == self) {
+                    KE.plugin[arg.cmd].preview(id);
+                }
+            };
             bottomDiv.appendChild(previewButton);
         }
         div.appendChild(bottomDiv);
@@ -1450,7 +1491,7 @@ KE.dialog = function(arg){
         if (yesButton) yesButton.focus();
         else if (noButton) noButton.focus();
         if (typeof arg.html != "undefined") {
-            var dialogDoc = KE.util.getIframeDoc(dialog);
+            var dialogDoc = KE.util.getIframeDoc(iframe);
             var html = KE.util.getFullHtml(id, false);
             dialogDoc.open();
             dialogDoc.write(html);
@@ -1458,19 +1499,21 @@ KE.dialog = function(arg){
             dialogDoc.body.innerHTML = arg.html;
         } else {
             if (typeof arg.file == "undefined") {
-                dialog.src = KE.g[id].pluginsPath + arg.cmd + '.html';
+                iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html';
             } else {
-                dialog.src = KE.g[id].pluginsPath + arg.file;
+                iframe.src = KE.g[id].pluginsPath + arg.file;
             }
         }
         KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
         KE.g[id].maskDiv.style.height = KE.util.getDocumentHeight() + 'px';
         KE.g[id].maskDiv.style.display = 'block';
-        KE.g[id].dialog = dialog;
-        KE.g[id].loadingTable = loadingTable.table;
-        KE.g[id].noButton = noButton;
-        KE.g[id].yesButton = yesButton;
-        KE.g[id].previewButton = previewButton;
+        this.iframe = iframe;
+        this.loading = loadingTable.table;
+        this.noButton = noButton;
+        this.yesButton = yesButton;
+        this.previewButton = previewButton;
+        KE.g[id].dialogStack.push(this);
+        KE.g[id].currentDialog = this;
         if (!arg.loadingMode) KE.util.hideLoadingPage(id);
     };
 };
@@ -1696,7 +1739,7 @@ KE.create = function(id, mode) {
     KE.util.setOpacity(maskDiv, 50);
     document.body.appendChild(hideDiv);
     document.body.appendChild(maskDiv);
-    srcTextarea.style.display = "none";
+    srcTextarea.style.display = 'none';
     KE.util.setDefaultPlugin(id);
     var iframeWin = iframe.contentWindow;
     var iframeDoc = KE.util.getIframeDoc(iframe);
@@ -1753,35 +1796,14 @@ KE.create = function(id, mode) {
     KE.event.add(iframeDoc, 'contextmenu', (function(id) {
         return function(ev){
             KE.util.selection(id);
-            var menu = new KE.contextmenu({
-                id : id,
-                event : ev,
-                width : '160px'
-            });
-            menu.add(KE.lang["cut"], (function(id){
-                return function(){
-                    KE.util.select(id);
-                    KE.plugin["cut"].click(id);
-                    KE.layout.hide(id);
-                }
-            })(id));
-            menu.add(KE.lang["copy"], (function(id){
-                return function(){
-                    KE.util.select(id);
-                    KE.plugin["copy"].click(id);
-                    KE.layout.hide(id);
-                };
-            })(id));
-            menu.add(KE.lang["paste"], (function(id){
-                return function(){
-                    KE.util.select(id);
-                    KE.plugin["paste"].click(id);
-                    KE.layout.hide(id);
-                };
-            })(id));
             if (typeof KE.plugin['image'] != "undefined" && KE.g[id].keRange.startNode.nodeType == 1 &&
                 KE.g[id].keRange.startNode.tagName.toLowerCase() == 'img'
             ) {
+                var menu = new KE.contextmenu({
+                    id : id,
+                    event : ev,
+                    width : '160px'
+                });
                 menu.add(KE.lang['editImage'], (function(id){
                     return function(){
                         KE.util.select(id);
@@ -1789,11 +1811,12 @@ KE.create = function(id, mode) {
                         KE.plugin["image"].click(id);
                     };
                 })(id));
+                menu.show(id);
+                if (ev.preventDefault) ev.preventDefault();
+                if (ev.stopPropagation) ev.stopPropagation();
+                return false;
             }
-            menu.show(id);
-            if (ev.preventDefault) ev.preventDefault();
-            if (ev.stopPropagation) ev.stopPropagation();
-            return false;
+            return true;
         };
     })(id));
     if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
@@ -1819,6 +1842,8 @@ KE.init = function(config) {
     KE.g[config.id] = config;
     KE.g[config.id].undoStack = [];
     KE.g[config.id].redoStack = [];
+    KE.g[config.id].layoutStack = [];
+    KE.g[config.id].dialogStack = [];
     KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
 }
 
@@ -1868,7 +1893,7 @@ KE.plugin['redo'] = {
 KE.plugin['plainpaste'] = {
     click : function(id) {
         KE.util.selection(id);
-        var dialog = new KE.dialog({
+        this.dialog = new KE.dialog({
             id : id,
             cmd : 'plainpaste',
             width : 330,
@@ -1877,16 +1902,16 @@ KE.plugin['plainpaste'] = {
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        dialog.show();
+        this.dialog.show();
     },
     exec : function(id) {
         KE.util.select(id);
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var html = KE.$('textArea', dialogDoc).value;
         html = KE.util.escape(html);
         html = html.replace(/\r\n|\n|\r/g, "<br />$&");
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.dialog.hide();
         KE.util.focus(id);
     }
 };
@@ -1894,7 +1919,7 @@ KE.plugin['plainpaste'] = {
 KE.plugin['wordpaste'] = {
     click : function(id) {
         KE.util.selection(id);
-        var dialog = new KE.dialog({
+        this.dialog = new KE.dialog({
             id : id,
             cmd : 'wordpaste',
             width : 330,
@@ -1903,11 +1928,11 @@ KE.plugin['wordpaste'] = {
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        dialog.show();
+        this.dialog.show();
     },
     exec : function(id) {
         KE.util.select(id);
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var wordIframe = KE.$('wordIframe', dialogDoc);
         var str = KE.util.getIframeDoc(wordIframe).body.innerHTML;
         str = str.replace(/<meta(\n|.)*?>/ig, "");
@@ -1919,7 +1944,7 @@ KE.plugin['wordpaste'] = {
         str = str.replace(/\r\n|\n|\r/ig, "");
         str = KE.format.getHtml(str, KE.g[id].htmlTags);
         KE.util.insertHtml(id, str);
-        KE.layout.hide(id);
+        this.dialog.hide();
         KE.util.focus(id);
     }
 };
@@ -2263,29 +2288,29 @@ KE.plugin['emoticons'] = {
 KE.plugin['flash'] = {
     click : function(id) {
         KE.util.selection(id);
-        var dialog = new KE.dialog({
+        this.dialog = new KE.dialog({
             id : id,
             cmd : 'flash',
             width : 280,
             height : 250,
-            title : "Flash",
+            title : KE.lang['flash'],
             previewButton : KE.lang['preview'],
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        dialog.show();
+        this.dialog.show();
     },
     check : function(id, url) {
         if (url.match(/\w+:\/\/.{3,}/) == null) {
             alert(KE.lang['invalidUrl']);
             window.focus();
-            KE.g[id].yesButton.focus();
+            this.dialog.yesButton.focus();
             return false;
         }
         return true;
     },
     preview : function(id) {
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var url = KE.$('url', dialogDoc).value;
         if (!this.check(id, url)) return false;
         var embed = KE.$$('embed', dialogDoc);
@@ -2299,12 +2324,12 @@ KE.plugin['flash'] = {
     },
     exec : function(id) {
         KE.util.select(id);
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var url = KE.$('url', dialogDoc).value;
         if (!this.check(id, url)) return false;
         var html = '<embed src="' + url + '" type="application/x-shockwave-flash" quality="high" />';
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.dialog.hide();
         KE.util.focus(id);
     }
 };
@@ -2312,7 +2337,7 @@ KE.plugin['flash'] = {
 KE.plugin['image'] = {
     click : function(id) {
         KE.util.selection(id);
-        var dialog = new KE.dialog({
+        this.dialog = new KE.dialog({
             id : id,
             cmd : 'image',
             file : 'image/image.html?id=' + id,
@@ -2322,10 +2347,10 @@ KE.plugin['image'] = {
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        dialog.show();
+        this.dialog.show();
     },
     check : function(id) {
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var type = KE.$('type', dialogDoc).value;
         var url = '';
         if (type == 2) {
@@ -2336,14 +2361,14 @@ KE.plugin['image'] = {
         if (!url.match(/\.(jpg|jpeg|gif|bmp|png)(\s|$)/i)) {
             alert(KE.lang['invalidImg']);
             window.focus();
-            KE.g[id].yesButton.focus();
+            this.dialog.yesButton.focus();
             return false;
         }
         return true;
     },
     exec : function(id) {
         KE.util.select(id);
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var type = KE.$('type', dialogDoc).value;
         if (!this.check(id)) return false;
         if (type == 2) {
@@ -2372,7 +2397,7 @@ KE.plugin['image'] = {
         html += 'alt="' + title + '" ';
         html += 'border="' + border + '" />';
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.dialog.hide();
         KE.util.focus(id);
     }
 };
@@ -2412,7 +2437,7 @@ KE.plugin['layer'] = {
 KE.plugin['link'] = {
     click : function(id) {
         KE.util.selection(id);
-        var dialog = new KE.dialog({
+        this.dialog = new KE.dialog({
             id : id,
             cmd : 'link',
             width : 310,
@@ -2421,19 +2446,19 @@ KE.plugin['link'] = {
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        dialog.show();
+        this.dialog.show();
     },
     exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
         var range = KE.g[id].range;
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var url = KE.$('hyperLink', dialogDoc).value;
         var target = KE.$('linkType', dialogDoc).value;
         if (url.match(/\w+:\/\/.{3,}/) == null) {
             alert(KE.lang['invalidUrl']);
             window.focus();
-            KE.g[id].yesButton.focus();
+            this.dialog.yesButton.focus();
             return false;
         }
         var node;
@@ -2453,7 +2478,7 @@ KE.plugin['link'] = {
             }
         }
         KE.history.add(id);
-        KE.layout.hide(id);
+        this.dialog.hide();
         KE.util.focus(id);
     }
 };
@@ -2461,7 +2486,7 @@ KE.plugin['link'] = {
 KE.plugin['media'] = {
     click : function(id) {
         KE.util.selection(id);
-        var dialog = new KE.dialog({
+        this.dialog = new KE.dialog({
             id : id,
             cmd : 'media',
             width : 280,
@@ -2471,19 +2496,19 @@ KE.plugin['media'] = {
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        dialog.show();
+        this.dialog.show();
     },
     check : function(id, url) {
         if (!url.match(/^\w+:\/\/.{3,}\.(mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)(\?|$)/i)) {
             alert(KE.lang['invalidMedia']);
             window.focus();
-            KE.g[id].yesButton.focus();
+            this.dialog.yesButton.focus();
             return false;
         }
         return true;
     },
     preview : function(id) {
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var url = KE.$('url', dialogDoc).value;
         if (!this.check(id, url)) return false;
         var embed = KE.$$('embed', dialogDoc);
@@ -2502,7 +2527,7 @@ KE.plugin['media'] = {
     },
     exec : function(id) {
         KE.util.select(id);
-        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
+        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var url = KE.$('url', dialogDoc).value;
         if (!this.check(id, url)) return false;
         var html;
@@ -2512,7 +2537,7 @@ KE.plugin['media'] = {
             html = '<embed src="' + url + '" type="audio/x-pn-realaudio-plugin" loop="true" autostart="true" />';
         }
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.dialog.hide();
         KE.util.focus(id);
     }
 };
@@ -2650,26 +2675,5 @@ KE.plugin['table'] = {
         KE.util.insertHtml(id, html);
         KE.layout.hide(id);
         KE.util.focus(id);
-    }
-};
-
-KE.plugin['file_manager'] = {
-    click : function(id) {
-        KE.util.selection(id);
-        var dialog = new KE.dialog({
-            id : id,
-            cmd : 'file_manager',
-            file : 'file_manager/file_manager.html?id=' + id,
-            width : 500,
-            height : 400,
-            loadingMode : true,
-            title : KE.lang['file_manager'],
-            yesButton : KE.lang['yes'],
-            noButton : KE.lang['no']
-        });
-        dialog.show();
-    },
-    exec : function(id) {
-        alert(1);
     }
 };

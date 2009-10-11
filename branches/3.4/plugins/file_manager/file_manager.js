@@ -22,11 +22,28 @@ KE.event.ready(function() {
             viewDiv.style.display = 'none';
         }
     };
+    var insertLink = function(url) {
+        var stack = KE.g[id].dialogStack;
+        if (stack.length > 1) {
+            var parentDialog = stack[stack.length - 2];
+            var dialogDoc = KE.util.getIframeDoc(parentDialog.iframe);
+            KE.$('url', dialogDoc).value = url;
+            var currentDialog = stack[stack.length - 1];
+            currentDialog.hide();
+            return true;
+        } else {
+            return false;
+        }
+    }
     var insertImage = function(url, title) {
-        KE.util.insertHtml(id, '<img src="' + url + '" alt="' + title + '" border="0" />');
+        if (!insertLink(url)) {
+            KE.util.insertHtml(id, '<img src="' + url + '" alt="' + title + '" border="0" />');
+        }
     };
     var insertFile = function(url, title) {
-        KE.util.insertHtml(id, '<a href="' + url + '" target="_blank">' + title + '</a>');
+        if (!insertLink(url)) {
+            KE.util.insertHtml(id, '<a href="' + url + '" target="_blank">' + title + '</a>');
+        }
     };
     var makeFileTitle = function (filename, filesize, datetime) {
         var title = filename + ' (' + Math.ceil(filesize / 1024) + 'KB, ' + datetime + ')';
@@ -34,7 +51,7 @@ KE.event.ready(function() {
     };
     var bindTitle = function (el, data) {
         if (data.is_dir) {
-            el.title = '双击进入到' + data.filename + '文件夹';
+            el.title = data.filename;
         } else {
             el.title = makeFileTitle(data.filename, data.filesize, data.datetime);
         }
@@ -42,19 +59,19 @@ KE.event.ready(function() {
     var bindEvent = function (el, result, data, createFunc) {
         var fileUrl = result.current_url + data.filename;
         if (data.is_dir) {
-            el.ondblclick = (function (url, path, title) {
+            el.onclick = (function (url, path, title) {
                 return function () {
                     reloadPage(path, orderType.value, createFunc);
                 }
             })(fileUrl, escape(result.current_dir_path + data.filename + '/'), data.filename);
         } else if (data.is_photo) {
-            el.ondblclick = (function (url, title) {
+            el.onclick = (function (url, title) {
                 return function () {
                     insertImage(url, title);
                 }
             })(fileUrl, data.filename);
         } else {
-            el.ondblclick = (function (url, title) {
+            el.onclick = (function (url, title) {
                 return function () {
                     insertFile(url, title);
                 }
