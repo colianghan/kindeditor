@@ -271,8 +271,7 @@
     width: 16px;
     height: 16px;
     position: absolute;
-    margin-top: 2px;
-    margin-right: 3px;
+    margin: 10px 10px 5px 10px;
     right: 0;
     top: 0;
     cursor: pointer;
@@ -379,38 +378,42 @@
     cursor: default;
 }
 .ke-menu {
-    border-top: 2px solid #DDDDDD;
-    border-left: 2px solid #DDDDDD;
-    border-right: 2px solid #AAAAAA;
-    border-bottom: 2px solid #AAAAAA;
+    position: absolute;
+    border-top: 1px solid #C5C5C5;
+    border-left: 1px solid #C5C5C5;
+    border-right: 1px solid #9F9F9F;
+    border-bottom: 1px solid #9F9F9F;
     background-color: #F0F0EE;
     color: #222222;
     font-size: 12px;
     text-align: left;
+    padding: 2px;
+    z-index: 19811213;
 }
 .ke-menu-noselected {
     background-color: #F0F0EE;
     color: #222222;
-    font-size: 12px;
     padding: 2px;
     cursor: pointer;
 }
 .ke-menu-selected {
     background-color: #1F3D74;
     color: #FFFFFF;
-    font-size: 12px;
     padding: 2px;
     cursor: pointer;
 }
 .ke-contextmenu {
-    border-top: 2px solid #DDDDDD;
-    border-left: 2px solid #DDDDDD;
-    border-right: 2px solid #AAAAAA;
-    border-bottom: 2px solid #AAAAAA;
+    position: absolute;
+    border-top: 1px solid #C5C5C5;
+    border-left: 1px solid #C5C5C5;
+    border-right: 1px solid #9F9F9F;
+    border-bottom: 1px solid #9F9F9F;
     background-color: #F0F0EE;
     color: #222222;
     font-size: 12px;
+    padding: 2px;
     text-align: left;
+    z-index: 19811213;
 }
 .ke-contextmenu-noselected {
     background-color: #F0F0EE;
@@ -428,20 +431,21 @@
 }
 .ke-dialog {
     position: absolute;
-    border-top: 2px solid #DDDDDD;
-    border-left: 2px solid #DDDDDD;
-    border-right: 2px solid #AAAAAA;
-    border-bottom: 2px solid #AAAAAA;
+    border-top: 1px solid #C5C5C5;
+    border-left: 1px solid #C5C5C5;
+    border-right: 1px solid #9F9F9F;
+    border-bottom: 1px solid #9F9F9F;
     background-color: #F0F0EE;
     color: #222222;
     text-align: left;
 }
 .ke-dialog-title {
-    background-color: #E0E0E0;
-    padding: 3px;
+    background-color: #F0F0EE;
+    padding: 10px 10px 5px 10px;
     color: #000000;
     text-align: left;
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: bold;
     cursor: move;
 }
 .ke-dialog-body {

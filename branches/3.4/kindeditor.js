@@ -1173,8 +1173,12 @@ KE.util = {
             KE.g[id].newTextarea.focus();
         }
     },
+    hideMenu : function(id) {
+        KE.g[id].hideDiv.innerHTML = '';
+        KE.g[id].hideDiv.style.display = 'none';
+    },
     click : function(id, cmd) {
-        KE.layout.hide(id);
+        KE.util.hideMenu(id);
         KE.util.focus(id);
         KE.plugin[cmd].click(id);
     },
@@ -1238,52 +1242,41 @@ KE.util = {
     }
 };
 
-KE.layout = {
-    show : function(id, div) {
-        var layout = KE.g[id].layoutStack;
-        if (layout.length < 1) {
-            KE.g[id].hideDiv.style.display = 'block';
-        }
-        layout.push(div);
-        KE.g[id].hideDiv.appendChild(div);
-    },
-    hide : function(id) {
-        var layout = KE.g[id].layoutStack;
-        if (layout.length > 0) {
-            KE.g[id].hideDiv.removeChild(layout.pop());
-            if (layout.length < 1) {
-                KE.g[id].hideDiv.style.display = 'none';
-            }
-        }
-    },
-    make : function(id) {
-        var layout = KE.g[id].layoutStack;
-        var div = KE.$$('div');
-        div.style.position = 'absolute';
-        if (layout.length < 1) {
-            div.style.zIndex = 19811214;
-        } else {
-            div.style.zIndex = parseInt(layout[layout.length - 1].style.zIndex) + 1;
-        }
-        return div;
-    }
-};
-
 KE.menu = function(arg){
-    this.arg = arg;
-    var div = KE.layout.make(arg.id);
-    div.className = 'ke-menu';
-    var obj = KE.g[arg.id].toolbarIcon[arg.cmd];
-    var pos = KE.util.getElementPos(obj[0]);
-    div.style.top = pos.y + obj[0].offsetHeight + 'px';
-    div.style.left = pos.x + 'px';
-    this.div = div;
+    this.getPos = function() {
+        var id = arg.id;
+        var x = 0;
+        var y = 0;
+        if (this.type == 'menu') {
+            var obj = KE.g[id].toolbarIcon[arg.cmd];
+            var pos = KE.util.getElementPos(obj[0]);
+            x = pos.x;
+            y = pos.y + obj[0].offsetHeight;
+        } else {
+            var pos = KE.util.getCoords(arg.event, KE.g[id].iframeDoc);
+            var iframePos = KE.util.getElementPos(KE.g[id].iframe);
+            x = pos.x + iframePos.x;
+            y = pos.y + iframePos.y + 5;
+        }
+        return { x : x, y : y };
+    };
+    this.init = function() {
+        this.type = (arg.type && arg.type == 'contextmenu') ? arg.type : 'menu';
+        var div = KE.$$('div');
+        div.className = 'ke-' + this.type;
+        var pos = this.getPos();
+        div.style.top = pos.y + 'px';
+        div.style.left = pos.x + 'px';
+        this.div = div;
+    };
+    this.init();
     this.add = function(html, event) {
+        var self = this;
         var cDiv = KE.$$('div');
-        cDiv.className = 'ke-menu-noselected';
-        cDiv.style.width = this.arg.width;
-        cDiv.onmouseover = function() { this.className = 'ke-menu-selected'; }
-        cDiv.onmouseout = function() { this.className = 'ke-menu-noselected'; }
+        cDiv.className = 'ke-' + this.type + '-noselected';
+        cDiv.style.width = arg.width;
+        cDiv.onmouseover = function() { this.className = 'ke-' + self.type + '-selected'; }
+        cDiv.onmouseout = function() { this.className = 'ke-' + self.type + '-noselected'; }
         cDiv.onclick = event;
         cDiv.innerHTML = html;
         this.append(cDiv);
@@ -1294,9 +1287,14 @@ KE.menu = function(arg){
     this.insert = function(html) {
         this.div.innerHTML = html;
     };
+    this.hide = function() {
+        KE.util.hideMenu(arg.id);
+    };
     this.show = function() {
-        KE.layout.hide(this.arg.id);
-        KE.layout.show(this.arg.id, this.div);
+        this.hide();
+        var id = arg.id;
+        KE.g[id].hideDiv.style.display = '';
+        KE.g[id].hideDiv.appendChild(this.div);
     };
     this.picker = function() {
         var colorTable = KE.setting.colorTable;
@@ -1316,8 +1314,8 @@ KE.menu = function(arg){
                 cell.title = colorTable[i][j];
                 cell.onmouseover = function() {this.style.borderColor = '#000000'; }
                 cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
-                cell.onclick = new Function('KE.plugin["' + this.arg.cmd + '"].exec("' +
-                                            this.arg.id + '", "' + colorTable[i][j] + '")');
+                cell.onclick = new Function('KE.plugin["' + arg.cmd + '"].exec("' +
+                                            arg.id + '", "' + colorTable[i][j] + '")');
                 cell.innerHTML = '&nbsp;';
             }
         }
@@ -1326,41 +1324,16 @@ KE.menu = function(arg){
     };
 };
 
-KE.contextmenu = function(arg){
-    this.arg = arg;
-    var div = KE.layout.make(arg.id);
-    div.className = 'ke-contextmenu';
-    var pos = KE.util.getCoords(arg.event, KE.g[arg.id].iframeDoc);
-    var iframePos = KE.util.getElementPos(KE.g[arg.id].iframe);
-    div.style.top = pos.y + iframePos.y + 5 + 'px';
-    div.style.left = pos.x + iframePos.x + 'px';
-    this.div = div;
-    this.add = function(html, event) {
-        var cDiv = KE.$$('div');
-        cDiv.className = 'ke-contextmenu-noselected';
-        cDiv.style.width = this.arg.width;
-        cDiv.onmouseover = function() { this.className = 'ke-contextmenu-selected'; }
-        cDiv.onmouseout = function() { this.className = 'ke-contextmenu-noselected'; }
-        cDiv.onclick = event;
-        cDiv.innerHTML = html;
-        this.div.appendChild(cDiv);
-    };
-    this.show = function() {
-        KE.layout.hide(this.arg.id);
-        KE.layout.show(this.arg.id, this.div);
-    };
-};
-
 KE.dialog = function(arg){
     this.arg = arg;
-    this.topHeight = 20;
-    this.bottomHeight = 76;
+    this.widthMargin = 20;
+    this.heightMargin = 90;
     this.getPos = function() {
         var arg = this.arg;
         var id = this.arg.id;
         var obj = KE.g[id];
         var pos = KE.util.getElementPos(KE.g[id].container);
-        var height = arg.height + this.topHeight + this.bottomHeight;
+        var height = arg.height + this.heightMargin;
         var w = obj.container.style.width;
         var h = obj.container.style.height;
         if (w.match(/%$/)) w = obj.container.offsetWidth + 'px';
@@ -1376,8 +1349,9 @@ KE.dialog = function(arg){
         var stack = KE.g[id].dialogStack;
         if (stack[stack.length - 1] != this) return false;
         stack.pop();
-        KE.layout.hide(id);
+        KE.g[id].hideDiv.removeChild(this.div);
         if (stack.length < 1) {
+            KE.g[id].hideDiv.style.display = 'none';
             KE.g[id].maskDiv.style.display = 'none';
         }
         if (this.arg.hideHandler) this.arg.hideHandler();
@@ -1386,11 +1360,17 @@ KE.dialog = function(arg){
         var self = this;
         var arg = this.arg;
         var id = arg.id;
-        var div = KE.layout.make(arg.id);
+        var div = KE.$$('div');
         div.className = 'ke-dialog';
+        var stack = KE.g[id].dialogStack;
+        if (stack.length > 0) {
+            div.style.zIndex = parseInt(stack[stack.length - 1].div.style.zIndex) + 1;
+        } else {
+            div.style.zIndex = 19811213;
+        }
         var pos = this.getPos();
-        div.style.width = (arg.width + this.topHeight) + 'px';
-        div.style.height = (arg.height + this.bottomHeight) + 'px';
+        div.style.width = (arg.width + this.widthMargin) + 'px';
+        div.style.height = (arg.height + this.heightMargin) + 'px';
         var top = pos.y;
         var left = pos.x;
         if (KE.g[id].dialogStack.length > 0) {
@@ -1486,7 +1466,8 @@ KE.dialog = function(arg){
             bottomDiv.appendChild(previewButton);
         }
         div.appendChild(bottomDiv);
-        KE.layout.show(id, div);
+        KE.g[id].hideDiv.style.display = '';
+        KE.g[id].hideDiv.appendChild(div);
         window.focus();
         if (yesButton) yesButton.focus();
         else if (noButton) noButton.focus();
@@ -1512,8 +1493,8 @@ KE.dialog = function(arg){
         this.noButton = noButton;
         this.yesButton = yesButton;
         this.previewButton = previewButton;
+        this.div = div;
         KE.g[id].dialogStack.push(this);
-        KE.g[id].currentDialog = this;
         if (!arg.loadingMode) KE.util.hideLoadingPage(id);
     };
 };
@@ -1756,18 +1737,31 @@ KE.create = function(id, mode) {
         KE.toolbar.select(id, 'source');
     }
     if (KE.g[id].autoOnsubmitMode) {
-        var form = srcTextarea.parentNode;
-        while (form != null && form.tagName != 'FORM') { form = form.parentNode; }
-        if (form != null && form.tagName == 'FORM') {
-            KE.event.add(form, 'submit', new Function('KE.util.setData("' + id + '")'));
+        var node = srcTextarea.parentNode;
+        while (node != null) {
+            if (node.nodeType == 1 && node.tagName.toLowerCase() == 'form') {
+                KE.event.add(node, 'submit', new Function('KE.util.setData("' + id + '")'));
+                break;
+            }
+            node = node.parentNode;
         }
     }
-    KE.event.add(iframeDoc, 'click', new Function('KE.layout.hide("' + id + '")'));
-    KE.event.add(iframeDoc, 'click', new Function('KE.toolbar.updateState("' + id + '")'));
-    KE.event.input(iframeDoc, new Function('KE.history.add("' + id + '", true)'));
-    KE.event.input(iframeDoc, new Function('KE.toolbar.updateState("' + id + '")'));
-    KE.event.add(newTextarea, 'click', new Function('KE.layout.hide("' + id + '")'));
-    KE.event.input(newTextarea, new Function('KE.history.add("' + id + '", true)'));
+    var hideMenu = function() {
+        hideDiv.innerHTML = '';
+        hideDiv.style.display = 'none';
+    };
+    var updateToolbar = function () {
+        KE.toolbar.updateState(id);
+    };
+    var addHistory = function () {
+        KE.history.add(id, true);
+    };
+    KE.event.add(iframeDoc, 'click', hideMenu);
+    KE.event.add(iframeDoc, 'click', updateToolbar);
+    KE.event.input(iframeDoc, addHistory);
+    KE.event.input(iframeDoc, updateToolbar);
+    KE.event.add(newTextarea, 'click', hideMenu);
+    KE.event.input(newTextarea, addHistory);
     KE.g[id].container = container;
     KE.g[id].toolbarTable = toolbarTable;
     KE.g[id].textareaTable = textareaTable;
@@ -1793,32 +1787,29 @@ KE.create = function(id, mode) {
         var cmd = KE.g[id].items[i];
         if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
     }
-    KE.event.add(iframeDoc, 'contextmenu', (function(id) {
-        return function(ev){
-            KE.util.selection(id);
-            if (typeof KE.plugin['image'] != "undefined" && KE.g[id].keRange.startNode.nodeType == 1 &&
-                KE.g[id].keRange.startNode.tagName.toLowerCase() == 'img'
-            ) {
-                var menu = new KE.contextmenu({
-                    id : id,
-                    event : ev,
-                    width : '160px'
-                });
-                menu.add(KE.lang['editImage'], (function(id){
-                    return function(){
-                        KE.util.select(id);
-                        KE.layout.hide(id);
-                        KE.plugin["image"].click(id);
-                    };
-                })(id));
-                menu.show(id);
-                if (ev.preventDefault) ev.preventDefault();
-                if (ev.stopPropagation) ev.stopPropagation();
-                return false;
-            }
-            return true;
-        };
-    })(id));
+    KE.event.add(iframeDoc, 'contextmenu', function(ev){
+        KE.util.selection(id);
+        if (typeof KE.plugin['image'] != "undefined" && KE.g[id].keRange.startNode.nodeType == 1 &&
+            KE.g[id].keRange.startNode.tagName.toLowerCase() == 'img'
+        ) {
+            var menu = new KE.menu({
+                id : id,
+                event : ev,
+                type : 'contextmenu',
+                width : '160px'
+            });
+            menu.add(KE.lang['editImage'], function(){
+                KE.util.select(id);
+                menu.hide();
+                KE.plugin["image"].click(id);
+            });
+            menu.show();
+            if (ev.preventDefault) ev.preventDefault();
+            if (ev.stopPropagation) ev.stopPropagation();
+            return false;
+        }
+        return true;
+    });
     if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
     KE.history.add(id, false);
 };
@@ -1842,7 +1833,6 @@ KE.init = function(config) {
     KE.g[config.id] = config;
     KE.g[config.id].undoStack = [];
     KE.g[config.id].redoStack = [];
-    KE.g[config.id].layoutStack = [];
     KE.g[config.id].dialogStack = [];
     KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
 }
@@ -2005,17 +1995,17 @@ KE.plugin['fullscreen'] = {
 KE.plugin['bgcolor'] = {
     click : function(id) {
         KE.util.selection(id);
-        var menu = new KE.menu({
+        this.menu = new KE.menu({
             id : id,
             cmd : 'bgcolor'
         });
-        menu.picker();
+        this.menu.picker();
     },
     exec : function(id, value) {
         var cmd = new KE.cmd(id);
         cmd.wrap('span', [{'.background-color': value}]);
         KE.history.add(id, false);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2061,12 +2051,13 @@ KE.plugin['fontname'] = {
             menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + key + '")'));
         });
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         var cmd = new KE.cmd(id);
         cmd.wrap('span', [{'.font-family': value}]);
         KE.history.add(id, false);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2087,12 +2078,13 @@ KE.plugin['fontsize'] = {
             menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "' + value + '")'));
         }
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         var cmd = new KE.cmd(id);
         cmd.wrap('span', [{'.font-size': value}]);
         KE.history.add(id, false);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2151,7 +2143,7 @@ KE.plugin['source'] = {
             this.isSelected = false;
             KE.toolbar.unselect(id, "source");
         } else {
-            KE.layout.hide(id);
+            KE.util.hideMenu(id);
             if (KE.g[id].filterMode) {
                 obj.newTextarea.value = KE.format.getHtml(obj.iframeDoc.body.innerHTML, obj.htmlTags);
             } else {
@@ -2171,17 +2163,17 @@ KE.plugin['source'] = {
 KE.plugin['textcolor'] = {
     click : function(id) {
         KE.util.selection(id);
-        var menu = new KE.menu({
+        this.menu = new KE.menu({
             id : id,
             cmd : 'textcolor'
         });
-        menu.picker();
+        this.menu.picker();
     },
     exec : function(id, value) {
         var cmd = new KE.cmd(id);
         cmd.wrap('span', [{'.color': value}]);
         KE.history.add(id, false);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2223,11 +2215,12 @@ KE.plugin['title'] = {
             menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "<' + key + '>")'));
         });
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         KE.util.select(id);
         KE.util.execCommand(id, 'formatblock', value);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2275,12 +2268,13 @@ KE.plugin['emoticons'] = {
         });
         menu.append(table);
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         KE.util.select(id);
         var html = '<img src="' + KE.g[id].pluginsPath + 'emoticons/' + value + '" border="0" />';
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2424,12 +2418,13 @@ KE.plugin['layer'] = {
             menu.add(html, new Function('KE.plugin["' + cmd + '"].exec("' + id + '", "padding:5px;' + styles[i] + '")'));
         }
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         KE.util.select(id);
         var html = '<div style="' + value + '">' + KE.lang['pleaseInput'] + '</div>';
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2587,11 +2582,12 @@ KE.plugin['specialchar'] = {
         });
         menu.append(table);
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         KE.util.select(id);
         KE.util.insertHtml(id, value);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
@@ -2659,6 +2655,7 @@ KE.plugin['table'] = {
         });
         menu.append(table);
         menu.show();
+        this.menu = menu;
     },
     exec : function(id, value) {
         KE.util.select(id);
@@ -2673,7 +2670,7 @@ KE.plugin['table'] = {
         }
         html += '</table>';
         KE.util.insertHtml(id, html);
-        KE.layout.hide(id);
+        this.menu.hide();
         KE.util.focus(id);
     }
 };
