@@ -44,7 +44,7 @@ KE.lang = {
     underline : '下划线',
     strikethrough : '删除线',
     removeformat : '删除格式',
-    image : '插入/编辑图片',
+    image : '图片',
     flash : '插入Flash',
     media : '插入多媒体',
     layer : '插入层',
@@ -1325,27 +1325,28 @@ KE.menu = function(arg){
 };
 
 KE.dialog = function(arg){
-    this.arg = arg;
     this.widthMargin = 20;
     this.heightMargin = 90;
+    this.zIndex = 19811214;
+    this.nextOffset = 30;
     this.getPos = function() {
-        var arg = this.arg;
-        var id = this.arg.id;
+        var id = arg.id;
         var obj = KE.g[id];
         var pos = KE.util.getElementPos(KE.g[id].container);
+        var width = arg.width + this.widthMargin;
         var height = arg.height + this.heightMargin;
         var w = obj.container.style.width;
         var h = obj.container.style.height;
         if (w.match(/%$/)) w = obj.container.offsetWidth + 'px';
         if (h.match(/%$/)) h = obj.container.offsetHeight + 'px';
-        var xDiff = Math.round(parseInt(w) / 2) - Math.round(arg.width / 2);
+        var xDiff = Math.round(parseInt(w) / 2) - Math.round(width / 2);
         var yDiff = Math.round(parseInt(h) / 2) - Math.round(height / 2);
         var x = xDiff < 0 ? pos.x : pos.x + xDiff;
         var y = yDiff < 0 ? pos.y : pos.y + yDiff;
         return {'x' : x, 'y' : y};
     };
     this.hide = function() {
-        var id = this.arg.id;
+        var id = arg.id;
         var stack = KE.g[id].dialogStack;
         if (stack[stack.length - 1] != this) return false;
         stack.pop();
@@ -1354,28 +1355,26 @@ KE.dialog = function(arg){
             KE.g[id].hideDiv.style.display = 'none';
             KE.g[id].maskDiv.style.display = 'none';
         }
-        if (this.arg.hideHandler) this.arg.hideHandler();
+        if (arg.hideHandler) arg.hideHandler();
     };
     this.show = function() {
         var self = this;
-        var arg = this.arg;
         var id = arg.id;
         var div = KE.$$('div');
         div.className = 'ke-dialog';
         var stack = KE.g[id].dialogStack;
         if (stack.length > 0) {
-            div.style.zIndex = parseInt(stack[stack.length - 1].div.style.zIndex) + 1;
-        } else {
-            div.style.zIndex = 19811213;
+            this.zIndex = stack[stack.length - 1].zIndex + 1;
         }
+        div.style.zIndex = this.zIndex;
         var pos = this.getPos();
         div.style.width = (arg.width + this.widthMargin) + 'px';
         div.style.height = (arg.height + this.heightMargin) + 'px';
         var top = pos.y;
         var left = pos.x;
         if (KE.g[id].dialogStack.length > 0) {
-            top += 30;
-            left += 30;
+            top += this.nextOffset;
+            left += this.nextOffset;
         }
         div.style.top = top + 'px';
         div.style.left = left + 'px';
@@ -2335,8 +2334,9 @@ KE.plugin['image'] = {
             id : id,
             cmd : 'image',
             file : 'image/image.html?id=' + id,
-            width : 500,
-            height : 300,
+            width : 400,
+            height : 130,
+            loadingMode : true,
             title : KE.lang['image'],
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']

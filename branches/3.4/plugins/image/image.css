@@ -1,5 +1,6 @@
 body {
     font-size:12px;
+    font-family: "sans serif",tahoma,verdana,helvetica;
     line-height:1.5;
     margin:0;
     background-color:#F0F0EE;
@@ -7,6 +8,9 @@ body {
 }
 form {
     margin:0;
+}
+label {
+    cursor:pointer;
 }
 .tab-navi {
     width:100%;
@@ -40,7 +44,7 @@ form {
     font-weight: bold;
     cursor: default;
 }
-.form  {
+.image-form  {
     list-style-image:none;
     list-style-position:outside;
     list-style-type:none;
@@ -48,39 +52,21 @@ form {
     padding:0;
     display:block;
 }
-.form li {
+.image-form li {
     padding:0;
     margin-bottom:10px;
     display:list-item;
 }
-.form li label {
+.image-form li label {
     font-weight:bold;
 }
-.form li input {
+.image-form li input {
     vertical-align:middle;
 }
-.form li img {
+.image-form li img {
     vertical-align:middle;
 }
-td.left1 {
-    font-size:12px;
-    width: 70px;
-    padding: 2px;
-    font-weight:bold;
+.uploaded-images select {
+    width:350px;
+    height:100px;
 }
-td.right1 {
-    font-size:12px;
-    padding: 2px;
-    line-height: 1.5;
-}
-td.left2 {
-    font-size:12px;
-    width: 35px;
-    padding: 2px;
-}
-td.right2 {
-    font-size:12px;
-    padding: 2px;
-    width: 50px;
-}
-

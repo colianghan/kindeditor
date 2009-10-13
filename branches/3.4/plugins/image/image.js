@@ -3,6 +3,8 @@ location.href.match(/\?id=([\w-]+)/i);
 var id = RegExp.$1;
 var domain = document.domain;
 var fileManager = null;
+var allowUpload = (typeof KE.g[id].allowUpload == 'undefined') ? true : KE.g[id].allowUpload;
+var allowFileManager = (typeof KE.g[id].allowFileManager == 'undefined') ? true : KE.g[id].allowFileManager;
 KE.event.ready(function() {
     var typeBox = KE.$('type', document);
     var urlBox = KE.$('url', document);
@@ -18,17 +20,24 @@ KE.event.ready(function() {
                 li.className = 'selected';
                 li.onclick = null;
             } else {
-                li.className = '';
-                li.onclick = (function (i) {
-                    return function() {
-                        if (!fileManager) selectTab(i);
-                    };
-                })(i);
+                if (allowUpload) {
+                    li.className = '';
+                    li.onclick = (function (i) {
+                        return function() {
+                            if (!fileManager) selectTab(i);
+                        };
+                    })(i);
+                } else {
+                    li.parentNode.removeChild(li);
+                }
             }
             KE.$('tab' + (i + 1), document).style.display = 'none';
         }
         typeBox.value = num + 1;
         KE.$('tab' + (num + 1), document).style.display = '';
+    }
+    if (!allowFileManager) {
+        viewServer.parentNode.removeChild(viewServer);
     }
     var startNode = KE.g[id].keRange.startNode;
     if (startNode && startNode.nodeType == 1 && startNode.tagName.toLowerCase() == 'img') {
@@ -62,4 +71,5 @@ KE.event.ready(function() {
         fileManager.show();
     });
     selectTab(0);
+    KE.util.hideLoadingPage(id);
 }, window, document);
