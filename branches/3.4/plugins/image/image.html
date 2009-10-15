@@ -14,42 +14,32 @@
                 </ul>
             </div>
             <input type="hidden" id="type" name="type" value="" />
-            <div id="tab1" style="display:none;">
+            <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../../php/upload.php">
+                <input type="hidden" id="editorId" name="id" value="" />
+                <input type="hidden" name="imgWidth" value="" />
+                <input type="hidden" name="imgHeight" value="" />
+                <input type="hidden" name="imgBorder" value="" />
+                <input type="hidden" name="imgTitle" value="" />
                 <ul class="image-form">
                     <li>
-                        <label for="url">图片地址</label>
-                        <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:250px;" />
-                        <input type="button" id="viewServer" name="viewServer" value="浏览..." />
+                        <div id="tab1" style="display:none;">
+                            <label for="url">图片地址</label>
+                            <input type="text" id="url" name="url" value="http://" maxlength="255" style="width:250px;" />
+                            <input type="button" id="viewServer" name="viewServer" value="浏览..." />
+                        </div>
+                        <div id="tab2" style="display:none;">
+                            <label for="url">图片地址</label>
+                            <input type="file" id="imgFile" name="imgFile" style="width:300px;" />
+                        </div>
                     </li>
                     <li>
                         <label for="url">对齐方式</label>
-                        <input type="radio" id="alignLeft" name="align" value="left" checked="checked" /> <img src="./images/align_left.gif" width="23" height="25" border="0" alt="左对齐" title="左对齐" />
+                        <input type="radio" name="align" value="" checked="checked" /> <img src="./images/align_top.gif" width="23" height="25" border="0" alt="默认方式" title="默认方式" />
+                        <input type="radio" name="align" value="left" /> <img src="./images/align_left.gif" width="23" height="25" border="0" alt="左对齐" title="左对齐" />
                         <input type="radio" name="align" value="right" /> <img src="./images/align_right.gif" width="23" height="25" border="0" alt="右对齐" title="右对齐" />
-                        <input type="radio" name="align" value="top" /> <img src="./images/align_top.gif" width="23" height="25" border="0" alt="上部" title="上部" />
-                        <input type="radio" name="align" value="middle" /> <img src="./images/align_middle.gif" width="23" height="25" border="0" alt="中部" title="中部" />
-                        <input type="radio" name="align" value="bottom" /> <img src="./images/align_bottom.gif" width="23" height="25" border="0" alt="下部" title="下部" />
                     </li>
                 </ul>
-            </div>
-            <div id="tab2" style="display:none;">
-                <form name="uploadForm" method="post" enctype="multipart/form-data" action="./../../php/upload.php">
-                    <input type="hidden" id="editorId" name="id" value="" />
-                        <ul class="image-form">
-                        <li>
-                            <label for="url">图片地址</label>
-                            <input type="file" id="imgFile" name="imgFile" style="width:300px;" />
-                        </li>
-                        <li>
-                            <label for="url">对齐方式</label>
-                            <input type="radio" id="alignLeft" name="align" value="left" checked="checked" /> <img src="./images/align_left.gif" width="23" height="25" border="0" alt="左对齐" title="左对齐" />
-                            <input type="radio" name="align" value="right" /> <img src="./images/align_right.gif" width="23" height="25" border="0" alt="右对齐" title="右对齐" />
-                            <input type="radio" name="align" value="top" /> <img src="./images/align_top.gif" width="23" height="25" border="0" alt="上部" title="上部" />
-                            <input type="radio" name="align" value="middle" /> <img src="./images/align_middle.gif" width="23" height="25" border="0" alt="中部" title="中部" />
-                            <input type="radio" name="align" value="bottom" /> <img src="./images/align_bottom.gif" width="23" height="25" border="0" alt="下部" title="下部" />
-                        </li>
-                    </ul>
-                </form>
-            </div>
+            </form>
         </div>
     </body>
 </html>

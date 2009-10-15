@@ -61,6 +61,7 @@ KE.lang = {
     no : '取消',
     close : '关闭',
     editImage : '编辑图片',
+    editLink : '编辑超级连接',
     loading : '正在加载中...',
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
@@ -1788,29 +1789,42 @@ KE.create = function(id, mode) {
         var cmd = KE.g[id].items[i];
         if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
     }
-    KE.event.add(iframeDoc, 'contextmenu', function(ev){
-        KE.util.selection(id);
-        if (typeof KE.plugin['image'] != "undefined" && KE.g[id].keRange.startNode.nodeType == 1 &&
-            KE.g[id].keRange.startNode.tagName.toLowerCase() == 'img'
-        ) {
-            var menu = new KE.menu({
-                id : id,
-                event : ev,
-                type : 'contextmenu',
-                width : '160px'
-            });
-            menu.add(KE.lang['editImage'], function(){
-                KE.util.select(id);
-                menu.hide();
-                KE.plugin["image"].click(id);
-            });
-            menu.show();
-            if (ev.preventDefault) ev.preventDefault();
-            if (ev.stopPropagation) ev.stopPropagation();
-            return false;
-        }
-        return true;
-    });
+    if (KE.g[id].contextmenuItems.length > 0) {
+        KE.event.add(iframeDoc, 'contextmenu', function(ev){
+            KE.util.selection(id);
+            var showFlag = false;
+            for (var i = 0, len = KE.g[id].contextmenuItems.length; i < len; i++) {
+                var item = KE.g[id].contextmenuItems[i];
+                if (item.cond(id)) {
+                    showFlag = true;
+                    break;
+                }
+            }
+            if (showFlag) {
+                var menu = new KE.menu({
+                    id : id,
+                    event : ev,
+                    type : 'contextmenu',
+                    width : '160px'
+                });
+                for (var i = 0, len = KE.g[id].contextmenuItems.length; i < len; i++) {
+                    var item = KE.g[id].contextmenuItems[i];
+                    if (item.cond(id)) {
+                        menu.add(item.text, (function(item) {
+                            return function() {
+                                item.click(id, menu);
+                            };
+                        })(item));
+                    }
+                }
+                menu.show();
+                if (ev.preventDefault) ev.preventDefault();
+                if (ev.stopPropagation) ev.stopPropagation();
+                return false;
+            }
+            return true;
+        });
+    }
     if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
     KE.history.add(id, false);
 };
@@ -1835,6 +1849,7 @@ KE.init = function(config) {
     KE.g[config.id].undoStack = [];
     KE.g[config.id].redoStack = [];
     KE.g[config.id].dialogStack = [];
+    KE.g[config.id].contextmenuItems = [];
     KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
 }
 
@@ -2330,6 +2345,51 @@ KE.plugin['flash'] = {
 };
 
 KE.plugin['image'] = {
+    getSelectedNode : function(id) {
+        var startNode = KE.g[id].keRange.startNode;
+        var startPos = KE.g[id].keRange.startPos;
+        var endNode = KE.g[id].keRange.endNode;
+        var endPos = KE.g[id].keRange.endPos;
+        var startImg = null;
+        var endImg = null;
+        if (startNode.nodeType == 1 && startNode.tagName.toLowerCase() == 'img') {
+            startImg = startNode;
+        } else {
+            if (startNode.nodeType == 3 && startPos == startNode.nodeValue.length) {
+                var nextNode = startNode.nextSibling;
+                if (nextNode) {
+                    if (nextNode.nodeType == 1 && nextNode.tagName.toLowerCase() == 'img') startImg = nextNode;
+                }
+            }
+        }
+        if (endNode.nodeType == 1 && endNode.tagName.toLowerCase() == 'img') {
+            endImg = endNode;
+        } else {
+            if (endPos == 0) {
+                var prevNode = endNode.previousSibling;
+                if (prevNode) {
+                    if (prevNode.nodeType == 1 && prevNode.tagName.toLowerCase() == 'img') endImg = prevNode;
+                }
+            }
+        }
+        if ((startImg && endImg && startImg === endImg) || (startImg && endImg == null)) {
+            return startImg;
+        }
+    },
+    init : function(id) {
+        var self = this;
+        KE.g[id].contextmenuItems.push({
+            text : KE.lang['editImage'],
+            click : function(id, menu) {
+                KE.util.select(id);
+                menu.hide();
+                self.click(id);
+            },
+            cond : function(id) {
+                return self.getSelectedNode(id);
+            }
+        });
+    },
     click : function(id) {
         KE.util.selection(id);
         this.dialog = new KE.dialog({
@@ -2432,6 +2492,48 @@ KE.plugin['layer'] = {
 };
 
 KE.plugin['link'] = {
+    getSelectedNode : function(id) {
+        var startNode = KE.g[id].keRange.startNode;
+        var startPos = KE.g[id].keRange.startPos;
+        var endNode = KE.g[id].keRange.endNode;
+        var endPos = KE.g[id].keRange.endPos;
+        var parent = KE.g[id].keRange.getParentElement();
+        var startLink = null;
+        var endLink = null;
+        if (startNode.nodeType == 1 && startNode.tagName.toLowerCase() == 'a') {
+            startLink = startNode;
+        } else {
+            if (startPos == 0) {
+                var parentNode = startNode.parentNode;
+                if (parentNode && parentNode.tagName.toLowerCase() == 'a') startLink = parentNode;
+            }
+        }
+        if (endNode.nodeType == 1 && endNode.tagName.toLowerCase() == 'a') {
+            endLink = endNode;
+        } else {
+            if (endNode.nodeType == 3 && endPos == endNode.nodeValue.length) {
+                var parentNode = endNode.parentNode;
+                if (parentNode && parentNode.tagName.toLowerCase() == 'a') endLink = parentNode;
+            }
+        }
+        if ((startLink && endLink && startLink === endLink) || (startLink && endLink == null)) {
+            return startLink;
+        }
+    },
+    init : function(id) {
+        var self = this;
+        KE.g[id].contextmenuItems.push({
+            text : KE.lang['editLink'],
+            click : function(id, menu) {
+                KE.util.select(id);
+                menu.hide();
+                self.click(id);
+            },
+            cond : function(id) {
+                return self.getSelectedNode(id);
+            }
+        });
+    },
     click : function(id) {
         KE.util.selection(id);
         this.dialog = new KE.dialog({

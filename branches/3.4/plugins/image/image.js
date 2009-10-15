@@ -39,15 +39,15 @@ KE.event.ready(function() {
     if (!allowFileManager) {
         viewServer.parentNode.removeChild(viewServer);
     }
-    var startNode = KE.g[id].keRange.startNode;
-    if (startNode && startNode.nodeType == 1 && startNode.tagName.toLowerCase() == 'img') {
-        var src = startNode.src;
+    var imgNode = KE.plugin['image'].getSelectedNode(id);
+    if (imgNode) {
+        var src = imgNode.src;
         urlBox.value = src.replace(/http:\/\/(.*?)\//g, function($0, $1) {
             if ($1 === domain) return '/';
             else return $0;
         });
         for (var i = 0, len = alignElements.length; i < len; i++) {
-            if (alignElements[i].value == startNode.align) {
+            if (alignElements[i].value == imgNode.align) {
                 alignElements[i].checked = true;
                 break;
             }
