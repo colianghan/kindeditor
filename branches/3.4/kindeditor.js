@@ -141,7 +141,7 @@ KE.setting = {
         div : [
             'class', 'align', '.border', '.margin', '.padding', '.text-align', '.color',
             '.background-color', '.font-size', '.font-family', '.font-weight',
-            '.font-style', '.text-decoration', '.vertical-align'
+            '.font-style', '.text-decoration', '.vertical-align', '.margin-left'
         ],
         table: [
             'class', 'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align',
@@ -160,7 +160,7 @@ KE.setting = {
         br : ['/'],
         'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
             'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family',
-            '.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent'
+            '.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
         ],
         'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
     }
@@ -817,20 +817,15 @@ KE.format = {
     getHtml : function(html, htmlTags) {
         var isFilter = (typeof htmlTags == "undefined") ? false : true;
         var domain = document.domain;
-        var arrayToHash = function(arr) {
-            var hash = {};
-            for (var i = 0, len = arr.length; i < len; i++) hash[arr[i]] = 1;
-            return hash;
-        };
         var htmlTagHash = {};
         if (isFilter) {
             KE.each(htmlTags, function(key, val) {
                 var arr = key.split(',');
-                for (var i = 0, len = arr.length; i < len; i++) htmlTagHash[arr[i]] = arrayToHash(val);
+                for (var i = 0, len = arr.length; i < len; i++) htmlTagHash[arr[i]] = KE.util.arrayToHash(val);
             });
         }
-        var noEndTagHash = arrayToHash(KE.setting.noEndTags);
-        var inlineTagHash = arrayToHash(KE.setting.inlineTags);
+        var noEndTagHash = KE.util.arrayToHash(KE.setting.noEndTags);
+        var inlineTagHash = KE.util.arrayToHash(KE.setting.inlineTags);
         html = html.replace(/\r\n|\n|\r/g, '');
         html = html.replace(/<(\/)?(\w+)(.*?)(\/)?>/g, function($0, $1, $2, $3, $4) {
             var startSlash = $1 || '';
@@ -889,14 +884,23 @@ KE.format = {
                 return '<' + startSlash + tagName + endSlash + '>' + nl;
             }
         });
-        return html;
+        var reg = KE.setting.inlineTags.join('|');
+        var trimHtml = function(inHtml) {
+            var outHtml = inHtml.replace(new RegExp('<(' + reg + ')[^>]*><\\/(' + reg + ')>', 'ig'), function($0, $1, $2) {
+                if ($1 == $2) return '';
+                else return $0;
+            });
+            if (inHtml !== outHtml) outHtml = trimHtml(outHtml);
+            return outHtml;
+        };
+        return trimHtml(html);
     }
 };
 
 KE.util = {
     getDocumentElement : function(doc) {
         doc = doc || document;
-        return (document.compatMode != "CSS1Compat") ? doc.body : doc.documentElement;
+        return (doc.compatMode != "CSS1Compat") ? doc.body : doc.documentElement;
     },
     getDocumentHeight : function(doc) {
         var el = this.getDocumentElement(doc);
@@ -934,6 +938,11 @@ KE.util = {
             key += (i > 0) ? arr[i].charAt(0).toUpperCase() + arr[i].substr(1) : arr[i];
         }
         return key;
+    },
+    arrayToHash : function(arr) {
+        var hash = {};
+        for (var i = 0, len = arr.length; i < len; i++) hash[arr[i]] = 1;
+        return hash;
     },
     escape : function(html) {
         html = html.replace(/&/g, "&amp;");
@@ -1032,17 +1041,6 @@ KE.util = {
             return range;
         }
     },
-    trimNodes : function(parent) {
-        if (KE.util.getNodeType(parent) != 1) return;
-        if (KE.util.inArray(parent.tagName.toLowerCase(), KE.setting.inlineTags) && KE.util.getNodeTextLength(parent) == 0) {
-            parent.parentNode.removeChild(parent);
-            return;
-        }
-        KE.eachNode(parent, function(node) {
-            KE.util.trimNodes(node);
-            return true;
-        });
-    },
     removeParent : function(parent) {
         if (parent.hasChildNodes) {
             var node = parent.firstChild;
@@ -1054,12 +1052,11 @@ KE.util = {
         }
         parent.parentNode.removeChild(parent);
     },
-    drag : function(id, mousedownObj, moveObj, func, hideFlag) {
+    drag : function(id, mousedownObj, moveObj, func) {
         var obj = KE.g[id];
-        mousedownObj.onmousedown = function(event) {
-            if (hideFlag && obj.wyswygMode) obj.iframe.style.display = 'none';
-            if (KE.browser != 'IE') event.preventDefault();
-            var pos = KE.util.getCoords(event);
+        mousedownObj.onmousedown = function(e) {
+            if (KE.browser != 'IE') e.preventDefault();
+            var pos = KE.util.getCoords(e);
             var objTop = parseInt(moveObj.style.top);
             var objLeft = parseInt(moveObj.style.left);
             var objWidth = moveObj.style.width;
@@ -1071,23 +1068,34 @@ KE.util = {
             var mouseTop = pos.y;
             var mouseLeft = pos.x;
             var dragFlag = true;
-            var moveListener = function(event) {
+            var moveListener = function(e) {
                 if (dragFlag) {
-                    var pos = KE.util.getCoords(event);
+                    var pos = KE.util.getCoords(e);
                     var top = pos.y - mouseTop;
                     var left = pos.x - mouseLeft;
                     func(objTop, objLeft, objWidth, objHeight, top, left);
                 }
-                return false;
             };
-            var upListener = function(event) {
-                if (hideFlag && obj.wyswygMode) obj.iframe.style.display = '';
+            var iframePos = KE.util.getElementPos(obj.iframe);
+            var iframeMoveListener = function(e) {
+                if (dragFlag) {
+                    var pos = KE.util.getCoords(e, obj.iframeDoc);
+                    var top = iframePos.y + pos.y - mouseTop;
+                    var left = iframePos.x + pos.x - mouseLeft;
+                    func(objTop, objLeft, objWidth, objHeight, top, left);
+                }
+            };
+            var upListener = function(e) {
                 dragFlag = false;
                 KE.event.remove(document, 'mousemove', moveListener);
                 KE.event.remove(document, 'mouseup', upListener);
+                KE.event.remove(obj.iframeDoc, 'mousemove', iframeMoveListener);
+                KE.event.remove(obj.iframeDoc, 'mouseup', upListener);
             };
             KE.event.add(document, 'mousemove', moveListener);
             KE.event.add(document, 'mouseup', upListener);
+            KE.event.add(obj.iframeDoc, 'mousemove', iframeMoveListener);
+            KE.event.add(obj.iframeDoc, 'mouseup', upListener);
         };
     },
     setDefaultPlugin : function(id) {
@@ -1121,6 +1129,7 @@ KE.util = {
     resize : function(id, width, height, isCheck, isResizeWidth) {
         isResizeWidth = (typeof isResizeWidth == "undefined") ? true : isResizeWidth;
         var obj = KE.g[id];
+        if (!obj.container) return;
         if (isCheck && (parseInt(width) <= obj.minWidth || parseInt(height) <= obj.minHeight)) return;
         if (isResizeWidth) obj.container.style.width = width;
         obj.container.style.height = height;
@@ -1637,24 +1646,26 @@ KE.history = {
 };
 
 KE.remove = function(id, mode) {
+    if (!KE.g[id].container) return false;
     mode = (typeof mode == "undefined") ? 0 : mode;
     var container = KE.g[id].container;
     if (mode == 1) {
         document.body.removeChild(container);
     } else {
-        var srcTextarea = KE.$(id);
+        var srcTextarea = KE.g[id].srcTextarea;
         srcTextarea.parentNode.removeChild(container);
+        if (mode == 0) srcTextarea.style.display = '';
     }
     document.body.removeChild(KE.g[id].hideDiv);
     document.body.removeChild(KE.g[id].maskDiv);
-    KE.g[id].containner = null;
+    KE.g[id].container = null;
 };
 
 KE.create = function(id, mode) {
     if (KE.browser == 'IE') try { document.execCommand('BackgroundImageCache', false, true); }catch(e){}
     var srcTextarea = KE.$(id);
     mode = (typeof mode == "undefined") ? 0 : mode;
-    if (mode == 0 && KE.g[id].container != null) return;
+    if (mode == 0 && KE.g[id].container) return;
     var width = KE.g[id].width || srcTextarea.style.width || srcTextarea.offsetWidth + 'px';
     var height = KE.g[id].height || srcTextarea.style.height || srcTextarea.offsetHeight + 'px';
     var tableObj = KE.util.createTable();
@@ -1752,6 +1763,16 @@ KE.create = function(id, mode) {
     KE.event.input(iframeDoc, updateToolbar);
     KE.event.add(newTextarea, 'click', hideMenu);
     KE.event.input(newTextarea, addHistory);
+    KE.event.add(iframeDoc, 'keydown', function(e) {
+        if (e.keyCode == 9) {
+            KE.util.selection(id);
+            KE.util.insertHtml(id, '　　');
+            KE.util.select(id);
+            if (e.preventDefault) e.preventDefault();
+            if (e.stopPropagation) e.stopPropagation();
+            return false;
+        }
+    });
     KE.g[id].container = container;
     KE.g[id].toolbarTable = toolbarTable;
     KE.g[id].textareaTable = textareaTable;
@@ -1766,13 +1787,15 @@ KE.create = function(id, mode) {
     KE.g[id].width = width;
     KE.g[id].height = height;
     KE.util.resize(id, width, height);
-    KE.util.drag(id, bottomRight, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
-        if (KE.g[id].resizeMode == 2) KE.util.resize(id, (objWidth + left) + 'px', (objHeight + top) + 'px', true);
-        else if (KE.g[id].resizeMode == 1) KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px', true, false);
-    }, true);
-    KE.util.drag(id, bottomLeft, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
-        if (KE.g[id].resizeMode > 0) KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px', true, false);
-    }, true);
+    if (KE.g[id].resizeMode > 0) {
+        KE.util.drag(id, bottomRight, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
+            if (KE.g[id].resizeMode == 2) KE.util.resize(id, (objWidth + left) + 'px', (objHeight + top) + 'px', true);
+            else if (KE.g[id].resizeMode == 1) KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px', true, false);
+        });
+        KE.util.drag(id, bottomLeft, container, function(objTop, objLeft, objWidth, objHeight, top, left) {
+            if (KE.g[id].resizeMode > 0) KE.util.resize(id, objWidth + 'px', (objHeight + top) + 'px', true, false);
+        });
+    }
     for (var i = 0, len = KE.g[id].items.length; i < len; i++) {
         var cmd = KE.g[id].items[i];
         if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
@@ -1952,9 +1975,14 @@ KE.plugin['fullscreen'] = {
             obj.width = el.clientWidth + 'px';
             obj.height = el.clientHeight + 'px';
         };
+        var windowSize = '';
         var resizeListener = function() {
-            if (self.isSelected) {
-                resetSize(id);
+            if (!self.isSelected) return;
+            var el = KE.util.getDocumentElement();
+            var size = [el.clientWidth, el.clientHeight].join('');
+            if (windowSize != size) {
+                windowSize = size;
+                resetSize();
                 KE.util.resize(id, obj.width, obj.height);
             }
         }
@@ -1975,7 +2003,7 @@ KE.plugin['fullscreen'] = {
             this.height = obj.container.style.height;
             KE.remove(id, 2);
             document.body.parentNode.style.overflow = 'hidden';
-            resetSize(id);
+            resetSize();
             KE.create(id, 1);
             var pos = KE.util.getScrollPos();
             var div = KE.g[id].container;

@@ -8,8 +8,6 @@ $save_url = './../attached/';
 $ext_arr = array('gif', 'jpg', 'jpeg', 'png', 'bmp');
 //最大文件大小
 $max_size = 1000000;
-//更改目录权限
-@mkdir($save_path, 0777);
 
 //有上传文件时
 if (empty($_FILES) === false) {
@@ -48,12 +46,15 @@ if (empty($_FILES) === false) {
     if (in_array($file_ext, $ext_arr) === false) {
         alert("上传文件扩展名是不允许的扩展名。");
     }
+    //新文件名
+    $new_file_name = date("YmdHms") . '_' . rand(10000, 99999) . '.' . $file_ext;
     //移动文件
-    $file_path = $save_path . $file_name;
+    $file_path = $save_path . $new_file_name;
     if (move_uploaded_file($tmp_name, $file_path) === false) {
         alert("上传文件失败。");
     }
-    $file_url = $save_url . $file_name;
+    @chmod($file_path, 0644);
+    $file_url = $save_url . $new_file_name;
     //插入图片，关闭层
     echo '<html>';
     echo '<head>';
