@@ -1659,6 +1659,7 @@ KE.remove = function(id, mode) {
     document.body.removeChild(KE.g[id].hideDiv);
     document.body.removeChild(KE.g[id].maskDiv);
     KE.g[id].container = null;
+    KE.g[id].contextmenuItems = [];
 };
 
 KE.create = function(id, mode) {
