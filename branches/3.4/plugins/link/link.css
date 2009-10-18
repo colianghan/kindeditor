@@ -1,0 +1,14 @@
+body {
+    font-size:12px;
+    font-family: "sans serif",tahoma,verdana,helvetica;
+    margin: 5px;
+    background-color:#F0F0EE;
+}
+td.left {
+    font-size: 12px;
+    width: 70px;
+    padding: 2px;
+}
+td.right {
+    padding: 2px;
+}

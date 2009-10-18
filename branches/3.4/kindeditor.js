@@ -348,11 +348,13 @@ KE.selection = function(win, doc) {
             endPos = range.endOffset;
             if (startNode.nodeType == 1 && typeof startNode.childNodes[startPos] != "undefined") {
                 startNode = startNode.childNodes[startPos];
-                startPos = startNode.nodeType == 1 ? 0 : startNode.nodeValue.length;
+                startPos = 0;
             }
-            if (endNode.nodeType == 1 && typeof endNode.childNodes[endPos] != "undefined") {
-                endNode = endNode.childNodes[endPos];
-                endPos = endNode.nodeType == 1 ? 0 : endNode.nodeValue.length;
+            if (endNode.nodeType == 1 && endPos > 0) {
+                if (typeof endNode.childNodes[endPos - 1] != "undefined") {
+                    endNode = endNode.childNodes[endPos - 1];
+                    endPos = 0;
+                }
             }
         }
         var keRange = new KE.range(doc);
@@ -829,6 +831,7 @@ KE.format = {
         }
         var noEndTagHash = arrayToHash(KE.setting.noEndTags);
         var inlineTagHash = arrayToHash(KE.setting.inlineTags);
+        html = html.replace(/\r\n|\n|\r/g, '');
         html = html.replace(/<(\/)?(\w+)(.*?)(\/)?>/g, function($0, $1, $2, $3, $4) {
             var startSlash = $1 || '';
             var tagName = $2.toLowerCase();
@@ -837,7 +840,7 @@ KE.format = {
             if (isFilter && typeof htmlTagHash[tagName] == "undefined") return '';
             if (endSlash === '' && typeof noEndTagHash[tagName] != "undefined") endSlash = ' /';
             var nl = '';
-            if (KE.browser == 'IE' && endSlash && typeof inlineTagHash[tagName] == "undefined") nl = "\r\n";
+            if (endSlash && typeof inlineTagHash[tagName] == "undefined") nl = "\r\n";
             if (attr !== '') {
                 attr = attr.replace(/\s*([^\s]+?)=(".*?"|[^\s]*)/g, function($0, $1, $2) {
                     var key = $1.toLowerCase();
@@ -940,34 +943,31 @@ KE.util = {
         html = html.replace(/\x20/g, " ");
         return html;
     },
-    getElementPos : function(el) {
-        var x = 0;
-        var y = 0;
-        if (KE.browser != "WEBKIT") {
-            var box = el.getBoundingClientRect();
+    getScrollPos : function() {
+        var x, y;
+        if (KE.browser == 'IE' || KE.browser == 'OPERA') {
             var el = this.getDocumentElement();
-            x = box.left + el.scrollLeft - el.clientLeft;
-            y = box.top + el.scrollTop - el.clientTop;
+            x = el.scrollLeft;
+            y = el.scrollTop;
         } else {
-            x = el.offsetLeft;
-            y = el.offsetTop;
-            var parent = el.offsetParent;
-            while (parent) {
-                x += parent.offsetLeft;
-                y += parent.offsetTop;
-                parent = parent.offsetParent;
-            }
+            x = window.scrollX;
+            y = window.scrollY;
         }
-        return {'x' : x, 'y' : y};
+        return {x : x, y : y};
     },
-    getCoords : function(ev, doc) {
+    getElementPos : function(el) {
+        var box = el.getBoundingClientRect();
+        var el = this.getDocumentElement();
+        var pos = this.getScrollPos();
+        var x = box.left + pos.x - el.clientLeft;
+        var y = box.top + pos.y - el.clientTop;
+        return {x : x, y : y};
+    },
+    getCoords : function(ev) {
         ev = ev || window.event;
-        doc = doc || document;
-        var el = this.getDocumentElement(doc);
-        if (ev.pageX) return { x : ev.pageX, y : ev.pageY};
         return {
-            x : ev.clientX + el.scrollLeft - el.clientLeft,
-            y : ev.clientY + el.scrollTop - el.clientTop
+            x : ev.clientX,
+            y : ev.clientY
         };
     },
     setOpacity : function(el, opacity) {
@@ -1059,8 +1059,7 @@ KE.util = {
         mousedownObj.onmousedown = function(event) {
             if (hideFlag && obj.wyswygMode) obj.iframe.style.display = 'none';
             if (KE.browser != 'IE') event.preventDefault();
-            var ev = event || window.event;
-            var pos = KE.util.getCoords(ev);
+            var pos = KE.util.getCoords(event);
             var objTop = parseInt(moveObj.style.top);
             var objLeft = parseInt(moveObj.style.left);
             var objWidth = moveObj.style.width;
@@ -1074,8 +1073,7 @@ KE.util = {
             var dragFlag = true;
             var moveListener = function(event) {
                 if (dragFlag) {
-                    var ev = event || window.event;
-                    var pos = KE.util.getCoords(ev);
+                    var pos = KE.util.getCoords(event);
                     var top = pos.y - mouseTop;
                     var left = pos.x - mouseLeft;
                     func(objTop, objLeft, objWidth, objHeight, top, left);
@@ -1254,7 +1252,7 @@ KE.menu = function(arg){
             x = pos.x;
             y = pos.y + obj[0].offsetHeight;
         } else {
-            var pos = KE.util.getCoords(arg.event, KE.g[id].iframeDoc);
+            var pos = KE.util.getCoords(arg.event);
             var iframePos = KE.util.getElementPos(KE.g[id].iframe);
             x = pos.x + iframePos.x;
             y = pos.y + iframePos.y + 5;
@@ -1329,22 +1327,17 @@ KE.dialog = function(arg){
     this.widthMargin = 20;
     this.heightMargin = 90;
     this.zIndex = 19811214;
-    this.nextOffset = 30;
     this.getPos = function() {
         var id = arg.id;
         var obj = KE.g[id];
-        var pos = KE.util.getElementPos(KE.g[id].container);
+        var el = KE.util.getDocumentElement();
         var width = arg.width + this.widthMargin;
         var height = arg.height + this.heightMargin;
-        var w = obj.container.style.width;
-        var h = obj.container.style.height;
-        if (w.match(/%$/)) w = obj.container.offsetWidth + 'px';
-        if (h.match(/%$/)) h = obj.container.offsetHeight + 'px';
-        var xDiff = Math.round(parseInt(w) / 2) - Math.round(width / 2);
-        var yDiff = Math.round(parseInt(h) / 2) - Math.round(height / 2);
-        var x = xDiff < 0 ? pos.x : pos.x + xDiff;
-        var y = yDiff < 0 ? pos.y : pos.y + yDiff;
-        return {'x' : x, 'y' : y};
+        var x = Math.round((el.clientWidth - width) / 2);
+        var y = Math.round((el.clientHeight - height) / 2);
+        x = x < 0 ? 0 : x;
+        y = y < 0 ? 0 : y;
+        return {x : x, y : y};
     };
     this.hide = function() {
         var id = arg.id;
@@ -1357,6 +1350,7 @@ KE.dialog = function(arg){
             KE.g[id].maskDiv.style.display = 'none';
         }
         if (arg.hideHandler) arg.hideHandler();
+        KE.util.focus(id);
     };
     this.show = function() {
         var self = this;
@@ -1371,14 +1365,8 @@ KE.dialog = function(arg){
         var pos = this.getPos();
         div.style.width = (arg.width + this.widthMargin) + 'px';
         div.style.height = (arg.height + this.heightMargin) + 'px';
-        var top = pos.y;
-        var left = pos.x;
-        if (KE.g[id].dialogStack.length > 0) {
-            top += this.nextOffset;
-            left += this.nextOffset;
-        }
-        div.style.top = top + 'px';
-        div.style.left = left + 'px';
+        div.style.top = pos.y + 'px';
+        div.style.left = pos.x + 'px';
         var titleDiv = KE.$$('div');
         titleDiv.className = 'ke-dialog-title';
         titleDiv.innerHTML = arg.title;
@@ -1989,18 +1977,11 @@ KE.plugin['fullscreen'] = {
             document.body.parentNode.style.overflow = 'hidden';
             resetSize(id);
             KE.create(id, 1);
-            var left,top;
-            if (KE.browser == 'IE' || KE.browser == 'OPERA') {
-                left = document.body.parentNode.scrollLeft;
-                top = document.body.parentNode.scrollTop;
-            } else {
-                left = window.scrollX;
-                top = window.scrollY;
-            }
+            var pos = KE.util.getScrollPos();
             var div = KE.g[id].container;
             div.style.position = 'absolute';
-            div.style.left = left + 'px';
-            div.style.top = top + 'px';
+            div.style.left = pos.x + 'px';
+            div.style.top = pos.y + 'px';
             div.style.zIndex = 19811211;
             KE.event.add(window, 'resize', resizeListener);
             KE.toolbar.select(id, "fullscreen");
@@ -2151,7 +2132,9 @@ KE.plugin['source'] = {
     click : function(id) {
         var obj = KE.g[id];
         if (!obj.wyswygMode) {
-            obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
+            var html = obj.newTextarea.value;
+            html = html.replace(/\r\n|\n|\r/g, '');
+            obj.iframeDoc.body.innerHTML = html;
             obj.iframe.style.display = 'block';
             obj.newTextarea.style.display = 'none';
             KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
@@ -2372,7 +2355,7 @@ KE.plugin['image'] = {
                 }
             }
         }
-        if ((startImg && endImg && startImg === endImg) || (startImg && endImg == null)) {
+        if (startImg && endImg && startImg === endImg) {
             return startImg;
         }
     },
@@ -2516,7 +2499,7 @@ KE.plugin['link'] = {
                 if (parentNode && parentNode.tagName.toLowerCase() == 'a') endLink = parentNode;
             }
         }
-        if ((startLink && endLink && startLink === endLink) || (startLink && endLink == null)) {
+        if (startLink && endLink && startLink === endLink) {
             return startLink;
         }
     },
@@ -2539,8 +2522,10 @@ KE.plugin['link'] = {
         this.dialog = new KE.dialog({
             id : id,
             cmd : 'link',
+            file : 'link/link.html?id=' + id,
             width : 310,
             height : 70,
+            loadingMode : true,
             title : KE.lang['link'],
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
