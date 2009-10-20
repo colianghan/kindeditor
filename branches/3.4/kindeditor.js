@@ -1191,12 +1191,8 @@ KE.util = {
             KE.g[id].newTextarea.focus();
         }
     },
-    hideMenu : function(id) {
-        KE.g[id].hideDiv.innerHTML = '';
-        KE.g[id].hideDiv.style.display = 'none';
-    },
     click : function(id, cmd) {
-        KE.util.hideMenu(id);
+        KE.layout.hide(id);
         KE.util.focus(id);
         KE.plugin[cmd].click(id);
     },
@@ -1260,6 +1256,13 @@ KE.util = {
     }
 };
 
+KE.layout = {
+    hide : function(id) {
+        KE.g[id].hideDiv.innerHTML = '';
+        KE.g[id].hideDiv.style.display = 'none';
+    }
+};
+
 KE.menu = function(arg){
     this.getPos = function() {
         var id = arg.id;
@@ -1306,7 +1309,7 @@ KE.menu = function(arg){
         this.div.innerHTML = html;
     };
     this.hide = function() {
-        KE.util.hideMenu(arg.id);
+        KE.layout.hide(arg.id);
     };
     this.show = function() {
         this.hide();
@@ -2181,7 +2184,7 @@ KE.plugin['source'] = {
             this.isSelected = false;
             KE.toolbar.unselect(id, "source");
         } else {
-            KE.util.hideMenu(id);
+            KE.layout.hide(id);
             if (KE.g[id].filterMode) {
                 obj.newTextarea.value = KE.format.getHtml(obj.iframeDoc.body.innerHTML, obj.htmlTags);
             } else {
