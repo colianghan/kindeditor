@@ -199,6 +199,8 @@ KE.event = {
         this.add(el, 'keyup', function(e) {
             if (!e.ctrlKey && !e.shiftKey && !e.altKey && (e.keyCode < 16 || e.keyCode > 18) && e.keyCode != 116) {
                 func(e);
+                if (e.preventDefault) e.preventDefault();
+                if (e.stopPropagation) e.stopPropagation();
                 return false;
             }
         });
@@ -207,6 +209,8 @@ KE.event = {
         this.add(el, 'keydown', function(e) {
             if (e.ctrlKey && e.keyCode == key.toUpperCase().charCodeAt(0) && !e.shiftKey && !e.altKey) {
                 func(e);
+                if (e.preventDefault) e.preventDefault();
+                if (e.stopPropagation) e.stopPropagation();
                 return false;
             }
         });
@@ -884,16 +888,20 @@ KE.format = {
                 return '<' + startSlash + tagName + endSlash + '>' + nl;
             }
         });
-        var reg = KE.setting.inlineTags.join('|');
-        var trimHtml = function(inHtml) {
-            var outHtml = inHtml.replace(new RegExp('<(' + reg + ')[^>]*><\\/(' + reg + ')>', 'ig'), function($0, $1, $2) {
-                if ($1 == $2) return '';
-                else return $0;
-            });
-            if (inHtml !== outHtml) outHtml = trimHtml(outHtml);
-            return outHtml;
-        };
-        return trimHtml(html);
+        if (isFilter) {
+            var reg = KE.setting.inlineTags.join('|');
+            var trimHtml = function(inHtml) {
+                var outHtml = inHtml.replace(new RegExp('<(' + reg + ')[^>]*><\\/(' + reg + ')>', 'ig'), function($0, $1, $2) {
+                    if ($1 == $2) return '';
+                    else return $0;
+                });
+                if (inHtml !== outHtml) outHtml = trimHtml(outHtml);
+                return outHtml;
+            };
+            return trimHtml(html);
+        } else {
+            return html;
+        }
     }
 };
 
@@ -1055,7 +1063,9 @@ KE.util = {
     drag : function(id, mousedownObj, moveObj, func) {
         var obj = KE.g[id];
         mousedownObj.onmousedown = function(e) {
-            if (KE.browser != 'IE') e.preventDefault();
+            e = e || window.event;
+            if (e.preventDefault) e.preventDefault();
+            if (e.stopPropagation) e.stopPropagation();
             var pos = KE.util.getCoords(e);
             var objTop = parseInt(moveObj.style.top);
             var objLeft = parseInt(moveObj.style.left);
@@ -1802,7 +1812,7 @@ KE.create = function(id, mode) {
         if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
     }
     if (KE.g[id].contextmenuItems.length > 0) {
-        KE.event.add(iframeDoc, 'contextmenu', function(ev){
+        KE.event.add(iframeDoc, 'contextmenu', function(e){
             KE.util.selection(id);
             var showFlag = false;
             for (var i = 0, len = KE.g[id].contextmenuItems.length; i < len; i++) {
@@ -1815,7 +1825,7 @@ KE.create = function(id, mode) {
             if (showFlag) {
                 var menu = new KE.menu({
                     id : id,
-                    event : ev,
+                    event : e,
                     type : 'contextmenu',
                     width : '160px'
                 });
@@ -1830,8 +1840,8 @@ KE.create = function(id, mode) {
                     }
                 }
                 menu.show();
-                if (ev.preventDefault) ev.preventDefault();
-                if (ev.stopPropagation) ev.stopPropagation();
+                if (e.preventDefault) e.preventDefault();
+                if (e.stopPropagation) e.stopPropagation();
                 return false;
             }
             return true;
