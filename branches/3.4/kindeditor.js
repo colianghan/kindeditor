@@ -1260,6 +1260,7 @@ KE.layout = {
     hide : function(id) {
         KE.g[id].hideDiv.innerHTML = '';
         KE.g[id].hideDiv.style.display = 'none';
+        KE.g[id].maskDiv.style.display = 'none';
     }
 };
 
@@ -1444,7 +1445,10 @@ KE.dialog = function(arg){
             noButton.type = 'button';
             noButton.name = 'noButton';
             noButton.value = arg.noButton;
-            noButton.onclick = function () { self.hide(); };
+            noButton.onclick = function () {
+                self.hide();
+                KE.util.select(id);
+            };
             bottomDiv.appendChild(noButton);
         }
         if (arg.yesButton) {
@@ -1505,6 +1509,10 @@ KE.dialog = function(arg){
         this.previewButton = previewButton;
         this.div = div;
         KE.g[id].dialogStack.push(this);
+        KE.g[id].dialog = iframe;
+        KE.g[id].yesButton = yesButton;
+        KE.g[id].noButton = noButton;
+        KE.g[id].previewButton = previewButton;
         if (!arg.loadingMode) KE.util.hideLoadingPage(id);
     };
 };

@@ -21,7 +21,7 @@ KE.lang['remote_image'] = "插入远程图片";
 KE.plugin['remote_image'] = {
     click : function(id) {
         KE.util.selection(id);
-        this.dialog = new KE.dialog({
+        var dialog = new KE.dialog({
             id : id,
             cmd : 'remote_image',
             file : '../examples/remote_image.html',
@@ -31,10 +31,10 @@ KE.plugin['remote_image'] = {
             yesButton : KE.lang['yes'],
             noButton : KE.lang['no']
         });
-        this.dialog.show();
+        dialog.show();
     },
     check : function(id) {
-        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         var url = KE.$('url', dialogDoc).value;
         var title = KE.$('imgTitle', dialogDoc).value;
         var width = KE.$('imgWidth', dialogDoc).value;
@@ -69,7 +69,7 @@ KE.plugin['remote_image'] = {
     exec : function(id) {
         KE.util.select(id);
         var iframeDoc = KE.g[id].iframeDoc;
-        var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
+        var dialogDoc = KE.util.getIframeDoc(KE.g[id].dialog);
         if (!this.check(id)) return false;
         var url = KE.$('url', dialogDoc).value;
         var title = KE.$('imgTitle', dialogDoc).value;
@@ -86,7 +86,7 @@ KE.plugin['remote_image'] = {
         html += 'alt="' + title + '" ';
         html += 'border="' + border + '" />';
         KE.util.insertHtml(id, html);
-        this.dialog.hide();
+        KE.layout.hide(id);
         KE.util.focus(id);
     }
 };
