@@ -133,6 +133,7 @@ KE.setting = {
     ],
     noEndTags : ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'],
     inlineTags : ['b', 'del', 'em', 'font', 'i', 'span', 'strike', 'strong', 'sub', 'sup', 'u'],
+    endlineTags : ['br', 'hr', 'table', 'tbody', 'td', 'tr', 'th', 'div', 'p', 'ol', 'ul', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
     htmlTags : {
         font : ['color', 'size', 'face', '.background-color'],
         span : [
@@ -885,6 +886,7 @@ KE.format = {
         }
         var noEndTagHash = KE.util.arrayToHash(KE.setting.noEndTags);
         var inlineTagHash = KE.util.arrayToHash(KE.setting.inlineTags);
+        var endlineTagHash = KE.util.arrayToHash(KE.setting.endlineTags);
         html = html.replace(/\r\n|\n|\r/g, '');
         html = html.replace(/<(\/)?(\w+)(.*?)(\/)?>/g, function($0, $1, $2, $3, $4) {
             var startSlash = $1 || '';
@@ -894,7 +896,7 @@ KE.format = {
             if (isFilter && typeof htmlTagHash[tagName] == "undefined") return '';
             if (endSlash === '' && typeof noEndTagHash[tagName] != "undefined") endSlash = ' /';
             var nl = '';
-            if (endSlash && typeof inlineTagHash[tagName] == "undefined") nl = "\r\n";
+            if ((startSlash || endSlash) && typeof endlineTagHash[tagName] != "undefined") nl = "\r\n";
             if (attr !== '') {
                 attr = attr.replace(/\s*([^\s]+?)=(".*?"|[^\s]*)/g, function($0, $1, $2) {
                     var key = $1.toLowerCase();
