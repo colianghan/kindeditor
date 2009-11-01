@@ -1954,7 +1954,7 @@ KE.init = function(config) {
     config.resizeMode = (typeof config.resizeMode == "undefined") ? KE.setting.resizeMode : config.resizeMode;
     config.filterMode = (typeof config.filterMode == "undefined") ? KE.setting.filterMode : config.filterMode;
     config.tagLineMode = (typeof config.tagLineMode == "undefined") ? KE.setting.tagLineMode : config.tagLineMode;
-    config.urlType = KE.setting.urlType || config.urlType;
+    config.urlType =  config.urlType || KE.setting.urlType;
     config.skinType = config.skinType || KE.setting.skinType;
     config.cssPath = config.cssPath || KE.setting.cssPath;
     config.skinsPath = config.skinsPath || KE.setting.skinsPath;
@@ -2671,7 +2671,7 @@ KE.plugin['link'] = {
         var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
         var url = KE.$('hyperLink', dialogDoc).value;
         var target = KE.$('linkType', dialogDoc).value;
-        if (url.match(/\w+:\/\/.{3,}/) == null) {
+        if (url.match(/\w+/) == null) {
             alert(KE.lang['invalidUrl']);
             window.focus();
             this.dialog.yesButton.focus();
