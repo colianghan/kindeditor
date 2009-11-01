@@ -401,11 +401,27 @@ KE.selection = function(win, doc) {
                 }
             }
         } else {
+            var getNodePos = function(node) {
+                var pos = 0;
+                while (node) {
+                    node = node.previousSibling;
+                    pos++;
+                }
+                return --pos;
+            };
             var range = new KE.range(doc);
             range.setTextStart(keRange.startNode, keRange.startPos);
             range.setTextEnd(keRange.endNode, keRange.endPos);
-            this.range.setStart(range.startNode, range.startPos);
-            this.range.setEnd(range.endNode, range.endPos);
+            if (range.startNode.nodeType == 1) {
+                this.range.setStart(range.startNode.parentNode, getNodePos(range.startNode));
+            } else {
+                this.range.setStart(range.startNode, range.startPos);
+            }
+            if (range.startNode.nodeType == 1) {
+                this.range.setEnd(range.endNode.parentNode, getNodePos(range.endNode) + 1);
+            } else {
+                this.range.setEnd(range.endNode, range.endPos);
+            }
             this.sel.removeAllRanges();
             this.sel.addRange(this.range);
         }
@@ -1838,7 +1854,18 @@ KE.create = function(id, mode) {
     var addHistory = function () {
         KE.history.add(id, true);
     };
-    KE.event.add(iframeDoc, 'click', hideMenu);
+    KE.event.add(iframeDoc, 'click', function(e) {
+        if (KE.browser == 'WEBKIT') {
+            var target = e.srcElement || e.target;
+            if (target.tagName.toLowerCase() == 'img') {
+                KE.util.selection(id);
+                var range = KE.g[id].keRange;
+                range.selectNode(target);
+                KE.g[id].keSel.addRange(range);
+            }
+        }
+        hideMenu();
+    });
     KE.event.add(iframeDoc, 'click', updateToolbar);
     KE.event.input(iframeDoc, addHistory);
     KE.event.input(iframeDoc, updateToolbar);
@@ -2590,25 +2617,20 @@ KE.plugin['link'] = {
         var startPos = KE.g[id].keRange.startPos;
         var endNode = KE.g[id].keRange.endNode;
         var endPos = KE.g[id].keRange.endPos;
-        var parent = KE.g[id].keRange.getParentElement();
-        var startLink = null;
-        var endLink = null;
-        if (startNode.nodeType == 1 && startNode.tagName.toLowerCase() == 'a') {
-            startLink = startNode;
-        } else {
-            if (startPos == 0) {
-                var parentNode = startNode.parentNode;
-                if (parentNode && parentNode.tagName.toLowerCase() == 'a') startLink = parentNode;
+        var inlineTagHash = KE.util.arrayToHash(KE.setting.inlineTags);
+        var findLinkNode = function(node) {
+            while (node) {
+                if (node.nodeType == 1) {
+                    var tagName = node.tagName.toLowerCase();
+                    if (tagName == 'a') return node;
+                    if (typeof inlineTagHash[tagName] == 'undefined') return null;
+                }
+                node = node.parentNode;
             }
-        }
-        if (endNode.nodeType == 1 && endNode.tagName.toLowerCase() == 'a') {
-            endLink = endNode;
-        } else {
-            if (endNode.nodeType == 3 && endPos == endNode.nodeValue.length) {
-                var parentNode = endNode.parentNode;
-                if (parentNode && parentNode.tagName.toLowerCase() == 'a') endLink = parentNode;
-            }
-        }
+            return null;
+        };
+        var startLink = findLinkNode(startNode);
+        var endLink = findLinkNode(endNode);
         if (startLink && endLink && startLink === endLink) {
             return startLink;
         }

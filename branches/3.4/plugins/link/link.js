@@ -10,6 +10,9 @@ KE.event.ready(function() {
         var target = linkNode.target;
         hyperLink.value = src;
         linkType.value = target == '_blank' ? target : '_self';
+        var range = KE.g[id].keRange;
+        range.selectTextNode(linkNode);
+        KE.g[id].keSel.addRange(range);
     }
     KE.util.hideLoadingPage(id);
 }, window, document);

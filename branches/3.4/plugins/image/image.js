@@ -4,7 +4,7 @@ var id = RegExp.$1;
 var domain = document.domain;
 var fileManager = null;
 var allowUpload = (typeof KE.g[id].allowUpload == 'undefined') ? true : KE.g[id].allowUpload;
-var allowFileManager = (typeof KE.g[id].allowFileManager == 'undefined') ? true : KE.g[id].allowFileManager;
+var allowFileManager = (typeof KE.g[id].allowFileManager == 'undefined') ? false : KE.g[id].allowFileManager;
 KE.event.ready(function() {
     var typeBox = KE.$('type', document);
     var urlBox = KE.$('url', document);
@@ -41,11 +41,8 @@ KE.event.ready(function() {
     }
     var imgNode = KE.plugin['image'].getSelectedNode(id);
     if (imgNode) {
-        var src = imgNode.src;
-        urlBox.value = src.replace(/http:\/\/(.*?)\//g, function($0, $1) {
-            if ($1 === domain) return '/';
-            else return $0;
-        });
+        var src = KE.format.getUrl(imgNode.src, KE.g[id].urlType);
+        urlBox.value = src;
         for (var i = 0, len = alignElements.length; i < len; i++) {
             if (alignElements[i].value == imgNode.align) {
                 alignElements[i].checked = true;
