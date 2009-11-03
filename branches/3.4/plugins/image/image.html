@@ -2,8 +2,150 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <title>Image</title>
-        <link type="text/css" rel="stylesheet" href="./image.css" />
-        <script type="text/javascript" charset="utf-8" src="./image.js"></script>
+        <style type="text/css" rel="stylesheet">
+            body {
+                font-size:12px;
+                font-family: "sans serif",tahoma,verdana,helvetica;
+                line-height:1.5;
+                margin:0;
+                background-color:#F0F0EE;
+                overflow:hidden;
+            }
+            form {
+                margin:0;
+            }
+            label {
+                cursor:pointer;
+            }
+            .tab-navi {
+                width:100%;
+                overflow:hidden;
+                margin-bottom:10px;
+            }
+            .tab-navi ul  {
+                list-style-image:none;
+                list-style-position:outside;
+                list-style-type:none;
+                margin:0;
+                padding:0;
+                display:block;
+                float:left;
+                width:100%;
+                border-bottom:1px solid #888888;
+            }
+            .tab-navi li {
+                border: 1px solid #888888;
+                margin:0 -1px -1px 0;
+                float: left;
+                padding: 5px;
+                background-color: #F0F0EE;
+                text-align: center;
+                width: 120px;
+                font-weight: normal;
+                cursor: pointer;
+            }
+            .tab-navi li.selected {
+                background-color: #E0E0E0;
+                font-weight: bold;
+                cursor: default;
+            }
+            .image-form  {
+                list-style-image:none;
+                list-style-position:outside;
+                list-style-type:none;
+                margin:0;
+                padding:0;
+                display:block;
+            }
+            .image-form li {
+                padding:0;
+                margin-bottom:10px;
+                display:list-item;
+            }
+            .image-form li label {
+                font-weight:bold;
+            }
+            .image-form li input {
+                vertical-align:middle;
+            }
+            .image-form li img {
+                vertical-align:middle;
+            }
+        </style>
+        <script type="text/javascript">
+            var KE = parent.KE;
+            location.href.match(/\?id=([\w-]+)/i);
+            var id = RegExp.$1;
+            var domain = document.domain;
+            var fileManager = null;
+            var allowUpload = (typeof KE.g[id].allowUpload == 'undefined') ? true : KE.g[id].allowUpload;
+            var allowFileManager = (typeof KE.g[id].allowFileManager == 'undefined') ? false : KE.g[id].allowFileManager;
+            KE.event.ready(function() {
+                var typeBox = KE.$('type', document);
+                var urlBox = KE.$('url', document);
+                var alignElements = document.getElementsByName('align');
+                var fileBox = KE.$('imgFile', document);
+                var tabNavi = KE.$('tabNavi', document);
+                var viewServer = KE.$('viewServer', document);
+                var liList = tabNavi.getElementsByTagName('li');
+                var selectTab = function(num) {
+                    for (var i = 0, len = liList.length; i < len; i++) {
+                        var li = liList[i];
+                        if (i === num) {
+                            li.className = 'selected';
+                            li.onclick = null;
+                        } else {
+                            if (allowUpload) {
+                                li.className = '';
+                                li.onclick = (function (i) {
+                                    return function() {
+                                        if (!fileManager) selectTab(i);
+                                    };
+                                })(i);
+                            } else {
+                                li.parentNode.removeChild(li);
+                            }
+                        }
+                        KE.$('tab' + (i + 1), document).style.display = 'none';
+                    }
+                    typeBox.value = num + 1;
+                    KE.$('tab' + (num + 1), document).style.display = '';
+                }
+                if (!allowFileManager) {
+                    viewServer.parentNode.removeChild(viewServer);
+                }
+                var imgNode = KE.plugin['image'].getSelectedNode(id);
+                if (imgNode) {
+                    var src = KE.format.getUrl(imgNode.src, KE.g[id].urlType);
+                    urlBox.value = src;
+                    for (var i = 0, len = alignElements.length; i < len; i++) {
+                        if (alignElements[i].value == imgNode.align) {
+                            alignElements[i].checked = true;
+                            break;
+                        }
+                    }
+                }
+                KE.event.add(viewServer, 'click', function () {
+                    if (fileManager) return false;
+                    fileManager = new KE.dialog({
+                        id : id,
+                        cmd : 'file_manager',
+                        file : 'file_manager/file_manager.html?id=' + id,
+                        width : 500,
+                        height : 400,
+                        loadingMode : true,
+                        title : '浏览服务器',
+                        noButton : '取消',
+                        hideHandler : function() {
+                            fileManager = null;
+                        }
+                    });
+                    fileManager.show();
+                });
+                selectTab(0);
+                KE.util.hideLoadingPage(id);
+            }, window, document);
+        </script>
     </head>
     <body>
         <div class="tabs">

@@ -227,7 +227,7 @@ KE.event = {
             func();
         };
         if (doc.addEventListener) {
-            this.add(doc, "DOMContentLoaded", readyFunc);
+            this.add(doc, "domcontentloaded", readyFunc);
         } else if (doc.attachEvent){
             this.add(doc, "readystatechange", function() {
                 if (doc.readyState == "complete") readyFunc();
@@ -359,7 +359,7 @@ KE.selection = function(win, doc) {
             if (endNode.nodeType == 1 && endPos > 0) {
                 if (typeof endNode.childNodes[endPos - 1] != "undefined") {
                     endNode = endNode.childNodes[endPos - 1];
-                    endPos = 0;
+                    endPos = (endNode.nodeType == 1) ? 0 : endNode.nodeValue.length;
                 }
             }
         }
