@@ -63,6 +63,7 @@ KE.lang = {
     editImage : '编辑图片',
     editLink : '编辑超级连接',
     loading : '正在加载中...',
+    noColor : '无填充颜色',
     invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
     invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
     invalidWidth : "宽度必须为数字。",
@@ -785,7 +786,7 @@ KE.cmd = function(id) {
         parent.parentNode.insertBefore(leftFrag, parent);
         return {left : leftFrag, right : parent};
     };
-    this.remove = function(tagNames, attributes) {
+    this.remove = function(tags) {
         var keRange = this.keRange;
         var startNode = keRange.startNode;
         var startPos = keRange.startPos;
@@ -793,6 +794,10 @@ KE.cmd = function(id) {
         var endPos = keRange.endPos;
         this.keSel.focus();
         if (keRange.getText().replace(/\s+/g, '') === '') return;
+        var tagNames = [];
+        KE.each(tags, function(key, val) {
+            if (key != '*') tagNames.push(key);
+        });
         var startParent = this.getTopParent(tagNames, startNode);
         var endParent = this.getTopParent(tagNames, endNode);
         if (startParent) {
@@ -814,17 +819,43 @@ KE.cmd = function(id) {
                 keRange.setStart(endFrags.left, 0);
             }
         }
+        var removeAttr = function(node, attr) {
+            if (attr.charAt(0) == '.') {
+                var jsKey = KE.util.getJsKey(attr.substr(1));
+                eval('node.style.' + jsKey + ' = "";');
+            } else {
+                node.removeAttribute(attr);
+            }
+        };
         var nodeList = keRange.getNodeList();
         keRange.setTextStart(keRange.startNode, keRange.startPos);
         keRange.setTextEnd(keRange.endNode, keRange.endPos);
-        for (var i = 0; i < nodeList.length; i++) {
+        for (var i = 0, length = nodeList.length; i < length; i++) {
             var node = nodeList[i];
             if (node.nodeType == 1) {
-                if (KE.util.inArray(node.tagName.toLowerCase(), tagNames)) {
-                    KE.util.removeParent(node);
-                } else {
-                    for (var j = 0; j < attributes.length; j++) {
-                        node.removeAttribute(attributes[j]);
+                var tagName = node.tagName.toLowerCase();
+                if (tags[tagName]) {
+                    var attr = tags[tagName];
+                    for (var j = 0, len = attr.length; j < len; j++) {
+                        if (attr[j] == '*') {
+                            KE.util.removeParent(node);
+                            break;
+                        } else {
+                            removeAttr(node, attr[j]);
+                            if (node.attributes.length == 0) {
+                                KE.util.removeParent(node);
+                                break;
+                            } else if (node.attributes[0].name == 'style' && node.attributes[0].value === '') {
+                                KE.util.removeParent(node);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (tags['*']) {
+                    var attr = tags['*'];
+                    for (var j = 0, len = attr.length; j < len; j++) {
+                        removeAttr(node, attr[j]);
                     }
                 }
             }
@@ -1402,17 +1433,25 @@ KE.menu = function(arg){
         table.style.margin = 0;
         table.style.padding = 0;
         table.style.borderCollapse = 'separate';
+        var row = table.insertRow(0);
+        var cell = row.insertCell(0);
+        cell.colSpan = colorTable[0].length;
+        cell.className = 'ke-picker-cell';
+        cell.title = KE.lang['noColor'];
+        cell.onmouseover = function() {this.style.borderColor = '#000000'; };
+        cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; };
+        cell.onclick = function() { KE.plugin[arg.cmd].exec(arg.id, ''); };
+        cell.innerHTML = KE.lang['noColor'];
         for (var i = 0; i < colorTable.length; i++) {
-            var row = table.insertRow(i);
+            var row = table.insertRow(i + 1);
             for (var j = 0; j < colorTable[i].length; j++) {
                 var cell = row.insertCell(j);
                 cell.className = 'ke-picker-cell';
                 cell.style.backgroundColor = colorTable[i][j];
                 cell.title = colorTable[i][j];
-                cell.onmouseover = function() {this.style.borderColor = '#000000'; }
-                cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
-                cell.onclick = new Function('KE.plugin["' + arg.cmd + '"].exec("' +
-                                            arg.id + '", "' + colorTable[i][j] + '")');
+                cell.onmouseover = function() {this.style.borderColor = '#000000'; };
+                cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; };
+                cell.onclick = new Function('KE.plugin["' + arg.cmd + '"].exec("' + arg.id + '", "' + colorTable[i][j] + '")');
                 cell.innerHTML = '&nbsp;';
             }
         }
@@ -1980,6 +2019,7 @@ KE.show = function(config) {
 
 KE.plugin['about'] = {
     click : function(id) {
+        KE.util.selection(id);
         var dialog = new KE.dialog({
             id : id,
             cmd : 'about',
@@ -2137,7 +2177,13 @@ KE.plugin['bgcolor'] = {
     },
     exec : function(id, value) {
         var cmd = new KE.cmd(id);
-        cmd.wrap('span', [{'.background-color': value}]);
+        if (value == '') {
+            cmd.remove({
+                'span' : ['.background-color']
+            });
+        } else {
+            cmd.wrap('span', [{'.background-color': value}]);
+        }
         KE.history.add(id, false);
         this.menu.hide();
         KE.util.focus(id);
@@ -2258,7 +2304,13 @@ KE.plugin['removeformat'] = {
     click : function(id) {
         KE.util.selection(id);
         var cmd = new KE.cmd(id);
-        cmd.remove(KE.setting.inlineTags, ['class', 'style']);
+        var tags = {
+            '*' : ['class', 'style']
+        };
+        for (var i = 0, len = KE.setting.inlineTags.length; i < len; i++) {
+            tags[KE.setting.inlineTags[i]] = ['*'];
+        }
+        cmd.remove(tags);
         KE.history.add(id, false);
         KE.toolbar.updateState(id);
         KE.util.focus(id);
@@ -2307,7 +2359,14 @@ KE.plugin['textcolor'] = {
     },
     exec : function(id, value) {
         var cmd = new KE.cmd(id);
-        cmd.wrap('span', [{'.color': value}]);
+        if (value == '') {
+            cmd.remove({
+                'span' : ['.color'],
+                'font' : ['color']
+            });
+        } else {
+            cmd.wrap('span', [{'.color': value}]);
+        }
         KE.history.add(id, false);
         this.menu.hide();
         KE.util.focus(id);
