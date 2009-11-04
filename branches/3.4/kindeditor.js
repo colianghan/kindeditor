@@ -873,10 +873,8 @@ KE.format = {
 		if (!mode) return url;
 		mode = mode.toLowerCase();
 		if (!KE.util.inArray(mode, ['absolute', 'relative', 'domain'])) return url;
-		if (url.match(/^\w+:\/\/([^\/]+)/)) {
+		if (url.match(/^\w+:\/\/([^\/]*)/)) {
 			if (RegExp.$1 !== location.host) return url;
-		} else if (url.match(/^\w+:\/\/$/)) {
-			return url;
 		}
 		var host = location.protocol + '//' + location.host;
 		var pathname = '/';
@@ -2731,23 +2729,17 @@ KE.plugin['link'] = {
 	exec : function(id) {
 		KE.util.select(id);
 		var iframeDoc = KE.g[id].iframeDoc;
-		var range = KE.g[id].range;
 		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
 		var url = KE.$('hyperLink', dialogDoc).value;
 		var target = KE.$('linkType', dialogDoc).value;
-		if (url.match(/\w+/) == null) {
+		if (!url.match(/.+/) || url.match(/^\w+:\/\/\/?$/)) {
 			alert(KE.lang['invalidUrl']);
 			window.focus();
 			this.dialog.yesButton.focus();
 			return false;
 		}
-		var node;
-		if (KE.browser == 'IE') {
-			node = range.item ? range.item(0).parentNode : iframeDoc.body;
-		} else {
-			node = (range.startContainer == range.endContainer) ? range.startContainer.parentNode : iframeDoc.body;
-		}
-		if (node && node.tagName == 'A') node = node.parentNode;
+		var node = KE.g[id].keRange.getParentElement();
+		if (node && node.tagName.toLowerCase() == 'a') node = node.parentNode;
 		if (!node) node = iframeDoc.body;
 		iframeDoc.execCommand("createlink", false, "__ke_temp_url__");
 		var arr = node.getElementsByTagName('a');
