@@ -144,7 +144,9 @@ KE.setting = {
 		div : [
 			'class', 'align', '.border', '.margin', '.padding', '.text-align', '.color',
 			'.background-color', '.font-size', '.font-family', '.font-weight',
-			'.font-style', '.text-decoration', '.vertical-align', '.margin-left'
+			'.font-style', '.text-decoration', '.vertical-align', '.margin-left',
+			'.border-top', '.border-bottom', '.border-left', '.border-right', 
+			'.padding-top', '.padding-bottom', '.padding-left', '.padding-right'
 		],
 		table: [
 			'class', 'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align',
