@@ -183,7 +183,6 @@ var JSON_URL = './../../php/file_manager_json.php';
 var KE = parent.KE;
 location.href.match(/\?id=([\w-]+)/i);
 var id = RegExp.$1;
-var domain = document.domain;
 KE.event.ready(function() {
     var moveupLink = KE.$('moveup', document);
     var viewType = KE.$('viewType', document);

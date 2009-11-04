@@ -871,8 +871,10 @@ KE.format = {
         if (!mode) return url;
         mode = mode.toLowerCase();
         if (!KE.util.inArray(mode, ['absolute', 'relative', 'domain'])) return url;
-        if (url.match(/^https?:\/\/([^\/]+)/i)) {
+        if (url.match(/^\w+:\/\/([^\/]+)/)) {
             if (RegExp.$1 !== location.host) return url;
+        } else if (url.match(/^\w+:\/\/$/)) {
+            return url;
         }
         var host = location.protocol + '//' + location.host;
         var pathname = '/';
@@ -894,7 +896,7 @@ KE.format = {
         };
         if (url.match(/^\//)) {
             url = host + getRealPath(url.substr(1));
-        } else if (!url.match(/^https?:\/\//i)) {
+        } else if (!url.match(/^\w+:\/\//)) {
             url = host + getRealPath(pathname + '/' + url);
         }
         if (mode == 'relative') {
