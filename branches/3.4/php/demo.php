@@ -8,7 +8,7 @@
 <body>
 <div class="ke-content">
 <?php
-     echo($_POST['content']);
+	 echo($_POST['content']);
 ?>
 </div>
 <center>
