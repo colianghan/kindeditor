@@ -1235,7 +1235,7 @@ KE.util = {
 		html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 		html += '<title>KindEditor</title>';
 		if (tagLineMode) {
-			html += '<link href="' + KE.g[id].skinsPath + 'editor.css" rel="stylesheet" type="text/css" />';
+			html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css" rel="stylesheet" type="text/css" />';
 		}
 		if (KE.g[id].cssPath) {
 			html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
