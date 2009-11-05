@@ -98,8 +98,8 @@ KE.browser = (function() {
 
 KE.setting = {
 	wyswygMode : true,
+	autoOnsubmitMode : true,
 	loadStyleMode : true,
-	autoLoadStyle : true,
 	resizeMode : 2,
 	filterMode : true,
 	tagLineMode : false,
