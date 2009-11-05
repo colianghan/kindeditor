@@ -275,6 +275,7 @@
 	right: 0;
 	top: 0;
 	cursor: pointer;
+	background-image: url(./tinymce.gif);
 }
 .ke-bottom-outer {
 	border: 0;
@@ -307,6 +308,7 @@
 	background-position: -810px -10px;
 	width: 10px;
 	height: 10px;
+	background-image: url(./tinymce.gif);
 }
 .ke-textarea-outer {
 	border:0;
@@ -349,6 +351,7 @@
 	display: block;
 	background-repeat: no-repeat;
 	overflow: hidden;
+	background-image: url(./tinymce.gif);
 }
 .ke-icon {
 	display: block;

@@ -98,7 +98,8 @@ KE.browser = (function() {
 
 KE.setting = {
 	wyswygMode : true,
-	autoOnsubmitMode : true,
+	loadStyleMode : true,
+	autoLoadStyle : true,
 	resizeMode : 2,
 	filterMode : true,
 	tagLineMode : false,
@@ -1511,8 +1512,6 @@ KE.dialog = function(arg){
 		titleDiv.className = 'ke-dialog-title';
 		titleDiv.innerHTML = arg.title;
 		var span = KE.$$('span');
-		var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
-		span.style.backgroundImage = "url(" + url + ")";
 		span.className = "ke-toolbar-close";
 		span.alt = KE.lang['close'];
 		span.title = KE.lang['close'];
@@ -1735,10 +1734,6 @@ KE.toolbar = {
 			a.title = KE.lang[cmd];
 			var span = KE.$$('span');
 			span.className = "ke-common-icon ke-icon-" + cmd;
-			if (KE.util.inArray(cmd, KE.g[id].defaultItems)) {
-				var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
-				span.style.backgroundImage = "url(" + url + ")";
-			}
 			a.appendChild(span);
 			cell.appendChild(a);
 			KE.g[id].toolbarIcon[cmd] = [a, span];
@@ -1801,6 +1796,7 @@ KE.remove = function(id, mode) {
 };
 
 KE.create = function(id, mode) {
+	if (KE.g[id].beforeCreate) KE.g[id].beforeCreate();
 	if (KE.browser == 'IE') try { document.execCommand('BackgroundImageCache', false, true); }catch(e){}
 	var srcTextarea = KE.$(id);
 	mode = (typeof mode == "undefined") ? 0 : mode;
@@ -1848,8 +1844,6 @@ KE.create = function(id, mode) {
 	bottomRight.align = 'right';
 	bottomRight.vAlign = 'bottom';
 	var span = KE.$$('span');
-	var url = KE.g[id].skinsPath + KE.g[id].skinType + '.gif';
-	span.style.backgroundImage = "url(" + url + ")";
 	span.className = 'ke-bottom-right-img';
 	bottomRight.appendChild(span);
 	bottomOuter.appendChild(bottom);
@@ -1988,11 +1982,13 @@ KE.create = function(id, mode) {
 	}
 	if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
 	KE.history.add(id, false);
+	if (KE.g[id].afterCreate) KE.g[id].afterCreate();
 };
 
 KE.init = function(config) {
 	config.wyswygMode = (typeof config.wyswygMode == "undefined") ? KE.setting.wyswygMode : config.wyswygMode;
 	config.autoOnsubmitMode = (typeof config.autoOnsubmitMode == "undefined") ? KE.setting.autoOnsubmitMode : config.autoOnsubmitMode;
+	config.loadStyleMode = (typeof config.loadStyleMode == "undefined") ? KE.setting.loadStyleMode : config.loadStyleMode;
 	config.resizeMode = (typeof config.resizeMode == "undefined") ? KE.setting.resizeMode : config.resizeMode;
 	config.filterMode = (typeof config.filterMode == "undefined") ? KE.setting.filterMode : config.filterMode;
 	config.tagLineMode = (typeof config.tagLineMode == "undefined") ? KE.setting.tagLineMode : config.tagLineMode;
@@ -2012,7 +2008,7 @@ KE.init = function(config) {
 	KE.g[config.id].redoStack = [];
 	KE.g[config.id].dialogStack = [];
 	KE.g[config.id].contextmenuItems = [];
-	KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
+	if (config.loadStyleMode) KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
 }
 
 KE.show = function(config) {
