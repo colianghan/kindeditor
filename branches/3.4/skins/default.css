@@ -507,6 +507,8 @@
 	font-size: 12px;
 }
 .ke-loading-img {
+	display: block;
+	background-repeat: no-repeat;
 	background-image: url(./common/loading.gif);
 	width: 16px;
 	height: 16px;

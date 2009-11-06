@@ -62,7 +62,6 @@ KE.lang = {
 	close : '关闭',
 	editImage : '编辑图片',
 	editLink : '编辑超级连接',
-	loading : '正在加载中...',
 	noColor : '无填充颜色',
 	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
 	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
@@ -1530,13 +1529,9 @@ KE.dialog = function(arg){
 		loadingTable.cell.align = 'center';
 		loadingTable.cell.vAlign = 'middle';
 		loadingTable.cell.className = 'ke-loading-table';
-		var loadingImg = KE.$$('img');
+		var loadingImg = KE.$$('span');
 		loadingImg.className = 'ke-loading-img';
-		loadingImg.border = 0;
-		loadingImg.align = 'absmiddle';
-		loadingImg.alt = KE.lang['loading'];
 		loadingTable.cell.appendChild(loadingImg);
-		loadingTable.cell.innerHTML += ' ' + KE.lang['loading'];
 		var iframe = KE.$$('iframe');
 		if (arg.useFrameCSS) {
 			iframe.className = 'ke-dialog-iframe';
@@ -2478,7 +2473,7 @@ KE.plugin['flash'] = {
 			id : id,
 			cmd : 'flash',
 			width : 400,
-			height : 120,
+			height : 140,
 			title : KE.lang['flash'],
 			yesButton : KE.lang['yes'],
 			noButton : KE.lang['no']
@@ -2759,7 +2754,7 @@ KE.plugin['media'] = {
 			id : id,
 			cmd : 'media',
 			width : 400,
-			height : 150,
+			height : 170,
 			title : KE.lang['media'],
 			yesButton : KE.lang['yes'],
 			noButton : KE.lang['no']
