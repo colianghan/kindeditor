@@ -264,7 +264,7 @@ KE.eachNode = function(node, func) {
 	var walkNodes = function(parent) {
 		if (KE.util.getNodeType(parent) != 1) return true;
 		var n = parent.firstChild;
-		while (n != null) {
+		while (n) {
 			var next = n.nextSibling;
 			if (!func(n)) return false;
 			if (!walkNodes(n)) return false;
@@ -599,11 +599,11 @@ KE.range = function(doc) {
 		var extractNodes = function(parent, frag) {
 			if (KE.util.getNodeType(parent) != 1) return true;
 			var node = parent.firstChild;
-			while (node != null) {
+			while (node) {
 				if (node == startNode) isStarted = true;
 				if (node == endNode) isEnd = true;
 				var nextNode = node.nextSibling;
-				var type = KE.util.getNodeType(node);
+				var type = node.nodeType;
 				if (type == 1) {
 					var range = new KE.range(doc);
 					range.selectNode(node);
@@ -1161,7 +1161,7 @@ KE.util = {
 	removeParent : function(parent) {
 		if (parent.hasChildNodes) {
 			var node = parent.firstChild;
-			while (node != null) {
+			while (node) {
 				var nextNode = node.nextSibling;
 				parent.parentNode.insertBefore(node, parent);
 				node = nextNode;
