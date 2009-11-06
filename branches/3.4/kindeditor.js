@@ -1528,12 +1528,11 @@ KE.dialog = function(arg){
 		loadingTable.table.style.width = arg.width + 'px';
 		loadingTable.table.style.height = arg.height + 'px';
 		loadingTable.cell.align = 'center';
-		loadingTable.cell.valign = 'middle';
-		loadingTable.cell.style.fontSize = '12px';
+		loadingTable.cell.vAlign = 'middle';
+		loadingTable.cell.className = 'ke-loading-table';
 		var loadingImg = KE.$$('img');
-		loadingImg.src = KE.g[id].skinsPath + 'loading.gif';
-		loadingImg.width = 16;
-		loadingImg.height = 16;
+		loadingImg.className = 'ke-loading-img';
+		loadingImg.border = 0;
 		loadingImg.align = 'absmiddle';
 		loadingImg.alt = KE.lang['loading'];
 		loadingTable.cell.appendChild(loadingImg);
@@ -2420,7 +2419,6 @@ KE.plugin['title'] = {
 };
 
 KE.plugin['emoticons'] = {
-	icon : 'emoticons.gif',
 	click : function(id) {
 		var emoticonTable = [
 			['etc_01.gif','etc_02.gif','etc_03.gif','etc_04.gif','etc_05.gif','etc_06.gif'],
@@ -2479,43 +2477,46 @@ KE.plugin['flash'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'flash',
-			width : 280,
-			height : 250,
+			width : 400,
+			height : 120,
 			title : KE.lang['flash'],
-			previewButton : KE.lang['preview'],
 			yesButton : KE.lang['yes'],
 			noButton : KE.lang['no']
 		});
 		this.dialog.show();
 	},
-	check : function(id, url) {
-		if (url.match(/\w+:\/\/.{3,}/) == null) {
+	check : function(id, url, width, height) {
+		if (!url.match(/\w+:\/\/.{3,}/)) {
 			alert(KE.lang['invalidUrl']);
+			window.focus();
+			this.dialog.yesButton.focus();
+			return false;
+		}
+		if (!width.match(/^\d+$/)) {
+			alert(KE.lang['invalidWidth']);
+			window.focus();
+			this.dialog.yesButton.focus();
+			return false;
+		}
+		if (!height.match(/^\d+$/)) {
+			alert(KE.lang['invalidHeight']);
 			window.focus();
 			this.dialog.yesButton.focus();
 			return false;
 		}
 		return true;
 	},
-	preview : function(id) {
-		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
-		var url = KE.$('url', dialogDoc).value;
-		if (!this.check(id, url)) return false;
-		var embed = KE.$$('embed', dialogDoc);
-		embed.src = url;
-		embed.type = "application/x-shockwave-flash";
-		embed.quality = "high";
-		embed.width = 190;
-		embed.height = 190;
-		KE.$('previewDiv', dialogDoc).innerHTML = "";
-		KE.$('previewDiv', dialogDoc).appendChild(embed);
-	},
 	exec : function(id) {
 		KE.util.select(id);
 		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
 		var url = KE.$('url', dialogDoc).value;
-		if (!this.check(id, url)) return false;
-		var html = '<embed src="' + url + '" type="application/x-shockwave-flash" quality="high" />';
+		var width = KE.$('width', dialogDoc).value;
+		var height = KE.$('height', dialogDoc).value;
+		if (!this.check(id, url, width, height)) return false;
+		var html = '<embed src="' + url + '" ';
+		if (width > 0) html += 'width="' + width + '" ';
+		if (height > 0) html += 'height="' + height + '" ';
+		html += 'type="application/x-shockwave-flash" quality="high" />';
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
 		KE.util.focus(id);

@@ -17,6 +17,9 @@
 			label {
 				cursor:pointer;
 			}
+			.main {
+				margin: 10px;
+			}
 			.tab-navi {
 				width:100%;
 				overflow:hidden;
@@ -147,7 +150,7 @@
 		</script>
 	</head>
 	<body>
-		<div class="tabs">
+		<div class="main">
 			<div id="tabNavi" class="tab-navi">
 				<ul>
 					<li>网络上的图片</li>
@@ -169,12 +172,12 @@
 							<input type="button" id="viewServer" name="viewServer" value="浏览..." />
 						</div>
 						<div id="tab2" style="display:none;">
-							<label for="url">图片地址</label>
+							<label for="imgFile">图片地址</label>
 							<input type="file" id="imgFile" name="imgFile" style="width:300px;" />
 						</div>
 					</li>
 					<li>
-						<label for="url">对齐方式</label>
+						<label>对齐方式</label>
 						<input type="radio" name="align" value="" checked="checked" /> <img src="./images/align_top.gif" width="23" height="25" border="0" alt="默认方式" title="默认方式" />
 						<input type="radio" name="align" value="left" /> <img src="./images/align_left.gif" width="23" height="25" border="0" alt="左对齐" title="左对齐" />
 						<input type="radio" name="align" value="right" /> <img src="./images/align_right.gif" width="23" height="25" border="0" alt="右对齐" title="右对齐" />

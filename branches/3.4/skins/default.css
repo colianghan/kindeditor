@@ -503,3 +503,11 @@
 	padding:0;
 	text-align: center;
 }
+.ke-loading-table {
+	font-size: 12px;
+}
+.ke-loading-img {
+	background-image: url(./common/loading.gif);
+	width: 16px;
+	height: 16px;
+}
