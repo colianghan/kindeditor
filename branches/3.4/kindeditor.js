@@ -65,11 +65,11 @@ KE.lang = {
 	loading : '正在加载中...',
 	noColor : '无填充颜色',
 	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
-	invalidMedia : "请输入有效的URL地址。\n只允许mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
+	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
 	invalidWidth : "宽度必须为数字。",
 	invalidHeight : "高度必须为数字。",
 	invalidBorder : "边框必须为数字。",
-	invalidUrl : "URL不正确。",
+	invalidUrl : "请输入有效的URL地址。",
 	pleaseInput : "请输入内容"
 };
 
@@ -2758,52 +2758,52 @@ KE.plugin['media'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'media',
-			width : 280,
-			height : 250,
+			width : 400,
+			height : 150,
 			title : KE.lang['media'],
-			previewButton : KE.lang['preview'],
 			yesButton : KE.lang['yes'],
 			noButton : KE.lang['no']
 		});
 		this.dialog.show();
 	},
-	check : function(id, url) {
-		if (!url.match(/^\w+:\/\/.{3,}\.(mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)(\?|$)/i)) {
+	check : function(id, url, width, height) {
+		if (!url.match(/^\w+:\/\/.{3,}\.(swf|flv|mp3|wav|wma|wmv|mid|avi|mpg|mpeg|asf|rm|rmvb)(\?|$)/i)) {
 			alert(KE.lang['invalidMedia']);
+			window.focus();
+			this.dialog.yesButton.focus();
+			return false;
+		}
+		if (!width.match(/^\d+$/)) {
+			alert(KE.lang['invalidWidth']);
+			window.focus();
+			this.dialog.yesButton.focus();
+			return false;
+		}
+		if (!height.match(/^\d+$/)) {
+			alert(KE.lang['invalidHeight']);
 			window.focus();
 			this.dialog.yesButton.focus();
 			return false;
 		}
 		return true;
 	},
-	preview : function(id) {
-		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
-		var url = KE.$('url', dialogDoc).value;
-		if (!this.check(id, url)) return false;
-		var embed = KE.$$('embed', dialogDoc);
-		embed.src = url;
-		if (url.match(/\.(rm|rmvb)$/i) == null) {
-			embed.type = "video/x-ms-asf-plugin";
-		} else {
-			embed.type = "audio/x-pn-realaudio-plugin";
-		}
-		embed.loop = "true";
-		embed.autostart = "true";
-		embed.width = 260;
-		embed.height = 190;
-		KE.$('previewDiv', dialogDoc).innerHTML = "";
-		KE.$('previewDiv', dialogDoc).appendChild(embed);
-	},
 	exec : function(id) {
 		KE.util.select(id);
 		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
 		var url = KE.$('url', dialogDoc).value;
-		if (!this.check(id, url)) return false;
-		var html;
-		if (url.match(/\.(rm|rmvb)$/i) == null) {
-			html = '<embed src="' + url + '" type="video/x-ms-asf-plugin" loop="true" autostart="true" />';
+		var width = KE.$('width', dialogDoc).value;
+		var height = KE.$('height', dialogDoc).value;
+		if (!this.check(id, url, width, height)) return false;
+		var autostart = KE.$('autostart', dialogDoc).checked ? 'true' : 'false';
+		var html = '<embed src="' + url + '" ';
+		if (width > 0) html += 'width="' + width + '" ';
+		if (height > 0) html += 'height="' + height + '" ';
+		if (url.match(/\.(rm|rmvb)(\?|$)/i)) {
+			html += 'type="audio/x-pn-realaudio-plugin" loop="true" autostart="' + autostart + '" />';
+		} else if (url.match(/\.(swf|flv)(\?|$)/i)) {
+			html += 'type="application/x-shockwave-flash" quality="high" />';
 		} else {
-			html = '<embed src="' + url + '" type="audio/x-pn-realaudio-plugin" loop="true" autostart="true" />';
+			html += 'type="video/x-ms-asf-plugin" loop="true" autostart="' + autostart + '" />';
 		}
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
