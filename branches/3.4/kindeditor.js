@@ -442,7 +442,7 @@ KE.range = function(doc) {
 	this.endPos = null;
 	this.getParentElement = function() {
 		var scanParent = function(node, func) {
-			while (node != null && node.tagName != 'body') {
+			while (node && (!node.tagName || node.tagName.toLowerCase() != 'body')) {
 				node = node.parentNode;
 				if (func(node)) return;
 			}
@@ -771,7 +771,7 @@ KE.cmd = function(id) {
 	};
 	this.getTopParent = function(tagNames, node) {
 		var parent = null;
-		while (node != null) {
+		while (node) {
 			node = node.parentNode;
 			if (KE.util.inArray(node.tagName.toLowerCase(), tagNames)) {
 				parent = node;
@@ -1872,7 +1872,7 @@ KE.create = function(id, mode) {
 	}
 	if (KE.g[id].autoOnsubmitMode) {
 		var node = srcTextarea.parentNode;
-		while (node != null) {
+		while (node) {
 			if (node.nodeType == 1 && node.tagName.toLowerCase() == 'form') {
 				KE.event.add(node, 'submit', new Function('KE.util.setData("' + id + '")'));
 				break;
