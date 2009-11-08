@@ -7,7 +7,6 @@
 	body {
 		font-size:12px;
 		font-family: "sans serif",tahoma,verdana,helvetica;
-		line-height:1.5;
 		margin:0;
 		background-color:#F0F0EE;
 		overflow:hidden;
@@ -18,7 +17,7 @@
 	.main {
 		margin: 10px;
 	}
-	.image-form  {
+	.table  {
 		list-style-image:none;
 		list-style-position:outside;
 		list-style-type:none;
@@ -26,25 +25,26 @@
 		padding:0;
 		display:block;
 	}
-	.image-form li {
+	.table li {
 		padding:0;
 		margin-bottom:10px;
 		display:list-item;
+		line-height:1.5;
 	}
-	.image-form li label {
+	.table li label {
 		font-weight:bold;
 	}
-	.image-form li input {
+	.table li input {
 		vertical-align:middle;
 	}
-	.image-form li img {
+	.table li img {
 		vertical-align:middle;
 	}
   </style>
 </head>
 <body>
 	<div class="main">
-		<ul class="image-form">
+		<ul class="table">
 			<li>
 				<label for="url">媒体文件地址</label>
 				<input type="text" id="url" name="url" value="http://" maxlength="255" style="width:90%;" />

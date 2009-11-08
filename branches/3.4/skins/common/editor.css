@@ -1,3 +1,4 @@
+/*
 p {
 	background-image:url(./p.gif);
 	background-position:right top;
@@ -25,4 +26,13 @@ dl {
 }
 p,div,ul,ol,dl {
 	border:1px dotted #CCCCCC;
+}
+*/
+.ke-flash {
+	border:1px solid #AAAAAA;
+	background-image:url(./flash.gif);
+	background-position:center center;
+	background-repeat:no-repeat;
+	width:100px;
+	height:100px;
 }

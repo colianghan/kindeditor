@@ -2,23 +2,45 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <title>Link</title>
-	<style type="text/css" rel="stylesheet">
-		body {
-			font-size:12px;
-			font-family: "sans serif",tahoma,verdana,helvetica;
-			margin: 5px;
-			background-color:#F0F0EE;
-		}
-		td.left {
-			font-size: 12px;
-			width: 70px;
-			padding: 2px;
-		}
-		td.right {
-			padding: 2px;
-		}
-	</style>
+  <title>Flash</title>
+  <style type="text/css" rel="stylesheet">
+	body {
+		font-size:12px;
+		font-family: "sans serif",tahoma,verdana,helvetica;
+		margin:0;
+		background-color:#F0F0EE;
+		overflow:hidden;
+	}
+	label {
+		cursor:pointer;
+	}
+	.main {
+		margin: 10px;
+	}
+	.table {
+		list-style-image:none;
+		list-style-position:outside;
+		list-style-type:none;
+		margin:0;
+		padding:0;
+		display:block;
+	}
+	.table li {
+		padding:0;
+		margin-bottom:10px;
+		display:list-item;
+		line-height:1.5;
+	}
+	.table li label {
+		font-weight:bold;
+	}
+	.table li input {
+		vertical-align:middle;
+	}
+	.table li img {
+		vertical-align:middle;
+	}
+  </style>
 	<script type="text/javascript">
 		var KE = parent.KE;
 		location.href.match(/\?id=([\w-]+)/i);
@@ -41,20 +63,20 @@
 	</script>
 </head>
 <body>
-  <table border="0" cellpadding="0" cellspacing="0">
-	<tr>
-	  <td class="left">URL: </td>
-	  <td class="right"><input type="text" id="hyperLink" name="hyperLink" value="http://" style="width:200px;" /></td>
-	</tr>
-	<tr>
-	  <td class="left">打开类型: </td>
-	  <td class="right">
-		<select id="linkType" name="linkType">
-		  <option value="_blank">新窗口</option>
-		  <option value="_self">当前窗口</option>
-		</select>
-	  </td>
-	</tr>
-  </table>
+	<div class="main">
+		<ul class="table">
+			<li>
+				<label for="hyperLink">URL</label>
+				<input type="text" id="hyperLink" name="hyperLink" value="http://" style="width:90%;" />
+			</li>
+			<li>
+				<label for="linkType">打开类型</label>
+				<select id="linkType" name="linkType">
+				  <option value="_blank">新窗口</option>
+				  <option value="_self">当前窗口</option>
+				</select>
+			</li>
+		</ul>
+	</div>
 </body>
 </html>

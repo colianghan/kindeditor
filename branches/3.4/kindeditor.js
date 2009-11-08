@@ -101,7 +101,6 @@ KE.setting = {
 	loadStyleMode : true,
 	resizeMode : 2,
 	filterMode : true,
-	tagLineMode : false,
 	urlType : 'relative',
 	skinType : 'default',
 	cssPath : '',
@@ -1228,14 +1227,12 @@ KE.util = {
 			};
 		}
 	},
-	getFullHtml : function(id, tagLineMode) {
+	getFullHtml : function(id) {
 		var html = '<html>';
 		html += '<head>';
 		html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 		html += '<title>KindEditor</title>';
-		if (tagLineMode) {
-			html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css" rel="stylesheet" type="text/css" />';
-		}
+		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css" rel="stylesheet" type="text/css" />';
 		if (KE.g[id].cssPath) {
 			html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
 		}
@@ -1264,15 +1261,30 @@ KE.util = {
 			obj.newTextarea.style.height = diff + 'px';
 		}
 	},
+	execGetHtmlHooks : function(id, html) {
+		var hooks = KE.g[id].getHtmlHooks;
+		for (var i = 0, len = hooks.length; i < len; i++) {
+			html = hooks[i](html);
+		}
+		return html;
+	},
+	execSetHtmlHooks : function(id, html) {
+		var hooks = KE.g[id].setHtmlHooks;
+		for (var i = 0, len = hooks.length; i < len; i++) {
+			html = hooks[i](html);
+		}
+		return html;
+	},
 	getData : function(id) {
 		var obj = KE.g[id];
 		if (!obj.wyswygMode) {
 			obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
 		}
+		var html = this.execGetHtmlHooks(id, obj.iframeDoc.body.innerHTML);
 		if (obj.filterMode) {
-			return KE.format.getHtml(obj.iframeDoc.body.innerHTML, obj.htmlTags, obj.urlType);
+			return KE.format.getHtml(html, obj.htmlTags, obj.urlType);
 		} else {
-			return KE.format.getHtml(obj.iframeDoc.body.innerHTML, null, obj.urlType);
+			return KE.format.getHtml(html, null, obj.urlType);
 		}
 	},
 	getSrcData : function(id) {
@@ -1280,7 +1292,7 @@ KE.util = {
 		if (!obj.wyswygMode) {
 			obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
 		}
-		return obj.iframeDoc.body.innerHTML;
+		return this.execGetHtmlHooks(id, obj.iframeDoc.body.innerHTML);
 	},
 	getPureData : function(id) {
 		var data = this.getSrcData(id);
@@ -1853,12 +1865,12 @@ KE.create = function(id, mode) {
 	var iframeWin = iframe.contentWindow;
 	var iframeDoc = KE.util.getIframeDoc(iframe);
 	iframeDoc.designMode = "On";
-	var html = KE.util.getFullHtml(id, KE.g[id].tagLineMode);
+	var html = KE.util.getFullHtml(id);
 	iframeDoc.open();
 	iframeDoc.write(html);
 	iframeDoc.close();
 	if (!KE.g[id].wyswygMode) {
-		newTextarea.value = srcTextarea.value;
+		newTextarea.value = KE.util.execSetHtmlHooks(id, srcTextarea.value);
 		newTextarea.style.display = 'block';
 		iframe.style.display = 'none';
 		KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
@@ -1974,7 +1986,7 @@ KE.create = function(id, mode) {
 			return true;
 		});
 	}
-	if (srcTextarea.value !== "") iframeDoc.body.innerHTML = srcTextarea.value;
+	if (srcTextarea.value !== "") iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, srcTextarea.value);
 	KE.history.add(id, false);
 	if (KE.g[id].afterCreate) KE.g[id].afterCreate();
 };
@@ -1985,7 +1997,6 @@ KE.init = function(config) {
 	config.loadStyleMode = (typeof config.loadStyleMode == "undefined") ? KE.setting.loadStyleMode : config.loadStyleMode;
 	config.resizeMode = (typeof config.resizeMode == "undefined") ? KE.setting.resizeMode : config.resizeMode;
 	config.filterMode = (typeof config.filterMode == "undefined") ? KE.setting.filterMode : config.filterMode;
-	config.tagLineMode = (typeof config.tagLineMode == "undefined") ? KE.setting.tagLineMode : config.tagLineMode;
 	config.urlType =  config.urlType || KE.setting.urlType;
 	config.skinType = config.skinType || KE.setting.skinType;
 	config.cssPath = config.cssPath || KE.setting.cssPath;
@@ -2002,6 +2013,8 @@ KE.init = function(config) {
 	KE.g[config.id].redoStack = [];
 	KE.g[config.id].dialogStack = [];
 	KE.g[config.id].contextmenuItems = [];
+	KE.g[config.id].getHtmlHooks = [];
+	KE.g[config.id].setHtmlHooks = [];
 	if (config.loadStyleMode) KE.util.loadStyle(config.skinsPath + config.skinType + '.css');
 }
 
@@ -2017,7 +2030,7 @@ KE.plugin['about'] = {
 			id : id,
 			cmd : 'about',
 			width : 300,
-			height : 80,
+			height : 100,
 			title : KE.lang['about'],
 			noButton : KE.lang['close']
 		});
@@ -2101,6 +2114,7 @@ KE.plugin['wordpaste'] = {
 		str = str.replace(/<w:[^>]+>(\n|.)*?<\/w:[^>]+>/ig, "");
 		str = str.replace(/<xml>(\n|.)*?<\/xml>/ig, "");
 		str = str.replace(/\r\n|\n|\r/ig, "");
+		str = KE.util.execGetHtmlHooks(id, str);
 		str = KE.format.getHtml(str, KE.g[id].htmlTags, KE.g[id].urlType);
 		KE.util.insertHtml(id, str);
 		this.dialog.hide();
@@ -2316,7 +2330,7 @@ KE.plugin['source'] = {
 		if (!obj.wyswygMode) {
 			var html = obj.newTextarea.value;
 			html = html.replace(/\r\n|\n|\r/g, '');
-			obj.iframeDoc.body.innerHTML = html;
+			obj.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, html);
 			obj.iframe.style.display = 'block';
 			obj.newTextarea.style.display = 'none';
 			KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
@@ -2325,11 +2339,7 @@ KE.plugin['source'] = {
 			KE.toolbar.unselect(id, "source");
 		} else {
 			KE.layout.hide(id);
-			if (KE.g[id].filterMode) {
-				obj.newTextarea.value = KE.format.getHtml(obj.iframeDoc.body.innerHTML, obj.htmlTags, obj.urlType);
-			} else {
-				obj.newTextarea.value = KE.format.getHtml(obj.iframeDoc.body.innerHTML, null, obj.urlType);
-			}
+			obj.newTextarea.value = KE.util.getData(id);
 			obj.iframe.style.display = 'none';
 			obj.newTextarea.style.display = 'block';
 			KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
@@ -2467,6 +2477,48 @@ KE.plugin['emoticons'] = {
 };
 
 KE.plugin['flash'] = {
+	makeImage : function(id, url, width, height) {
+		var embed = "src:'" + url + "',width:'" + width + "',height:'" + height + "'";
+		var style = '';
+		if (width > 0) style += 'width:' + width + 'px;';
+		if (height > 0) style += 'height:' + height + 'px;';
+		var html = '<img class="ke-flash" src="' + KE.g[id].skinsPath + 'common/blank.gif" ';
+		if (style !== '') html += 'style="' + style + '" ';
+		html += 'title="' + embed + '" alt="flash" />';
+		return html;
+	},
+	makeEmbed : function(id, url, width, height) {
+		var html = '<embed src="' + url + '" ';
+		if (width > 0) html += 'width="' + width + '" ';
+		if (height > 0) html += 'height="' + height + '" ';
+		html += 'type="application/x-shockwave-flash" quality="high" />';
+		return html;
+	},
+	init : function(id) {
+		var self = this;
+		KE.g[id].getHtmlHooks.push(function(html) {
+			return html.replace(/<img[^>]*class="?ke-flash"?[^>]*>/ig, function(imgStr) {
+				var width = imgStr.match(/style="[^"]*;?\s*width:\s*(\d+)/i) ? RegExp.$1 : 0;
+				var height = imgStr.match(/style="[^"]*;?\s*height:\s*(\d+)/i) ? RegExp.$1 : 0;
+				width = width || (imgStr.match(/width="([^"]+)"/i) ? RegExp.$1 : 0);
+				height = height || (imgStr.match(/height="([^"]+)"/i) ? RegExp.$1 : 0);
+				if (imgStr.match(/title="src:'(.*?)',width:'(.*?)',height:'(.*?)'"/i)) {
+					var src = RegExp.$1;
+					width = width || RegExp.$2 || 0;
+					height = height || RegExp.$3 || 0;
+					return self.makeEmbed(id, src, width, height);
+				}
+			});
+		});
+		KE.g[id].setHtmlHooks.push(function(html) {
+			return html.replace(/<embed[^>]*type="application\/x-shockwave-flash"[^>]*>/ig, function($0) {
+				var src = $0.match(/src="(.+?)"/i) ? RegExp.$1 : '';
+				var width = $0.match(/width="(.+?)"/i) ? RegExp.$1 : 0;
+				var height = $0.match(/height="(.+?)"/i) ? RegExp.$1 : 0;
+				return self.makeImage(id, src, width, height);
+			});
+		});
+	},
 	click : function(id) {
 		KE.util.selection(id);
 		this.dialog = new KE.dialog({
@@ -2508,10 +2560,7 @@ KE.plugin['flash'] = {
 		var width = KE.$('width', dialogDoc).value;
 		var height = KE.$('height', dialogDoc).value;
 		if (!this.check(id, url, width, height)) return false;
-		var html = '<embed src="' + url + '" ';
-		if (width > 0) html += 'width="' + width + '" ';
-		if (height > 0) html += 'height="' + height + '" ';
-		html += 'type="application/x-shockwave-flash" quality="high" />';
+		var html = this.makeImage(id, url, width, height);
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
 		KE.util.focus(id);
@@ -2546,7 +2595,7 @@ KE.plugin['image'] = {
 				}
 			}
 		}
-		if (startImg && endImg && startImg === endImg) {
+		if (startImg && endImg && startImg === endImg && !startImg.className.match(/^ke-\w+/i)) {
 			return startImg;
 		}
 	},
@@ -2710,7 +2759,7 @@ KE.plugin['link'] = {
 			cmd : 'link',
 			file : 'link/link.html?id=' + id,
 			width : 310,
-			height : 70,
+			height : 100,
 			loadingMode : true,
 			title : KE.lang['link'],
 			yesButton : KE.lang['yes'],
