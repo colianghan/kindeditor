@@ -36,3 +36,19 @@ p,div,ul,ol,dl {
 	width:100px;
 	height:100px;
 }
+.ke-rm {
+	border:1px solid #AAAAAA;
+	background-image:url(./rm.gif);
+	background-position:center center;
+	background-repeat:no-repeat;
+	width:100px;
+	height:100px;
+}
+.ke-media {
+	border:1px solid #AAAAAA;
+	background-image:url(./media.gif);
+	background-position:center center;
+	background-repeat:no-repeat;
+	width:100px;
+	height:100px;
+}

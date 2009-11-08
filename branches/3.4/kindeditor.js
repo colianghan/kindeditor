@@ -1110,10 +1110,25 @@ KE.util = {
 			return s.length > 1 ? s : '0' + s;
 		};
 		return str.replace(/rgb\s*?\(\s*?(\d+)\s*?,\s*?(\d+)\s*?,\s*?(\d+)\s*?\)/ig,
-						   function($0, $1, $2, $3) {
-							   return '#' + hex($1) + hex($2) + hex($3);
-						   }
-						  );
+			function($0, $1, $2, $3) {
+				return '#' + hex($1) + hex($2) + hex($3);
+			}
+		);
+	},
+	hashToStr : function(hash) {
+		var str = '';
+		KE.each(hash, function(key, val) {
+			str += key + ":'" + val + "',";
+		});
+		return str.length > 0 ? str.substr(0, str.length - 1) : '';
+	},
+	strToHash : function(str) {
+		var hash = {};
+		var re = /(\w+)\s*:\s*'([^']+)'/g;
+		while (re.exec(str)) {
+			hash[RegExp.$1] = RegExp.$2;
+		}
+		return hash;
 	},
 	createRange : function(doc) {
 		return doc.createRange ? doc.createRange() : doc.body.createTextRange();
@@ -1767,11 +1782,11 @@ KE.history = {
 		var html = KE.util.getSrcData(id);
 		obj.redoStack.push(html);
 		var prevHtml = obj.undoStack.pop();
-		if (html == prevHtml && obj.undoStack.length > 0) {
+		if (html === prevHtml && obj.undoStack.length > 0) {
 			prevHtml = obj.undoStack.pop();
 		}
-		obj.iframeDoc.body.innerHTML = prevHtml;
-		obj.newTextarea.value = prevHtml;
+		obj.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, prevHtml);
+		obj.newTextarea.value = KE.util.execGetHtmlHooks(id, prevHtml);
 	},
 	redo : function(id) {
 		var obj = KE.g[id];
@@ -1779,8 +1794,8 @@ KE.history = {
 		var html = KE.util.getSrcData(id);
 		obj.undoStack.push(html);
 		var nextHtml = obj.redoStack.pop();
-		obj.iframeDoc.body.innerHTML = nextHtml;
-		obj.newTextarea.value = nextHtml;
+		obj.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, nextHtml);
+		obj.newTextarea.value = KE.util.execGetHtmlHooks(id, nextHtml);
 	}
 };
 
@@ -2478,13 +2493,17 @@ KE.plugin['emoticons'] = {
 
 KE.plugin['flash'] = {
 	makeImage : function(id, url, width, height) {
-		var embed = "src:'" + url + "',width:'" + width + "',height:'" + height + "'";
+		var hash = {};
+		hash.src = url;
+		hash.width = width;
+		hash.height = height;
+		var title = KE.util.hashToStr(hash);
 		var style = '';
 		if (width > 0) style += 'width:' + width + 'px;';
 		if (height > 0) style += 'height:' + height + 'px;';
 		var html = '<img class="ke-flash" src="' + KE.g[id].skinsPath + 'common/blank.gif" ';
 		if (style !== '') html += 'style="' + style + '" ';
-		html += 'title="' + embed + '" alt="flash" />';
+		html += 'title="' + title + '" alt="flash" />';
 		return html;
 	},
 	makeEmbed : function(id, url, width, height) {
@@ -2502,19 +2521,20 @@ KE.plugin['flash'] = {
 				var height = imgStr.match(/style="[^"]*;?\s*height:\s*(\d+)/i) ? RegExp.$1 : 0;
 				width = width || (imgStr.match(/width="([^"]+)"/i) ? RegExp.$1 : 0);
 				height = height || (imgStr.match(/height="([^"]+)"/i) ? RegExp.$1 : 0);
-				if (imgStr.match(/title="src:'(.*?)',width:'(.*?)',height:'(.*?)'"/i)) {
-					var src = RegExp.$1;
-					width = width || RegExp.$2 || 0;
-					height = height || RegExp.$3 || 0;
+				if (imgStr.match(/title="([^"]+)"/i)) {
+					var hash = KE.util.strToHash(RegExp.$1);
+					var src = hash.src || '';
+					width = width || hash.width || 0;
+					height = height || hash.height || 0;
 					return self.makeEmbed(id, src, width, height);
 				}
 			});
 		});
 		KE.g[id].setHtmlHooks.push(function(html) {
 			return html.replace(/<embed[^>]*type="application\/x-shockwave-flash"[^>]*>/ig, function($0) {
-				var src = $0.match(/src="(.+?)"/i) ? RegExp.$1 : '';
-				var width = $0.match(/width="(.+?)"/i) ? RegExp.$1 : 0;
-				var height = $0.match(/height="(.+?)"/i) ? RegExp.$1 : 0;
+				var src = $0.match(/\s+src="([^"]+)"/i) ? RegExp.$1 : '';
+				var width = $0.match(/\s+width="([^"]+)"/i) ? RegExp.$1 : 0;
+				var height = $0.match(/\s+height="([^"]+)"/i) ? RegExp.$1 : 0;
 				return self.makeImage(id, src, width, height);
 			});
 		});
@@ -2797,6 +2817,75 @@ KE.plugin['link'] = {
 };
 
 KE.plugin['media'] = {
+	makeImage : function(id, url, width, height, autostart) {
+		var hash = {};
+		hash.src = url;
+		hash.width = width;
+		hash.height = height;
+		hash.autostart = autostart;
+		var title = KE.util.hashToStr(hash);
+		var style = '';
+		if (width > 0) style += 'width:' + width + 'px;';
+		if (height > 0) style += 'height:' + height + 'px;';
+		var className;
+		if (url.match(/\.(rm|rmvb)(\?|$)/i)) {
+			className = 'ke-rm';
+		} else if (url.match(/\.(swf|flv)(\?|$)/i)) {
+			className = 'ke-flash';
+		} else {
+			className = 'ke-media';
+		}
+		var html = '<img class="' + className + '" src="' + KE.g[id].skinsPath + 'common/blank.gif" ';
+		if (style !== '') html += 'style="' + style + '" ';
+		html += 'title="' + title + '" alt="flash" />';
+		return html;
+	},
+	makeEmbed : function(id, url, width, height, autostart) {
+		var html = '<embed src="' + url + '" ';
+		if (width > 0) html += 'width="' + width + '" ';
+		if (height > 0) html += 'height="' + height + '" ';
+		if (url.match(/\.(rm|rmvb)(\?|$)/i)) {
+			html += 'type="audio/x-pn-realaudio-plugin" loop="true" autostart="' + autostart + '" />';
+		} else if (url.match(/\.(swf|flv)(\?|$)/i)) {
+			html += 'type="application/x-shockwave-flash" quality="high" />';
+		} else {
+			html += 'type="video/x-ms-asf-plugin" loop="true" autostart="' + autostart + '" />';
+		}
+		return html;
+	},
+	init : function(id) {
+		var self = this;
+		var typeHash = {};
+		typeHash['audio/x-pn-realaudio-plugin'] = 1;
+		typeHash['application/x-shockwave-flash'] = 1;
+		typeHash['video/x-ms-asf-plugin'] = 1;
+		KE.g[id].getHtmlHooks.push(function(html) {
+			return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(imgStr) {
+				var width = imgStr.match(/style="[^"]*;?\s*width:\s*(\d+)/i) ? RegExp.$1 : 0;
+				var height = imgStr.match(/style="[^"]*;?\s*height:\s*(\d+)/i) ? RegExp.$1 : 0;
+				width = width || (imgStr.match(/width="([^"]+)"/i) ? RegExp.$1 : 0);
+				height = height || (imgStr.match(/height="([^"]+)"/i) ? RegExp.$1 : 0);
+				if (imgStr.match(/\s+title="([^"]+)"/i)) {
+					var hash = KE.util.strToHash(RegExp.$1);
+					var src = hash.src || '';
+					width = width || hash.width || 0;
+					height = height || hash.height || 0;
+					autostart = hash.autostart || 'false';
+					return self.makeEmbed(id, src, width, height, autostart);
+				}
+			});
+		});
+		KE.g[id].setHtmlHooks.push(function(html) {
+			return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>/ig, function($0, $1) {
+				if (typeof typeHash[$1] == 'undefined') return $0;
+				var src = $0.match(/\s+src="([^"]+)"/i) ? RegExp.$1 : '';
+				var width = $0.match(/\s+width="([^"]+)"/i) ? RegExp.$1 : 0;
+				var height = $0.match(/\s+height="([^"]+)"/i) ? RegExp.$1 : 0;
+				var autostart = $0.match(/\s+autostart="([^"]+)"/i) ? RegExp.$1 : 'false';
+				return self.makeImage(id, src, width, height, autostart);
+			});
+		});
+	},
 	click : function(id) {
 		KE.util.selection(id);
 		this.dialog = new KE.dialog({
@@ -2839,16 +2928,7 @@ KE.plugin['media'] = {
 		var height = KE.$('height', dialogDoc).value;
 		if (!this.check(id, url, width, height)) return false;
 		var autostart = KE.$('autostart', dialogDoc).checked ? 'true' : 'false';
-		var html = '<embed src="' + url + '" ';
-		if (width > 0) html += 'width="' + width + '" ';
-		if (height > 0) html += 'height="' + height + '" ';
-		if (url.match(/\.(rm|rmvb)(\?|$)/i)) {
-			html += 'type="audio/x-pn-realaudio-plugin" loop="true" autostart="' + autostart + '" />';
-		} else if (url.match(/\.(swf|flv)(\?|$)/i)) {
-			html += 'type="application/x-shockwave-flash" quality="high" />';
-		} else {
-			html += 'type="video/x-ms-asf-plugin" loop="true" autostart="' + autostart + '" />';
-		}
+		var html = this.makeImage(id, url, width, height, autostart);
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
 		KE.util.focus(id);
