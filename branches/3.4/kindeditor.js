@@ -414,12 +414,12 @@ KE.selection = function(win, doc) {
 			var range = new KE.range(doc);
 			range.setTextStart(keRange.startNode, keRange.startPos);
 			range.setTextEnd(keRange.endNode, keRange.endPos);
-			if (range.startNode.nodeType == 1) {
+			if (KE.util.getNodeType(range.startNode) == 88) {
 				this.range.setStart(range.startNode.parentNode, getNodePos(range.startNode));
 			} else {
 				this.range.setStart(range.startNode, range.startPos);
 			}
-			if (range.startNode.nodeType == 1) {
+			if (KE.util.getNodeType(range.endNode) == 88) {
 				this.range.setEnd(range.endNode.parentNode, getNodePos(range.endNode) + 1);
 			} else {
 				this.range.setEnd(range.endNode, range.endPos);
