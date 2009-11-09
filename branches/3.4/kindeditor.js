@@ -61,7 +61,9 @@ KE.lang = {
 	no : '取消',
 	close : '关闭',
 	editImage : '编辑图片',
+	deleteImage : '删除图片',
 	editLink : '编辑超级连接',
+	deleteLink : '取消超级连接',
 	noColor : '无填充颜色',
 	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
 	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
@@ -1254,12 +1256,17 @@ KE.util = {
 			obj.newTextarea.style.height = diff + 'px';
 		}
 	},
-	execGetHtmlHooks : function(id, html) {
-		var hooks = KE.g[id].getHtmlHooks;
-		for (var i = 0, len = hooks.length; i < len; i++) {
-			html = hooks[i](html);
-		}
-		return html;
+	hideLoadingPage : function(id) {
+		var stack = KE.g[id].dialogStack;
+		var dialog = stack[stack.length - 1];
+		dialog.loading.style.display = 'none';
+		dialog.iframe.style.display = '';
+	},
+	showLoadingPage : function(id) {
+		var stack = KE.g[id].dialogStack;
+		var dialog = stack[stack.length - 1];
+		dialog.loading.style.display = '';
+		dialog.iframe.style.display = 'none';
 	},
 	setDefaultPlugin : function(id) {
 		var items = [
@@ -1325,6 +1332,13 @@ KE.util = {
 			html += 'type="' + mediaType + '" quality="high" />';
 		} else {
 			html += 'type="' + mediaType + '" loop="true" autostart="' + autostart + '" />';
+		}
+		return html;
+	},
+	execGetHtmlHooks : function(id, html) {
+		var hooks = KE.g[id].getHtmlHooks;
+		for (var i = 0, len = hooks.length; i < len; i++) {
+			html = hooks[i](html);
 		}
 		return html;
 	},
@@ -1401,18 +1415,6 @@ KE.util = {
 				}
 			});
 		}
-	},
-	hideLoadingPage : function(id) {
-		var stack = KE.g[id].dialogStack;
-		var dialog = stack[stack.length - 1];
-		dialog.loading.style.display = 'none';
-		dialog.iframe.style.display = '';
-	},
-	showLoadingPage : function(id) {
-		var stack = KE.g[id].dialogStack;
-		var dialog = stack[stack.length - 1];
-		dialog.loading.style.display = '';
-		dialog.iframe.style.display = 'none';
 	},
 	execCommand : function(id, cmd, value) {
 		try {
@@ -2657,6 +2659,18 @@ KE.plugin['image'] = {
 				return self.getSelectedNode(id);
 			}
 		});
+		KE.g[id].contextmenuItems.push({
+			text : KE.lang['deleteImage'],
+			click : function(id, menu) {
+				KE.util.select(id);
+				menu.hide();
+				var img = self.getSelectedNode(id);
+				img.parentNode.removeChild(img);
+			},
+			cond : function(id) {
+				return self.getSelectedNode(id);
+			}
+		});
 	},
 	click : function(id) {
 		KE.util.selection(id);
@@ -2790,6 +2804,17 @@ KE.plugin['link'] = {
 				KE.util.select(id);
 				menu.hide();
 				self.click(id);
+			},
+			cond : function(id) {
+				return self.getSelectedNode(id);
+			}
+		});
+		KE.g[id].contextmenuItems.push({
+			text : KE.lang['deleteLink'],
+			click : function(id, menu) {
+				KE.util.select(id);
+				menu.hide();
+				KE.util.execCommand(id, 'unlink');
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
