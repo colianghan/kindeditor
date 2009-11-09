@@ -1341,6 +1341,7 @@ KE.util = {
 			obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
 		}
 		var html = this.execGetHtmlHooks(id, obj.iframeDoc.body.innerHTML);
+		html = html.replace(/^\s*<br[^>]*>\s*$/ig, '');
 		if (obj.filterMode) {
 			return KE.format.getHtml(html, obj.htmlTags, obj.urlType);
 		} else {
