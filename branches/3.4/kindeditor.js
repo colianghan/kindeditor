@@ -129,7 +129,10 @@ KE.setting = {
 	],
 	noEndTags : ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'],
 	inlineTags : ['b', 'del', 'em', 'font', 'i', 'span', 'strike', 'strong', 'sub', 'sup', 'u'],
-	endlineTags : ['br', 'hr', 'table', 'tbody', 'td', 'tr', 'th', 'div', 'p', 'ol', 'ul', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+	endlineTags : [
+		'br', 'hr', 'table', 'tbody', 'td', 'tr', 'th', 'div', 'p', 'ol', 'ul',
+		'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+	],
 	htmlTags : {
 		font : ['color', 'size', 'face', '.background-color'],
 		span : [
@@ -163,6 +166,11 @@ KE.setting = {
 			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
 		],
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
+	},
+	mediaTypes : {
+		rm : 'audio/x-pn-realaudio-plugin',
+		flash : 'application/x-shockwave-flash',
+		media : 'video/x-ms-asf-plugin'
 	}
 };
 
@@ -1270,7 +1278,7 @@ KE.util = {
 		html += '<head>';
 		html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 		html += '<title>KindEditor</title>';
-		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css" rel="stylesheet" type="text/css" />';
+		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css?ver=' + KE.version + '" rel="stylesheet" type="text/css" />';
 		if (KE.g[id].cssPath) {
 			html += '<link href="' + KE.g[id].cssPath + '" rel="stylesheet" type="text/css" />';
 		}
@@ -1289,10 +1297,11 @@ KE.util = {
 	},
 	getMediaImage : function(id, type, url, width, height, autostart) {
 		type = this.getMediaType(type, url);
-		var hash = {};
-		hash.src = url;
-		hash.width = width;
-		hash.height = height;
+		var hash = {
+			src : url,
+			width : width,
+			height : height
+		};
 		if (typeof autostart != 'undefined') hash.autostart = autostart;
 		var title = this.hashToStr(hash);
 		var style = '';
@@ -1309,12 +1318,13 @@ KE.util = {
 		var html = '<embed src="' + url + '" ';
 		if (width > 0) html += 'width="' + width + '" ';
 		if (height > 0) html += 'height="' + height + '" ';
+		var mediaType = KE.setting.mediaTypes[type];
 		if (type == 'rm') {
-			html += 'type="audio/x-pn-realaudio-plugin" loop="true" autostart="' + autostart + '" />';
+			html += 'type="' + mediaType + '" loop="true" autostart="' + autostart + '" />';
 		} else if (type == 'flash') {
-			html += 'type="application/x-shockwave-flash" quality="high" />';
+			html += 'type="' + mediaType + '" quality="high" />';
 		} else {
-			html += 'type="video/x-ms-asf-plugin" loop="true" autostart="' + autostart + '" />';
+			html += 'type="' + mediaType + '" loop="true" autostart="' + autostart + '" />';
 		}
 		return html;
 	},
@@ -1666,7 +1676,7 @@ KE.dialog = function(arg){
 			dialogDoc.body.innerHTML = arg.html;
 		} else {
 			if (typeof arg.file == "undefined") {
-				iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html';
+				iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html?ver=' + KE.version;
 			} else {
 				iframe.src = KE.g[id].pluginsPath + arg.file;
 			}
@@ -2652,7 +2662,7 @@ KE.plugin['image'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'image',
-			file : 'image/image.html?id=' + id,
+			file : 'image/image.html?id=' + id + '&ver=' + KE.version,
 			width : 400,
 			height : 130,
 			loadingMode : true,
@@ -2760,7 +2770,6 @@ KE.plugin['link'] = {
 				if (node.nodeType == 1) {
 					var tagName = node.tagName.toLowerCase();
 					if (tagName == 'a') return node;
-					if (typeof inlineTagHash[tagName] == 'undefined') return null;
 				}
 				node = node.parentNode;
 			}
@@ -2791,7 +2800,7 @@ KE.plugin['link'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'link',
-			file : 'link/link.html?id=' + id,
+			file : 'link/link.html?id=' + id + '&ver=' + KE.version,
 			width : 310,
 			height : 100,
 			loadingMode : true,
@@ -2834,9 +2843,9 @@ KE.plugin['media'] = {
 	init : function(id) {
 		var self = this;
 		var typeHash = {};
-		typeHash['audio/x-pn-realaudio-plugin'] = 1;
-		typeHash['application/x-shockwave-flash'] = 1;
-		typeHash['video/x-ms-asf-plugin'] = 1;
+		KE.each(KE.setting.mediaTypes, function(key, val) {
+			typeHash[val] = key;
+		});
 		KE.g[id].getHtmlHooks.push(function(html) {
 			return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function($0) {
 				var width = $0.match(/style="[^"]*;?\s*width:\s*(\d+)/i) ? RegExp.$1 : 0;

@@ -1,3 +1,11 @@
+html {
+	margin: 0;
+	padding: 0;
+}
+body {
+	margin: 0;
+	padding: 5px;
+}
 /*
 p {
 	background-image:url(./p.gif);
