@@ -246,7 +246,7 @@ KE.event = {
 					try {
 						doc.documentElement.doScroll("left");
 					} catch(e) {
-						setTimeout(ieReadyFunc, 0);
+						window.setTimeout(ieReadyFunc, 0);
 						return;
 					}
 					readyFunc();
@@ -1244,7 +1244,7 @@ KE.util = {
 		if (isResizeWidth) obj.container.style.width = width;
 		obj.container.style.height = height;
 		if (!obj.toolbarTable.offsetHeight) {
-			setTimeout(function () {
+			window.setTimeout(function () {
 				KE.util.resize(id, width, height, isCheck, isResizeWidth);
 			}, 0);
 			return;
@@ -1253,7 +1253,7 @@ KE.util = {
 		if (diff >= 0) {
 			obj.textareaTable.style.height = diff + 'px';
 			obj.iframe.style.height = diff + 'px';
-			obj.newTextarea.style.height = diff + 'px';
+			obj.newTextarea.style.height = (document.compatMode != "CSS1Compat" ? diff - 2 : diff) + 'px';
 		}
 	},
 	hideLoadingPage : function(id) {
