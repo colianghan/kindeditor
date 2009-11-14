@@ -101,6 +101,7 @@ KE.setting = {
 	filterMode : true,
 	urlType : 'relative',
 	skinType : 'default',
+	newlineTag : 'br',
 	cssPath : '',
 	skinsPath : KE.scriptPath + 'skins/',
 	pluginsPath : KE.scriptPath + 'plugins/',
@@ -1189,7 +1190,7 @@ KE.util = {
 		parent.parentNode.removeChild(parent);
 	},
 	drag : function(id, mousedownObj, moveObj, func) {
-		var obj = KE.g[id];
+		var g = KE.g[id];
 		mousedownObj.onmousedown = function(e) {
 			e = e || window.event;
 			if (e.preventDefault) e.preventDefault();
@@ -1214,10 +1215,10 @@ KE.util = {
 					func(objTop, objLeft, objWidth, objHeight, top, left);
 				}
 			};
-			var iframePos = KE.util.getElementPos(obj.iframe);
+			var iframePos = KE.util.getElementPos(g.iframe);
 			var iframeMoveListener = function(e) {
 				if (dragFlag) {
-					var pos = KE.util.getCoords(e, obj.iframeDoc);
+					var pos = KE.util.getCoords(e, g.iframeDoc);
 					var top = iframePos.y + pos.y - mouseTop;
 					var left = iframePos.x + pos.x - mouseLeft;
 					func(objTop, objLeft, objWidth, objHeight, top, left);
@@ -1227,33 +1228,33 @@ KE.util = {
 				dragFlag = false;
 				KE.event.remove(document, 'mousemove', moveListener);
 				KE.event.remove(document, 'mouseup', upListener);
-				KE.event.remove(obj.iframeDoc, 'mousemove', iframeMoveListener);
-				KE.event.remove(obj.iframeDoc, 'mouseup', upListener);
+				KE.event.remove(g.iframeDoc, 'mousemove', iframeMoveListener);
+				KE.event.remove(g.iframeDoc, 'mouseup', upListener);
 			};
 			KE.event.add(document, 'mousemove', moveListener);
 			KE.event.add(document, 'mouseup', upListener);
-			KE.event.add(obj.iframeDoc, 'mousemove', iframeMoveListener);
-			KE.event.add(obj.iframeDoc, 'mouseup', upListener);
+			KE.event.add(g.iframeDoc, 'mousemove', iframeMoveListener);
+			KE.event.add(g.iframeDoc, 'mouseup', upListener);
 		};
 	},
 	resize : function(id, width, height, isCheck, isResizeWidth) {
 		isResizeWidth = (typeof isResizeWidth == "undefined") ? true : isResizeWidth;
-		var obj = KE.g[id];
-		if (!obj.container) return;
-		if (isCheck && (parseInt(width) <= obj.minWidth || parseInt(height) <= obj.minHeight)) return;
-		if (isResizeWidth) obj.container.style.width = width;
-		obj.container.style.height = height;
-		if (!obj.toolbarTable.offsetHeight) {
+		var g = KE.g[id];
+		if (!g.container) return;
+		if (isCheck && (parseInt(width) <= g.minWidth || parseInt(height) <= g.minHeight)) return;
+		if (isResizeWidth) g.container.style.width = width;
+		g.container.style.height = height;
+		if (!g.toolbarTable.offsetHeight) {
 			window.setTimeout(function () {
 				KE.util.resize(id, width, height, isCheck, isResizeWidth);
 			}, 0);
 			return;
 		}
-		var diff = parseInt(height) - obj.toolbarTable.offsetHeight - obj.bottom.offsetHeight;
+		var diff = parseInt(height) - g.toolbarTable.offsetHeight - g.bottom.offsetHeight;
 		if (diff >= 0) {
-			obj.textareaTable.style.height = diff + 'px';
-			obj.iframe.style.height = diff + 'px';
-			obj.newTextarea.style.height = (document.compatMode != "CSS1Compat" ? diff - 2 : diff) + 'px';
+			g.textareaTable.style.height = diff + 'px';
+			g.iframe.style.height = diff + 'px';
+			g.newTextarea.style.height = (document.compatMode != "CSS1Compat" ? diff - 2 : diff) + 'px';
 		}
 	},
 	hideLoadingPage : function(id) {
@@ -1392,12 +1393,11 @@ KE.util = {
 		KE.plugin[cmd].click(id);
 	},
 	selection : function(id) {
-		var win = KE.g[id].iframeWin;
-		var doc = KE.g[id].iframeDoc;
-		KE.g[id].keSel = new KE.selection(win, doc);
-		KE.g[id].keRange = KE.g[id].keSel.keRange;
-		KE.g[id].sel = KE.g[id].keSel.sel;
-		KE.g[id].range = KE.g[id].keSel.range;
+		var g = KE.g[id];
+		g.keSel = new KE.selection(g.iframeWin, g.iframeDoc);
+		g.keRange = g.keSel.keRange;
+		g.sel = g.keSel.sel;
+		g.range = g.keSel.range;
 	},
 	select : function(id) {
 		if (KE.browser == 'IE') KE.g[id].range.select();
@@ -1409,38 +1409,111 @@ KE.util = {
 		KE.toolbar.updateState(id);
 		KE.history.add(id, false);
 	},
-	pasteHtml : function(id, html) {
-		var doc = KE.g[id].iframeDoc;
-		var sel = KE.g[id].sel;
-		var range = KE.g[id].range;
+	pasteHtml : function(id, html, isStart) {
+		var g = KE.g[id];
+		var imgStr = '<img id="__ke_temp_tag__" style="display:none;" />';
+		if (isStart) html = imgStr + html;
+		else html += imgStr;
 		if (KE.browser == 'IE') {
-			if (sel.type.toLowerCase() == 'control') range.item(0).outerHTML = html;
-			else range.pasteHTML(html);
+			if (g.sel.type.toLowerCase() == 'control') g.range.item(0).outerHTML = html;
+			else g.range.pasteHTML(html);
 		} else {
-			range.deleteContents();
-			var frag = range.createContextualFragment(html + '<img id="__ke_temp_tag__" style="display:none;" />');
-			range.insertNode(frag);
-			var temp = KE.$('__ke_temp_tag__', doc);
-			range.selectNode(temp);
-			range.collapse(false);
-			sel.removeAllRanges();
-			sel.addRange(range);
-			temp.parentNode.removeChild(temp);
+			g.range.deleteContents();
+			var frag = g.range.createContextualFragment(html);
+			g.range.insertNode(frag);
 		}
+		var node = KE.$('__ke_temp_tag__', g.iframeDoc);
+		var blank = g.iframeDoc.createTextNode('');
+		node.parentNode.replaceChild(blank, node);
+		g.keRange.selectNode(blank);
+		g.keSel.addRange(g.keRange);
 	},
 	insertHtml : function(id, html) {
 		if (html == '') return;
 		this.select(id);
 		this.pasteHtml(id, html);
 		KE.history.add(id, false);
+	},
+	addContextmenu : function(id) {
+		var g = KE.g[id];
+		if (g.contextmenuItems.length == 0) return;
+		KE.event.add(g.iframeDoc, 'contextmenu', function(e){
+			KE.util.selection(id);
+			var showFlag = false;
+			for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
+				var item = g.contextmenuItems[i];
+				if (item.cond(id)) {
+					showFlag = true;
+					break;
+				}
+			}
+			if (showFlag) {
+				var menu = new KE.menu({
+					id : id,
+					event : e,
+					type : 'contextmenu',
+					width : '160px'
+				});
+				for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
+					var item = g.contextmenuItems[i];
+					if (item.cond(id)) {
+						menu.add(item.text, (function(item) {
+							return function() {
+								item.click(id, menu);
+							};
+						})(item));
+					}
+				}
+				menu.show();
+				if (e.preventDefault) e.preventDefault();
+				if (e.stopPropagation) e.stopPropagation();
+				return false;
+			}
+			return true;
+		});
+	},
+	addNewlineEvent : function(id) {
+		var g = KE.g[id];
+		KE.event.add(g.iframeDoc, 'keydown', function(e) {
+			if (KE.browser == 'OPERA') return true;
+			if (e.keyCode != 13 || e.shiftKey || e.ctrlKey || e.altKey) return true;
+			KE.util.selection(id);
+			var parent = g.keRange.getParentElement();
+			var tagName = parent.tagName.toLowerCase();
+			if (g.newlineTag.toLowerCase() == 'br') {
+				if (!KE.util.inArray(tagName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'])) {
+					KE.util.pasteHtml(id, '<br />');
+					var nextNode = g.keRange.startNode.nextSibling;
+					if (KE.browser == 'IE') {
+						if (!nextNode) KE.util.pasteHtml(id, '<br />', true);
+					} else if (KE.browser == 'WEBKIT') {
+						if (!nextNode || (nextNode.nodeType == 3 && nextNode.nodeValue === '')) {
+							KE.util.pasteHtml(id, '<br />', true);
+						}
+						if (!nextNode) {
+							KE.util.pasteHtml(id, '<br />', true);
+						}
+					}
+					if (e.preventDefault) e.preventDefault();
+					if (e.stopPropagation) e.stopPropagation();
+					return false;
+				}
+			} else {
+				if (!KE.util.inArray(tagName, ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'div', 'li'])) {
+					KE.util.execCommand(id, 'formatblock', '<P>');
+				}
+			}
+			return true;
+		});
 	}
 };
 
 KE.layout = {
 	hide : function(id) {
-		KE.g[id].hideDiv.innerHTML = '';
-		KE.g[id].hideDiv.style.display = 'none';
-		KE.g[id].maskDiv.style.display = 'none';
+		var g = KE.g[id];
+		g.hideDiv.innerHTML = '';
+		g.hideDiv.style.display = 'none';
+		g.maskDiv.style.display = 'none';
 	}
 };
 
@@ -1541,7 +1614,6 @@ KE.dialog = function(arg){
 	this.zIndex = 19811214;
 	this.getPos = function() {
 		var id = arg.id;
-		var obj = KE.g[id];
 		var el = KE.util.getDocumentElement();
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
@@ -1811,36 +1883,36 @@ KE.toolbar = {
 
 KE.history = {
 	add : function(id, minChangeFlag) {
-		var obj = KE.g[id];
+		var g = KE.g[id];
 		var html = KE.util.getSrcData(id);
-		if (obj.undoStack.length > 0) {
-			var prevHtml = obj.undoStack[obj.undoStack.length - 1];
+		if (g.undoStack.length > 0) {
+			var prevHtml = g.undoStack[g.undoStack.length - 1];
 			if (html == prevHtml) return;
-			if (minChangeFlag && Math.abs(html.length - prevHtml.length) < obj.minChangeSize) return;
+			if (minChangeFlag && Math.abs(html.length - prevHtml.length) < g.minChangeSize) return;
 		}
-		obj.undoStack.push(html);
-		obj.redoStack = [];
+		g.undoStack.push(html);
+		g.redoStack = [];
 	},
 	undo : function(id) {
-		var obj = KE.g[id];
-		if (obj.undoStack.length == 0) return;
+		var g = KE.g[id];
+		if (g.undoStack.length == 0) return;
 		var html = KE.util.getSrcData(id);
-		obj.redoStack.push(html);
-		var prevHtml = obj.undoStack.pop();
-		if (html === prevHtml && obj.undoStack.length > 0) {
-			prevHtml = obj.undoStack.pop();
+		g.redoStack.push(html);
+		var prevHtml = g.undoStack.pop();
+		if (html === prevHtml && g.undoStack.length > 0) {
+			prevHtml = g.undoStack.pop();
 		}
-		obj.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, prevHtml);
-		obj.newTextarea.value = KE.util.execGetHtmlHooks(id, prevHtml);
+		g.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, prevHtml);
+		g.newTextarea.value = KE.util.execGetHtmlHooks(id, prevHtml);
 	},
 	redo : function(id) {
-		var obj = KE.g[id];
-		if (obj.redoStack.length == 0) return;
+		var g = KE.g[id];
+		if (g.redoStack.length == 0) return;
 		var html = KE.util.getSrcData(id);
-		obj.undoStack.push(html);
-		var nextHtml = obj.redoStack.pop();
-		obj.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, nextHtml);
-		obj.newTextarea.value = KE.util.execGetHtmlHooks(id, nextHtml);
+		g.undoStack.push(html);
+		var nextHtml = g.redoStack.pop();
+		g.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, nextHtml);
+		g.newTextarea.value = KE.util.execGetHtmlHooks(id, nextHtml);
 	}
 };
 
@@ -2013,65 +2085,8 @@ KE.create = function(id, mode) {
 		var cmd = KE.g[id].items[i];
 		if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
 	}
-	if (KE.g[id].contextmenuItems.length > 0) {
-		KE.event.add(iframeDoc, 'contextmenu', function(e){
-			KE.util.selection(id);
-			var showFlag = false;
-			for (var i = 0, len = KE.g[id].contextmenuItems.length; i < len; i++) {
-				var item = KE.g[id].contextmenuItems[i];
-				if (item.cond(id)) {
-					showFlag = true;
-					break;
-				}
-			}
-			if (showFlag) {
-				var menu = new KE.menu({
-					id : id,
-					event : e,
-					type : 'contextmenu',
-					width : '160px'
-				});
-				for (var i = 0, len = KE.g[id].contextmenuItems.length; i < len; i++) {
-					var item = KE.g[id].contextmenuItems[i];
-					if (item.cond(id)) {
-						menu.add(item.text, (function(item) {
-							return function() {
-								item.click(id, menu);
-							};
-						})(item));
-					}
-				}
-				menu.show();
-				if (e.preventDefault) e.preventDefault();
-				if (e.stopPropagation) e.stopPropagation();
-				return false;
-			}
-			return true;
-		});
-	}
-	KE.event.add(iframeDoc, 'keydown', function(e) {
-		if (e.keyCode != 13 || e.shiftKey || e.ctrlKey || e.altKey) return true;
-		KE.util.selection(id);
-		var tagName = KE.g[id].keRange.getParentElement().tagName.toLowerCase();
-		if (!KE.util.inArray(tagName, ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'])) {
-			if (KE.browser != 'WEBKIT') {
-				KE.util.pasteHtml(id, '<br />');
-			} else {
-				KE.util.pasteHtml(id, '<br id="__ke_temp_br__" />');
-				var br = KE.$('__ke_temp_br__', KE.g[id].iframeDoc);
-				br.removeAttribute('id');
-				var n = br.nextSibling;
-				if (!n || (n.nodeType == 3 && n.nodeValue.replace(/\s+/, '') === '')) {
-					KE.util.pasteHtml(id, '<br />');
-				}
-			}
-			KE.util.select(id);
-			if (e.preventDefault) e.preventDefault();
-			if (e.stopPropagation) e.stopPropagation();
-			return false;
-		}
-		return true;
-	});
+	KE.util.addContextmenu(id);
+	KE.util.addNewlineEvent(id);
 	var html = srcTextarea.value;
 	html = html.replace(/\r\n|\n|\r/g, '');
 	if (KE.browser != 'IE' && html === '') html = '<br />';
@@ -2201,12 +2216,12 @@ KE.plugin['wordpaste'] = {
 
 KE.plugin['fullscreen'] = {
 	click : function(id) {
-		var obj = KE.g[id];
+		var g = KE.g[id];
 		var self = this;
 		var resetSize = function() {
 			var el = KE.util.getDocumentElement();
-			obj.width = el.clientWidth + 'px';
-			obj.height = el.clientHeight + 'px';
+			g.width = el.clientWidth + 'px';
+			g.height = el.clientHeight + 'px';
 		};
 		var windowSize = '';
 		var resizeListener = function() {
@@ -2216,15 +2231,15 @@ KE.plugin['fullscreen'] = {
 			if (windowSize != size) {
 				windowSize = size;
 				resetSize();
-				KE.util.resize(id, obj.width, obj.height);
+				KE.util.resize(id, g.width, g.height);
 			}
 		}
 		if (this.isSelected) {
 			this.isSelected = false;
 			KE.util.setData(id);
 			KE.remove(id, 1);
-			obj.width = this.width;
-			obj.height = this.height;
+			g.width = this.width;
+			g.height = this.height;
 			KE.create(id, 2);
 			document.body.parentNode.style.overflow = 'auto';
 			KE.event.remove(window, 'resize', resizeListener);
@@ -2232,14 +2247,14 @@ KE.plugin['fullscreen'] = {
 		} else {
 			this.isSelected = true;
 			KE.util.setData(id);
-			this.width = obj.container.style.width;
-			this.height = obj.container.style.height;
+			this.width = g.container.style.width;
+			this.height = g.container.style.height;
 			KE.remove(id, 2);
 			document.body.parentNode.style.overflow = 'hidden';
 			resetSize();
 			KE.create(id, 1);
 			var pos = KE.util.getScrollPos();
-			var div = KE.g[id].container;
+			var div = g.container;
 			div.style.position = 'absolute';
 			div.style.left = pos.x + 'px';
 			div.style.top = pos.y + 'px';
@@ -2663,7 +2678,8 @@ KE.plugin['image'] = {
 	},
 	init : function(id) {
 		var self = this;
-		KE.g[id].contextmenuItems.push({
+		var g = KE.g[id];
+		g.contextmenuItems.push({
 			text : KE.lang['editImage'],
 			click : function(id, menu) {
 				KE.util.select(id);
@@ -2674,7 +2690,7 @@ KE.plugin['image'] = {
 				return self.getSelectedNode(id);
 			}
 		});
-		KE.g[id].contextmenuItems.push({
+		g.contextmenuItems.push({
 			text : KE.lang['deleteImage'],
 			click : function(id, menu) {
 				KE.util.select(id);
@@ -2866,7 +2882,7 @@ KE.plugin['link'] = {
 		var node = KE.g[id].keRange.getParentElement();
 		if (node && node.tagName.toLowerCase() == 'a') node = node.parentNode;
 		if (!node) node = iframeDoc.body;
-		iframeDoc.execCommand("createlink", false, "__ke_temp_url__");
+		iframeDoc.execCommand('createlink', false, '__ke_temp_url__');
 		var arr = node.getElementsByTagName('a');
 		for (var i = 0, l = arr.length; i < l; i++) {
 			if (arr[i].href.match(/\/?__ke_temp_url__$/) != null) {
