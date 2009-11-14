@@ -1823,7 +1823,11 @@ KE.toolbar = {
 				var span = obj[1];
 				a.className = 'ke-icon';
 				KE.util.setOpacity(span, 100);
-				a.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '");');
+				a.onclick = (function(id, cmd) {
+					return function() {
+						KE.util.click(id, cmd);
+					};
+				})(id, cmd);
 				a.onmouseover = function(){ this.className = "ke-icon-on"; };
 				a.onmouseout = function(){ this.className = "ke-icon"; };
 			}
@@ -1870,7 +1874,11 @@ KE.toolbar = {
 			var a = KE.$$('a');
 			a.className = 'ke-icon';
 			a.href = 'javascript:;';
-			a.onclick = new Function('KE.util.click("' + id + '", "' + cmd + '");');
+			a.onclick = (function(id, cmd) {
+				return function() {
+					KE.util.click(id, cmd);
+				};
+			})(id, cmd);
 			a.onmouseover = function(){ this.className = "ke-icon-on"; };
 			a.onmouseout = function(){ this.className = "ke-icon"; };
 			a.hidefocus = true;
