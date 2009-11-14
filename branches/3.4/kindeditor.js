@@ -1434,7 +1434,12 @@ KE.util = {
 		this.pasteHtml(id, html);
 		KE.history.add(id, false);
 	},
-	addContextmenu : function(id) {
+	setFullHtml : function(id, html) {
+		html = html.replace(/\r\n|\n|\r/g, '');
+		if (KE.browser != 'IE' && html === '') html = '<br />';
+		KE.g[id].iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, html);
+	},
+	addContextmenuEvent : function(id) {
 		var g = KE.g[id];
 		if (g.contextmenuItems.length == 0) return;
 		KE.event.add(g.iframeDoc, 'contextmenu', function(e){
@@ -2085,12 +2090,9 @@ KE.create = function(id, mode) {
 		var cmd = KE.g[id].items[i];
 		if (KE.plugin[cmd] && KE.plugin[cmd].init) KE.plugin[cmd].init(id);
 	}
-	KE.util.addContextmenu(id);
+	KE.util.addContextmenuEvent(id);
 	KE.util.addNewlineEvent(id);
-	var html = srcTextarea.value;
-	html = html.replace(/\r\n|\n|\r/g, '');
-	if (KE.browser != 'IE' && html === '') html = '<br />';
-	iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, html);
+	KE.util.setFullHtml(id, srcTextarea.value);
 	KE.history.add(id, false);
 	if (KE.g[id].afterCreate) KE.g[id].afterCreate();
 };
@@ -2418,25 +2420,22 @@ KE.plugin['removeformat'] = {
 
 KE.plugin['source'] = {
 	click : function(id) {
-		var obj = KE.g[id];
-		if (!obj.wyswygMode) {
-			var html = obj.newTextarea.value;
-			html = html.replace(/\r\n|\n|\r/g, '');
-			if (KE.browser != 'IE' && html === '') html = '<br />';
-			obj.iframeDoc.body.innerHTML = KE.util.execSetHtmlHooks(id, html);
-			obj.iframe.style.display = 'block';
-			obj.newTextarea.style.display = 'none';
+		var g = KE.g[id];
+		if (!g.wyswygMode) {
+			KE.util.setFullHtml(id, g.newTextarea.value);
+			g.iframe.style.display = 'block';
+			g.newTextarea.style.display = 'none';
 			KE.toolbar.able(id, ['source', 'preview', 'fullscreen']);
-			obj.wyswygMode = true;
+			g.wyswygMode = true;
 			this.isSelected = false;
 			KE.toolbar.unselect(id, "source");
 		} else {
 			KE.layout.hide(id);
-			obj.newTextarea.value = KE.util.getData(id);
-			obj.iframe.style.display = 'none';
-			obj.newTextarea.style.display = 'block';
+			g.newTextarea.value = KE.util.getData(id);
+			g.iframe.style.display = 'none';
+			g.newTextarea.style.display = 'block';
 			KE.toolbar.disable(id, ['source', 'preview', 'fullscreen']);
-			obj.wyswygMode = false;
+			g.wyswygMode = false;
 			this.isSelected = true;
 			KE.toolbar.select(id, "source");
 		}
