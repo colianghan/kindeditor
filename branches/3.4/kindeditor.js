@@ -1600,10 +1600,11 @@ KE.dialog = function(arg){
 	this.getPos = function() {
 		var id = arg.id;
 		var el = KE.util.getDocumentElement();
+		var scrollPos = KE.util.getScrollPos();
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
-		var x = Math.round((el.clientWidth - width) / 2);
-		var y = Math.round((el.clientHeight - height) / 2);
+		var x = Math.round(scrollPos.x + (el.clientWidth - width) / 2);
+		var y = Math.round(scrollPos.y + (el.clientHeight - height) / 2);
 		x = x < 0 ? 0 : x;
 		y = y < 0 ? 0 : y;
 		return {x : x, y : y};
@@ -1653,11 +1654,11 @@ KE.dialog = function(arg){
 		var bodyDiv = KE.$$('div');
 		bodyDiv.className = 'ke-dialog-body';
 		var loadingTable = KE.util.createTable();
+		loadingTable.table.className = 'ke-loading-table';
 		loadingTable.table.style.width = arg.width + 'px';
 		loadingTable.table.style.height = arg.height + 'px';
 		loadingTable.cell.align = 'center';
 		loadingTable.cell.vAlign = 'middle';
-		loadingTable.cell.className = 'ke-loading-table';
 		var loadingImg = KE.$$('span');
 		loadingImg.className = 'ke-loading-img';
 		loadingTable.cell.appendChild(loadingImg);
