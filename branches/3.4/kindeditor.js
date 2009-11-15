@@ -2867,8 +2867,11 @@ KE.plugin['link'] = {
 			return false;
 		}
 		var node = KE.g[id].keRange.getParentElement();
-		if (node && node.tagName.toLowerCase() == 'a') node = node.parentNode;
-		if (!node) node = iframeDoc.body;
+		while (node) {
+			if (node.tagName.toLowerCase() == 'a' || node.tagName.toLowerCase() == 'body') break;
+			node = node.parentNode;
+		}
+		node = node.parentNode;
 		iframeDoc.execCommand('createlink', false, '__ke_temp_url__');
 		var arr = node.getElementsByTagName('a');
 		for (var i = 0, l = arr.length; i < l; i++) {
