@@ -1351,24 +1351,24 @@ KE.util = {
 		return html;
 	},
 	getData : function(id) {
-		var obj = KE.g[id];
-		if (!obj.wyswygMode) {
-			obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
+		var g = KE.g[id];
+		if (!g.wyswygMode) {
+			g.iframeDoc.body.innerHTML = g.newTextarea.value;
 		}
-		var html = this.execGetHtmlHooks(id, obj.iframeDoc.body.innerHTML);
+		var html = this.execGetHtmlHooks(id, g.iframeDoc.body.innerHTML);
 		html = html.replace(/^\s*<br[^>]*>\s*$/ig, '');
-		if (obj.filterMode) {
-			return KE.format.getHtml(html, obj.htmlTags, obj.urlType);
+		if (g.filterMode) {
+			return KE.format.getHtml(html, g.htmlTags, g.urlType);
 		} else {
-			return KE.format.getHtml(html, null, obj.urlType);
+			return KE.format.getHtml(html, null, g.urlType);
 		}
 	},
 	getSrcData : function(id) {
-		var obj = KE.g[id];
-		if (!obj.wyswygMode) {
-			obj.iframeDoc.body.innerHTML = obj.newTextarea.value;
+		var g = KE.g[id];
+		if (!g.wyswygMode) {
+			g.iframeDoc.body.innerHTML = g.newTextarea.value;
 		}
-		return this.execGetHtmlHooks(id, obj.iframeDoc.body.innerHTML);
+		return this.execGetHtmlHooks(id, g.iframeDoc.body.innerHTML);
 	},
 	getPureData : function(id) {
 		var data = this.getSrcData(id);
@@ -2170,7 +2170,7 @@ KE.plugin['plainpaste'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'plainpaste',
-			width : 330,
+			width : 400,
 			height : 300,
 			title : KE.lang['plainpaste'],
 			yesButton : KE.lang['yes'],
@@ -2196,7 +2196,7 @@ KE.plugin['wordpaste'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'wordpaste',
-			width : 330,
+			width : 400,
 			height : 300,
 			title : KE.lang['wordpaste'],
 			yesButton : KE.lang['yes'],
@@ -2865,7 +2865,7 @@ KE.plugin['link'] = {
 			id : id,
 			cmd : 'link',
 			file : 'link/link.html?id=' + id + '&ver=' + KE.version,
-			width : 310,
+			width : 400,
 			height : 100,
 			loadingMode : true,
 			title : KE.lang['link'],
