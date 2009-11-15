@@ -17,14 +17,23 @@
     KE.show({
         id : 'content1',
         cssPath : './index.css',
+		newlineTag : 'br' //默认模式
+    });
+	KE.show({
+        id : 'content2',
+        cssPath : './index.css',
 		newlineTag : 'p'
     });
   </script>
 </head>
 <body>
+  <h3>回车BR换行</h3>
+  <div class="editor">
+    <textarea id="content1" name="content" style="width:700px;height:200px;visibility:hidden;"></textarea>
+  </div>
   <h3>回车P换行</h3>
   <div class="editor">
-    <textarea id="content1" name="content" style="width:700px;height:300px;visibility:hidden;"></textarea>
+    <textarea id="content2" name="content" style="width:700px;height:200px;visibility:hidden;"></textarea>
   </div>
 </body>
 </html>

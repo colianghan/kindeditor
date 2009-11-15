@@ -32,6 +32,8 @@ test("HTML format test", function() {
 	equals(KE.format.getHtml(KE.$("test11").innerHTML, {span:[".color"]}), '<span style="color:#ff0000;">test</span>');
 	equals(KE.format.getHtml(KE.$("test11").innerHTML, {span:[".font-size", "class"]}), '<span>test</span>');
 	equals(KE.format.getHtml(KE.$("test11").innerHTML, {div:[".font-size", "class"]}), 'test');
+	equals(KE.format.getHtml(KE.$("test11").innerHTML, {span:["style"]}), '<span style="color:#ff0000;">test</span>');
+	equals(KE.format.getHtml(KE.$("test11").innerHTML, {span:[]}), '<span>test</span>');
 
 	equals(KE.format.getHtml(KE.$("test12").innerHTML), '123<div style="color:#ff0000;background-color:#00ff00;font-size:18px;font-weight:bold;" class="spanclass">test</div>\r\n123');
 	equals(KE.format.getHtml(KE.$("test12").innerHTML, {span:[".color"]}), '123test123');

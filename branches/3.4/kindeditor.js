@@ -138,36 +138,16 @@ KE.setting = {
 	],
 	htmlTags : {
 		font : ['color', 'size', 'face', '.background-color'],
-		span : [
-			'.color', '.background-color', '.font-size', '.font-family',
-			'.font-weight', '.font-style', '.text-decoration', '.vertical-align'
-		],
-		div : [
-			'class', 'align', '.border', '.margin', '.padding', '.text-align', '.color',
-			'.background-color', '.font-size', '.font-family', '.font-weight',
-			'.font-style', '.text-decoration', '.vertical-align', '.margin-left',
-			'.border-top', '.border-bottom', '.border-left', '.border-right', 
-			'.padding-top', '.padding-bottom', '.padding-left', '.padding-right'
-		],
-		table: [
-			'class', 'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align',
-			'.padding', '.margin', '.border', 'bgcolor', '.text-align', '.color', '.background-color',
-			'.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration'
-		],
-		'td,th': [
-			'class', 'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor',
-			'.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight',
-			'.font-style', '.text-decoration', '.vertical-align'
-		],
-		a : ['class', 'href', 'target', 'name'],
-		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess', '/'],
-		img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', '.width', '.height', '/'],
+		span : ['style'],
+		div : ['class', 'align', 'style'],
+		table: ['class', 'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align', 'style'],
+		'td,th': ['class', 'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor', 'style'],
+		a : ['class', 'href', 'target', 'name', 'style'],
+		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', 'style', 'align', 'allowscriptaccess', '/'],
+		img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', 'style', '/'],
 		hr : ['class', '/'],
 		br : ['/'],
-		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
-			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family',
-			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
-		],
+		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : ['align', 'style'],
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	},
 	mediaTypes : {
@@ -967,7 +947,7 @@ KE.format = {
 							val = val.replace(/\s*([^\s]+?)\s*:(.*?)(;|$)/g, function($0, $1, $2) {
 								var k = $1.toLowerCase();
 								if (isFilter) {
-									if (typeof htmlTagHash[tagName]['.' + k] == "undefined") return '';
+									if (typeof htmlTagHash[tagName]['style'] == "undefined" && typeof htmlTagHash[tagName]['.' + k] == "undefined") return '';
 								}
 								var v = KE.util.trim($2.toLowerCase());
 								v = KE.util.rgbToHex(v);
