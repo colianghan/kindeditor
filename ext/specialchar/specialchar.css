@@ -1,0 +1,9 @@
+/*
+根据需要修改一下图标路径
+*/
+.ke-icon-specialchar {
+	background-image: url(./../../trunk/skins/oxygen/oxygen.gif);
+	background-position: 0px -576px;
+	width: 16px;
+	height: 16px;
+}
