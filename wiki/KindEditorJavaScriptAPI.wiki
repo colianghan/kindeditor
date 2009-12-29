@@ -1,0 +1,36 @@
+= KindEditor 4.0 API =
+
+== 函数模式 ==
+ * KE.show - show editor (init and create editor if no editor)
+ * KE.hide - hide editor (init and create editor if no editor)
+ * KE.init - get/set config params
+ * KE.textarea - get/set textarea element
+ * KE.create - create editor
+ * KE.remove - remove editor
+ * KE.toolbar - get/set toolbar
+ * KE.toggleToolbar - 
+ * KE.design - change to design mode
+ * KE.source - change to source mode
+ * KE.readonly - readonly
+ * KE.statusbar - get/set statusbar
+ * KE.dialog - get/set dialog
+ * KE.save - save html to textarea
+ * KE.html - get/set html
+ * KE.text - get/set text
+ * KE.selectedHtml - get/set selected range
+ * KE.selectedText - get/set selected range
+ * KE.wrap - wrap tags for selected range
+ * KE.strip - strip tags and attributes for selected range
+
+{{{
+KE.show('editor_1', {
+    textarea : document.getElementById('content_1'),
+}); 
+}}}
+
+== 对象模式 ==
+
+{{{
+var editor = KE('editor_1').hide().hideToolbar().hideStatusbar().show();
+var html = editor.html();
+}}}
