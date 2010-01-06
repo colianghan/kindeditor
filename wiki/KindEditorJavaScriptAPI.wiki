@@ -1,5 +1,7 @@
 = KindEditor 4.0 API =
 
+TODO
+
 == 函数模式 ==
  * KE.show - show editor (init and create editor if no editor)
  * KE.hide - hide editor (init and create editor if no editor)
@@ -8,7 +10,6 @@
  * KE.create - create editor
  * KE.remove - remove editor
  * KE.toolbar - get/set toolbar
- * KE.toggleToolbar - 
  * KE.design - change to design mode
  * KE.source - change to source mode
  * KE.readonly - readonly
@@ -31,6 +32,9 @@ KE.show('editor_1', {
 == 对象模式 ==
 
 {{{
-var editor = KE('editor_1').hide().hideToolbar().hideStatusbar().show();
+var editor = KE('editor_1').hide();
+var toolbar = editor.toolbar().hide();
+var statusbar = editor.statusbar().hide();
+editor.show();
 var html = editor.html();
 }}}
