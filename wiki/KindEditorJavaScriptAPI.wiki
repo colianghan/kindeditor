@@ -2,39 +2,30 @@
 
 TODO
 
-== 函数模式 ==
- * KE.show - show editor (init and create editor if no editor)
- * KE.hide - hide editor (init and create editor if no editor)
- * KE.init - get/set config params
- * KE.textarea - get/set textarea element
- * KE.create - create editor
- * KE.remove - remove editor
- * KE.toolbar - get/set toolbar
- * KE.design - change to design mode
- * KE.source - change to source mode
- * KE.readonly - readonly
- * KE.statusbar - get/set statusbar
- * KE.dialog - get/set dialog
- * KE.save - save html to textarea
- * KE.html - get/set html
- * KE.text - get/set text
- * KE.selectedHtml - get/set selected range
- * KE.selectedText - get/set selected range
- * KE.wrap - wrap tags for selected range
- * KE.strip - strip tags and attributes for selected range
+ var textarea = document.createElement('textarea');
+ document.body.appendChild(textarea);
+ textarea.parentNode.removeChild(textarea);
+
+ * KE.create(id) - create editor
+ * KE.remove(id) - remove editor
+ * KE.show(id) - show editor
+ * KE.hide(id) - hide editor
+ * KE.design(id) - change to design mode
+ * KE.source(id) - change to source mode
+ * KE.save(id, element) - save html to textarea
+ * KE.html(id, html) - get/set html
+ * KE.text(id, text) - get/set text
+ * KE.selectedHtml(id, html) - get/set selected range
+ * KE.selectedText(id, text) - get/set selected range
+ * KE.readonly(id, bool) - readonly
 
 {{{
-KE.show('editor_1', {
-    textarea : document.getElementById('content_1'),
-}); 
-}}}
+var editor = KE({
+    srcElement : KC.query('textarea#content1'),
+});
+editor.create();
+editor.remove();
+KE.create(editor);
+KE.create(editor.id);
 
-== 对象模式 ==
-
-{{{
-var editor = KE('editor_1').hide();
-var toolbar = editor.toolbar().hide();
-var statusbar = editor.statusbar().hide();
-editor.show();
-var html = editor.html();
 }}}
