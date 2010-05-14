@@ -2,13 +2,13 @@
 根据需要修改一下图标路径
 */
 .ke-icon-date {
-	background-image: url(./../../trunk/skins/oxygen/oxygen.gif);
+	background-image: url(./../../trunk/skins/default/default.gif);
 	background-position: 0px -304px;
 	width: 16px;
 	height: 16px;
 }
 .ke-icon-time {
-	background-image: url(./../../trunk/skins/oxygen/oxygen.gif);
+	background-image: url(./../../trunk/skins/default/default.gif);
 	background-position: 0px -320px;
 	width: 16px;
 	height: 16px;

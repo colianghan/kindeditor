@@ -2,7 +2,7 @@
 根据需要修改一下图标路径
 */
 .ke-icon-preview {
-	background-image: url(./../../trunk/skins/oxygen/oxygen.gif);
+	background-image: url(./../../trunk/skins/default/default.gif);
 	background-position: 0px -16px;
 	width: 16px;
 	height: 16px;
