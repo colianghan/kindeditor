@@ -1,0 +1,41 @@
+<project name="KindEditor" default="merge" basedir=".">
+
+	<description>
+		KindEditor build file
+	</description>
+
+	<property name="version" value="3.5"/>
+	<property name="src" location="src"/>
+	<property name="dist" location="."/>
+	<property name="charset" value="utf-8"/>
+	<property name="kindeditor" value="${dist}/kindeditor.js"/>
+
+	<target name="merge">
+		<tstamp>
+            <format property="thisyear" pattern="yyyy"/>
+        </tstamp>
+		<concat destfile="${kindeditor}"
+			encoding="${charset}"
+			outputencoding="${charset}">
+			<fileset file="${src}/header.js"/>
+			<fileset file="${src}/core.js"/>
+			<fileset file="${src}/lang/zh_CN.js"/>
+			<fileset file="${src}/plugin.js"/>
+		</concat>
+		<replaceregexp file="${kindeditor}"
+			match="\$\{VERSION\}"
+			replace="${version}"
+			encoding="${charset}"
+			byline="true"
+			flags="g"
+		/>
+		<replaceregexp file="${kindeditor}"
+			match="\$\{THISYEAR\}"
+			replace="${thisyear}"
+			encoding="${charset}"
+			byline="true"
+			flags="g"
+		/>
+	</target>
+
+</project>

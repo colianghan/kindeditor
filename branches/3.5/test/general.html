@@ -2,17 +2,21 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<title>KindEditor测试</title>
-		<link rel="stylesheet" href="firebug/firebug-lite.css" />
-		<script src="firebug/firebug-lite.js"></script>
+		<title>KindEditor Test</title>
+		<link rel="stylesheet" href="../lib/firebug/firebug-lite.css" />
+		<script src="../lib/firebug/firebug-lite.js"></script>
 		<script>
 			firebug.env.css = 'firebug-lite.css';
 			firebug.env.height = 160;
 		</script>
-		<script charset="utf-8" src="../kindeditor.js"></script>
+		<script charset="utf-8" src="../src/core.js"></script>
+		<script charset="utf-8" src="../src/lang/zh_CN.js"></script>
+		<script charset="utf-8" src="../src/plugin.js"></script>
 		<script>
 			KE.show({
 				id : 'content1',
+				skinsPath : '../skins/',
+				pluginsPath : '../plugins/',
 				allowFileManager : true,
 				afterCreate : function(id) {
 					KE.onchange(id, function(id) {
