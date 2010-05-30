@@ -45,7 +45,7 @@
 	}
   </style>
   <script type="text/javascript">
-	var KE = parent.KE;
+	var KE = parent.KindEditor;
 	location.href.match(/\?id=([\w-]+)/i);
 	var id = RegExp.$1;
 	KE.event.ready(function() {
@@ -57,7 +57,7 @@
 	<div class="main">
 		<ul class="table">
 			<li>
-				KindEditor <script type="text/javascript">document.write(parent.KE.version);</script> - HTML可视化编辑器
+				KindEditor <script type="text/javascript">document.write(KE.version);</script> - HTML可视化编辑器
 			</li>
 			<li>
 				Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.
