@@ -261,19 +261,7 @@ KE.plugin['bgcolor'] = {
 
 KE.plugin['fontname'] = {
 	click : function(id) {
-		var fontName = {
-			'SimSun' : '宋体',
-			'SimHei' : '黑体',
-			'FangSong_GB2312' : '仿宋体',
-			'KaiTi_GB2312' : '楷体',
-			'NSimSun' : '新宋体',
-			'Arial' : 'Arial',
-			'Arial Black' : 'Arial Black',
-			'Times New Roman' : 'Times New Roman',
-			'Courier New' : 'Courier New',
-			'Tahoma' : 'Tahoma',
-			'Verdana' : 'Verdana'
-		};
+		var fontName = KE.lang.plugins.fontname.fontName;
 		var cmd = 'fontname';
 		KE.util.selection(id);
 		var menu = new KE.menu({
@@ -313,7 +301,7 @@ KE.plugin['fontsize'] = {
 				return function() {
 					KE.plugin[cmd].exec(id, value);
 				};
-			})(value));
+			})(value), { height : (parseInt(value) + 12) + 'px' });
 		}
 		menu.show();
 		this.menu = menu;
@@ -414,12 +402,20 @@ KE.plugin['textcolor'] = {
 
 KE.plugin['title'] = {
 	click : function(id) {
+		var lang = KE.lang.plugins.title;
 		var title = {
-			'H1' : '标题 1',
-			'H2' : '标题 2',
-			'H3' : '标题 3',
-			'H4' : '标题 4',
-			'P' : '正 文'
+			'H1' : lang.h1,
+			'H2' : lang.h2,
+			'H3' : lang.h3,
+			'H4' : lang.h4,
+			'P' : lang.p
+		};
+		var sizeHash = {
+			'H1' : 32,
+			'H2' : 24,
+			'H3' : 18,
+			'H4' : 14,
+			'P' : 12
 		};
 		var cmd = 'title';
 		KE.util.selection(id);
@@ -428,8 +424,13 @@ KE.plugin['title'] = {
 			cmd : cmd
 		});
 		KE.each(title, function(key, value) {
-			var html = '<' + key + ' style="margin:0px;">' + value + '</' + key + '>';
-			menu.add(html, function() { KE.plugin[cmd].exec(id, '<' + key + '>'); });
+			var style = 'font-size:' + sizeHash[key] + 'px;'
+			if (key !== 'P') style += 'font-weight:bold;';
+			var html = '<span style="' + style + '">' + value + '</span>';
+			menu.add(html, function() {
+				KE.plugin[cmd].exec(id, '<' + key + '>'); },
+				{ height : (sizeHash[key] + 12) + 'px' }
+			);
 		});
 		menu.show();
 		this.menu = menu;
@@ -597,6 +598,9 @@ KE.plugin['image'] = {
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
+			},
+			options : {
+				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-image"></span>'
 			}
 		});
 		g.contextmenuItems.push({
@@ -753,6 +757,9 @@ KE.plugin['link'] = {
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
+			},
+			options : {
+				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-link"></span>'
 			}
 		});
 	},
@@ -845,6 +852,9 @@ KE.plugin['unlink'] = {
 			},
 			cond : function(id) {
 				return KE.plugin['link'].getSelectedNode(id);
+			},
+			options : {
+				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-unlink"></span>'
 			}
 		});
 	},

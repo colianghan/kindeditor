@@ -51,16 +51,10 @@ KE.setting = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	colorTable : [
-		["#FFFFFF","#E5E4E4","#D9D8D8","#C0BDBD","#A7A4A4","#8E8A8B","#827E7F","#767173","#5C585A","#000000"],
-		["#FEFCDF","#FEF4C4","#FEED9B","#FEE573","#FFED43","#F6CC0B","#E0B800","#C9A601","#AD8E00","#8C7301"],
-		["#FFDED3","#FFC4B0","#FF9D7D","#FF7A4E","#FF6600","#E95D00","#D15502","#BA4B01","#A44201","#8D3901"],
-		["#FFD2D0","#FFBAB7","#FE9A95","#FF7A73","#FF483F","#FE2419","#F10B00","#D40A00","#940000","#6D201B"],
-		["#FFDAED","#FFB7DC","#FFA1D1","#FF84C3","#FF57AC","#FD1289","#EC0078","#D6006D","#BB005F","#9B014F"],
-		["#FCD6FE","#FBBCFF","#F9A1FE","#F784FE","#F564FE","#F546FF","#F328FF","#D801E5","#C001CB","#8F0197"],
-		["#E2F0FE","#C7E2FE","#ADD5FE","#92C7FE","#6EB5FF","#48A2FF","#2690FE","#0162F4","#013ADD","#0021B0"],
-		["#D3FDFF","#ACFAFD","#7CFAFF","#4AF7FE","#1DE6FE","#01DEFF","#00CDEC","#01B6DE","#00A0C2","#0084A0"],
-		["#EDFFCF","#DFFEAA","#D1FD88","#BEFA5A","#A8F32A","#8FD80A","#79C101","#3FA701","#307F00","#156200"],
-		["#D4C89F","#DAAD88","#C49578","#C2877E","#AC8295","#C0A5C4","#969AC2","#92B7D7","#80ADAF","#9CA53B"]
+		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
+		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
+		['#337FE5', '#003399', '#4C33E5', '#9933E5', '#CC33E5', '#EE33EE'],
+		['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#333333', '#000000']
 	],
 	noEndTags : ['br', 'hr', 'img', 'area', 'col', 'embed', 'input', 'param'],
 	inlineTags : ['b', 'del', 'em', 'font', 'i', 'span', 'strike', 'strong', 'sub', 'sup', 'u'],
@@ -1178,6 +1172,15 @@ KE.util = {
 		}
 		parent.parentNode.removeChild(parent);
 	},
+	pluginLang : function(pluginName, doc) {
+		KE.each(KE.lang.plugins[pluginName], function (key, val) {
+			var span = KE.$('lang.' + key, doc);
+			if (span) {
+				span.parentNode.insertBefore(doc.createTextNode(val), span);
+				span.parentNode.removeChild(span);
+			}
+		});
+	},
 	drag : function(id, mousedownObj, moveObj, func) {
 		var g = KE.g[id];
 		mousedownObj.onmousedown = function(e) {
@@ -1526,8 +1529,7 @@ KE.util = {
 				var menu = new KE.menu({
 					id : id,
 					event : e,
-					type : 'contextmenu',
-					width : 120
+					type : 'contextmenu'
 				});
 				for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 					var item = g.contextmenuItems[i];
@@ -1536,7 +1538,7 @@ KE.util = {
 							return function() {
 								item.click(id, menu);
 							};
-						})(item));
+						})(item), item.options);
 					}
 				}
 				menu.show();
@@ -1601,7 +1603,7 @@ KE.layout = {
 };
 
 KE.menu = function(arg){
-	this.getPos = function(width, height) {
+	function getPos(width, height) {
 		var id = arg.id;
 		var x = 0;
 		var y = 0;
@@ -1624,26 +1626,50 @@ KE.menu = function(arg){
 		}
 		return {x : x, y : y};
 	};
-	this.init = function() {
+	function init() {
 		this.type = (arg.type && arg.type == 'contextmenu') ? arg.type : 'menu';
 		var div = KE.$$('div');
 		div.className = 'ke-' + this.type;
 		div.setAttribute('name', arg.cmd);
-		var pos = this.getPos(0, 0);
+		var pos = getPos.call(this, 0, 0);
 		div.style.top = pos.y + 'px';
 		div.style.left = pos.x + 'px';
 		if (arg.width) div.style.width = arg.width + 'px';
 		this.div = div;
 	};
-	this.init();
-	this.add = function(html, event) {
+	init.call(this);
+	this.add = function(html, event, options) {
+		var height, iconHtml;
+		if (options !== undefined) {
+			height = options.height;
+			iconHtml = options.iconHtml;
+		}
 		var self = this;
 		var cDiv = KE.$$('div');
-		cDiv.className = 'ke-' + this.type + '-noselected';
-		cDiv.onmouseover = function() { this.className = 'ke-' + self.type + '-selected'; }
-		cDiv.onmouseout = function() { this.className = 'ke-' + self.type + '-noselected'; }
+		cDiv.className = 'ke-' + self.type + '-item';
+		var left = KE.$$('div');
+		left.className = 'ke-' + this.type + '-left';
+		if (height) left.style.height = height;
+		var separator = KE.$$('div');
+		separator.className = 'ke-' + self.type + '-separator';
+		if (height) separator.style.height = height;
+		var right = KE.$$('div');
+		right.className = 'ke-' + this.type + '-right';
+		if (height) right.style.lineHeight = height;
+		cDiv.onmouseover = function() {
+			this.className = 'ke-' + self.type + '-item ke-' + self.type + '-item-selected';
+			separator.className = 'ke-' + self.type + '-separator ke-' + self.type + '-separator-selected';
+		};
+		cDiv.onmouseout = function() {
+			this.className = 'ke-' + self.type + '-item';
+			separator.className = 'ke-' + self.type + '-separator';
+		};
 		cDiv.onclick = event;
-		KE.util.innerHtml(cDiv, html);
+		cDiv.appendChild(left);
+		cDiv.appendChild(separator);
+		cDiv.appendChild(right);
+		if (iconHtml) KE.util.innerHtml(left, iconHtml);
+		KE.util.innerHtml(right, html);
 		this.append(cDiv);
 	};
 	this.append = function(el) {
@@ -1660,7 +1686,7 @@ KE.menu = function(arg){
 		var id = arg.id;
 		KE.g[id].hideDiv.style.display = '';
 		KE.g[id].hideDiv.appendChild(this.div);
-		var pos = this.getPos(this.div.clientWidth, this.div.clientHeight);
+		var pos = getPos.call(this, this.div.clientWidth, this.div.clientHeight);
 		this.div.style.top = pos.y + 'px';
 		this.div.style.left = pos.x + 'px';
 	};
@@ -1676,8 +1702,8 @@ KE.menu = function(arg){
 		cell.colSpan = colorTable[0].length;
 		cell.className = 'ke-picker-td-top';
 		cell.title = KE.lang['noColor'];
-		cell.onmouseover = function() {this.style.borderColor = '#000000'; };
-		cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; };
+		cell.onmouseover = function() { this.className = 'ke-picker-td-top ke-picker-td-top-selected'; };
+		cell.onmouseout = function() { this.className = 'ke-picker-td-top'; };
 		cell.onclick = function() { KE.plugin[arg.cmd].exec(arg.id, ''); };
 		cell.innerHTML = KE.lang['noColor'];
 		for (var i = 0; i < colorTable.length; i++) {
@@ -1685,16 +1711,18 @@ KE.menu = function(arg){
 			for (var j = 0; j < colorTable[i].length; j++) {
 				var cell = row.insertCell(j);
 				cell.className = 'ke-picker-td';
-				cell.style.backgroundColor = colorTable[i][j];
+				var div = KE.$$('div');
+				div.className = 'ke-picker-color';
+				div.style.backgroundColor = colorTable[i][j];
 				cell.title = colorTable[i][j];
-				cell.onmouseover = function() {this.style.borderColor = '#000000'; };
-				cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; };
+				cell.onmouseover = function() { this.className = 'ke-picker-td ke-picker-td-selected'; };
+				cell.onmouseout = function() { this.className = 'ke-picker-td'; };
 				cell.onclick = (function(i, j) {
 					return function() {
 						KE.plugin[arg.cmd].exec(arg.id, colorTable[i][j]);
 					};
 				})(i, j);
-				cell.innerHTML = '&nbsp;';
+				cell.appendChild(div);
 			}
 		}
 		this.append(table);
@@ -1937,7 +1965,7 @@ KE.toolbar = {
 	select : function(id, cmd) {
 		if (KE.g[id].toolbarIcon[cmd]) {
 			var a = KE.g[id].toolbarIcon[cmd][0];
-			a.className = "ke-icon-selected";
+			a.className = 'ke-icon ke-icon-selected';
 			a.onmouseover = null;
 			a.onmouseout = null;
 		}
@@ -1945,9 +1973,9 @@ KE.toolbar = {
 	unselect : function(id, cmd) {
 		if (KE.g[id].toolbarIcon[cmd]) {
 			var a = KE.g[id].toolbarIcon[cmd][0];
-			a.className = "ke-icon";
-			a.onmouseover = function(){ this.className = "ke-icon-on"; };
-			a.onmouseout = function(){ this.className = "ke-icon"; };
+			a.className = 'ke-icon';
+			a.onmouseover = function(){ this.className = 'ke-icon ke-icon-on'; };
+			a.onmouseout = function(){ this.className = 'ke-icon'; };
 		}
 	},
 	able : function(id, arr) {
@@ -1963,8 +1991,8 @@ KE.toolbar = {
 						return false;
 					};
 				})(cmd);
-				a.onmouseover = function(){ this.className = "ke-icon-on"; };
-				a.onmouseout = function(){ this.className = "ke-icon"; };
+				a.onmouseover = function(){ this.className = 'ke-icon ke-icon-on'; };
+				a.onmouseout = function(){ this.className = 'ke-icon'; };
 			}
 		});
 	},
@@ -1973,7 +2001,7 @@ KE.toolbar = {
 			if (!KE.util.inArray(cmd, arr)) {
 				var a = obj[0];
 				var span = obj[1];
-				a.className = 'ke-icon-disabled';
+				a.className = 'ke-icon ke-icon-disabled';
 				KE.util.setOpacity(span, 50);
 				a.onclick = null;
 				a.onmouseover = null;
@@ -2027,7 +2055,7 @@ KE.toolbar = {
 					return false;
 				};
 			})(cmd);
-			a.onmouseover = function(){ this.className = 'ke-icon-on'; };
+			a.onmouseover = function(){ this.className = 'ke-icon ke-icon-on'; };
 			a.onmouseout = function(){ this.className = 'ke-icon'; };
 			a.hidefocus = true;
 			a.title = KE.lang[cmd];

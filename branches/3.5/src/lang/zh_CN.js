@@ -42,6 +42,7 @@ KE.lang = {
 	fullscreen : '全屏显示',
 	about : '关于',
 	print : '打印',
+	fileManager : '浏览服务器',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',
@@ -49,7 +50,7 @@ KE.lang = {
 	deleteImage : '删除图片',
 	editLink : '超级链接属性',
 	deleteLink : '取消超级链接',
-	noColor : '无填充颜色',
+	noColor : '无颜色',
 	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
 	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
 	invalidWidth : "宽度必须为数字。",
@@ -61,6 +62,94 @@ KE.lang = {
 	cutError : '您的浏览器安全设置不允许使用剪切操作，请使用快捷键(Ctrl+X)来完成。',
 	copyError : '您的浏览器安全设置不允许使用复制操作，请使用快捷键(Ctrl+C)来完成。',
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。'
+};
+
+var plugins = KE.lang.plugins = {};
+
+plugins.about = {
+	version : KE.version,
+	title : 'HTML可视化编辑器'
+};
+
+plugins.plainpaste = {
+	comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
+};
+
+plugins.wordpaste = {
+	comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
+};
+
+plugins.link = {
+	url : 'URL地址',
+	linkType : '打开类型',
+	newWindow : '新窗口',
+	selfWindow : '当前窗口'
+};
+
+plugins.flash = {
+	url : 'Flash地址',
+	width : '宽度',
+	height : '高度'
+};
+
+plugins.media = {
+	url : '媒体文件地址',
+	width : '宽度',
+	height : '高度',
+	autostart : '自动播放'
+};
+
+plugins.image = {
+	remoteImage : '网络上的图片',
+	localImage : '电脑里的图片',
+	remoteUrl : '图片地址',
+	localUrl : '图片地址',
+	size : '图片大小',
+	width : '宽',
+	height : '高',
+	resetSize : '重置大小',
+	align : '对齐方式',
+	defaultAlign : '默认方式',
+	leftAlign : '左对齐',
+	rightAlign : '右对齐',
+	imgTitle : '图片说明',
+	viewServer : '浏览...'
+};
+
+plugins.file_manager = {
+	emptyFolder : '空文件夹',
+	moveup : '移到上一级文件夹',
+	viewType : '显示方式：',
+	viewImage : '缩略图',
+	listImage : '详细信息',
+	orderType : '排序方式：',
+	fileName : '名称',
+	fileSize : '大小',
+	fileType : '类型'
+};
+
+plugins.title = {
+	h1 : '标题 1',
+	h2 : '标题 2',
+	h3 : '标题 3',
+	h4 : '标题 4',
+	p : '正 文'
+};
+
+plugins.fontname = {
+	fontName : {
+		'SimSun' : '宋体',
+		'SimHei' : '黑体',
+		'FangSong_GB2312' : '仿宋体',
+		'KaiTi_GB2312' : '楷体',
+		'NSimSun' : '新宋体',
+		'Arial' : 'Arial',
+		'Arial Black' : 'Arial Black',
+		'Times New Roman' : 'Times New Roman',
+		'Courier New' : 'Courier New',
+		'Tahoma' : 'Tahoma',
+		'Verdana' : 'Verdana'
+	}
 };
 
 })(KindEditor);
