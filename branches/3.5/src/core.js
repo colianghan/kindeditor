@@ -1516,19 +1516,24 @@ KE.util = {
 		KE.event.add(g.iframeDoc, 'contextmenu', function(e){
 			KE.util.setSelection(id);
 			KE.util.selectImageWebkit(id, e, false);
+			var maxWidth = 0;
 			var showFlag = false;
 			for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 				var item = g.contextmenuItems[i];
 				if (item.cond(id)) {
-					showFlag = true;
-					break;
+					if (!showFlag) showFlag = true;
+					if (item.options) {
+						var width = parseInt(item.options.width) || 0;
+						if (width > maxWidth) maxWidth = width;
+					}
 				}
 			}
 			if (showFlag) {
 				var menu = new KE.menu({
 					id : id,
 					event : e,
-					type : 'contextmenu'
+					type : 'contextmenu',
+					width : maxWidth
 				});
 				for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 					var item = g.contextmenuItems[i];
@@ -1626,6 +1631,7 @@ KE.menu = function(arg){
 		return {x : x, y : y};
 	};
 	function init() {
+		var width = arg.width;
 		this.type = (arg.type && arg.type == 'contextmenu') ? arg.type : 'menu';
 		var div = KE.$$('div');
 		div.className = 'ke-' + this.type;
@@ -1633,7 +1639,7 @@ KE.menu = function(arg){
 		var pos = getPos.call(this, 0, 0);
 		div.style.top = pos.y + 'px';
 		div.style.left = pos.x + 'px';
-		if (arg.width) div.style.width = arg.width + 'px';
+		if (arg.width) div.style.width = (/^\d+$/.test(width)) ? width + 'px' : width;
 		this.div = div;
 	};
 	init.call(this);
@@ -1646,9 +1652,9 @@ KE.menu = function(arg){
 		var self = this;
 		var cDiv = KE.$$('div');
 		cDiv.className = 'ke-' + self.type + '-item';
+		if (height) cDiv.style.height = height;
 		var left = KE.$$('div');
 		left.className = 'ke-' + this.type + '-left';
-		if (height) left.style.height = height;
 		var separator = KE.$$('div');
 		separator.className = 'ke-' + self.type + '-separator';
 		if (height) separator.style.height = height;

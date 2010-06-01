@@ -266,7 +266,8 @@ KE.plugin['fontname'] = {
 		KE.util.selection(id);
 		var menu = new KE.menu({
 			id : id,
-			cmd : cmd
+			cmd : cmd,
+			width : 180
 		});
 		KE.each(fontName, function(key, value) {
 			var html = '<span style="font-family: ' + key + ';">' + value + '</span>';
@@ -292,7 +293,8 @@ KE.plugin['fontsize'] = {
 		KE.util.selection(id);
 		var menu = new KE.menu({
 			id : id,
-			cmd : cmd
+			cmd : cmd,
+			width : 130
 		});
 		for (var i = 0, len = fontSize.length; i < len; i++) {
 			var value = fontSize[i];
@@ -421,7 +423,8 @@ KE.plugin['title'] = {
 		KE.util.selection(id);
 		var menu = new KE.menu({
 			id : id,
-			cmd : cmd
+			cmd : cmd,
+			width : 180
 		});
 		KE.each(title, function(key, value) {
 			var style = 'font-size:' + sizeHash[key] + 'px;'
@@ -600,6 +603,7 @@ KE.plugin['image'] = {
 				return self.getSelectedNode(id);
 			},
 			options : {
+				width : '130px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-image"></span>'
 			}
 		});
@@ -613,6 +617,9 @@ KE.plugin['image'] = {
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
+			},
+			options : {
+				width : '130px'
 			}
 		});
 	},
@@ -759,6 +766,7 @@ KE.plugin['link'] = {
 				return self.getSelectedNode(id);
 			},
 			options : {
+				width : '150px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-link"></span>'
 			}
 		});
@@ -854,6 +862,7 @@ KE.plugin['unlink'] = {
 				return KE.plugin['link'].getSelectedNode(id);
 			},
 			options : {
+				width : '150px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-unlink"></span>'
 			}
 		});

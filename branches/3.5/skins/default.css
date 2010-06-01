@@ -386,6 +386,7 @@
 	color: #222222;
 	padding: 0;
 	margin: 0;
+	height: 24px;
 	overflow: hidden;
 	cursor: pointer;
 }
@@ -397,7 +398,6 @@
 	margin: 0;
 	padding: 0;
 	width: 27px;
-	line-height: 24px;
 	overflow: hidden;
 	display: -moz-inline-stack;
 	display: inline-block;
@@ -441,6 +441,7 @@
 	color: #222222;
 	padding: 2px;
 	margin: 0;
+	width: 200px;
 	font-size: 12px;
 	text-align: left;
 	z-index: 19811214;
@@ -451,6 +452,7 @@
 	color: #222222;
 	padding: 0;
 	margin: 0;
+	height: 24px;
 	overflow: hidden;
 	cursor: pointer;
 }
@@ -462,7 +464,6 @@
 	margin: 0;
 	padding: 0;
 	width: 27px;
-	*height: 24px;
 	text-align: center;
 	overflow: hidden;
 	display: -moz-inline-stack;
