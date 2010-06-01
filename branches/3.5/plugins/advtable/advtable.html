@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Table</title>
+		<style type="text/css" rel="stylesheet">
+			body {
+				font-size:12px;
+				font-family: "sans serif",tahoma,verdana,helvetica;
+				margin:0;
+				background-color:#F0F0EE;
+				overflow:hidden;
+			}
+			label {
+				cursor:pointer;
+				margin-right: 20px;
+			}
+			.main {
+				margin: 10px;
+			}
+			.table {
+				list-style-image:none;
+				list-style-position:outside;
+				list-style-type:none;
+				margin:0;
+				padding:0;
+				display:block;
+			}
+			.table li {
+				padding:0;
+				margin-bottom:10px;
+				display:list-item;
+				line-height:1.5;
+			}
+			.table li label {
+				font-weight:bold;
+			}
+			.table li input {
+				vertical-align:middle;
+			}
+			.table li img {
+				vertical-align:middle;
+			}
+			.color-picker {
+				border: 1px solid #A0A0A0;
+				background-color: #FFFFFF;
+				font-size: 12px;
+				width: 60px;
+				height: 20px;
+				line-height: 20px;
+				padding-left: 5px;
+				overflow: hidden;
+				display: -moz-inline-stack;
+				display: inline-block;
+				vertical-align: middle;
+				zoom: 1;
+				*display: inline;
+				cursor: pointer;
+			}
+		</style>
+		<script type="text/javascript">
+			var KE = parent.KindEditor;
+			location.href.match(/\?id=([\w-]+)/i);
+			var id = RegExp.$1;
+			KE.event.ready(function() {
+				var rowsBox = KE.$('rows', document);
+				var colsBox = KE.$('cols', document);
+				var widthBox = KE.$('width', document);
+				var heightBox = KE.$('height', document);
+				var paddingBox = KE.$('padding', document);
+				var spacingBox = KE.$('spacing', document);
+				var alignBox = KE.$('align', document);
+				var borderBox = KE.$('border', document);
+				var borderColorBox = KE.$('borderColor', document);
+				var backgroundColorBox = KE.$('backgroundColor', document);
+				var borderColorPicker = KE.$('borderColorPicker', document);
+				var backgroundColorPicker = KE.$('backgroundColorPicker', document);
+				borderColorPicker.onclick = function() {
+					var iframe = KE.g[id].dialogStack[0].iframe;
+					var iframePos = KE.util.getElementPos(iframe);
+					var pos = KE.util.getElementPos(borderColorPicker);
+					var picker = new KE.colorpicker({
+						x : iframePos.x + pos.x,
+						y : iframePos.y + pos.y + 22,
+						onclick : function(color) {
+							borderColorPicker.style.backgroundColor = color;
+							borderColorPicker.style.color = (color == '#000000') ? '#FFFFFF' : '#000000';
+							borderColorPicker.innerHTML = color;
+							picker.remove();
+						}
+					});
+					picker.create();
+				};
+				KE.util.hideLoadingPage(id);
+			}, window, document);
+		</script>
+	</head>
+	<body>
+		<div class="main">
+			<ul class="table">
+				<li>
+					<label for="rows">单元格数</label>
+					行数 <input type="text" id="rows" name="rows" value="3" maxlength="4" style="width:60px;" />
+					列数 <input type="text" id="cols" name="cols" value="2" maxlength="4" style="width:60px;" />
+				</li>
+				<li>
+					<label for="width">表格大小</label>
+					宽度 <input type="text" id="width" name="width" value="100%" maxlength="4" style="width:60px;" />
+					高度 <input type="text" id="height" name="height" value="" maxlength="4" style="width:60px;" />
+				</li>
+				<li>
+					<label for="padding">边距间距</label>
+					边距 <input type="text" id="padding" name="padding" value="2" maxlength="4" style="width:60px;" />
+					间距 <input type="text" id="spacing" name="spacing" value="0" maxlength="4" style="width:60px;" />
+				</li>
+				<li>
+					<label for="align">对齐方式</label>
+					<select id="align" name="align">
+						<option value="">默认</option>
+						<option value="left">左对齐</option>
+						<option value="center">居中</option>
+						<option value="right">右对齐</option>
+					</select>
+				</li>
+				<li>
+					<label for="border">表格边框</label>
+					宽度 <input type="text" id="border" name="border" value="" maxlength="4" style="width:60px;" />
+					颜色 <span id="borderColorPicker" class="color-picker"></span>
+					<input type="hidden" id="borderColor" name="borderColor" value="" maxlength="7" style="width:60px;" />
+				</li>
+				<li>
+					<label for="backgroundColor">背景颜色</label>
+					<span id="backgroundColorPicker" class="color-picker">#FFFFFF</span>
+					<input type="hidden" id="backgroundColor" name="backgroundColor" value="" maxlength="7" style="width:60px;" />
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>

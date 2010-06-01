@@ -162,6 +162,11 @@
 	width: 16px;
 	height: 16px;
 }
+.ke-icon-advtable {
+	background-position: 0px -560px;
+	width: 16px;
+	height: 16px;
+}
 .ke-icon-hr {
 	background-position: 0px -592px;
 	width: 16px;
@@ -397,7 +402,7 @@
 .ke-menu-left {
 	margin: 0;
 	padding: 0;
-	width: 27px;
+	width: 20px;
 	overflow: hidden;
 	display: -moz-inline-stack;
 	display: inline-block;
@@ -410,8 +415,8 @@
 	padding: 0;
 	width: 0;
 	height: 24px;
-	border-left: 1px solid #E3E3E3;
-	border-right: 1px solid #FFFFFF;
+	border-left: 1px solid #F1F1F1;
+	border-right: 1px solid #F1F1F1;
 	display: -moz-inline-stack;
 	display: inline-block;
 	vertical-align: middle;
@@ -424,7 +429,7 @@
 }
 .ke-menu-right {
 	margin: 0;
-	padding: 0 30px 0 5px;
+	padding: 0 0 0 5px;
 	line-height: 24px;
 	text-align: left;
 	overflow: hidden;
@@ -491,7 +496,7 @@
 }
 .ke-contextmenu-right {
 	margin: 0;
-	padding: 0 30px 0 5px;
+	padding: 0 0 0 5px;
 	line-height: 24px;
 	text-align: left;
 	overflow: hidden;
@@ -503,10 +508,7 @@
 }
 .ke-dialog {
 	position: absolute;
-	border-top: 1px solid #C5C5C5;
-	border-left: 1px solid #C5C5C5;
-	border-right: 1px solid #9F9F9F;
-	border-bottom: 1px solid #9F9F9F;
+	border: 1px solid #A0A0A0;
 	background-color: #F0F0EE;
 	color: #222222;
 	text-align: left;
@@ -561,28 +563,23 @@
 	font-size: 12px;
 	line-height: 1;
 }
-.ke-picker-table {
+.ke-colorpicker {
+	position: absolute;
+	border: 1px solid #A0A0A0;
+	background-color: #F1F1F1;
+	color: #222222;
+	padding: 2px;
+	margin: 0;
+	font-size: 12px;
+	text-align: left;
+	z-index: 19811215;
+}
+.ke-colorpicker-table {
 	margin:0;
 	padding:0;
 	border-collapse: separate;
 }
-.ke-picker-td {
-	font-size: 0;
-	line-height: 0;
-	border: 1px solid #F0F0EE;
-	cursor: pointer;
-	margin:3px;
-	padding:0;
-}
-.ke-picker-td-selected {
-	border: 1px solid #5690D2;
-}
-.ke-picker-color {
-	width: 14px;
-	height: 14px;
-	margin: 3px;
-}
-.ke-picker-td-top {
+.ke-colorpicker-top {
 	font-size: 12px;
 	line-height: 24px;
 	border: 1px solid #F0F0EE;
@@ -591,8 +588,24 @@
 	padding:0;
 	text-align: center;
 }
-.ke-picker-td-top-selected {
+.ke-colorpicker-top-on {
 	border: 1px solid #5690D2;
+}
+.ke-colorpicker-cell {
+	font-size: 0;
+	line-height: 0;
+	border: 1px solid #F0F0EE;
+	cursor: pointer;
+	margin:3px;
+	padding:0;
+}
+.ke-colorpicker-cell-on {
+	border: 1px solid #5690D2;
+}
+.ke-colorpicker-cell-color {
+	width: 14px;
+	height: 14px;
+	margin: 3px;
 }
 .ke-loading-table {
 	margin:0;

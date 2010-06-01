@@ -267,7 +267,7 @@ KE.plugin['fontname'] = {
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
-			width : 180
+			width : 150
 		});
 		KE.each(fontName, function(key, value) {
 			var html = '<span style="font-family: ' + key + ';">' + value + '</span>';
@@ -294,7 +294,7 @@ KE.plugin['fontsize'] = {
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
-			width : 130
+			width : 120
 		});
 		for (var i = 0, len = fontSize.length; i < len; i++) {
 			var value = fontSize[i];
@@ -603,7 +603,7 @@ KE.plugin['image'] = {
 				return self.getSelectedNode(id);
 			},
 			options : {
-				width : '130px',
+				width : '150px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-image"></span>'
 			}
 		});
@@ -619,7 +619,7 @@ KE.plugin['image'] = {
 				return self.getSelectedNode(id);
 			},
 			options : {
-				width : '130px'
+				width : '150px'
 			}
 		});
 	},
@@ -1061,6 +1061,53 @@ KE.plugin['table'] = {
 		KE.util.insertHtml(id, html);
 		this.menu.hide();
 		KE.util.focus(id);
+	}
+};
+
+KE.plugin['advtable'] = {
+	click : function(id) {
+		var cmd = 'advtable';
+		KE.util.selection(id);
+		this.dialog = new KE.dialog({
+			id : id,
+			cmd : cmd,
+			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
+			width : 350,
+			height : 230,
+			loadingMode : true,
+			title : KE.lang['advtable'],
+			yesButton : KE.lang['yes'],
+			noButton : KE.lang['no']
+		});
+		this.dialog.show();
+	},
+	check : function(id, url, width, height) {
+		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
+		var rowsBox = KE.$('rows', dialogDoc);
+		var colsBox = KE.$('cols', dialogDoc);
+		var widthBox = KE.$('width', dialogDoc);
+		var heightBox = KE.$('height', dialogDoc);
+		var paddingBox = KE.$('padding', dialogDoc);
+		var spacingBox = KE.$('spacing', dialogDoc);
+		var alignBox = KE.$('align', dialogDoc);
+		var borderBox = KE.$('border', dialogDoc);
+		var borderColorBox = KE.$('borderColor', dialogDoc);
+		var backgroundColorBox = KE.$('backgroundColor', dialogDoc);
+		if (!rowsBox.match(/^\d*$/)) {
+			alert(KE.lang['invalidWidth']);
+			KE.$('width', dialogDoc).focus();
+			return false;
+		}
+		if (!height.match(/^\d*$/)) {
+			alert(KE.lang['invalidHeight']);
+			KE.$('height', dialogDoc).focus();
+			return false;
+		}
+		return true;
+	},
+	exec : function(id) {
+		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
+		var url = KE.$('url', dialogDoc).value;
 	}
 };
 

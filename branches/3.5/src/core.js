@@ -48,7 +48,7 @@ KE.setting = {
 		'superscript', '|', 'selectall', '-',
 		'title', 'fontname', 'fontsize', '|', 'textcolor', 'bgcolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'advtable', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	colorTable : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
@@ -1606,6 +1606,65 @@ KE.layout = {
 	}
 };
 
+KE.colorpicker = function(arg) {
+	var wrapper;
+	var x = arg.x || 0;
+	var y = arg.y || 0;
+	var colors = arg.colors || KE.setting.colorTable;
+	var doc = arg.doc || document;
+	var onclick = arg.onclick;
+	function init() {
+		wrapper = KE.$$('div');
+		wrapper.className = 'ke-colorpicker';
+		wrapper.style.top = y + 'px';
+		wrapper.style.left = x + 'px';
+	}
+	init.call(this);
+	this.remove = function() {
+		doc.body.removeChild(wrapper);
+	};
+	this.getElement = function() {
+		var table = KE.$$('table');
+		table.className = 'ke-colorpicker-table';
+		table.cellPadding = 0;
+		table.cellSpacing = 0;
+		table.border = 0;
+		var row = table.insertRow(0);
+		var cell = row.insertCell(0);
+		cell.colSpan = colors[0].length;
+		cell.className = 'ke-colorpicker-top';
+		cell.title = KE.lang['noColor'];
+		cell.onmouseover = function() { this.className = 'ke-colorpicker-top ke-colorpicker-top-on'; };
+		cell.onmouseout = function() { this.className = 'ke-colorpicker-top'; };
+		cell.onclick = function() { onclick(''); };
+		cell.innerHTML = KE.lang['noColor'];
+		for (var i = 0; i < colors.length; i++) {
+			var row = table.insertRow(i + 1);
+			for (var j = 0; j < colors[i].length; j++) {
+				var cell = row.insertCell(j);
+				cell.className = 'ke-colorpicker-cell';
+				var div = KE.$$('div');
+				div.className = 'ke-colorpicker-cell-color';
+				div.style.backgroundColor = colors[i][j];
+				cell.title = colors[i][j];
+				cell.onmouseover = function() { this.className = 'ke-colorpicker-cell ke-colorpicker-cell-on'; };
+				cell.onmouseout = function() { this.className = 'ke-colorpicker-cell'; };
+				cell.onclick = (function(i, j) {
+					return function() {
+						onclick(colors[i][j]);
+					};
+				})(i, j);
+				cell.appendChild(div);
+			}
+		}
+		return table;
+	};
+	this.create = function() {
+		wrapper.appendChild(this.getElement());
+		doc.body.appendChild(wrapper);
+	};
+};
+
 KE.menu = function(arg){
 	function getPos(width, height) {
 		var id = arg.id;
@@ -1697,40 +1756,11 @@ KE.menu = function(arg){
 	};
 	this.picker = function() {
 		var colorTable = KE.g[arg.id].colorTable;
-		var table = KE.$$('table');
-		table.className = 'ke-picker-table';
-		table.cellPadding = 0;
-		table.cellSpacing = 0;
-		table.border = 0;
-		var row = table.insertRow(0);
-		var cell = row.insertCell(0);
-		cell.colSpan = colorTable[0].length;
-		cell.className = 'ke-picker-td-top';
-		cell.title = KE.lang['noColor'];
-		cell.onmouseover = function() { this.className = 'ke-picker-td-top ke-picker-td-top-selected'; };
-		cell.onmouseout = function() { this.className = 'ke-picker-td-top'; };
-		cell.onclick = function() { KE.plugin[arg.cmd].exec(arg.id, ''); };
-		cell.innerHTML = KE.lang['noColor'];
-		for (var i = 0; i < colorTable.length; i++) {
-			var row = table.insertRow(i + 1);
-			for (var j = 0; j < colorTable[i].length; j++) {
-				var cell = row.insertCell(j);
-				cell.className = 'ke-picker-td';
-				var div = KE.$$('div');
-				div.className = 'ke-picker-color';
-				div.style.backgroundColor = colorTable[i][j];
-				cell.title = colorTable[i][j];
-				cell.onmouseover = function() { this.className = 'ke-picker-td ke-picker-td-selected'; };
-				cell.onmouseout = function() { this.className = 'ke-picker-td'; };
-				cell.onclick = (function(i, j) {
-					return function() {
-						KE.plugin[arg.cmd].exec(arg.id, colorTable[i][j]);
-					};
-				})(i, j);
-				cell.appendChild(div);
-			}
-		}
-		this.append(table);
+		var picker = new KE.colorpicker({
+			colors : colorTable,
+			onclick : function(color) { KE.plugin[arg.cmd].exec(arg.id, color); }
+		});
+		this.append(picker.getElement());
 		this.show();
 	};
 };
