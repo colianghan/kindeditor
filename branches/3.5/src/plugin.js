@@ -1065,6 +1065,99 @@ KE.plugin['table'] = {
 };
 
 KE.plugin['advtable'] = {
+	getSelectedTable : function(id) {
+		var g = KE.g[id];
+		var range = g.keRange;
+		var startNode = range.startNode;
+		var startPos = range.startPos;
+		var endNode = range.endNode;
+		var endPos = range.endPos;
+		if (KE.browser.IE && g.range.item) {
+			var r = g.range;
+			if (item) {
+				return (r.item(0).nodeName.toLowerCase() == 'table') ? r.item(0) : null;
+			}
+		}
+		if (this.getSelectedCell(id)) {
+			var findTable = function(node) {
+				while (node) {
+					if (node.nodeType == 1) {
+						if (node.nodeName.toLowerCase() == 'table') return node;
+					}
+					node = node.parentNode;
+				}
+				return null;
+			};
+			var startTable = findTable(startNode);
+			var endTable = findTable(endNode);
+			if (startTable && endTable && startTable === endTable) {
+				return startTable;
+			}
+		}
+	},
+	getSelectedCell : function(id) {
+		var g = KE.g[id];
+		var range = g.keRange;
+		var startNode = range.startNode;
+		var startPos = range.startPos;
+		var endNode = range.endNode;
+		var endPos = range.endPos;
+		var findCell = function(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.nodeName.toLowerCase() == 'td') return node;
+				}
+				node = node.parentNode;
+			}
+			return null;
+		};
+		var startCell = findCell(startNode);
+		var endCell = findCell(endNode);
+		if (startCell && endCell && startCell === endCell) {
+			return startCell;
+		}
+	},
+	tableprop : function(id, menu) {
+		KE.util.select(id);
+		menu.hide();
+		this.click(id);
+	},
+	tabledelete : function(id, menu) {
+		KE.util.select(id);
+		menu.hide();
+		var table = this.getSelectedTable(id);
+		table.parentNode.removeChild(table);
+	},
+	init : function(id) {
+		var self = this;
+		var tableCmds = 'cellprop,prop,delete,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete'.split(',');
+		for (var i = 0, len = tableCmds.length; i < len; i++) {
+			var name = 'table' + tableCmds[i];
+			KE.g[id].contextmenuItems.push({
+				text : KE.lang[name],
+				click : (function(name) {
+					return function(id, menu) {
+						if (self[name] !== undefined) self[name](id, menu);
+					};
+				})(name),
+				cond : (function(name) {
+					if (KE.util.inArray(name, ['tableprop', 'tabledelete'])) {
+						return function(id) {
+							return self.getSelectedTable(id);
+						};
+					} else {
+						return function(id) {
+							return self.getSelectedCell(id);
+						};
+					}
+				})(name),
+				options : {
+					width : '150px',
+					iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-' + name + '"></span>'
+				}
+			});
+		}
+	},
 	click : function(id) {
 		var cmd = 'advtable';
 		KE.util.selection(id);
@@ -1072,8 +1165,8 @@ KE.plugin['advtable'] = {
 			id : id,
 			cmd : cmd,
 			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
-			width : 350,
-			height : 230,
+			width : 400,
+			height : 220,
 			loadingMode : true,
 			title : KE.lang['advtable'],
 			yesButton : KE.lang['yes'],
@@ -1081,33 +1174,150 @@ KE.plugin['advtable'] = {
 		});
 		this.dialog.show();
 	},
-	check : function(id, url, width, height) {
+	exec : function(id) {
 		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
 		var rowsBox = KE.$('rows', dialogDoc);
 		var colsBox = KE.$('cols', dialogDoc);
 		var widthBox = KE.$('width', dialogDoc);
 		var heightBox = KE.$('height', dialogDoc);
+		var widthTypeBox = KE.$('widthType', dialogDoc);
+		var heightTypeBox = KE.$('heightType', dialogDoc);
 		var paddingBox = KE.$('padding', dialogDoc);
 		var spacingBox = KE.$('spacing', dialogDoc);
 		var alignBox = KE.$('align', dialogDoc);
 		var borderBox = KE.$('border', dialogDoc);
 		var borderColorBox = KE.$('borderColor', dialogDoc);
 		var backgroundColorBox = KE.$('backgroundColor', dialogDoc);
-		if (!rowsBox.match(/^\d*$/)) {
+		var rows = rowsBox.value;
+		var cols = colsBox.value;
+		var width = widthBox.value;
+		var height = heightBox.value;
+		var widthType = widthTypeBox.value;
+		var heightType = heightTypeBox.value;
+		var padding = paddingBox.value;
+		var spacing = spacingBox.value;
+		var align = alignBox.value;
+		var border = borderBox.value;
+		var borderColor = borderColorBox.innerHTML;
+		var backgroundColor = backgroundColorBox.innerHTML;
+		if (rows == '' || rows == 0 || !rows.match(/^\d*$/)) {
+			alert(KE.lang['invalidRows']);
+			rowsBox.focus();
+			return false;
+		}
+		if (cols == '' || cols == 0 || !cols.match(/^\d*$/)) {
+			alert(KE.lang['invalidCols']);
+			colsBox.focus();
+			return false;
+		}
+		if (!width.match(/^\d*$/)) {
 			alert(KE.lang['invalidWidth']);
-			KE.$('width', dialogDoc).focus();
+			widthBox.focus();
 			return false;
 		}
 		if (!height.match(/^\d*$/)) {
 			alert(KE.lang['invalidHeight']);
-			KE.$('height', dialogDoc).focus();
+			heightBox.focus();
 			return false;
 		}
-		return true;
-	},
-	exec : function(id) {
-		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
-		var url = KE.$('url', dialogDoc).value;
+		if (!padding.match(/^\d*$/)) {
+			alert(KE.lang['invalidPadding']);
+			paddingBox.focus();
+			return false;
+		}
+		if (!spacing.match(/^\d*$/)) {
+			alert(KE.lang['invalidSpacing']);
+			spacingBox.focus();
+			return false;
+		}
+		if (!border.match(/^\d*$/)) {
+			alert(KE.lang['invalidBorder']);
+			borderBox.focus();
+			return false;
+		}
+		var table = this.getSelectedTable(id);
+		if (table) {
+			if (width !== '') {
+				table.style.width = width + widthType;
+			} else if (table.style.width) {
+				table.style.width = '';
+			}
+			if (table.width !== undefined) {
+				table.removeAttribute('width');
+			}
+			if (height !== '') {
+				table.style.height = height + heightType;
+			} else if (table.style.height) {
+				table.style.height = '';
+			}
+			if (table.height !== undefined) {
+				table.removeAttribute('height');
+			}
+			if (table.border !== undefined) {
+				table.removeAttribute('border');
+			}
+			if (table.borderColor !== undefined) {
+				table.removeAttribute('borderColor');
+			}
+			if (backgroundColor !== '') {
+				table.style.backgroundColor = backgroundColor;
+			} else if (table.style.backgroundColor) {
+				table.style.backgroundColor = null;
+			}
+			if (table.bgColor !== undefined) {
+				table.removeAttribute('bgColor');
+			}
+			if (padding !== '') {
+				table.cellPadding = padding;
+			} else {
+				table.removeAttribute('cellPadding');
+			}
+			if (spacing !== '') {
+				table.cellSpacing = spacing;
+			} else {
+				table.removeAttribute('cellSpacing');
+			}
+			if (align !== '') {
+				table.align = align;
+			} else {
+				table.removeAttribute('align');
+			}
+			for (var i = 0, len = table.rows.length; i < len; i++) {
+				var row = table.rows[i];
+				for (var j = 0, l = row.cells.length; j < l; j++) {
+					var cell = row.cells[j];
+					if (border !== '') cell.style.border = border + 'px solid';
+					else if (cell.style.border) cell.style.border = '';
+					if (borderColor !== '') cell.style.borderColor = borderColor;
+					else if (cell.style.borderColor) cell.style.borderColor = '';
+				}
+			}
+		} else {
+			var style = '';
+			if (width !== '') style += 'width:' + width + widthType + ';';
+			if (height !== '') style += 'height:' + height + heightType + ';';
+			if (backgroundColor !== '') style += 'background-color:' + backgroundColor + ';';
+			var html = '<table';
+			if (style !== '') html += ' style="' + style + '"';
+			if (padding !== '') html += ' cellpadding="' + padding + '"';
+			if (spacing !== '') html += ' cellspacing="' + spacing + '"';
+			if (align !== '') html += ' align="' + align + '"';
+			html += '>';
+			var tdStyle = '';
+			if (border !== '') tdStyle += 'border:' + border + 'px solid;';
+			if (borderColor !== '') tdStyle += 'border-color:' + borderColor + ';';
+			for (var i = 0; i < rows; i++) {
+				html += '<tr>';
+				for (var j = 0; j < cols; j++) {
+					html += '<td' + (tdStyle ? ' style="' + tdStyle + '"' : '') + '>&nbsp;</td>';
+				}
+				html += '</tr>';
+			}
+			html += '</table>';
+			KE.util.insertHtml(id, html);
+		}
+		this.dialog.hide();
+		KE.util.focus(id);
 	}
 };
 

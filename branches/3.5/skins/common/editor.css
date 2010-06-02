@@ -38,3 +38,6 @@ p {
 	width:100px;
 	height:100px;
 }
+table {
+	border-collapse:collapse;
+}

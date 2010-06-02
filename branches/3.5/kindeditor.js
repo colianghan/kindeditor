@@ -57,7 +57,7 @@ KE.setting = {
 		'superscript', '|', 'selectall', '-',
 		'title', 'fontname', 'fontsize', '|', 'textcolor', 'bgcolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'advtable', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	colorTable : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
@@ -1260,7 +1260,6 @@ KE.util = {
 		}
 		var diff = parseInt(height) - g.toolbarTable.offsetHeight - g.bottom.offsetHeight;
 		if (diff >= 0) {
-			g.textareaTable.style.height = diff + 'px';
 			g.iframe.style.height = diff + 'px';
 			g.newTextarea.style.height = (((KE.browser.IE && KE.browser.VERSION < 8) || document.compatMode != 'CSS1Compat') ? diff - 2 : diff) + 'px';
 		}
@@ -1356,9 +1355,10 @@ KE.util = {
 			handlers[i]();
 		}
 	},
-	getData : function(id) {
+	getData : function(id, wyswygMode) {
 		var g = KE.g[id];
-		if (!g.wyswygMode) {
+		wyswygMode = (wyswygMode === undefined) ? g.wyswygMode : wyswygMode;
+		if (!wyswygMode) {
 			this.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, g.newTextarea.value));
 		}
 		var html = this.execGetHtmlHooks(id, g.iframeDoc.body.innerHTML);
@@ -1493,8 +1493,7 @@ KE.util = {
 		if (!KE.browser.IE && html === '') html = '<br />';
 		var html = KE.util.execSetHtmlHooks(id, html);
 		this.innerHtml(KE.g[id].iframeDoc.body, html);
-		KE.g[id].newTextarea.value = html;
-		KE.g[id].newTextarea.value = KE.util.getData(id);
+		KE.g[id].newTextarea.value = KE.util.getData(id, true);
 		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 	},
@@ -1526,19 +1525,24 @@ KE.util = {
 		KE.event.add(g.iframeDoc, 'contextmenu', function(e){
 			KE.util.setSelection(id);
 			KE.util.selectImageWebkit(id, e, false);
+			var maxWidth = 0;
 			var showFlag = false;
 			for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 				var item = g.contextmenuItems[i];
 				if (item.cond(id)) {
-					showFlag = true;
-					break;
+					if (!showFlag) showFlag = true;
+					if (item.options) {
+						var width = parseInt(item.options.width) || 0;
+						if (width > maxWidth) maxWidth = width;
+					}
 				}
 			}
 			if (showFlag) {
 				var menu = new KE.menu({
 					id : id,
 					event : e,
-					type : 'contextmenu'
+					type : 'contextmenu',
+					width : maxWidth
 				});
 				for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 					var item = g.contextmenuItems[i];
@@ -1611,6 +1615,67 @@ KE.layout = {
 	}
 };
 
+KE.colorpicker = function(arg) {
+	var wrapper;
+	var x = arg.x || 0;
+	var y = arg.y || 0;
+	var z = arg.z || 0;
+	var colors = arg.colors || KE.setting.colorTable;
+	var doc = arg.doc || document;
+	var onclick = arg.onclick;
+	function init() {
+		wrapper = KE.$$('div');
+		wrapper.className = 'ke-colorpicker';
+		wrapper.style.top = y + 'px';
+		wrapper.style.left = x + 'px';
+		wrapper.style.zIndex = z;
+	}
+	init.call(this);
+	this.remove = function() {
+		doc.body.removeChild(wrapper);
+	};
+	this.getElement = function() {
+		var table = KE.$$('table');
+		table.className = 'ke-colorpicker-table';
+		table.cellPadding = 0;
+		table.cellSpacing = 0;
+		table.border = 0;
+		var row = table.insertRow(0);
+		var cell = row.insertCell(0);
+		cell.colSpan = colors[0].length;
+		cell.className = 'ke-colorpicker-top';
+		cell.title = KE.lang['noColor'];
+		cell.onmouseover = function() { this.className = 'ke-colorpicker-top ke-colorpicker-top-on'; };
+		cell.onmouseout = function() { this.className = 'ke-colorpicker-top'; };
+		cell.onclick = function() { onclick(''); };
+		cell.innerHTML = KE.lang['noColor'];
+		for (var i = 0; i < colors.length; i++) {
+			var row = table.insertRow(i + 1);
+			for (var j = 0; j < colors[i].length; j++) {
+				var cell = row.insertCell(j);
+				cell.className = 'ke-colorpicker-cell';
+				var div = KE.$$('div');
+				div.className = 'ke-colorpicker-cell-color';
+				div.style.backgroundColor = colors[i][j];
+				cell.title = colors[i][j];
+				cell.onmouseover = function() { this.className = 'ke-colorpicker-cell ke-colorpicker-cell-on'; };
+				cell.onmouseout = function() { this.className = 'ke-colorpicker-cell'; };
+				cell.onclick = (function(i, j) {
+					return function() {
+						onclick(colors[i][j]);
+					};
+				})(i, j);
+				cell.appendChild(div);
+			}
+		}
+		return table;
+	};
+	this.create = function() {
+		wrapper.appendChild(this.getElement());
+		doc.body.appendChild(wrapper);
+	};
+};
+
 KE.menu = function(arg){
 	function getPos(width, height) {
 		var id = arg.id;
@@ -1636,6 +1701,7 @@ KE.menu = function(arg){
 		return {x : x, y : y};
 	};
 	function init() {
+		var width = arg.width;
 		this.type = (arg.type && arg.type == 'contextmenu') ? arg.type : 'menu';
 		var div = KE.$$('div');
 		div.className = 'ke-' + this.type;
@@ -1643,7 +1709,7 @@ KE.menu = function(arg){
 		var pos = getPos.call(this, 0, 0);
 		div.style.top = pos.y + 'px';
 		div.style.left = pos.x + 'px';
-		if (arg.width) div.style.width = arg.width + 'px';
+		if (arg.width) div.style.width = (/^\d+$/.test(width)) ? width + 'px' : width;
 		this.div = div;
 	};
 	init.call(this);
@@ -1656,9 +1722,9 @@ KE.menu = function(arg){
 		var self = this;
 		var cDiv = KE.$$('div');
 		cDiv.className = 'ke-' + self.type + '-item';
+		if (height) cDiv.style.height = height;
 		var left = KE.$$('div');
 		left.className = 'ke-' + this.type + '-left';
-		if (height) left.style.height = height;
 		var separator = KE.$$('div');
 		separator.className = 'ke-' + self.type + '-separator';
 		if (height) separator.style.height = height;
@@ -1701,40 +1767,11 @@ KE.menu = function(arg){
 	};
 	this.picker = function() {
 		var colorTable = KE.g[arg.id].colorTable;
-		var table = KE.$$('table');
-		table.className = 'ke-picker-table';
-		table.cellPadding = 0;
-		table.cellSpacing = 0;
-		table.border = 0;
-		var row = table.insertRow(0);
-		var cell = row.insertCell(0);
-		cell.colSpan = colorTable[0].length;
-		cell.className = 'ke-picker-td-top';
-		cell.title = KE.lang['noColor'];
-		cell.onmouseover = function() { this.className = 'ke-picker-td-top ke-picker-td-top-selected'; };
-		cell.onmouseout = function() { this.className = 'ke-picker-td-top'; };
-		cell.onclick = function() { KE.plugin[arg.cmd].exec(arg.id, ''); };
-		cell.innerHTML = KE.lang['noColor'];
-		for (var i = 0; i < colorTable.length; i++) {
-			var row = table.insertRow(i + 1);
-			for (var j = 0; j < colorTable[i].length; j++) {
-				var cell = row.insertCell(j);
-				cell.className = 'ke-picker-td';
-				var div = KE.$$('div');
-				div.className = 'ke-picker-color';
-				div.style.backgroundColor = colorTable[i][j];
-				cell.title = colorTable[i][j];
-				cell.onmouseover = function() { this.className = 'ke-picker-td ke-picker-td-selected'; };
-				cell.onmouseout = function() { this.className = 'ke-picker-td'; };
-				cell.onclick = (function(i, j) {
-					return function() {
-						KE.plugin[arg.cmd].exec(arg.id, colorTable[i][j]);
-					};
-				})(i, j);
-				cell.appendChild(div);
-			}
-		}
-		this.append(table);
+		var picker = new KE.colorpicker({
+			colors : colorTable,
+			onclick : function(color) { KE.plugin[arg.cmd].exec(arg.id, color); }
+		});
+		this.append(picker.getElement());
 		this.show();
 	};
 };
@@ -1743,8 +1780,13 @@ KE.dialog = function(arg){
 	this.widthMargin = 20;
 	this.heightMargin = 90;
 	this.zIndex = 19811214;
+	this.beforeHide;
+	this.afterHide;
+	this.beforeShow;
+	this.afterShow;
+	this.ondrag;
 	var minTop, minLeft, maxTop, maxLeft;
-	var setLimitNumber = function() {
+	function setLimitNumber() {
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
 		var docEl = KE.util.getDocumentElement();
@@ -1753,7 +1795,15 @@ KE.dialog = function(arg){
 		minLeft = pos.x;
 		maxTop = pos.y + docEl.clientHeight - height - 2;
 		maxLeft = pos.x + docEl.clientWidth - width - 2;
-	};
+	}
+	function init() {
+		this.beforeHide = arg.beforeHide;
+		this.afterHide = arg.afterHide;
+		this.beforeShow = arg.beforeShow;
+		this.afterShow = arg.afterShow;
+		this.ondrag = arg.ondrag;
+	}
+	init.call(this);
 	this.getPos = function() {
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
@@ -1778,7 +1828,7 @@ KE.dialog = function(arg){
 		return {x : x, y : y};
 	};
 	this.hide = function() {
-		if (arg.beforeHide) arg.beforeHide(id);
+		if (this.beforeHide) this.beforeHide(id);
 		var id = arg.id;
 		var stack = KE.g[id].dialogStack;
 		if (stack[stack.length - 1] != this) return;
@@ -1793,11 +1843,11 @@ KE.dialog = function(arg){
 		}
 		KE.event.remove(window, 'resize', setLimitNumber);
 		KE.event.remove(window, 'scroll', setLimitNumber);
-		if (arg.afterHide) arg.afterHide(id);
+		if (this.afterHide) this.afterHide(id);
 		KE.util.focus(id);
 	};
 	this.show = function() {
-		if (arg.beforeShow) arg.beforeShow(id);
+		if (this.beforeShow) this.beforeShow(id);
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
 		var self = this;
@@ -1827,6 +1877,7 @@ KE.dialog = function(arg){
 		KE.event.add(window, 'resize', setLimitNumber);
 		KE.event.add(window, 'scroll', setLimitNumber);
 		KE.util.drag(id, titleDiv, div, function(objTop, objLeft, objWidth, objHeight, top, left) {
+			if (self.ondrag) self.ondrag(id);
 			top = objTop + top;
 			left = objLeft + left;
 			if (top > maxTop) top = maxTop;
@@ -1942,7 +1993,7 @@ KE.dialog = function(arg){
 		KE.g[id].noButton = noButton;
 		KE.g[id].previewButton = previewButton;
 		if (!arg.loadingMode) KE.util.hideLoadingPage(id);
-		if (arg.afterShow) arg.afterShow(id);
+		if (this.afterShow) this.afterShow(id);
 		if (KE.g[id].afterDialogCreate) KE.g[id].afterDialogCreate(id);
 	};
 };
@@ -2392,6 +2443,7 @@ KE.lang = {
 	about : '关于',
 	print : '打印',
 	fileManager : '浏览服务器',
+	advtable : '表格',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',
@@ -2399,6 +2451,15 @@ KE.lang = {
 	deleteImage : '删除图片',
 	editLink : '超级链接属性',
 	deleteLink : '取消超级链接',
+	tableprop : '表格属性',
+	tablecellprop : '单元格属性',
+	tabledelete : '删除表格',
+	tablecolinsertleft : '左侧插入列',
+	tablecolinsertright : '右侧插入列',
+	tablerowinsertabove : '上方插入行',
+	tablerowinsertbelow : '下方插入行',
+	tablecoldelete : '删除列',
+	tablerowdelete : '删除行',
 	noColor : '无颜色',
 	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
 	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
@@ -2406,7 +2467,12 @@ KE.lang = {
 	invalidHeight : "高度必须为数字。",
 	invalidBorder : "边框必须为数字。",
 	invalidUrl : "请输入有效的URL地址。",
-	pleaseInput : "请输入内容",
+	invalidRows : '行数为必选项，只允许输入大于0的数字。',
+	invalidCols : '列数为必选项，只允许输入大于0的数字。',
+	invalidPadding : '边距必须为数字。',
+	invalidSpacing : '间距必须为数字。',
+	invalidBorder : '边框必须为数字。',
+	pleaseInput : "请输入内容。",
 	invalidJson : '服务器发生故障。',
 	cutError : '您的浏览器安全设置不允许使用剪切操作，请使用快捷键(Ctrl+X)来完成。',
 	copyError : '您的浏览器安全设置不允许使用复制操作，请使用快捷键(Ctrl+C)来完成。',
@@ -2770,7 +2836,8 @@ KE.plugin['fontname'] = {
 		KE.util.selection(id);
 		var menu = new KE.menu({
 			id : id,
-			cmd : cmd
+			cmd : cmd,
+			width : 150
 		});
 		KE.each(fontName, function(key, value) {
 			var html = '<span style="font-family: ' + key + ';">' + value + '</span>';
@@ -2796,7 +2863,8 @@ KE.plugin['fontsize'] = {
 		KE.util.selection(id);
 		var menu = new KE.menu({
 			id : id,
-			cmd : cmd
+			cmd : cmd,
+			width : 120
 		});
 		for (var i = 0, len = fontSize.length; i < len; i++) {
 			var value = fontSize[i];
@@ -2925,7 +2993,8 @@ KE.plugin['title'] = {
 		KE.util.selection(id);
 		var menu = new KE.menu({
 			id : id,
-			cmd : cmd
+			cmd : cmd,
+			width : 180
 		});
 		KE.each(title, function(key, value) {
 			var style = 'font-size:' + sizeHash[key] + 'px;'
@@ -3104,6 +3173,7 @@ KE.plugin['image'] = {
 				return self.getSelectedNode(id);
 			},
 			options : {
+				width : '150px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-image"></span>'
 			}
 		});
@@ -3117,6 +3187,9 @@ KE.plugin['image'] = {
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
+			},
+			options : {
+				width : '150px'
 			}
 		});
 	},
@@ -3263,6 +3336,7 @@ KE.plugin['link'] = {
 				return self.getSelectedNode(id);
 			},
 			options : {
+				width : '150px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-link"></span>'
 			}
 		});
@@ -3358,6 +3432,7 @@ KE.plugin['unlink'] = {
 				return KE.plugin['link'].getSelectedNode(id);
 			},
 			options : {
+				width : '150px',
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-unlink"></span>'
 			}
 		});
@@ -3555,6 +3630,263 @@ KE.plugin['table'] = {
 		html += '</table>';
 		KE.util.insertHtml(id, html);
 		this.menu.hide();
+		KE.util.focus(id);
+	}
+};
+
+KE.plugin['advtable'] = {
+	getSelectedTable : function(id) {
+		var g = KE.g[id];
+		var range = g.keRange;
+		var startNode = range.startNode;
+		var startPos = range.startPos;
+		var endNode = range.endNode;
+		var endPos = range.endPos;
+		if (KE.browser.IE && g.range.item) {
+			var r = g.range;
+			if (item) {
+				return (r.item(0).nodeName.toLowerCase() == 'table') ? r.item(0) : null;
+			}
+		}
+		if (this.getSelectedCell(id)) {
+			var findTable = function(node) {
+				while (node) {
+					if (node.nodeType == 1) {
+						if (node.nodeName.toLowerCase() == 'table') return node;
+					}
+					node = node.parentNode;
+				}
+				return null;
+			};
+			var startTable = findTable(startNode);
+			var endTable = findTable(endNode);
+			if (startTable && endTable && startTable === endTable) {
+				return startTable;
+			}
+		}
+	},
+	getSelectedCell : function(id) {
+		var g = KE.g[id];
+		var range = g.keRange;
+		var startNode = range.startNode;
+		var startPos = range.startPos;
+		var endNode = range.endNode;
+		var endPos = range.endPos;
+		var findCell = function(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.nodeName.toLowerCase() == 'td') return node;
+				}
+				node = node.parentNode;
+			}
+			return null;
+		};
+		var startCell = findCell(startNode);
+		var endCell = findCell(endNode);
+		if (startCell && endCell && startCell === endCell) {
+			return startCell;
+		}
+	},
+	tableprop : function(id, menu) {
+		KE.util.select(id);
+		menu.hide();
+		this.click(id);
+	},
+	tabledelete : function(id, menu) {
+		KE.util.select(id);
+		menu.hide();
+		var table = this.getSelectedTable(id);
+		table.parentNode.removeChild(table);
+	},
+	init : function(id) {
+		var self = this;
+		var tableCmds = 'cellprop,prop,delete,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete'.split(',');
+		for (var i = 0, len = tableCmds.length; i < len; i++) {
+			var name = 'table' + tableCmds[i];
+			KE.g[id].contextmenuItems.push({
+				text : KE.lang[name],
+				click : (function(name) {
+					return function(id, menu) {
+						if (self[name] !== undefined) self[name](id, menu);
+					};
+				})(name),
+				cond : (function(name) {
+					if (KE.util.inArray(name, ['tableprop', 'tabledelete'])) {
+						return function(id) {
+							return self.getSelectedTable(id);
+						};
+					} else {
+						return function(id) {
+							return self.getSelectedCell(id);
+						};
+					}
+				})(name),
+				options : {
+					width : '150px',
+					iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-' + name + '"></span>'
+				}
+			});
+		}
+	},
+	click : function(id) {
+		var cmd = 'advtable';
+		KE.util.selection(id);
+		this.dialog = new KE.dialog({
+			id : id,
+			cmd : cmd,
+			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
+			width : 400,
+			height : 220,
+			loadingMode : true,
+			title : KE.lang['advtable'],
+			yesButton : KE.lang['yes'],
+			noButton : KE.lang['no']
+		});
+		this.dialog.show();
+	},
+	exec : function(id) {
+		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
+		var rowsBox = KE.$('rows', dialogDoc);
+		var colsBox = KE.$('cols', dialogDoc);
+		var widthBox = KE.$('width', dialogDoc);
+		var heightBox = KE.$('height', dialogDoc);
+		var widthTypeBox = KE.$('widthType', dialogDoc);
+		var heightTypeBox = KE.$('heightType', dialogDoc);
+		var paddingBox = KE.$('padding', dialogDoc);
+		var spacingBox = KE.$('spacing', dialogDoc);
+		var alignBox = KE.$('align', dialogDoc);
+		var borderBox = KE.$('border', dialogDoc);
+		var borderColorBox = KE.$('borderColor', dialogDoc);
+		var backgroundColorBox = KE.$('backgroundColor', dialogDoc);
+		var rows = rowsBox.value;
+		var cols = colsBox.value;
+		var width = widthBox.value;
+		var height = heightBox.value;
+		var widthType = widthTypeBox.value;
+		var heightType = heightTypeBox.value;
+		var padding = paddingBox.value;
+		var spacing = spacingBox.value;
+		var align = alignBox.value;
+		var border = borderBox.value;
+		var borderColor = borderColorBox.innerHTML;
+		var backgroundColor = backgroundColorBox.innerHTML;
+		if (rows == '' || rows == 0 || !rows.match(/^\d*$/)) {
+			alert(KE.lang['invalidRows']);
+			rowsBox.focus();
+			return false;
+		}
+		if (cols == '' || cols == 0 || !cols.match(/^\d*$/)) {
+			alert(KE.lang['invalidCols']);
+			colsBox.focus();
+			return false;
+		}
+		if (!width.match(/^\d*$/)) {
+			alert(KE.lang['invalidWidth']);
+			widthBox.focus();
+			return false;
+		}
+		if (!height.match(/^\d*$/)) {
+			alert(KE.lang['invalidHeight']);
+			heightBox.focus();
+			return false;
+		}
+		if (!padding.match(/^\d*$/)) {
+			alert(KE.lang['invalidPadding']);
+			paddingBox.focus();
+			return false;
+		}
+		if (!spacing.match(/^\d*$/)) {
+			alert(KE.lang['invalidSpacing']);
+			spacingBox.focus();
+			return false;
+		}
+		if (!border.match(/^\d*$/)) {
+			alert(KE.lang['invalidBorder']);
+			borderBox.focus();
+			return false;
+		}
+		var table = this.getSelectedTable(id);
+		if (table) {
+			if (width !== '') {
+				table.style.width = width + widthType;
+			} else if (table.style.width) {
+				table.style.width = '';
+			}
+			if (table.width !== undefined) {
+				table.removeAttribute('width');
+			}
+			if (height !== '') {
+				table.style.height = height + heightType;
+			} else if (table.style.height) {
+				table.style.height = '';
+			}
+			if (table.height !== undefined) {
+				table.removeAttribute('height');
+			}
+			if (table.border !== undefined) {
+				table.removeAttribute('border');
+			}
+			if (table.borderColor !== undefined) {
+				table.removeAttribute('borderColor');
+			}
+			if (backgroundColor !== '') {
+				table.style.backgroundColor = backgroundColor;
+			} else if (table.style.backgroundColor) {
+				table.style.backgroundColor = null;
+			}
+			if (table.bgColor !== undefined) {
+				table.removeAttribute('bgColor');
+			}
+			if (padding !== '') {
+				table.cellPadding = padding;
+			} else {
+				table.removeAttribute('cellPadding');
+			}
+			if (spacing !== '') {
+				table.cellSpacing = spacing;
+			} else {
+				table.removeAttribute('cellSpacing');
+			}
+			if (align !== '') {
+				table.align = align;
+			} else {
+				table.removeAttribute('align');
+			}
+			for (var i = 0, len = table.rows.length; i < len; i++) {
+				var row = table.rows[i];
+				for (var j = 0, l = row.cells.length; j < l; j++) {
+					var cell = row.cells[j];
+					if (border !== '') cell.style.border = border + 'px solid';
+					else if (cell.style.border) cell.style.border = '';
+					if (borderColor !== '') cell.style.borderColor = borderColor;
+					else if (cell.style.borderColor) cell.style.borderColor = '';
+				}
+			}
+		} else {
+			var style = '';
+			if (width !== '') style += 'width:' + width + widthType + ';';
+			if (height !== '') style += 'height:' + height + heightType + ';';
+			if (backgroundColor !== '') style += 'background-color:' + backgroundColor + ';';
+			var html = '<table';
+			if (style !== '') html += ' style="' + style + '"';
+			if (padding !== '') html += ' cellpadding="' + padding + '"';
+			if (spacing !== '') html += ' cellspacing="' + spacing + '"';
+			if (align !== '') html += ' align="' + align + '"';
+			html += '>';
+			var tdStyle = '';
+			if (border !== '') tdStyle += 'border:' + border + 'px solid;';
+			if (borderColor !== '') tdStyle += 'border-color:' + borderColor + ';';
+			for (var i = 0; i < rows; i++) {
+				html += '<tr>';
+				for (var j = 0; j < cols; j++) {
+					html += '<td' + (tdStyle ? ' style="' + tdStyle + '"' : '') + '>&nbsp;</td>';
+				}
+				html += '</tr>';
+			}
+			html += '</table>';
+			KE.util.insertHtml(id, html);
+		}
+		this.dialog.hide();
 		KE.util.focus(id);
 	}
 };

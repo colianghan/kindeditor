@@ -1610,6 +1610,7 @@ KE.colorpicker = function(arg) {
 	var wrapper;
 	var x = arg.x || 0;
 	var y = arg.y || 0;
+	var z = arg.z || 0;
 	var colors = arg.colors || KE.setting.colorTable;
 	var doc = arg.doc || document;
 	var onclick = arg.onclick;
@@ -1618,6 +1619,7 @@ KE.colorpicker = function(arg) {
 		wrapper.className = 'ke-colorpicker';
 		wrapper.style.top = y + 'px';
 		wrapper.style.left = x + 'px';
+		wrapper.style.zIndex = z;
 	}
 	init.call(this);
 	this.remove = function() {
@@ -1769,8 +1771,13 @@ KE.dialog = function(arg){
 	this.widthMargin = 20;
 	this.heightMargin = 90;
 	this.zIndex = 19811214;
+	this.beforeHide;
+	this.afterHide;
+	this.beforeShow;
+	this.afterShow;
+	this.ondrag;
 	var minTop, minLeft, maxTop, maxLeft;
-	var setLimitNumber = function() {
+	function setLimitNumber() {
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
 		var docEl = KE.util.getDocumentElement();
@@ -1779,7 +1786,15 @@ KE.dialog = function(arg){
 		minLeft = pos.x;
 		maxTop = pos.y + docEl.clientHeight - height - 2;
 		maxLeft = pos.x + docEl.clientWidth - width - 2;
-	};
+	}
+	function init() {
+		this.beforeHide = arg.beforeHide;
+		this.afterHide = arg.afterHide;
+		this.beforeShow = arg.beforeShow;
+		this.afterShow = arg.afterShow;
+		this.ondrag = arg.ondrag;
+	}
+	init.call(this);
 	this.getPos = function() {
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
@@ -1804,7 +1819,7 @@ KE.dialog = function(arg){
 		return {x : x, y : y};
 	};
 	this.hide = function() {
-		if (arg.beforeHide) arg.beforeHide(id);
+		if (this.beforeHide) this.beforeHide(id);
 		var id = arg.id;
 		var stack = KE.g[id].dialogStack;
 		if (stack[stack.length - 1] != this) return;
@@ -1819,11 +1834,11 @@ KE.dialog = function(arg){
 		}
 		KE.event.remove(window, 'resize', setLimitNumber);
 		KE.event.remove(window, 'scroll', setLimitNumber);
-		if (arg.afterHide) arg.afterHide(id);
+		if (this.afterHide) this.afterHide(id);
 		KE.util.focus(id);
 	};
 	this.show = function() {
-		if (arg.beforeShow) arg.beforeShow(id);
+		if (this.beforeShow) this.beforeShow(id);
 		var width = arg.width + this.widthMargin;
 		var height = arg.height + this.heightMargin;
 		var self = this;
@@ -1853,6 +1868,7 @@ KE.dialog = function(arg){
 		KE.event.add(window, 'resize', setLimitNumber);
 		KE.event.add(window, 'scroll', setLimitNumber);
 		KE.util.drag(id, titleDiv, div, function(objTop, objLeft, objWidth, objHeight, top, left) {
+			if (self.ondrag) self.ondrag(id);
 			top = objTop + top;
 			left = objLeft + left;
 			if (top > maxTop) top = maxTop;
@@ -1968,7 +1984,7 @@ KE.dialog = function(arg){
 		KE.g[id].noButton = noButton;
 		KE.g[id].previewButton = previewButton;
 		if (!arg.loadingMode) KE.util.hideLoadingPage(id);
-		if (arg.afterShow) arg.afterShow(id);
+		if (this.afterShow) this.afterShow(id);
 		if (KE.g[id].afterDialogCreate) KE.g[id].afterDialogCreate(id);
 	};
 };
