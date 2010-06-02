@@ -1065,13 +1065,30 @@ KE.plugin['table'] = {
 };
 
 KE.plugin['advtable'] = {
-	getSelectedTable : function(id) {
+	getSelectedNode : function(id, tagName) {
 		var g = KE.g[id];
 		var range = g.keRange;
 		var startNode = range.startNode;
 		var startPos = range.startPos;
 		var endNode = range.endNode;
 		var endPos = range.endPos;
+		var find = function(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.nodeName.toLowerCase() == tagName) return node;
+				}
+				node = node.parentNode;
+			}
+			return null;
+		};
+		var start = find(startNode);
+		var end = find(endNode);
+		if (start && end && start === end) {
+			return start;
+		}
+	},
+	getSelectedTable : function(id) {
+		var g = KE.g[id];
 		if (KE.browser.IE && g.range.item) {
 			var r = g.range;
 			if (item) {
@@ -1079,65 +1096,80 @@ KE.plugin['advtable'] = {
 			}
 		}
 		if (this.getSelectedCell(id)) {
-			var findTable = function(node) {
-				while (node) {
-					if (node.nodeType == 1) {
-						if (node.nodeName.toLowerCase() == 'table') return node;
-					}
-					node = node.parentNode;
-				}
-				return null;
-			};
-			var startTable = findTable(startNode);
-			var endTable = findTable(endNode);
-			if (startTable && endTable && startTable === endTable) {
-				return startTable;
-			}
+			return this.getSelectedNode(id, 'table');
 		}
+	},
+	getSelectedRow : function(id) {
+		return this.getSelectedNode(id, 'tr');
 	},
 	getSelectedCell : function(id) {
-		var g = KE.g[id];
-		var range = g.keRange;
-		var startNode = range.startNode;
-		var startPos = range.startPos;
-		var endNode = range.endNode;
-		var endPos = range.endPos;
-		var findCell = function(node) {
-			while (node) {
-				if (node.nodeType == 1) {
-					if (node.nodeName.toLowerCase() == 'td') return node;
-				}
-				node = node.parentNode;
-			}
-			return null;
-		};
-		var startCell = findCell(startNode);
-		var endCell = findCell(endNode);
-		if (startCell && endCell && startCell === endCell) {
-			return startCell;
-		}
+		return this.getSelectedNode(id, 'td');
 	},
-	tableprop : function(id, menu) {
-		KE.util.select(id);
-		menu.hide();
+	tableprop : function(id) {
 		this.click(id);
 	},
-	tabledelete : function(id, menu) {
-		KE.util.select(id);
-		menu.hide();
+	tabledelete : function(id) {
 		var table = this.getSelectedTable(id);
 		table.parentNode.removeChild(table);
 	},
+	tablecolinsert : function(id, offset) {
+		var table = this.getSelectedTable(id);
+		var cell = this.getSelectedCell(id);
+		for (var i = 0, len = table.rows.length; i < len; i++) {
+			var newCell = table.rows[i].insertCell(cell.cellIndex + offset);
+			newCell.style.border = cell.style.border;
+		}
+	},
+	tablecolinsertleft : function(id) {
+		this.tablecolinsert(id, 0);
+	},
+	tablecolinsertright : function(id) {
+		this.tablecolinsert(id, 1);
+	},
+	tablerowinsert : function(id, offset) {
+		var table = this.getSelectedTable(id);
+		var row = this.getSelectedRow(id);
+		var newRow = table.insertRow(row.rowIndex + offset);
+		for (var i = 0, len = row.cells.length; i < len; i++) {
+			var cell = newRow.insertCell(i);
+			cell.style.border = row.cells[0].style.border;
+			cell.innerHTML = '&nbsp;';
+		}
+	},
+	tablerowinsertabove : function(id) {
+		this.tablerowinsert(id, 0);
+	},
+	tablerowinsertbelow : function(id) {
+		this.tablerowinsert(id, 1);
+	},
+	tablecoldelete : function(id) {
+		var table = this.getSelectedTable(id);
+		var cell = this.getSelectedCell(id);
+		for (var i = 0, len = table.rows.length; i < len; i++) {
+			table.rows[i].deleteCell(cell.cellIndex);
+		}
+	},
+	tablerowdelete : function(id) {
+		var table = this.getSelectedTable(id);
+		var row = this.getSelectedRow(id);
+		table.deleteRow(row.rowIndex);
+	},
 	init : function(id) {
 		var self = this;
-		var tableCmds = 'cellprop,prop,delete,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete'.split(',');
+		var tableCmds = 'prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete,delete'.split(',');
 		for (var i = 0, len = tableCmds.length; i < len; i++) {
 			var name = 'table' + tableCmds[i];
 			KE.g[id].contextmenuItems.push({
 				text : KE.lang[name],
 				click : (function(name) {
 					return function(id, menu) {
-						if (self[name] !== undefined) self[name](id, menu);
+						KE.util.select(id);
+						menu.hide();
+						if (self[name] !== undefined) self[name](id);
+						if (!/prop/.test(name)) {
+							KE.history.add(id, false);
+							KE.util.execOnchangeHandler(id);
+						}
 					};
 				})(name),
 				cond : (function(name) {
@@ -1292,6 +1324,8 @@ KE.plugin['advtable'] = {
 					else if (cell.style.borderColor) cell.style.borderColor = '';
 				}
 			}
+			KE.history.add(id, false);
+			KE.util.execOnchangeHandler(id);
 		} else {
 			var style = '';
 			if (width !== '') style += 'width:' + width + widthType + ';';

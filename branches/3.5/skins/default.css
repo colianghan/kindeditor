@@ -162,11 +162,6 @@
 	width: 16px;
 	height: 16px;
 }
-.ke-icon-advtable {
-	background-position: 0px -560px;
-	width: 16px;
-	height: 16px;
-}
 .ke-icon-hr {
 	background-position: 0px -592px;
 	width: 16px;
@@ -204,6 +199,11 @@
 }
 .ke-icon-wordpaste {
 	background-position: 0px -720px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-advtable {
+	background-position: 0px -784px;
 	width: 16px;
 	height: 16px;
 }
