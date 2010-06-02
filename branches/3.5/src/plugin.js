@@ -1184,7 +1184,7 @@ KE.plugin['advtable'] = {
 					}
 				})(name),
 				options : {
-					width : '150px',
+					width : '170px',
 					iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-' + name + '"></span>'
 				}
 			});
@@ -1197,7 +1197,7 @@ KE.plugin['advtable'] = {
 			id : id,
 			cmd : cmd,
 			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
-			width : 400,
+			width : 420,
 			height : 220,
 			loadingMode : true,
 			title : KE.lang['advtable'],

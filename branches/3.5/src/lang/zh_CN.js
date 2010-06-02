@@ -52,7 +52,6 @@ KE.lang = {
 	editLink : '超级链接属性',
 	deleteLink : '取消超级链接',
 	tableprop : '表格属性',
-	tablecellprop : '单元格属性',
 	tabledelete : '删除表格',
 	tablecolinsertleft : '左侧插入列',
 	tablecolinsertright : '右侧插入列',
@@ -141,6 +140,29 @@ plugins.file_manager = {
 	fileName : '名称',
 	fileSize : '大小',
 	fileType : '类型'
+};
+
+plugins.advtable = {
+	cells : '单元格数',
+	rows : '行数',
+	cols : '列数',
+	size : '表格大小',
+	width : '宽度',
+	height : '高度',
+	percent : '%',
+	px : 'px',
+	space : '边距间距',
+	padding : '边距',
+	spacing : '间距',
+	align : '对齐方式',
+	alignDefault : '默认',
+	alignLeft : '左对齐',
+	alignCenter : '居中',
+	alignRight : '右对齐',
+	border : '表格边框',
+	borderWidth : '边框',
+	borderColor : '颜色',
+	backgroundColor : '背景颜色'
 };
 
 plugins.title = {
