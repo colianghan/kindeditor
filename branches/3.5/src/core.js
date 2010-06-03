@@ -1949,7 +1949,10 @@ KE.dialog = function(arg){
 		span.className = "ke-toolbar-close";
 		span.alt = KE.lang['close'];
 		span.title = KE.lang['close'];
-		span.onclick = function () { self.hide(); };
+		span.onclick = function () {
+			self.hide();
+			KE.util.select(id);
+		};
 		titleDiv.appendChild(span);
 		setLimitNumber();
 		KE.event.add(window, 'resize', setLimitNumber);
