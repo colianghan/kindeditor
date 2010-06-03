@@ -1604,27 +1604,37 @@ KE.util = {
 			KE.util.setSelection(id);
 			KE.util.selectImageWebkit(id, e, false);
 			var maxWidth = 0;
-			var showFlag = false;
+			var items = [];
 			for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 				var item = g.contextmenuItems[i];
-				if (item.cond(id)) {
-					if (!showFlag) showFlag = true;
+				if (item === '-') {
+					items.push(item);
+				} else if (item.cond && item.cond(id)) {
+					items.push(item);
 					if (item.options) {
 						var width = parseInt(item.options.width) || 0;
 						if (width > maxWidth) maxWidth = width;
 					}
 				}
 			}
-			if (showFlag) {
+			while (items.length > 0 && items[0] === '-') {
+				items.shift();
+			}
+			while (items.length > 0 && items[items.length - 1] === '-') {
+				items.pop();
+			}
+			if (items.length > 0) {
 				var menu = new KE.menu({
 					id : id,
 					event : e,
 					type : 'contextmenu',
 					width : maxWidth
 				});
-				for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
-					var item = g.contextmenuItems[i];
-					if (item.cond(id)) {
+				for (var i = 0, len = items.length; i < len; i++) {
+					var item = items[i];
+					if (item === '-') {
+						if (i < len - 1) menu.addSeparator();
+					} else {
 						menu.add(item.text, (function(item) {
 							return function() {
 								item.click(id, menu);
@@ -1803,27 +1813,32 @@ KE.menu = function(arg){
 		if (height) cDiv.style.height = height;
 		var left = KE.$$('div');
 		left.className = 'ke-' + this.type + '-left';
-		var separator = KE.$$('div');
-		separator.className = 'ke-' + self.type + '-separator';
-		if (height) separator.style.height = height;
+		var center = KE.$$('div');
+		center.className = 'ke-' + self.type + '-center';
+		if (height) center.style.height = height;
 		var right = KE.$$('div');
 		right.className = 'ke-' + this.type + '-right';
 		if (height) right.style.lineHeight = height;
 		cDiv.onmouseover = function() {
-			this.className = 'ke-' + self.type + '-item ke-' + self.type + '-item-selected';
-			separator.className = 'ke-' + self.type + '-separator ke-' + self.type + '-separator-selected';
+			this.className = 'ke-' + self.type + '-item ke-' + self.type + '-item-on';
+			center.className = 'ke-' + self.type + '-center ke-' + self.type + '-center-on';
 		};
 		cDiv.onmouseout = function() {
 			this.className = 'ke-' + self.type + '-item';
-			separator.className = 'ke-' + self.type + '-separator';
+			center.className = 'ke-' + self.type + '-center';
 		};
 		cDiv.onclick = event;
 		cDiv.appendChild(left);
-		cDiv.appendChild(separator);
+		cDiv.appendChild(center);
 		cDiv.appendChild(right);
 		if (iconHtml) KE.util.innerHtml(left, iconHtml);
 		KE.util.innerHtml(right, html);
 		this.append(cDiv);
+	};
+	this.addSeparator = function() {
+		var div = KE.$$('div');
+		div.className = 'ke-' + this.type + '-separator';
+		this.append(div);
 	};
 	this.append = function(el) {
 		this.div.appendChild(el);

@@ -112,7 +112,6 @@ KE.plugin['plainpaste'] = {
 		html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -180,7 +179,6 @@ KE.plugin['wordpaste'] = {
 		str = KE.format.getHtml(str, htmlTags, KE.g[id].urlType);
 		KE.util.insertHtml(id, str);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -412,7 +410,7 @@ KE.plugin['title'] = {
 			'P' : lang.p
 		};
 		var sizeHash = {
-			'H1' : 32,
+			'H1' : 28,
 			'H2' : 24,
 			'H3' : 18,
 			'H4' : 14,
@@ -423,7 +421,7 @@ KE.plugin['title'] = {
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
-			width : 180
+			width : (KE.langType == 'en' ? 200 : 150)
 		});
 		KE.each(title, function(key, value) {
 			var style = 'font-size:' + sizeHash[key] + 'px;'
@@ -573,7 +571,6 @@ KE.plugin['flash'] = {
 		});
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -623,6 +620,7 @@ KE.plugin['image'] = {
 				width : '150px'
 			}
 		});
+		g.contextmenuItems.push('-');
 	},
 	click : function(id) {
 		KE.util.selection(id);
@@ -725,7 +723,6 @@ KE.plugin['image'] = {
 		html += 'border="' + border + '" />';
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -824,7 +821,6 @@ KE.plugin['link'] = {
 		}
 		KE.util.execOnchangeHandler(id);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -847,6 +843,7 @@ KE.plugin['unlink'] = {
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-unlink"></span>'
 			}
 		});
+		KE.g[id].contextmenuItems.push('-');
 	},
 	click : function(id) {
 		var g = KE.g[id];
@@ -970,7 +967,6 @@ KE.plugin['media'] = {
 		});
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -1138,6 +1134,7 @@ KE.plugin['advtable'] = {
 				}
 			});
 		}
+		KE.g[id].contextmenuItems.push('-');
 		KE.g[id].setHtmlHooks.push(function(html) {
 			return html.replace(/<table([^>]*)>/ig, function($0, $1) {
 				if ($1.match(/\s+border=["']?(\d*)["']?/ig)) {

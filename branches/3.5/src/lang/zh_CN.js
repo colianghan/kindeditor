@@ -1,6 +1,8 @@
 
 (function (KE, undefined) {
 
+KE.langType = 'zh_CN';
+
 KE.lang = {
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',

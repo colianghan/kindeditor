@@ -1613,27 +1613,37 @@ KE.util = {
 			KE.util.setSelection(id);
 			KE.util.selectImageWebkit(id, e, false);
 			var maxWidth = 0;
-			var showFlag = false;
+			var items = [];
 			for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
 				var item = g.contextmenuItems[i];
-				if (item.cond(id)) {
-					if (!showFlag) showFlag = true;
+				if (item === '-') {
+					items.push(item);
+				} else if (item.cond && item.cond(id)) {
+					items.push(item);
 					if (item.options) {
 						var width = parseInt(item.options.width) || 0;
 						if (width > maxWidth) maxWidth = width;
 					}
 				}
 			}
-			if (showFlag) {
+			while (items.length > 0 && items[0] === '-') {
+				items.shift();
+			}
+			while (items.length > 0 && items[items.length - 1] === '-') {
+				items.pop();
+			}
+			if (items.length > 0) {
 				var menu = new KE.menu({
 					id : id,
 					event : e,
 					type : 'contextmenu',
 					width : maxWidth
 				});
-				for (var i = 0, len = g.contextmenuItems.length; i < len; i++) {
-					var item = g.contextmenuItems[i];
-					if (item.cond(id)) {
+				for (var i = 0, len = items.length; i < len; i++) {
+					var item = items[i];
+					if (item === '-') {
+						if (i < len - 1) menu.addSeparator();
+					} else {
 						menu.add(item.text, (function(item) {
 							return function() {
 								item.click(id, menu);
@@ -1812,27 +1822,32 @@ KE.menu = function(arg){
 		if (height) cDiv.style.height = height;
 		var left = KE.$$('div');
 		left.className = 'ke-' + this.type + '-left';
-		var separator = KE.$$('div');
-		separator.className = 'ke-' + self.type + '-separator';
-		if (height) separator.style.height = height;
+		var center = KE.$$('div');
+		center.className = 'ke-' + self.type + '-center';
+		if (height) center.style.height = height;
 		var right = KE.$$('div');
 		right.className = 'ke-' + this.type + '-right';
 		if (height) right.style.lineHeight = height;
 		cDiv.onmouseover = function() {
-			this.className = 'ke-' + self.type + '-item ke-' + self.type + '-item-selected';
-			separator.className = 'ke-' + self.type + '-separator ke-' + self.type + '-separator-selected';
+			this.className = 'ke-' + self.type + '-item ke-' + self.type + '-item-on';
+			center.className = 'ke-' + self.type + '-center ke-' + self.type + '-center-on';
 		};
 		cDiv.onmouseout = function() {
 			this.className = 'ke-' + self.type + '-item';
-			separator.className = 'ke-' + self.type + '-separator';
+			center.className = 'ke-' + self.type + '-center';
 		};
 		cDiv.onclick = event;
 		cDiv.appendChild(left);
-		cDiv.appendChild(separator);
+		cDiv.appendChild(center);
 		cDiv.appendChild(right);
 		if (iconHtml) KE.util.innerHtml(left, iconHtml);
 		KE.util.innerHtml(right, html);
 		this.append(cDiv);
+	};
+	this.addSeparator = function() {
+		var div = KE.$$('div');
+		div.className = 'ke-' + this.type + '-separator';
+		this.append(div);
 	};
 	this.append = function(el) {
 		this.div.appendChild(el);
@@ -1958,7 +1973,10 @@ KE.dialog = function(arg){
 		span.className = "ke-toolbar-close";
 		span.alt = KE.lang['close'];
 		span.title = KE.lang['close'];
-		span.onclick = function () { self.hide(); };
+		span.onclick = function () {
+			self.hide();
+			KE.util.select(id);
+		};
 		titleDiv.appendChild(span);
 		setLimitNumber();
 		KE.event.add(window, 'resize', setLimitNumber);
@@ -2509,6 +2527,8 @@ window.KindEditor = KE;
 
 (function (KE, undefined) {
 
+KE.langType = 'zh_CN';
+
 KE.lang = {
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',
@@ -2812,7 +2832,6 @@ KE.plugin['plainpaste'] = {
 		html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -2880,7 +2899,6 @@ KE.plugin['wordpaste'] = {
 		str = KE.format.getHtml(str, htmlTags, KE.g[id].urlType);
 		KE.util.insertHtml(id, str);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -3112,7 +3130,7 @@ KE.plugin['title'] = {
 			'P' : lang.p
 		};
 		var sizeHash = {
-			'H1' : 32,
+			'H1' : 28,
 			'H2' : 24,
 			'H3' : 18,
 			'H4' : 14,
@@ -3123,7 +3141,7 @@ KE.plugin['title'] = {
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
-			width : 180
+			width : (KE.langType == 'en' ? 200 : 150)
 		});
 		KE.each(title, function(key, value) {
 			var style = 'font-size:' + sizeHash[key] + 'px;'
@@ -3273,7 +3291,6 @@ KE.plugin['flash'] = {
 		});
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -3323,6 +3340,7 @@ KE.plugin['image'] = {
 				width : '150px'
 			}
 		});
+		g.contextmenuItems.push('-');
 	},
 	click : function(id) {
 		KE.util.selection(id);
@@ -3425,7 +3443,6 @@ KE.plugin['image'] = {
 		html += 'border="' + border + '" />';
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -3524,7 +3541,6 @@ KE.plugin['link'] = {
 		}
 		KE.util.execOnchangeHandler(id);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -3547,6 +3563,7 @@ KE.plugin['unlink'] = {
 				iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-unlink"></span>'
 			}
 		});
+		KE.g[id].contextmenuItems.push('-');
 	},
 	click : function(id) {
 		var g = KE.g[id];
@@ -3670,7 +3687,6 @@ KE.plugin['media'] = {
 		});
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
 };
@@ -3838,6 +3854,7 @@ KE.plugin['advtable'] = {
 				}
 			});
 		}
+		KE.g[id].contextmenuItems.push('-');
 		KE.g[id].setHtmlHooks.push(function(html) {
 			return html.replace(/<table([^>]*)>/ig, function($0, $1) {
 				if ($1.match(/\s+border=["']?(\d*)["']?/ig)) {

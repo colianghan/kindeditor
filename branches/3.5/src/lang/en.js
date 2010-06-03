@@ -1,6 +1,8 @@
 
 (function (KE, undefined) {
 
+KE.langType = 'en';
+
 KE.lang = {
 	source : 'Source',
 	undo : 'Undo(Ctrl+Z)',
