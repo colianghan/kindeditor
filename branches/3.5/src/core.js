@@ -1456,6 +1456,51 @@ KE.util = {
 	select : function(id) {
 		if (KE.browser.IE && KE.g[id].wyswygMode && KE.g[id].range) KE.g[id].range.select();
 	},
+	getCommonAncestor : function(id, tagName) {
+		var g = KE.g[id];
+		var range = g.range;
+		var startNode, endNode;
+		if (KE.browser.IE) {
+			if (range.item) {
+				if (range.item(0).nodeName.toLowerCase() === tagName) {
+					startNode = endNode = range.item(0);
+				} else {
+					var keRange = g.keRange;
+					startNode = keRange.startNode;
+					endNode = keRange.endNode;
+				}
+			} else {
+				var rangeA = range.duplicate();
+				rangeA.collapse(true);
+				var rangeB = range.duplicate();
+				rangeB.collapse(false);
+				startNode = rangeA.parentElement();
+				endNode = rangeB.parentElement();
+			}
+		} else {
+			var rangeA = range.cloneRange();
+			rangeA.collapse(true);
+			var rangeB = range.cloneRange();
+			rangeB.collapse(false);
+			startNode = rangeA.startContainer;
+			endNode = rangeB.startContainer;
+		}
+		var find = function(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.tagName.toLowerCase() === tagName) return node;
+				}
+				node = node.parentNode;
+			}
+			return null;
+		};
+		var start = find(startNode);
+		var end = find(endNode);
+		if (start && end && start === end) {
+			return start;
+		}
+		return null;
+	},
 	execCommand : function(id, cmd, value) {
 		KE.util.focus(id);
 		KE.util.select(id);

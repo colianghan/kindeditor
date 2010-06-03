@@ -1465,6 +1465,51 @@ KE.util = {
 	select : function(id) {
 		if (KE.browser.IE && KE.g[id].wyswygMode && KE.g[id].range) KE.g[id].range.select();
 	},
+	getCommonAncestor : function(id, tagName) {
+		var g = KE.g[id];
+		var range = g.range;
+		var startNode, endNode;
+		if (KE.browser.IE) {
+			if (range.item) {
+				if (range.item(0).nodeName.toLowerCase() === tagName) {
+					startNode = endNode = range.item(0);
+				} else {
+					var keRange = g.keRange;
+					startNode = keRange.startNode;
+					endNode = keRange.endNode;
+				}
+			} else {
+				var rangeA = range.duplicate();
+				rangeA.collapse(true);
+				var rangeB = range.duplicate();
+				rangeB.collapse(false);
+				startNode = rangeA.parentElement();
+				endNode = rangeB.parentElement();
+			}
+		} else {
+			var rangeA = range.cloneRange();
+			rangeA.collapse(true);
+			var rangeB = range.cloneRange();
+			rangeB.collapse(false);
+			startNode = rangeA.startContainer;
+			endNode = rangeB.startContainer;
+		}
+		var find = function(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.tagName.toLowerCase() === tagName) return node;
+				}
+				node = node.parentNode;
+			}
+			return null;
+		};
+		var start = find(startNode);
+		var end = find(endNode);
+		if (start && end && start === end) {
+			return start;
+		}
+		return null;
+	},
 	execCommand : function(id, cmd, value) {
 		KE.util.focus(id);
 		KE.util.select(id);
@@ -3387,28 +3432,7 @@ KE.plugin['image'] = {
 
 KE.plugin['link'] = {
 	getSelectedNode : function(id) {
-		var g = KE.g[id];
-		var range = g.keRange;
-		var startNode = range.startNode;
-		var startPos = range.startPos;
-		var endNode = range.endNode;
-		var endPos = range.endPos;
-		var inlineTagHash = KE.util.arrayToHash(g.inlineTags);
-		var findLinkNode = function(node) {
-			while (node) {
-				if (node.nodeType == 1) {
-					var tagName = node.tagName.toLowerCase();
-					if (tagName == 'a') return node;
-				}
-				node = node.parentNode;
-			}
-			return null;
-		};
-		var startLink = findLinkNode(startNode);
-		var endLink = findLinkNode(endNode);
-		if (startLink && endLink && startLink === endLink) {
-			return startLink;
-		}
+		return KE.util.getCommonAncestor(id, 'a');
 	},
 	init : function(id) {
 		var self = this;
@@ -3722,51 +3746,14 @@ KE.plugin['table'] = {
 };
 
 KE.plugin['advtable'] = {
-	getSelectedNode : function(id, tagName) {
-		var g = KE.g[id];
-		var startNode, endNode;
-		if (KE.browser.IE && !g.range.item) {
-			var rangeA = g.range.duplicate();
-			rangeA.collapse(true);
-			var rangeB = g.range.duplicate();
-			rangeB.collapse(false);
-			startNode = rangeA.parentElement();
-			endNode = rangeB.parentElement();
-		} else {
-			startNode = g.keRange.startNode;
-			endNode = g.keRange.endNode;
-		}
-		var find = function(node) {
-			while (node) {
-				if (node.nodeType == 1) {
-					if (node.nodeName.toLowerCase() == tagName) return node;
-				}
-				node = node.parentNode;
-			}
-			return null;
-		};
-		var start = find(startNode);
-		var end = find(endNode);
-		if (start && end && start === end) {
-			return start;
-		}
-		return null;
-	},
 	getSelectedTable : function(id) {
-		var g = KE.g[id];
-		if (KE.browser.IE && g.range.item) {
-			var r = g.range;
-			if (g.range.item) {
-				if (r.item(0).nodeName.toLowerCase() == 'table') return r.item(0);
-			}
-		}
-		return this.getSelectedNode(id, 'table');
+		return KE.util.getCommonAncestor(id, 'table');
 	},
 	getSelectedRow : function(id) {
-		return this.getSelectedNode(id, 'tr');
+		return KE.util.getCommonAncestor(id, 'tr');
 	},
 	getSelectedCell : function(id) {
-		return this.getSelectedNode(id, 'td');
+		return KE.util.getCommonAncestor(id, 'td');
 	},
 	tableprop : function(id) {
 		this.click(id);
