@@ -2200,7 +2200,7 @@ KE.history = {
 KE.readonly = function(id, isReadonly) {
 	isReadonly = typeof isReadonly == 'undefined' ? true : false;
 	var g = KE.g[id];
-	if (KE.browser.IE && KE.browser.VERSION > 6) g.iframeDoc.body.contentEditable = isReadonly ? 'false' : 'true';
+	if (KE.browser.IE) g.iframeDoc.body.contentEditable = isReadonly ? 'false' : 'true';
 	else g.iframeDoc.designMode = isReadonly ? 'off' : 'on';
 };
 
@@ -2303,7 +2303,6 @@ KE.create = function(id, mode) {
 	KE.util.setDefaultPlugin(id);
 	var iframeWin = iframe.contentWindow;
 	var iframeDoc = KE.util.getIframeDoc(iframe);
-	if (!KE.browser.IE || KE.browser.VERSION < 7) iframeDoc.designMode = 'on';
 	var html = KE.util.getFullHtml(id);
 	iframeDoc.write(html);
 	if (!KE.g[id].wyswygMode) {
@@ -2394,8 +2393,9 @@ KE.create = function(id, mode) {
 	KE.onchange(id, function(id) {
 		KE.util.setData(id);
 	});
-	if (KE.browser.IE && KE.browser.VERSION > 6) KE.readonly(id, false);
+	if (KE.browser.IE) KE.readonly(id, false);
 	window.setTimeout(function() {
+		if (!KE.browser.IE) KE.readonly(id, false);
 		KE.util.setFullHtml(id, srcTextarea.value);
 		if (mode > 0) KE.util.focus(id);
 		if (KE.g[id].afterCreate) KE.g[id].afterCreate(id);
