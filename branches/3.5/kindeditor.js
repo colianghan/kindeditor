@@ -40,6 +40,7 @@ KE.setting = {
 	loadStyleMode : true,
 	resizeMode : 2,
 	filterMode : false,
+	autoSetDataMode : true,
 	urlType : '',
 	skinType : 'default',
 	newlineTag : 'p',
@@ -1391,13 +1392,9 @@ KE.util = {
 			handlers[i]();
 		}
 	},
-	getData : function(id, wyswygMode) {
+	toData : function(id, srcData) {
 		var g = KE.g[id];
-		wyswygMode = (wyswygMode === undefined) ? g.wyswygMode : wyswygMode;
-		if (!wyswygMode) {
-			this.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, g.newTextarea.value));
-		}
-		var html = this.execGetHtmlHooks(id, g.iframeDoc.body.innerHTML);
+		var html = this.execGetHtmlHooks(id, srcData);
 		html = html.replace(/^\s*<br[^>]*>\s*$/ig, '');
 		html = html.replace(/^\s*<p>\s*&nbsp;\s*<\/p>\s*$/ig, '');
 		if (g.filterMode) {
@@ -1405,13 +1402,22 @@ KE.util = {
 		} else {
 			return KE.format.getHtml(html, null, g.urlType);
 		}
+		return html;
+	},
+	getData : function(id, wyswygMode) {
+		var g = KE.g[id];
+		wyswygMode = (wyswygMode === undefined) ? g.wyswygMode : wyswygMode;
+		if (!wyswygMode) {
+			this.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, g.newTextarea.value));
+		}
+		return this.toData(id, g.iframeDoc.body.innerHTML);
 	},
 	getSrcData : function(id) {
 		var g = KE.g[id];
 		if (!g.wyswygMode) {
 			this.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, g.newTextarea.value));
 		}
-		return this.execGetHtmlHooks(id, g.iframeDoc.body.innerHTML);
+		return g.iframeDoc.body.innerHTML;
 	},
 	getPureData : function(id) {
 		return this.extractText(this.getData(id));
@@ -1425,7 +1431,8 @@ KE.util = {
 		return this.getPureData(id).replace(/\r\n|\n|\r/, '').replace(/^\s+|\s+$/, '') === '';
 	},
 	setData : function(id) {
-		if (KE.g[id].srcTextarea) KE.g[id].srcTextarea.value = this.getData(id);
+		var g = KE.g[id];
+		if (g.srcTextarea) g.srcTextarea.value = this.getData(id);
 	},
 	focus : function(id) {
 		var g = KE.g[id];
@@ -1465,7 +1472,6 @@ KE.util = {
 			KE.g[id].iframeDoc.execCommand(cmd, false, value);
 		} catch(e) {}
 		KE.toolbar.updateState(id);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 	},
 	innerHtml : function(el, html) {
@@ -1522,15 +1528,14 @@ KE.util = {
 		} else {
 			this.pasteHtml(id, html);
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 	},
 	setFullHtml : function(id, html) {
+		var g = KE.g[id];
 		if (!KE.browser.IE && html === '') html = '<br />';
 		var html = KE.util.execSetHtmlHooks(id, html);
-		this.innerHtml(KE.g[id].iframeDoc.body, html);
-		KE.g[id].newTextarea.value = KE.util.getData(id, true);
-		KE.history.add(id, false);
+		this.innerHtml(g.iframeDoc.body, html);
+		if (!g.wyswygMode) g.newTextarea.value = KE.util.getData(id, true);
 		KE.util.execOnchangeHandler(id);
 	},
 	selectImageWebkit : function(id, e, isSelection) {
@@ -2172,37 +2177,50 @@ KE.toolbar = {
 };
 
 KE.history = {
-	add : function(id, minChangeFlag) {
+	addStackData : function(stack, data) {
+		var prev = '';
+		if (stack.length > 0) {
+			prev = stack[stack.length - 1];
+		}
+		if (data !== prev) stack.push(data);
+	},
+	add : function(id) {
 		var g = KE.g[id];
-		var html = KE.util.getData(id);
+		var html = KE.util.getSrcData(id);
 		if (g.undoStack.length > 0) {
 			var prevHtml = g.undoStack[g.undoStack.length - 1];
-			if (html === prevHtml) return;
-			if (minChangeFlag && Math.abs(html.length - prevHtml.length) < g.minChangeSize) return;
+			if (Math.abs(html.length - prevHtml.length) < g.minChangeSize) return;
 		}
-		g.undoStack.push(html);
-		g.redoStack = [];
+		this.addStackData(g.undoStack, html);
 	},
 	undo : function(id) {
 		var g = KE.g[id];
 		if (g.undoStack.length == 0) return;
-		var html = KE.util.getData(id);
-		g.redoStack.push(html);
+		var html = KE.util.getSrcData(id);
+		this.addStackData(g.redoStack, html);
 		var prevHtml = g.undoStack.pop();
 		if (html === prevHtml && g.undoStack.length > 0) {
 			prevHtml = g.undoStack.pop();
 		}
-		KE.util.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, prevHtml));
-		g.newTextarea.value = KE.util.execGetHtmlHooks(id, prevHtml);
+		prevHtml = KE.util.toData(id, prevHtml);
+		if (g.wyswygMode) {
+			KE.util.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, prevHtml));
+		} else {
+			g.newTextarea.value = prevHtml;
+		}
 	},
 	redo : function(id) {
 		var g = KE.g[id];
 		if (g.redoStack.length == 0) return;
-		var html = KE.util.getData(id);
-		g.undoStack.push(html);
+		var html = KE.util.getSrcData(id);
+		this.addStackData(g.undoStack, html);
 		var nextHtml = g.redoStack.pop();
-		KE.util.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, nextHtml));
-		g.newTextarea.value = KE.util.execGetHtmlHooks(id, nextHtml);
+		nextHtml = KE.util.toData(id, nextHtml);
+		if (g.wyswygMode) {
+			KE.util.innerHtml(g.iframeDoc.body, KE.util.execSetHtmlHooks(id, nextHtml));
+		} else {
+			g.newTextarea.value = nextHtml;
+		}
 	}
 };
 
@@ -2327,9 +2345,6 @@ KE.create = function(id, mode) {
 	var updateToolbar = function () {
 		KE.toolbar.updateState(id);
 	};
-	var addHistory = function () {
-		KE.history.add(id, true);
-	};
 	if (KE.browser.WEBKIT) {
 		KE.event.add(iframeDoc, 'click', function(e) {
 			KE.util.selectImageWebkit(id, e, true);
@@ -2342,16 +2357,15 @@ KE.create = function(id, mode) {
 				if (range.item) {
 					var item = range.item(0);
 					item.parentNode.removeChild(item);
+					KE.util.execOnchangeHandler(id);
 				}
 			}
 		});
 	}
 	KE.event.add(iframeDoc, 'click', hideMenu);
 	KE.event.add(iframeDoc, 'click', updateToolbar);
-	KE.event.input(iframeDoc, addHistory);
 	KE.event.input(iframeDoc, updateToolbar);
 	KE.event.add(newTextarea, 'click', hideMenu);
-	KE.event.input(newTextarea, addHistory);
 	KE.g[id].container = container;
 	KE.g[id].toolbarTable = toolbarTable;
 	KE.g[id].textareaTable = textareaTable;
@@ -2400,7 +2414,8 @@ KE.create = function(id, mode) {
 	KE.event.add(iframeDoc, 'mouseup', setSelectionHandler);
 	KE.event.add(document, 'mousedown', setSelectionHandler);
 	KE.onchange(id, function(id) {
-		KE.util.setData(id);
+		if (KE.g[id].autoSetDataMode) KE.util.setData(id);
+		KE.history.add(id);
 	});
 	if (KE.browser.IE) KE.readonly(id, false);
 	window.setTimeout(function() {
@@ -2847,6 +2862,7 @@ KE.plugin['fullscreen'] = {
 		}
 		if (this.isSelected) {
 			this.isSelected = false;
+			KE.util.setData(id);
 			KE.remove(id, 1);
 			g.width = this.width;
 			g.height = this.height;
@@ -2859,6 +2875,7 @@ KE.plugin['fullscreen'] = {
 			this.isSelected = true;
 			this.width = g.container.style.width;
 			this.height = g.container.style.height;
+			KE.util.setData(id);
 			KE.remove(id, 2);
 			document.body.parentNode.style.overflow = 'hidden';
 			resetSize();
@@ -2894,7 +2911,6 @@ KE.plugin['bgcolor'] = {
 		} else {
 			cmd.wrap('span', [{'.background-color': value}]);
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -2921,7 +2937,6 @@ KE.plugin['fontname'] = {
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);
 		cmd.wrap('span', [{'.font-family': value}]);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -2953,7 +2968,6 @@ KE.plugin['fontsize'] = {
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);
 		cmd.wrap('span', [{'.font-size': value}]);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -2986,7 +3000,6 @@ KE.plugin['removeformat'] = {
 			tags[KE.g[id].inlineTags[i]] = ['*'];
 		}
 		cmd.remove(tags);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		KE.toolbar.updateState(id);
 		KE.util.focus(id);
@@ -3037,7 +3050,6 @@ KE.plugin['textcolor'] = {
 		} else {
 			cmd.wrap('span', [{'.color': value}]);
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -3257,6 +3269,7 @@ KE.plugin['image'] = {
 				menu.hide();
 				var img = self.getSelectedNode(id);
 				img.parentNode.removeChild(img);
+				KE.util.execOnchangeHandler(id);
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
@@ -3485,7 +3498,6 @@ KE.plugin['link'] = {
 				g.keSel.addRange(range);
 			}
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.dialog.hide();
 		KE.layout.hide(id);
@@ -3540,9 +3552,8 @@ KE.plugin['unlink'] = {
 		} else {
 			iframeDoc.execCommand('unlink', false, null);
 		}
-		KE.toolbar.updateState(id);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
+		KE.toolbar.updateState(id);
 		KE.util.focus(id);
 	}
 };
@@ -3819,7 +3830,6 @@ KE.plugin['advtable'] = {
 						menu.hide();
 						if (self[name] !== undefined) self[name](id);
 						if (!/prop/.test(name)) {
-							KE.history.add(id, false);
 							KE.util.execOnchangeHandler(id);
 						}
 					};
@@ -3990,7 +4000,6 @@ KE.plugin['advtable'] = {
 			} else {
 				table.removeAttribute('borderColor');
 			}
-			KE.history.add(id, false);
 			KE.util.execOnchangeHandler(id);
 		} else {
 			var style = '';

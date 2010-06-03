@@ -207,6 +207,7 @@ KE.plugin['fullscreen'] = {
 		}
 		if (this.isSelected) {
 			this.isSelected = false;
+			KE.util.setData(id);
 			KE.remove(id, 1);
 			g.width = this.width;
 			g.height = this.height;
@@ -219,6 +220,7 @@ KE.plugin['fullscreen'] = {
 			this.isSelected = true;
 			this.width = g.container.style.width;
 			this.height = g.container.style.height;
+			KE.util.setData(id);
 			KE.remove(id, 2);
 			document.body.parentNode.style.overflow = 'hidden';
 			resetSize();
@@ -254,7 +256,6 @@ KE.plugin['bgcolor'] = {
 		} else {
 			cmd.wrap('span', [{'.background-color': value}]);
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -281,7 +282,6 @@ KE.plugin['fontname'] = {
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);
 		cmd.wrap('span', [{'.font-family': value}]);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -313,7 +313,6 @@ KE.plugin['fontsize'] = {
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);
 		cmd.wrap('span', [{'.font-size': value}]);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -346,7 +345,6 @@ KE.plugin['removeformat'] = {
 			tags[KE.g[id].inlineTags[i]] = ['*'];
 		}
 		cmd.remove(tags);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		KE.toolbar.updateState(id);
 		KE.util.focus(id);
@@ -397,7 +395,6 @@ KE.plugin['textcolor'] = {
 		} else {
 			cmd.wrap('span', [{'.color': value}]);
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -617,6 +614,7 @@ KE.plugin['image'] = {
 				menu.hide();
 				var img = self.getSelectedNode(id);
 				img.parentNode.removeChild(img);
+				KE.util.execOnchangeHandler(id);
 			},
 			cond : function(id) {
 				return self.getSelectedNode(id);
@@ -845,7 +843,6 @@ KE.plugin['link'] = {
 				g.keSel.addRange(range);
 			}
 		}
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
 		this.dialog.hide();
 		KE.layout.hide(id);
@@ -900,9 +897,8 @@ KE.plugin['unlink'] = {
 		} else {
 			iframeDoc.execCommand('unlink', false, null);
 		}
-		KE.toolbar.updateState(id);
-		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
+		KE.toolbar.updateState(id);
 		KE.util.focus(id);
 	}
 };
@@ -1179,7 +1175,6 @@ KE.plugin['advtable'] = {
 						menu.hide();
 						if (self[name] !== undefined) self[name](id);
 						if (!/prop/.test(name)) {
-							KE.history.add(id, false);
 							KE.util.execOnchangeHandler(id);
 						}
 					};
@@ -1350,7 +1345,6 @@ KE.plugin['advtable'] = {
 			} else {
 				table.removeAttribute('borderColor');
 			}
-			KE.history.add(id, false);
 			KE.util.execOnchangeHandler(id);
 		} else {
 			var style = '';
