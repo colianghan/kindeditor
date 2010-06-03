@@ -1559,6 +1559,7 @@ KE.util = {
 		var g = KE.g[id];
 		if (g.contextmenuItems.length == 0) return;
 		KE.event.add(g.iframeDoc, 'contextmenu', function(e){
+			KE.layout.hide(id);
 			KE.util.setSelection(id);
 			KE.util.selectImageWebkit(id, e, false);
 			var maxWidth = 0;
@@ -2208,7 +2209,7 @@ KE.history = {
 KE.readonly = function(id, isReadonly) {
 	isReadonly = typeof isReadonly == 'undefined' ? true : false;
 	var g = KE.g[id];
-	if (KE.browser.IE && KE.browser.VERSION > 6) g.iframeDoc.body.contentEditable = isReadonly ? 'false' : 'true';
+	if (KE.browser.IE) g.iframeDoc.body.contentEditable = isReadonly ? 'false' : 'true';
 	else g.iframeDoc.designMode = isReadonly ? 'off' : 'on';
 };
 
@@ -2311,7 +2312,6 @@ KE.create = function(id, mode) {
 	KE.util.setDefaultPlugin(id);
 	var iframeWin = iframe.contentWindow;
 	var iframeDoc = KE.util.getIframeDoc(iframe);
-	if (!KE.browser.IE || KE.browser.VERSION < 7) iframeDoc.designMode = 'on';
 	var html = KE.util.getFullHtml(id);
 	iframeDoc.write(html);
 	if (!KE.g[id].wyswygMode) {
@@ -2333,6 +2333,17 @@ KE.create = function(id, mode) {
 	if (KE.browser.WEBKIT) {
 		KE.event.add(iframeDoc, 'click', function(e) {
 			KE.util.selectImageWebkit(id, e, true);
+		});
+	}
+	if (KE.browser.IE) {
+		KE.event.add(iframeDoc, 'keyup', function(e) {
+			if (e.keyCode == 8) {
+				var range = KE.g[id].range;
+				if (range.item) {
+					var item = range.item(0);
+					item.parentNode.removeChild(item);
+				}
+			}
 		});
 	}
 	KE.event.add(iframeDoc, 'click', hideMenu);
@@ -2391,8 +2402,9 @@ KE.create = function(id, mode) {
 	KE.onchange(id, function(id) {
 		KE.util.setData(id);
 	});
-	if (KE.browser.IE && KE.browser.VERSION > 6) KE.readonly(id, false);
+	if (KE.browser.IE) KE.readonly(id, false);
 	window.setTimeout(function() {
+		if (!KE.browser.IE) KE.readonly(id, false);
 		KE.util.setFullHtml(id, srcTextarea.value);
 		if (mode > 0) KE.util.focus(id);
 		if (KE.g[id].afterCreate) KE.g[id].afterCreate(id);
@@ -2739,6 +2751,7 @@ KE.plugin['plainpaste'] = {
 		html = html.replace(/ /g, '&nbsp;');
 		html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -2806,6 +2819,7 @@ KE.plugin['wordpaste'] = {
 		str = KE.util.execGetHtmlHooks(id, str);
 		str = KE.format.getHtml(str, htmlTags, KE.g[id].urlType);
 		KE.util.insertHtml(id, str);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -3201,6 +3215,7 @@ KE.plugin['flash'] = {
 			quality : 'high'
 		});
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -3351,6 +3366,7 @@ KE.plugin['image'] = {
 		html += 'alt="' + title + '" ';
 		html += 'border="' + border + '" />';
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -3471,6 +3487,7 @@ KE.plugin['link'] = {
 		}
 		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -3617,6 +3634,7 @@ KE.plugin['media'] = {
 			loop : 'true'
 		});
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -3695,11 +3713,18 @@ KE.plugin['table'] = {
 KE.plugin['advtable'] = {
 	getSelectedNode : function(id, tagName) {
 		var g = KE.g[id];
-		var range = g.keRange;
-		var startNode = range.startNode;
-		var startPos = range.startPos;
-		var endNode = range.endNode;
-		var endPos = range.endPos;
+		var startNode, endNode;
+		if (KE.browser.IE && !g.range.item) {
+			var rangeA = g.range.duplicate();
+			rangeA.collapse(true);
+			var rangeB = g.range.duplicate();
+			rangeB.collapse(false);
+			startNode = rangeA.parentElement();
+			endNode = rangeB.parentElement();
+		} else {
+			startNode = g.keRange.startNode;
+			endNode = g.keRange.endNode;
+		}
 		var find = function(node) {
 			while (node) {
 				if (node.nodeType == 1) {
@@ -3714,18 +3739,17 @@ KE.plugin['advtable'] = {
 		if (start && end && start === end) {
 			return start;
 		}
+		return null;
 	},
 	getSelectedTable : function(id) {
 		var g = KE.g[id];
 		if (KE.browser.IE && g.range.item) {
 			var r = g.range;
-			if (item) {
-				return (r.item(0).nodeName.toLowerCase() == 'table') ? r.item(0) : null;
+			if (g.range.item) {
+				if (r.item(0).nodeName.toLowerCase() == 'table') return r.item(0);
 			}
 		}
-		if (this.getSelectedCell(id)) {
-			return this.getSelectedNode(id, 'table');
-		}
+		return this.getSelectedNode(id, 'table');
 	},
 	getSelectedRow : function(id) {
 		return this.getSelectedNode(id, 'tr');

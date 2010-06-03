@@ -1073,11 +1073,18 @@ KE.plugin['table'] = {
 KE.plugin['advtable'] = {
 	getSelectedNode : function(id, tagName) {
 		var g = KE.g[id];
-		var range = g.keRange;
-		var startNode = range.startNode;
-		var startPos = range.startPos;
-		var endNode = range.endNode;
-		var endPos = range.endPos;
+		var startNode, endNode;
+		if (KE.browser.IE && !g.range.item) {
+			var rangeA = g.range.duplicate();
+			rangeA.collapse(true);
+			var rangeB = g.range.duplicate();
+			rangeB.collapse(false);
+			startNode = rangeA.parentElement();
+			endNode = rangeB.parentElement();
+		} else {
+			startNode = g.keRange.startNode;
+			endNode = g.keRange.endNode;
+		}
 		var find = function(node) {
 			while (node) {
 				if (node.nodeType == 1) {
@@ -1098,14 +1105,11 @@ KE.plugin['advtable'] = {
 		var g = KE.g[id];
 		if (KE.browser.IE && g.range.item) {
 			var r = g.range;
-			if (item) {
-				return (r.item(0).nodeName.toLowerCase() == 'table') ? r.item(0) : null;
+			if (g.range.item) {
+				if (r.item(0).nodeName.toLowerCase() == 'table') return r.item(0);
 			}
 		}
-		if (this.getSelectedCell(id)) {
-			return this.getSelectedNode(id, 'table');
-		}
-		return null;
+		return this.getSelectedNode(id, 'table');
 	},
 	getSelectedRow : function(id) {
 		return this.getSelectedNode(id, 'tr');
