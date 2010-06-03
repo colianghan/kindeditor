@@ -971,6 +971,42 @@ KE.format = {
 	}
 };
 
+KE.addClass = function(el, className) {
+	if (typeof el == 'object') {
+		var cls = el.className;
+		el.className = cls ? cls + ' ' + className : className;
+	} else if (typeof el == 'string') {
+		if (/\s+class\s*=/.test(el)) {
+			el = el.replace(/(\s+class=["']?)([^"']*)(["']?[\s>])/, function($0, $1, $2, $3) {
+				if ((' ' + $2 + ' ').indexOf(' ' + className + ' ') < 0) {
+					return $2 === '' ? $1 + className + $3 : $1 + $2 + ' ' + className + $3;
+				} else {
+					return $0;
+				}
+			});
+		} else {
+			el = el.substr(0, el.length - 1) + ' class="' + className + '">';
+		}
+	}
+	return el;
+};
+
+KE.removeClass = function(el, className) {
+	var cls = el.className || '';
+	cls = ' ' + cls + ' ';
+	className = ' ' + className + ' ';
+	if (cls.indexOf(className) >= 0) {
+		cls = KE.util.trim(cls.replace(new RegExp(className, 'ig'), ''));
+		if (cls === '') {
+			var key = el.getAttribute('class') ? 'class' : 'className';
+			el.removeAttribute(key);
+		} else {
+			el.className = cls;
+		}
+	}
+	return el;
+};
+
 KE.util = {
 	getDocumentElement : function(doc) {
 		doc = doc || document;
@@ -2452,7 +2488,6 @@ KE.lang = {
 	editLink : '超级链接属性',
 	deleteLink : '取消超级链接',
 	tableprop : '表格属性',
-	tablecellprop : '单元格属性',
 	tabledelete : '删除表格',
 	tablecolinsertleft : '左侧插入列',
 	tablecolinsertright : '右侧插入列',
@@ -2541,6 +2576,29 @@ plugins.file_manager = {
 	fileName : '名称',
 	fileSize : '大小',
 	fileType : '类型'
+};
+
+plugins.advtable = {
+	cells : '单元格数',
+	rows : '行数',
+	cols : '列数',
+	size : '表格大小',
+	width : '宽度',
+	height : '高度',
+	percent : '%',
+	px : 'px',
+	space : '边距间距',
+	padding : '边距',
+	spacing : '间距',
+	align : '对齐方式',
+	alignDefault : '默认',
+	alignLeft : '左对齐',
+	alignCenter : '居中',
+	alignRight : '右对齐',
+	border : '表格边框',
+	borderWidth : '边框',
+	borderColor : '颜色',
+	backgroundColor : '背景颜色'
 };
 
 plugins.title = {
@@ -3687,7 +3745,7 @@ KE.plugin['advtable'] = {
 		var cell = this.getSelectedCell(id);
 		for (var i = 0, len = table.rows.length; i < len; i++) {
 			var newCell = table.rows[i].insertCell(cell.cellIndex + offset);
-			newCell.style.border = cell.style.border;
+			newCell.innerHTML = '&nbsp;';
 		}
 	},
 	tablecolinsertleft : function(id) {
@@ -3702,7 +3760,6 @@ KE.plugin['advtable'] = {
 		var newRow = table.insertRow(row.rowIndex + offset);
 		for (var i = 0, len = row.cells.length; i < len; i++) {
 			var cell = newRow.insertCell(i);
-			cell.style.border = row.cells[0].style.border;
 			cell.innerHTML = '&nbsp;';
 		}
 	},
@@ -3726,7 +3783,8 @@ KE.plugin['advtable'] = {
 	},
 	init : function(id) {
 		var self = this;
-		var tableCmds = 'prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete,delete'.split(',');
+		var zeroborder = 'ke-zeroborder';
+		var tableCmds = 'prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete,delete'.split(',');
 		for (var i = 0, len = tableCmds.length; i < len; i++) {
 			var name = 'table' + tableCmds[i];
 			KE.g[id].contextmenuItems.push({
@@ -3736,6 +3794,10 @@ KE.plugin['advtable'] = {
 						KE.util.select(id);
 						menu.hide();
 						if (self[name] !== undefined) self[name](id);
+						if (!/prop/.test(name)) {
+							KE.history.add(id, false);
+							KE.util.execOnchangeHandler(id);
+						}
 					};
 				})(name),
 				cond : (function(name) {
@@ -3750,11 +3812,25 @@ KE.plugin['advtable'] = {
 					}
 				})(name),
 				options : {
-					width : '150px',
+					width : '170px',
 					iconHtml : '<span class="ke-common-icon ke-common-icon-url ke-icon-' + name + '"></span>'
 				}
 			});
 		}
+		KE.g[id].setHtmlHooks.push(function(html) {
+			return html.replace(/<table([^>]*)>/ig, function($0, $1) {
+				if ($1.match(/\s+border=["']?(\d*)["']?/ig)) {
+					var border = RegExp.$1;
+					if ($1.indexOf(zeroborder) < 0 && (border === '' || border === '0')) {
+						return KE.addClass($0, zeroborder);
+					} else {
+						return $0;
+					}
+				} else {
+					return KE.addClass($0, zeroborder);
+				}
+			});
+		});
 	},
 	click : function(id) {
 		var cmd = 'advtable';
@@ -3763,7 +3839,7 @@ KE.plugin['advtable'] = {
 			id : id,
 			cmd : cmd,
 			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
-			width : 400,
+			width : 420,
 			height : 220,
 			loadingMode : true,
 			title : KE.lang['advtable'],
@@ -3773,6 +3849,7 @@ KE.plugin['advtable'] = {
 		this.dialog.show();
 	},
 	exec : function(id) {
+		var zeroborder = 'ke-zeroborder';
 		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
 		var rowsBox = KE.$('rows', dialogDoc);
 		var colsBox = KE.$('cols', dialogDoc);
@@ -3851,12 +3928,6 @@ KE.plugin['advtable'] = {
 			if (table.height !== undefined) {
 				table.removeAttribute('height');
 			}
-			if (table.border !== undefined) {
-				table.removeAttribute('border');
-			}
-			if (table.borderColor !== undefined) {
-				table.removeAttribute('borderColor');
-			}
 			if (backgroundColor !== '') {
 				table.style.backgroundColor = backgroundColor;
 			} else if (table.style.backgroundColor) {
@@ -3880,16 +3951,23 @@ KE.plugin['advtable'] = {
 			} else {
 				table.removeAttribute('align');
 			}
-			for (var i = 0, len = table.rows.length; i < len; i++) {
-				var row = table.rows[i];
-				for (var j = 0, l = row.cells.length; j < l; j++) {
-					var cell = row.cells[j];
-					if (border !== '') cell.style.border = border + 'px solid';
-					else if (cell.style.border) cell.style.border = '';
-					if (borderColor !== '') cell.style.borderColor = borderColor;
-					else if (cell.style.borderColor) cell.style.borderColor = '';
-				}
+			if (border === '' || border === '0') {
+				KE.addClass(table, zeroborder);
+			} else {
+				KE.removeClass(table, zeroborder);
 			}
+			if (border !== '') {
+				table.setAttribute('border', border);
+			} else {
+				table.removeAttribute('border');
+			}
+			if (borderColor !== '') {
+				table.setAttribute('borderColor', borderColor);
+			} else {
+				table.removeAttribute('borderColor');
+			}
+			KE.history.add(id, false);
+			KE.util.execOnchangeHandler(id);
 		} else {
 			var style = '';
 			if (width !== '') style += 'width:' + width + widthType + ';';
@@ -3900,14 +3978,14 @@ KE.plugin['advtable'] = {
 			if (padding !== '') html += ' cellpadding="' + padding + '"';
 			if (spacing !== '') html += ' cellspacing="' + spacing + '"';
 			if (align !== '') html += ' align="' + align + '"';
+			if (border === '' || border === '0') html += ' class="' + zeroborder + '"';
+			if (border !== '') html += ' border="' + border + '"';
+			if (borderColor !== '') html += ' bordercolor="' + borderColor + '"';
 			html += '>';
-			var tdStyle = '';
-			if (border !== '') tdStyle += 'border:' + border + 'px solid;';
-			if (borderColor !== '') tdStyle += 'border-color:' + borderColor + ';';
 			for (var i = 0; i < rows; i++) {
 				html += '<tr>';
 				for (var j = 0; j < cols; j++) {
-					html += '<td' + (tdStyle ? ' style="' + tdStyle + '"' : '') + '>&nbsp;</td>';
+					html += '<td>&nbsp;</td>';
 				}
 				html += '</tr>';
 			}

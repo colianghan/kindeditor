@@ -41,3 +41,6 @@ p {
 table {
 	border-collapse:collapse;
 }
+table.ke-zeroborder td {
+	border:1px dotted #AAAAAA;
+}

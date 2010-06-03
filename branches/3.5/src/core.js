@@ -962,6 +962,42 @@ KE.format = {
 	}
 };
 
+KE.addClass = function(el, className) {
+	if (typeof el == 'object') {
+		var cls = el.className;
+		el.className = cls ? cls + ' ' + className : className;
+	} else if (typeof el == 'string') {
+		if (/\s+class\s*=/.test(el)) {
+			el = el.replace(/(\s+class=["']?)([^"']*)(["']?[\s>])/, function($0, $1, $2, $3) {
+				if ((' ' + $2 + ' ').indexOf(' ' + className + ' ') < 0) {
+					return $2 === '' ? $1 + className + $3 : $1 + $2 + ' ' + className + $3;
+				} else {
+					return $0;
+				}
+			});
+		} else {
+			el = el.substr(0, el.length - 1) + ' class="' + className + '">';
+		}
+	}
+	return el;
+};
+
+KE.removeClass = function(el, className) {
+	var cls = el.className || '';
+	cls = ' ' + cls + ' ';
+	className = ' ' + className + ' ';
+	if (cls.indexOf(className) >= 0) {
+		cls = KE.util.trim(cls.replace(new RegExp(className, 'ig'), ''));
+		if (cls === '') {
+			var key = el.getAttribute('class') ? 'class' : 'className';
+			el.removeAttribute(key);
+		} else {
+			el.className = cls;
+		}
+	}
+	return el;
+};
+
 KE.util = {
 	getDocumentElement : function(doc) {
 		doc = doc || document;

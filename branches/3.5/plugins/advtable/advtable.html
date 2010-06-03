@@ -120,20 +120,8 @@
 					padding = table.cellPadding || '';
 					spacing = table.cellSpacing || '';
 					align = table.align || '';
-					if (rows > 0 && cols > 0) {
-						var cell = table.rows[0].cells[0];
-						border = cell.style.borderWidth ? parseInt(cell.style.borderWidth) : '';
-						borderColor = cell.style.borderColor || '';
-						if (KE.browser.WEBKIT && borderColor == 'initial') {
-							borderColor = cell.style.borderTopColor || '';
-						}
-					}
-					if (border === '') {
-						border = (table.border === undefined) ? '' : table.border;
-					}
-					if (borderColor === '') {
-						borderColor = (table.borderColor === undefined) ? '' : table.borderColor;
-					}
+					border = (table.border === undefined) ? '' : table.border;
+					borderColor = table.getAttribute('borderColor') || '';
 					backgroundColor = table.style.backgroundColor || table.bgColor || '';
 					borderColor = KE.util.rgbToHex(borderColor).toUpperCase();
 					backgroundColor = KE.util.rgbToHex(backgroundColor).toUpperCase();

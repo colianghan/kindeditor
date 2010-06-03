@@ -1117,7 +1117,7 @@ KE.plugin['advtable'] = {
 		var cell = this.getSelectedCell(id);
 		for (var i = 0, len = table.rows.length; i < len; i++) {
 			var newCell = table.rows[i].insertCell(cell.cellIndex + offset);
-			newCell.style.border = cell.style.border;
+			newCell.innerHTML = '&nbsp;';
 		}
 	},
 	tablecolinsertleft : function(id) {
@@ -1132,7 +1132,6 @@ KE.plugin['advtable'] = {
 		var newRow = table.insertRow(row.rowIndex + offset);
 		for (var i = 0, len = row.cells.length; i < len; i++) {
 			var cell = newRow.insertCell(i);
-			cell.style.border = row.cells[0].style.border;
 			cell.innerHTML = '&nbsp;';
 		}
 	},
@@ -1156,6 +1155,7 @@ KE.plugin['advtable'] = {
 	},
 	init : function(id) {
 		var self = this;
+		var zeroborder = 'ke-zeroborder';
 		var tableCmds = 'prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,rowdelete,delete'.split(',');
 		for (var i = 0, len = tableCmds.length; i < len; i++) {
 			var name = 'table' + tableCmds[i];
@@ -1189,6 +1189,20 @@ KE.plugin['advtable'] = {
 				}
 			});
 		}
+		KE.g[id].setHtmlHooks.push(function(html) {
+			return html.replace(/<table([^>]*)>/ig, function($0, $1) {
+				if ($1.match(/\s+border=["']?(\d*)["']?/ig)) {
+					var border = RegExp.$1;
+					if ($1.indexOf(zeroborder) < 0 && (border === '' || border === '0')) {
+						return KE.addClass($0, zeroborder);
+					} else {
+						return $0;
+					}
+				} else {
+					return KE.addClass($0, zeroborder);
+				}
+			});
+		});
 	},
 	click : function(id) {
 		var cmd = 'advtable';
@@ -1207,6 +1221,7 @@ KE.plugin['advtable'] = {
 		this.dialog.show();
 	},
 	exec : function(id) {
+		var zeroborder = 'ke-zeroborder';
 		var dialogDoc = KE.util.getIframeDoc(this.dialog.iframe);
 		var rowsBox = KE.$('rows', dialogDoc);
 		var colsBox = KE.$('cols', dialogDoc);
@@ -1285,12 +1300,6 @@ KE.plugin['advtable'] = {
 			if (table.height !== undefined) {
 				table.removeAttribute('height');
 			}
-			if (table.border !== undefined) {
-				table.removeAttribute('border');
-			}
-			if (table.borderColor !== undefined) {
-				table.removeAttribute('borderColor');
-			}
 			if (backgroundColor !== '') {
 				table.style.backgroundColor = backgroundColor;
 			} else if (table.style.backgroundColor) {
@@ -1314,15 +1323,20 @@ KE.plugin['advtable'] = {
 			} else {
 				table.removeAttribute('align');
 			}
-			for (var i = 0, len = table.rows.length; i < len; i++) {
-				var row = table.rows[i];
-				for (var j = 0, l = row.cells.length; j < l; j++) {
-					var cell = row.cells[j];
-					if (border !== '') cell.style.border = border + 'px solid';
-					else if (cell.style.border) cell.style.border = '';
-					if (borderColor !== '') cell.style.borderColor = borderColor;
-					else if (cell.style.borderColor) cell.style.borderColor = '';
-				}
+			if (border === '' || border === '0') {
+				KE.addClass(table, zeroborder);
+			} else {
+				KE.removeClass(table, zeroborder);
+			}
+			if (border !== '') {
+				table.setAttribute('border', border);
+			} else {
+				table.removeAttribute('border');
+			}
+			if (borderColor !== '') {
+				table.setAttribute('borderColor', borderColor);
+			} else {
+				table.removeAttribute('borderColor');
 			}
 			KE.history.add(id, false);
 			KE.util.execOnchangeHandler(id);
@@ -1336,14 +1350,14 @@ KE.plugin['advtable'] = {
 			if (padding !== '') html += ' cellpadding="' + padding + '"';
 			if (spacing !== '') html += ' cellspacing="' + spacing + '"';
 			if (align !== '') html += ' align="' + align + '"';
+			if (border === '' || border === '0') html += ' class="' + zeroborder + '"';
+			if (border !== '') html += ' border="' + border + '"';
+			if (borderColor !== '') html += ' bordercolor="' + borderColor + '"';
 			html += '>';
-			var tdStyle = '';
-			if (border !== '') tdStyle += 'border:' + border + 'px solid;';
-			if (borderColor !== '') tdStyle += 'border-color:' + borderColor + ';';
 			for (var i = 0; i < rows; i++) {
 				html += '<tr>';
 				for (var j = 0; j < cols; j++) {
-					html += '<td' + (tdStyle ? ' style="' + tdStyle + '"' : '') + '>&nbsp;</td>';
+					html += '<td>&nbsp;</td>';
 				}
 				html += '</tr>';
 			}
