@@ -1550,6 +1550,7 @@ KE.util = {
 		var g = KE.g[id];
 		if (g.contextmenuItems.length == 0) return;
 		KE.event.add(g.iframeDoc, 'contextmenu', function(e){
+			KE.layout.hide(id);
 			KE.util.setSelection(id);
 			KE.util.selectImageWebkit(id, e, false);
 			var maxWidth = 0;

@@ -111,6 +111,7 @@ KE.plugin['plainpaste'] = {
 		html = html.replace(/ /g, '&nbsp;');
 		html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -178,6 +179,7 @@ KE.plugin['wordpaste'] = {
 		str = KE.util.execGetHtmlHooks(id, str);
 		str = KE.format.getHtml(str, htmlTags, KE.g[id].urlType);
 		KE.util.insertHtml(id, str);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -573,6 +575,7 @@ KE.plugin['flash'] = {
 			quality : 'high'
 		});
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -723,6 +726,7 @@ KE.plugin['image'] = {
 		html += 'alt="' + title + '" ';
 		html += 'border="' + border + '" />';
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -843,6 +847,7 @@ KE.plugin['link'] = {
 		}
 		KE.history.add(id, false);
 		KE.util.execOnchangeHandler(id);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -989,6 +994,7 @@ KE.plugin['media'] = {
 			loop : 'true'
 		});
 		KE.util.insertHtml(id, html);
+		this.dialog.hide();
 		KE.layout.hide(id);
 		KE.util.focus(id);
 	}
@@ -1086,6 +1092,7 @@ KE.plugin['advtable'] = {
 		if (start && end && start === end) {
 			return start;
 		}
+		return null;
 	},
 	getSelectedTable : function(id) {
 		var g = KE.g[id];
@@ -1098,6 +1105,7 @@ KE.plugin['advtable'] = {
 		if (this.getSelectedCell(id)) {
 			return this.getSelectedNode(id, 'table');
 		}
+		return null;
 	},
 	getSelectedRow : function(id) {
 		return this.getSelectedNode(id, 'tr');
