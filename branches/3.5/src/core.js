@@ -2327,6 +2327,17 @@ KE.create = function(id, mode) {
 			KE.util.selectImageWebkit(id, e, true);
 		});
 	}
+	if (KE.browser.IE) {
+		KE.event.add(iframeDoc, 'keyup', function(e) {
+			if (e.keyCode == 8) {
+				var range = KE.g[id].range;
+				if (range.item) {
+					var item = range.item(0);
+					item.parentNode.removeChild(item);
+				}
+			}
+		});
+	}
 	KE.event.add(iframeDoc, 'click', hideMenu);
 	KE.event.add(iframeDoc, 'click', updateToolbar);
 	KE.event.input(iframeDoc, addHistory);
