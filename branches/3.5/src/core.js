@@ -2385,7 +2385,9 @@ KE.create = function(id, mode) {
 	var iframeWin = iframe.contentWindow;
 	var iframeDoc = KE.util.getIframeDoc(iframe);
 	var html = KE.util.getFullHtml(id);
+	iframeDoc.open();
 	iframeDoc.write(html);
+	iframeDoc.close();
 	if (!KE.g[id].wyswygMode) {
 		newTextarea.value = KE.util.execSetHtmlHooks(id, srcTextarea.value);
 		newTextarea.style.display = 'block';
