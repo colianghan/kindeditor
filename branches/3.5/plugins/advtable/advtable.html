@@ -144,29 +144,37 @@
 				setColor(borderColorBox, borderColor);
 				setColor(backgroundColorBox, backgroundColor);
 				var picker;
+				var currentElement;
 				function removePicker() {
 					if (picker) {
 						picker.remove();
 						picker = null;
+						currentElement = null;
 					}
 				}
 				function onclickFunc(el) {
-					removePicker();
-					var dialog = KE.g[id].dialogStack[0];
-					dialog.beforeHide = removePicker;
-					dialog.ondrag = removePicker;
-					var iframePos = KE.util.getElementPos(dialog.iframe);
-					var pos = KE.util.getElementPos(el);
-					picker = new KE.colorpicker({
-						x : iframePos.x + pos.x,
-						y : iframePos.y + pos.y + 22,
-						z : dialog.zIndex + 1,
-						onclick : function(color) {
-							setColor(el, color);
-							removePicker();
-						}
-					});
-					picker.create();
+					if (picker && el === currentElement) {
+						removePicker();
+					} else {
+						removePicker();
+						var dialog = KE.g[id].dialogStack[0];
+						dialog.beforeHide = removePicker;
+						dialog.ondrag = removePicker;
+						var iframePos = KE.util.getElementPos(dialog.iframe);
+						var pos = KE.util.getElementPos(el);
+						picker = new KE.colorpicker({
+							x : iframePos.x + pos.x,
+							y : iframePos.y + pos.y + 22,
+							z : dialog.zIndex + 1,
+							onclick : function(color) {
+								setColor(el, color);
+								removePicker();
+							},
+							selectedColor : (el.innerHTML || '')
+						});
+						picker.create();
+						currentElement = el;
+					}
 				}
 				borderColorBox.onclick = function() {
 					onclickFunc(borderColorBox);

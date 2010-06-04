@@ -239,11 +239,12 @@ KE.plugin['fullscreen'] = {
 KE.plugin['bgcolor'] = {
 	click : function(id) {
 		KE.util.selection(id);
+		var color = KE.queryCommandValue(KE.g[id].iframeDoc, 'bgcolor');
 		this.menu = new KE.menu({
 			id : id,
 			cmd : 'bgcolor'
 		});
-		this.menu.picker();
+		this.menu.picker(color);
 	},
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);
@@ -390,11 +391,12 @@ KE.plugin['source'] = {
 KE.plugin['textcolor'] = {
 	click : function(id) {
 		KE.util.selection(id);
+		var color = KE.queryCommandValue(KE.g[id].iframeDoc, 'textcolor');
 		this.menu = new KE.menu({
 			id : id,
 			cmd : 'textcolor'
 		});
-		this.menu.picker();
+		this.menu.picker(color);
 	},
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);

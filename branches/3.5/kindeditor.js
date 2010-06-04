@@ -1016,9 +1016,9 @@ KE.getComputedStyle = function(el, key) {
 		val = '';
 	if (win.getComputedStyle) {
 		var style = win.getComputedStyle(el, null);
-		val = el.style[jsKey] || style[jsKey] || style.getPropertyValue(key);
+		val = style[jsKey] || style.getPropertyValue(key) || el.style[jsKey];
 	} else if (el.currentStyle) {
-		val = el.style[jsKey] || el.currentStyle[jsKey];
+		val = el.currentStyle[jsKey] || el.style[jsKey];
 	}
 	return val;
 };
@@ -1070,11 +1070,17 @@ KE.getCommonAncestor = function(keSel, tagName) {
 
 KE.queryCommandValue = function(doc, cmd) {
 	cmd = cmd.toLowerCase();
-	var val = doc.queryCommandValue(cmd);
-	if (typeof val !== 'string') val = '';
+	function commandValue() {
+		var val = doc.queryCommandValue(cmd);
+		if (typeof val !== 'string') val = '';
+		return val;
+	}
+	var val = '';
 	if (cmd === 'fontname') {
+		val = commandValue();
 		val = val.replace(/['"]/g, '');
 	} else if (cmd === 'formatblock') {
+		val = commandValue();
 		if (val === '') {
 			var keSel = new KE.selection(doc);
 			var el = KE.getCommonAncestor(keSel, 'h1');
@@ -1089,6 +1095,18 @@ KE.queryCommandValue = function(doc, cmd) {
 		var keSel = new KE.selection(doc);
 		var el = KE.getCommonAncestor(keSel, 'span');
 		if (el) val = KE.getComputedStyle(el, 'font-size');
+	} else if (cmd === 'textcolor') {
+		var keSel = new KE.selection(doc);
+		var el = KE.getCommonAncestor(keSel, 'span');
+		if (el) val = KE.getComputedStyle(el, 'color');
+		val = KE.util.rgbToHex(val);
+		if (val === '') val = 'default';
+	} else if (cmd === 'bgcolor') {
+		var keSel = new KE.selection(doc);
+		var el = KE.getCommonAncestor(keSel, 'span');
+		if (el) val = KE.getComputedStyle(el, 'background-color');
+		val = KE.util.rgbToHex(val);
+		if (val === '') val = 'default';
 	}
 	return val.toLowerCase();
 };
@@ -1767,6 +1785,7 @@ KE.colorpicker = function(arg) {
 	var colors = arg.colors || KE.setting.colorTable;
 	var doc = arg.doc || document;
 	var onclick = arg.onclick;
+	var selectedColor = (arg.selectedColor || '').toLowerCase();
 	function init() {
 		wrapper = KE.$$('div');
 		wrapper.className = 'ke-colorpicker';
@@ -1779,37 +1798,37 @@ KE.colorpicker = function(arg) {
 		doc.body.removeChild(wrapper);
 	};
 	this.getElement = function() {
+		function addAttr(cell, color, cls) {
+			if (selectedColor === color.toLowerCase()) cls += ' ke-colorpicker-cell-selected';
+			cell.className = cls;
+			cell.title = color || KE.lang['noColor'];
+			cell.onmouseover = function() { this.className = cls + ' ke-colorpicker-cell-on'; };
+			cell.onmouseout = function() { this.className = cls; };
+			cell.onclick = function() { onclick(color); };
+			if (color) {
+				var div = KE.$$('div');
+				div.className = 'ke-colorpicker-cell-color';
+				div.style.backgroundColor = color;
+				cell.appendChild(div);
+			} else {
+				cell.innerHTML = KE.lang['noColor'];
+			}
+		}
 		var table = KE.$$('table');
 		table.className = 'ke-colorpicker-table';
 		table.cellPadding = 0;
 		table.cellSpacing = 0;
 		table.border = 0;
-		var row = table.insertRow(0);
-		var cell = row.insertCell(0);
+		var row = table.insertRow(0),
+			cell = row.insertCell(0);
 		cell.colSpan = colors[0].length;
-		cell.className = 'ke-colorpicker-top';
-		cell.title = KE.lang['noColor'];
-		cell.onmouseover = function() { this.className = 'ke-colorpicker-top ke-colorpicker-top-on'; };
-		cell.onmouseout = function() { this.className = 'ke-colorpicker-top'; };
-		cell.onclick = function() { onclick(''); };
-		cell.innerHTML = KE.lang['noColor'];
+		addAttr(cell, '', 'ke-colorpicker-cell-top');
 		for (var i = 0; i < colors.length; i++) {
 			var row = table.insertRow(i + 1);
 			for (var j = 0; j < colors[i].length; j++) {
-				var cell = row.insertCell(j);
-				cell.className = 'ke-colorpicker-cell';
-				var div = KE.$$('div');
-				div.className = 'ke-colorpicker-cell-color';
-				div.style.backgroundColor = colors[i][j];
-				cell.title = colors[i][j];
-				cell.onmouseover = function() { this.className = 'ke-colorpicker-cell ke-colorpicker-cell-on'; };
-				cell.onmouseout = function() { this.className = 'ke-colorpicker-cell'; };
-				cell.onclick = (function(i, j) {
-					return function() {
-						onclick(colors[i][j]);
-					};
-				})(i, j);
-				cell.appendChild(div);
+				var color = colors[i][j],
+					cell = row.insertCell(j);
+				addAttr(cell, color, 'ke-colorpicker-cell');
 			}
 		}
 		return table;
@@ -1919,11 +1938,12 @@ KE.menu = function(arg){
 		this.div.style.top = pos.y + 'px';
 		this.div.style.left = pos.x + 'px';
 	};
-	this.picker = function() {
+	this.picker = function(color) {
 		var colorTable = KE.g[arg.id].colorTable;
 		var picker = new KE.colorpicker({
 			colors : colorTable,
-			onclick : function(color) { KE.plugin[arg.cmd].exec(arg.id, color); }
+			onclick : function(color) { KE.plugin[arg.cmd].exec(arg.id, color); },
+			selectedColor : color
 		});
 		this.append(picker.getElement());
 		this.show();
@@ -3021,11 +3041,12 @@ KE.plugin['fullscreen'] = {
 KE.plugin['bgcolor'] = {
 	click : function(id) {
 		KE.util.selection(id);
+		var color = KE.queryCommandValue(KE.g[id].iframeDoc, 'bgcolor');
 		this.menu = new KE.menu({
 			id : id,
 			cmd : 'bgcolor'
 		});
-		this.menu.picker();
+		this.menu.picker(color);
 	},
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);
@@ -3172,11 +3193,12 @@ KE.plugin['source'] = {
 KE.plugin['textcolor'] = {
 	click : function(id) {
 		KE.util.selection(id);
+		var color = KE.queryCommandValue(KE.g[id].iframeDoc, 'textcolor');
 		this.menu = new KE.menu({
 			id : id,
 			cmd : 'textcolor'
 		});
-		this.menu.picker();
+		this.menu.picker(color);
 	},
 	exec : function(id, value) {
 		var cmd = new KE.cmd(id);

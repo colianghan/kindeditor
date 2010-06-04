@@ -668,7 +668,15 @@
 	padding:0;
 	border-collapse: separate;
 }
-.ke-colorpicker-top {
+.ke-colorpicker-cell {
+	font-size: 0;
+	line-height: 0;
+	border: 1px solid #F0F0EE;
+	cursor: pointer;
+	margin:3px;
+	padding:0;
+}
+.ke-colorpicker-cell-top {
 	font-family: "sans serif",tahoma,verdana,helvetica;
 	font-size: 12px;
 	line-height: 24px;
@@ -678,19 +686,11 @@
 	padding:0;
 	text-align: center;
 }
-.ke-colorpicker-top-on {
-	border: 1px solid #5690D2;
-}
-.ke-colorpicker-cell {
-	font-size: 0;
-	line-height: 0;
-	border: 1px solid #F0F0EE;
-	cursor: pointer;
-	margin:3px;
-	padding:0;
-}
 .ke-colorpicker-cell-on {
 	border: 1px solid #5690D2;
+}
+.ke-colorpicker-cell-selected {
+	border: 1px solid #2446AB;
 }
 .ke-colorpicker-cell-color {
 	width: 14px;
