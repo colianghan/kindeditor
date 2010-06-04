@@ -262,6 +262,11 @@
 	width: 16px;
 	height: 16px;
 }
+.ke-icon-checked {
+	background-position: 0px -944px;
+	width: 16px;
+	height: 16px;
+}
 .ke-container {
 	font-family: "sans serif",tahoma,verdana,helvetica;
 	border: 1px solid #CCCCCC;
@@ -494,7 +499,7 @@
 }
 .ke-menu-right {
 	margin: 0;
-	padding: 0 0 0 5px;
+	padding: 0;
 	line-height: 24px;
 	text-align: left;
 	overflow: hidden;

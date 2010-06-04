@@ -270,9 +270,14 @@ KE.plugin['fontname'] = {
 			cmd : cmd,
 			width : 150
 		});
+		var font = KE.queryCommandValue(KE.g[id].iframeDoc, cmd);
 		KE.each(fontName, function(key, value) {
 			var html = '<span style="font-family: ' + key + ';">' + value + '</span>';
-			menu.add(html, function() { KE.plugin[cmd].exec(id, key); });
+			menu.add(
+				html,
+				function() { KE.plugin[cmd].exec(id, key); },
+				{ checked : (font === key.toLowerCase() || font === value.toLowerCase()) }
+			);
 		});
 		menu.show();
 		this.menu = menu;
@@ -291,6 +296,7 @@ KE.plugin['fontsize'] = {
 		var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'];
 		var cmd = 'fontsize';
 		KE.util.selection(id);
+		var size = KE.queryCommandValue(KE.g[id].iframeDoc, 'fontsize');
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
@@ -299,11 +305,18 @@ KE.plugin['fontsize'] = {
 		for (var i = 0, len = fontSize.length; i < len; i++) {
 			var value = fontSize[i];
 			var html = '<span style="font-size: ' + value + ';">' + value + '</span>';
-			menu.add(html, (function(value) {
-				return function() {
-					KE.plugin[cmd].exec(id, value);
-				};
-			})(value), { height : (parseInt(value) + 12) + 'px' });
+			menu.add(
+				html,
+				(function(value) {
+					return function() {
+						KE.plugin[cmd].exec(id, value);
+					};
+				})(value),
+				{
+					height : (parseInt(value) + 12) + 'px',
+					checked : (size === value)
+				}
+			);
 		}
 		menu.show();
 		this.menu = menu;
@@ -418,6 +431,7 @@ KE.plugin['title'] = {
 		};
 		var cmd = 'title';
 		KE.util.selection(id);
+		var block = KE.queryCommandValue(KE.g[id].iframeDoc, 'formatblock');
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
@@ -429,7 +443,10 @@ KE.plugin['title'] = {
 			var html = '<span style="' + style + '">' + value + '</span>';
 			menu.add(html, function() {
 				KE.plugin[cmd].exec(id, '<' + key + '>'); },
-				{ height : (sizeHash[key] + 12) + 'px' }
+				{
+					height : (sizeHash[key] + 12) + 'px',
+					checked : (block === key.toLowerCase() || block === value.toLowerCase() )
+				}
 			);
 		});
 		menu.show();
@@ -729,7 +746,7 @@ KE.plugin['image'] = {
 
 KE.plugin['link'] = {
 	getSelectedNode : function(id) {
-		return KE.util.getCommonAncestor(id, 'a');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'a');
 	},
 	init : function(id) {
 		var self = this;
@@ -1043,13 +1060,13 @@ KE.plugin['table'] = {
 
 KE.plugin['advtable'] = {
 	getSelectedTable : function(id) {
-		return KE.util.getCommonAncestor(id, 'table');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'table');
 	},
 	getSelectedRow : function(id) {
-		return KE.util.getCommonAncestor(id, 'tr');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'tr');
 	},
 	getSelectedCell : function(id) {
-		return KE.util.getCommonAncestor(id, 'td');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'td');
 	},
 	tableprop : function(id) {
 		this.click(id);

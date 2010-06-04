@@ -179,8 +179,8 @@ plugins.fontname = {
 	fontName : {
 		'SimSun' : '宋体',
 		'SimHei' : '黑体',
-		'FangSong_GB2312' : '仿宋体',
-		'KaiTi_GB2312' : '楷体',
+		'FangSong_GB2312' : '仿宋_GB2312',
+		'KaiTi_GB2312' : '楷体_GB2312',
 		'NSimSun' : '新宋体',
 		'Arial' : 'Arial',
 		'Arial Black' : 'Arial Black',

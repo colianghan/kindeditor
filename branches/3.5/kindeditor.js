@@ -205,11 +205,12 @@ KE.eachNode = function(node, func) {
 	walkNodes(node);
 };
 
-KE.selection = function(win, doc) {
+KE.selection = function(doc) {
 	this.sel = null;
 	this.range = null;
 	this.keRange = null;
 	this.isControl = false;
+	var win = doc.parentWindow || doc.defaultView;
 	this.init = function() {
 		var sel = win.getSelection ? win.getSelection() : doc.selection;
 		var range;
@@ -1008,6 +1009,90 @@ KE.removeClass = function(el, className) {
 	return el;
 };
 
+KE.getComputedStyle = function(el, key) {
+	var doc = el.ownerDocument,
+		win = doc.parentWindow || doc.defaultView,
+		jsKey = KE.util.getJsKey(key),
+		val = '';
+	if (win.getComputedStyle) {
+		var style = win.getComputedStyle(el, null);
+		val = el.style[jsKey] || style[jsKey] || style.getPropertyValue(key);
+	} else if (el.currentStyle) {
+		val = el.style[jsKey] || el.currentStyle[jsKey];
+	}
+	return val;
+};
+
+KE.getCommonAncestor = function(keSel, tagName) {
+	var range = keSel.range,
+		keRange = keSel.keRange,
+		startNode = keRange.startNode,
+		endNode = keRange.endNode;
+	if (KE.util.inArray(tagName, ['table', 'td', 'tr'])) {
+		if (KE.browser.IE) {
+			if (range.item) {
+				if (range.item(0).nodeName.toLowerCase() === tagName) {
+					startNode = endNode = range.item(0);
+				}
+			} else {
+				var rangeA = range.duplicate();
+				rangeA.collapse(true);
+				var rangeB = range.duplicate();
+				rangeB.collapse(false);
+				startNode = rangeA.parentElement();
+				endNode = rangeB.parentElement();
+			}
+		} else {
+			var rangeA = range.cloneRange();
+			rangeA.collapse(true);
+			var rangeB = range.cloneRange();
+			rangeB.collapse(false);
+			startNode = rangeA.startContainer;
+			endNode = rangeB.startContainer;
+		}
+	}
+	function find(node) {
+		while (node) {
+			if (node.nodeType == 1) {
+				if (node.tagName.toLowerCase() === tagName) return node;
+			}
+			node = node.parentNode;
+		}
+		return null;
+	};
+	var start = find(startNode),
+		end = find(endNode);
+	if (start && end && start === end) {
+		return start;
+	}
+	return null;
+};
+
+KE.queryCommandValue = function(doc, cmd) {
+	cmd = cmd.toLowerCase();
+	var val = doc.queryCommandValue(cmd);
+	if (typeof val !== 'string') val = '';
+	if (cmd === 'fontname') {
+		val = val.replace(/['"]/g, '');
+	} else if (cmd === 'formatblock') {
+		if (val === '') {
+			var keSel = new KE.selection(doc);
+			var el = KE.getCommonAncestor(keSel, 'h1');
+			if (!el) el = KE.getCommonAncestor(keSel, 'h2');
+			if (!el) el = KE.getCommonAncestor(keSel, 'h3');
+			if (!el) el = KE.getCommonAncestor(keSel, 'h4');
+			if (!el) el = KE.getCommonAncestor(keSel, 'p');
+			if (el) val = el.nodeName;
+		}
+		if (val === 'Normal') val = 'p';
+	} else if (cmd === 'fontsize') {
+		var keSel = new KE.selection(doc);
+		var el = KE.getCommonAncestor(keSel, 'span');
+		if (el) val = KE.getComputedStyle(el, 'font-size');
+	}
+	return val.toLowerCase();
+};
+
 KE.util = {
 	getDocumentElement : function(doc) {
 		doc = doc || document;
@@ -1454,7 +1539,7 @@ KE.util = {
 	},
 	setSelection : function(id) {
 		var g = KE.g[id];
-		var keSel = new KE.selection(g.iframeWin, g.iframeDoc);
+		var keSel = new KE.selection(g.iframeDoc);
 		if (!KE.browser.IE || keSel.range.item || keSel.range.parentElement().ownerDocument === g.iframeDoc) {
 			g.keSel = keSel;
 			g.keRange = g.keSel.keRange;
@@ -1464,57 +1549,6 @@ KE.util = {
 	},
 	select : function(id) {
 		if (KE.browser.IE && KE.g[id].wyswygMode && KE.g[id].range) KE.g[id].range.select();
-	},
-	getCommonAncestor : function(id, tagName) {
-		var g = KE.g[id];
-		var range = g.range;
-		var startNode, endNode;
-		if (KE.browser.IE) {
-			if (range.item) {
-				if (range.item(0).nodeName.toLowerCase() === tagName) {
-					startNode = endNode = range.item(0);
-				} else {
-					var keRange = g.keRange;
-					startNode = keRange.startNode;
-					endNode = keRange.endNode;
-				}
-			} else {
-				if (tagName === 'a') {
-					var keRange = g.keRange;
-					startNode = keRange.startNode;
-					endNode = keRange.endNode;
-				} else {
-					var rangeA = range.duplicate();
-					rangeA.collapse(true);
-					var rangeB = range.duplicate();
-					rangeB.collapse(false);
-					startNode = rangeA.parentElement();
-					endNode = rangeB.parentElement();
-				}
-			}
-		} else {
-			var rangeA = range.cloneRange();
-			rangeA.collapse(true);
-			var rangeB = range.cloneRange();
-			rangeB.collapse(false);
-			startNode = rangeA.startContainer;
-			endNode = rangeB.startContainer;
-		}
-		var find = function(node) {
-			while (node) {
-				if (node.nodeType == 1) {
-					if (node.tagName.toLowerCase() === tagName) return node;
-				}
-				node = node.parentNode;
-			}
-			return null;
-		};
-		var start = find(startNode);
-		var end = find(endNode);
-		if (start && end && start === end) {
-			return start;
-		}
-		return null;
 	},
 	execCommand : function(id, cmd, value) {
 		KE.util.focus(id);
@@ -1631,12 +1665,18 @@ KE.util = {
 						if (width > maxWidth) maxWidth = width;
 					}
 				}
+				prevItem = item;
 			}
 			while (items.length > 0 && items[0] === '-') {
 				items.shift();
 			}
 			while (items.length > 0 && items[items.length - 1] === '-') {
 				items.pop();
+			}
+			var prevItem = null;
+			for (var i = 0, len = items.length; i < len; i++) {
+				if (items[i] === '-' && prevItem === '-') delete items[i];
+				prevItem = items[i] || null;
 			}
 			if (items.length > 0) {
 				var menu = new KE.menu({
@@ -1647,6 +1687,7 @@ KE.util = {
 				});
 				for (var i = 0, len = items.length; i < len; i++) {
 					var item = items[i];
+					if (!item) continue;
 					if (item === '-') {
 						if (i < len - 1) menu.addSeparator();
 					} else {
@@ -1817,10 +1858,11 @@ KE.menu = function(arg){
 	};
 	init.call(this);
 	this.add = function(html, event, options) {
-		var height, iconHtml;
+		var height, iconHtml, checked = false;
 		if (options !== undefined) {
 			height = options.height;
 			iconHtml = options.iconHtml;
+			checked = options.checked;
 		}
 		var self = this;
 		var cDiv = KE.$$('div');
@@ -1846,7 +1888,11 @@ KE.menu = function(arg){
 		cDiv.appendChild(left);
 		cDiv.appendChild(center);
 		cDiv.appendChild(right);
-		if (iconHtml) KE.util.innerHtml(left, iconHtml);
+		if (checked) {
+			KE.util.innerHtml(left, '<span class="ke-common-icon ke-common-icon-url ke-icon-checked"></span>');
+		} else {
+			if (iconHtml) KE.util.innerHtml(left, iconHtml);
+		}
 		KE.util.innerHtml(right, html);
 		this.append(cDiv);
 	};
@@ -2721,8 +2767,8 @@ plugins.fontname = {
 	fontName : {
 		'SimSun' : '宋体',
 		'SimHei' : '黑体',
-		'FangSong_GB2312' : '仿宋体',
-		'KaiTi_GB2312' : '楷体',
+		'FangSong_GB2312' : '仿宋_GB2312',
+		'KaiTi_GB2312' : '楷体_GB2312',
 		'NSimSun' : '新宋体',
 		'Arial' : 'Arial',
 		'Arial Black' : 'Arial Black',
@@ -3006,9 +3052,14 @@ KE.plugin['fontname'] = {
 			cmd : cmd,
 			width : 150
 		});
+		var font = KE.queryCommandValue(KE.g[id].iframeDoc, cmd);
 		KE.each(fontName, function(key, value) {
 			var html = '<span style="font-family: ' + key + ';">' + value + '</span>';
-			menu.add(html, function() { KE.plugin[cmd].exec(id, key); });
+			menu.add(
+				html,
+				function() { KE.plugin[cmd].exec(id, key); },
+				{ checked : (font === key.toLowerCase() || font === value.toLowerCase()) }
+			);
 		});
 		menu.show();
 		this.menu = menu;
@@ -3027,6 +3078,7 @@ KE.plugin['fontsize'] = {
 		var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'];
 		var cmd = 'fontsize';
 		KE.util.selection(id);
+		var size = KE.queryCommandValue(KE.g[id].iframeDoc, 'fontsize');
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
@@ -3035,11 +3087,18 @@ KE.plugin['fontsize'] = {
 		for (var i = 0, len = fontSize.length; i < len; i++) {
 			var value = fontSize[i];
 			var html = '<span style="font-size: ' + value + ';">' + value + '</span>';
-			menu.add(html, (function(value) {
-				return function() {
-					KE.plugin[cmd].exec(id, value);
-				};
-			})(value), { height : (parseInt(value) + 12) + 'px' });
+			menu.add(
+				html,
+				(function(value) {
+					return function() {
+						KE.plugin[cmd].exec(id, value);
+					};
+				})(value),
+				{
+					height : (parseInt(value) + 12) + 'px',
+					checked : (size === value)
+				}
+			);
 		}
 		menu.show();
 		this.menu = menu;
@@ -3154,6 +3213,7 @@ KE.plugin['title'] = {
 		};
 		var cmd = 'title';
 		KE.util.selection(id);
+		var block = KE.queryCommandValue(KE.g[id].iframeDoc, 'formatblock');
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd,
@@ -3165,7 +3225,10 @@ KE.plugin['title'] = {
 			var html = '<span style="' + style + '">' + value + '</span>';
 			menu.add(html, function() {
 				KE.plugin[cmd].exec(id, '<' + key + '>'); },
-				{ height : (sizeHash[key] + 12) + 'px' }
+				{
+					height : (sizeHash[key] + 12) + 'px',
+					checked : (block === key.toLowerCase() || block === value.toLowerCase() )
+				}
 			);
 		});
 		menu.show();
@@ -3465,7 +3528,7 @@ KE.plugin['image'] = {
 
 KE.plugin['link'] = {
 	getSelectedNode : function(id) {
-		return KE.util.getCommonAncestor(id, 'a');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'a');
 	},
 	init : function(id) {
 		var self = this;
@@ -3779,13 +3842,13 @@ KE.plugin['table'] = {
 
 KE.plugin['advtable'] = {
 	getSelectedTable : function(id) {
-		return KE.util.getCommonAncestor(id, 'table');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'table');
 	},
 	getSelectedRow : function(id) {
-		return KE.util.getCommonAncestor(id, 'tr');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'tr');
 	},
 	getSelectedCell : function(id) {
-		return KE.util.getCommonAncestor(id, 'td');
+		return KE.getCommonAncestor(KE.g[id].keSel, 'td');
 	},
 	tableprop : function(id) {
 		this.click(id);
