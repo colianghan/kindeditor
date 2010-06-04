@@ -19,10 +19,8 @@
 				skinsPath : '../skins/',
 				pluginsPath : '../plugins/',
 				allowFileManager : true,
-				afterCreate : function(id) {
-					KindEditor.onchange(id, function(id) {
-						document.getElementById('content_html').value = KindEditor.$('content1').value;
-					});
+				afterSetData : function(id) {
+					document.getElementById('content_html').value = KindEditor.$('content1').value;
 				}
 			});
 		</script>

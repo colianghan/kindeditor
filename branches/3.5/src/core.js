@@ -1470,12 +1470,18 @@ KE.util = {
 					endNode = keRange.endNode;
 				}
 			} else {
-				var rangeA = range.duplicate();
-				rangeA.collapse(true);
-				var rangeB = range.duplicate();
-				rangeB.collapse(false);
-				startNode = rangeA.parentElement();
-				endNode = rangeB.parentElement();
+				if (tagName === 'a') {
+					var keRange = g.keRange;
+					startNode = keRange.startNode;
+					endNode = keRange.endNode;
+				} else {
+					var rangeA = range.duplicate();
+					rangeA.collapse(true);
+					var rangeB = range.duplicate();
+					rangeB.collapse(false);
+					startNode = rangeA.parentElement();
+					endNode = rangeB.parentElement();
+				}
 			}
 		} else {
 			var rangeA = range.cloneRange();
@@ -2470,7 +2476,10 @@ KE.create = function(id, mode) {
 	KE.event.add(iframeDoc, 'mouseup', setSelectionHandler);
 	KE.event.add(document, 'mousedown', setSelectionHandler);
 	KE.onchange(id, function(id) {
-		if (KE.g[id].autoSetDataMode) KE.util.setData(id);
+		if (KE.g[id].autoSetDataMode) {
+			KE.util.setData(id);
+			if (KE.g[id].afterSetData) KE.g[id].afterSetData(id);
+		}
 		KE.history.add(id);
 	});
 	if (KE.browser.IE) KE.readonly(id, false);

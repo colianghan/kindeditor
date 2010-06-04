@@ -20,10 +20,8 @@
 			KE.show({
 				id : 'content11',
 				cssPath : './index.css',
-				afterCreate : function(id) {
-					KE.onchange(id, function(id) {
-						KE.$('word_count').innerHTML = KE.util.getData(id).length;
-					});
+				afterSetData : function(id) {
+					KE.$('word_count').innerHTML = KE.$('content11').value.length;
 				}
 			});
 		</script>
