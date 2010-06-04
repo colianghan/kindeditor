@@ -333,7 +333,7 @@
 	line-height: 0;
 	padding:0;
 	margin:0;
-	height: 20px;
+	height:11px;
 	border-collapse:separate;
 }
 .ke-bottom-left {
@@ -343,6 +343,13 @@
 	margin:0;
 	padding:0;
 }
+.ke-bottom-left-img {
+	display: block;
+	background-position: -0px -754px;
+	width: 15px;
+	height: 11px;
+	background-image: url(./default/default.gif);
+}
 .ke-bottom-right {
 	cursor: se-resize;
 	border:0;
@@ -351,9 +358,9 @@
 }
 .ke-bottom-right-img {
 	display: block;
-	background-position: -4px -740px;
-	width: 12px;
-	height: 12px;
+	background-position: -9px -745px;
+	width: 7px;
+	height: 7px;
 	background-image: url(./default/default.gif);
 }
 .ke-textarea-outer {
