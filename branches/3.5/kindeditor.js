@@ -993,7 +993,13 @@ KE.format = {
 KE.addClass = function(el, className) {
 	if (typeof el == 'object') {
 		var cls = el.className;
-		el.className = cls ? cls + ' ' + className : className;
+		if (cls) {
+			if ((' ' + cls + ' ').indexOf(' ' + className + ' ') < 0) {
+				el.className = cls + ' ' + className;
+			}
+		} else {
+			el.className = className;
+		}
 	} else if (typeof el == 'string') {
 		if (/\s+class\s*=/.test(el)) {
 			el = el.replace(/(\s+class=["']?)([^"']*)(["']?[\s>])/, function($0, $1, $2, $3) {

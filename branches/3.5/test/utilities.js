@@ -5,6 +5,8 @@ test("addClass/removeClass test", function() {
 	var div = KE.$("test01");
 	KE.addClass(div, 'aaa');
 	equals(div.className, 'aaa');
+	KE.addClass(div, 'aaa');
+	equals(div.className, 'aaa');
 	KE.addClass(div, 'bbb');
 	equals(div.className, 'aaa bbb');
 	KE.addClass(div, 'ccc');
