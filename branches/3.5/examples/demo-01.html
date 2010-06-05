@@ -7,6 +7,9 @@
 			form {
 				margin: 0;
 			}
+			textarea {
+				display: block;
+			}
 		</style>
 		<script charset="utf-8" src="../kindeditor.js"></script>
 		<script>
@@ -37,11 +40,10 @@ KindEditor使用JavaScript编写，可以无缝的与Java、.NET、PHP、ASP等�
 KindEditor非常适合在CMS、商城、论坛、博客、Wiki、电子邮件等互联网应用上使用，2006年7月首次发布2.0以来，KindEditor依靠出色的用户体验和领先的技术不断扩大编辑器市场占有率，目前在国内已经成为最受欢迎的编辑器之一。 
 </p>
 			</textarea>
-			<div style="margin:10px 0;">
-				<input type="button" name="button" value="取得内容" onclick="javascript:alert(KE.util.getData('content1'));" />
-				<input type="button" name="button" value="取得纯文本" onclick="javascript:alert(KE.util.getPureData('content1'));" />
-				<input type="submit" name="button" value="提交内容" /> (提交快捷键: Ctrl + Enter)
-			</div>
+			<br />
+			<input type="button" name="button" value="取得内容" onclick="javascript:alert(KE.util.getData('content1'));" />
+			<input type="button" name="button" value="取得纯文本" onclick="javascript:alert(KE.util.getPureData('content1'));" />
+			<input type="submit" name="button" value="提交内容" /> (提交快捷键: Ctrl + Enter)
 		</form>
 	</body>
 </html>

@@ -760,6 +760,7 @@ KE.cmd = function(id) {
 		this.keSel.focus();
 		if (KE.util.inMarquee(keRange.getParentElement())) return;
 		var isCollapsed = (keRange.getText().replace(/\s+/g, '') === '');
+		if (isCollapsed && !KE.browser.IE) return;
 		var tagNames = [];
 		KE.each(tags, function(key, val) {
 			if (key != '*') tagNames.push(key);
@@ -779,7 +780,6 @@ KE.cmd = function(id) {
 			}
 		}
 		if (isCollapsed) {
-			if (!KE.browser.IE) return;
 			var node = keRange.startNode;
 			if (node.nodeType == 1) {
 				if (node.nodeName.toLowerCase() == 'br') return;
@@ -2387,6 +2387,7 @@ KE.remove = function(id, mode) {
 	if (!KE.g[id].container) return false;
 	mode = (typeof mode == "undefined") ? 0 : mode;
 	var container = KE.g[id].container;
+	KE.event.remove(document, 'mousedown', this.setSelectionHandler);
 	KE.g[id].iframeDoc.src = 'javascript:false';
 	KE.g[id].iframe.parentNode.removeChild(KE.g[id].iframe);
 	if (mode == 1) {
@@ -2572,6 +2573,7 @@ KE.create = function(id, mode) {
 	KE.event.input(iframeDoc, setSelectionHandler);
 	KE.event.add(iframeDoc, 'mouseup', setSelectionHandler);
 	KE.event.add(document, 'mousedown', setSelectionHandler);
+	this.setSelectionHandler = setSelectionHandler;
 	KE.onchange(id, function(id) {
 		if (KE.g[id].autoSetDataMode) {
 			KE.util.setData(id);
@@ -3280,45 +3282,124 @@ KE.plugin['title'] = {
 
 KE.plugin['emoticons'] = {
 	click : function(id) {
-		var cmd = 'emoticons';
-		var rows = 9, cells = 15;
+		var self = this,
+			cmd = 'emoticons',
+			rows = 5,
+			cols = 9,
+			total = 135,
+			startNum = 0,
+			cells = rows * cols,
+			pages = Math.ceil(total / cells),
+			colsHalf = Math.floor(cols / 2),
+			g = KE.g[id],
+			path = g.pluginsPath + 'emoticons/',
+			allowPreview = (g.allowPreviewEmoticons === undefined) ? true : g.allowPreviewEmoticons;
 		KE.util.selection(id);
-		var table = KE.$$('table');
-		table.className = 'ke-plugin-emoticons-table';
-		table.cellPadding = 0;
-		table.cellSpacing = 2;
-		table.border = 0;
-		var num = 0;
-		for (var i = 0; i < rows; i++) {
-			var row = table.insertRow(i);
-			for (var j = 0; j < cells; j++) {
-				var cell = row.insertCell(j);
-				cell.className = 'ke-plugin-emoticons-td';
-				cell.onmouseover = function() {this.style.borderColor = '#000000'; }
-				cell.onmouseout = function() {this.style.borderColor = '#F0F0EE'; }
-				cell.onclick = (function(num) {
-					return function() {
-						KE.plugin[cmd].exec(id, num + '.gif');
-					};
-				})(num);
-				var span = KE.$$('span');
-				span.className = 'ke-plugin-emoticons-span';
-				span.style.backgroundPosition = '-' + (24 * num) + 'px 0px';
-				cell.appendChild(span);
-				num++;
+		var wrapperDiv = KE.$$('div');
+		wrapperDiv.className = 'ke-plugin-emoticons-wrapper';
+		var previewDiv, previewImg;
+		if (allowPreview) {
+			previewDiv = KE.$$('div');
+			previewDiv.className = 'ke-plugin-emoticons-preview';
+			previewDiv.style.right = 0;
+			var previewImg = KE.$$('img');
+			previewImg.src = path + '0.gif';
+			previewImg.border = 0;
+			previewDiv.appendChild(previewImg);
+			wrapperDiv.appendChild(previewDiv);
+		}
+		function createEmoticonsTable(pageNum) {
+			var table = KE.$$('table');
+			if (previewDiv) {
+				table.onmouseover = function() { previewDiv.style.display = 'block'; };
+				table.onmouseout = function() { previewDiv.style.display = 'none'; };
+			}
+			table.className = 'ke-plugin-emoticons-table';
+			table.cellPadding = 0;
+			table.cellSpacing = 0;
+			table.border = 0;
+			var num = (pageNum - 1) * cells + startNum;
+			for (var i = 0; i < rows; i++) {
+				var row = table.insertRow(i);
+				for (var j = 0; j < cols; j++) {
+					var cell = row.insertCell(j);
+					cell.className = 'ke-plugin-emoticons-cell';
+					if (previewDiv) {
+						cell.onmouseover = (function(j, num) {
+							return function() {
+								if (j > colsHalf) {
+									previewDiv.style.left = 0;
+									previewDiv.style.right = '';
+								} else {
+									previewDiv.style.left = '';
+									previewDiv.style.right = 0;
+								}
+								previewImg.src = path + num + '.gif';;
+								this.className = 'ke-plugin-emoticons-cell ke-plugin-emoticons-cell-on';
+							};
+						})(j, num);
+					} else {
+						cell.onmouseover = function() {
+							this.className = 'ke-plugin-emoticons-cell ke-plugin-emoticons-cell-on';
+						};
+					}
+					cell.onmouseout = function() { this.className = 'ke-plugin-emoticons-cell'; };
+					cell.onclick = (function(num) {
+						return function() {
+							self.exec(id, num);
+							return false;
+						};
+					})(num);
+					var span = KE.$$('span');
+					span.className = 'ke-plugin-emoticons-img';
+					span.style.backgroundPosition = '-' + (24 * num) + 'px 0px';
+					cell.appendChild(span);
+					num++;
+				}
+			}
+			return table;
+		}
+		var table = createEmoticonsTable(1);
+		wrapperDiv.appendChild(table);
+		var pageDiv = KE.$$('div');
+		pageDiv.className = 'ke-plugin-emoticons-page';
+		wrapperDiv.appendChild(pageDiv);
+		function createPageTable(currentPageNum) {
+			for (var pageNum = 1; pageNum <= pages; pageNum++) {
+				if (currentPageNum !== pageNum) {
+					var a = KE.$$('a');
+					a.href = 'javascript:;';
+					a.innerHTML = '[' + pageNum + ']';
+					a.onclick = (function(pageNum) {
+						return function() {
+							wrapperDiv.removeChild(table);
+							var newTable = createEmoticonsTable(pageNum);
+							wrapperDiv.insertBefore(newTable, pageDiv);
+							table = newTable;
+							pageDiv.innerHTML = '';
+							createPageTable(pageNum);
+							return false;
+						};
+					})(pageNum);
+					pageDiv.appendChild(a);
+				} else {
+					pageDiv.appendChild(document.createTextNode('[' + pageNum + ']'));
+				}
+				pageDiv.appendChild(document.createTextNode(' '));
 			}
 		}
+		createPageTable(1);
 		var menu = new KE.menu({
 			id : id,
 			cmd : cmd
 		});
-		menu.append(table);
+		menu.append(wrapperDiv);
 		menu.show();
 		this.menu = menu;
 	},
-	exec : function(id, value) {
-		var url = KE.g[id].pluginsPath + 'emoticons/' + value;
-		var html = '<img src="' + url + '" kesrc="' + url + '" width="24" height="24" border="0" alt="" />';
+	exec : function(id, num) {
+		var src = KE.g[id].pluginsPath + 'emoticons/' + num + '.gif';
+		var html = '<img src="' + src + '" kesrc="' + src + '" border="0" alt="" />';
 		KE.util.insertHtml(id, html);
 		this.menu.hide();
 		KE.util.focus(id);
@@ -3802,76 +3883,6 @@ KE.plugin['media'] = {
 		});
 		KE.util.insertHtml(id, html);
 		this.dialog.hide();
-		KE.util.focus(id);
-	}
-};
-
-KE.plugin['table'] = {
-	click : function(id) {
-		var self = this;
-		var num = 10;
-		var cmd = 'table';
-		var cellArr = [];
-		KE.util.selection(id);
-		var table = KE.$$('table');
-		table.cellPadding = 0;
-		table.cellSpacing = 0;
-		table.border = 0;
-		table.className = 'ke-plugin-table-table';
-		for (var i = 0; i < num; i++) {
-			var row = table.insertRow(i);
-			cellArr[i] = [];
-			for (var j = 0; j < num; j++) {
-				var value = (i + 1) + ',' + (j + 1);
-				var cell = row.insertCell(j);
-				cell.className = 'ke-plugin-table-td';
-				var div = KE.$$('div');
-				div.className = 'ke-plugin-table-div';
-				cell.appendChild(div);
-				cellArr[i][j] = div;
-				div.onmouseover = (function(x, y) {
-					return function() {
-						self.locationCell.innerHTML = x + ' by ' + y + ' Table';
-						for (var m = 0; m < num; m++) {
-							for (var n = 0; n < num; n++) {
-								var cell = cellArr[m][n];
-								if (m < x && n < y) cell.style.backgroundColor = '#CCCCCC';
-								else cell.style.backgroundColor = '#FFFFFF';
-							}
-						}
-					};
-				})(i + 1, j + 1);
-				div.onclick = (function(value) {
-					return function() { KE.plugin[cmd].exec(id, value); };
-				})(value);
-			}
-		}
-		var row = table.insertRow(num);
-		var cell = row.insertCell(0);
-		cell.className = 'ke-plugin-table-td-bottom';
-		cell.colSpan = 10;
-		self.locationCell = cell;
-		var menu = new KE.menu({
-			id : id,
-			cmd : cmd
-		});
-		menu.append(table);
-		menu.show();
-		this.menu = menu;
-	},
-	exec : function(id, value) {
-		var location = value.split(',');
-		var html = '<table border="1">';
-		for (var i = 0; i < location[0]; i++) {
-			html += '<tr>';
-			for (var j = 0; j < location[1]; j++) {
-				html += '<td>&nbsp;</td>';
-			}
-			html += '</tr>';
-		}
-		html += '</table>';
-		KE.util.insertHtml(id, html);
-		this.menu.hide();
 		KE.util.focus(id);
 	}
 };

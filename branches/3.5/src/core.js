@@ -751,6 +751,7 @@ KE.cmd = function(id) {
 		this.keSel.focus();
 		if (KE.util.inMarquee(keRange.getParentElement())) return;
 		var isCollapsed = (keRange.getText().replace(/\s+/g, '') === '');
+		if (isCollapsed && !KE.browser.IE) return;
 		var tagNames = [];
 		KE.each(tags, function(key, val) {
 			if (key != '*') tagNames.push(key);
@@ -770,7 +771,6 @@ KE.cmd = function(id) {
 			}
 		}
 		if (isCollapsed) {
-			if (!KE.browser.IE) return;
 			var node = keRange.startNode;
 			if (node.nodeType == 1) {
 				if (node.nodeName.toLowerCase() == 'br') return;
@@ -2378,6 +2378,7 @@ KE.remove = function(id, mode) {
 	if (!KE.g[id].container) return false;
 	mode = (typeof mode == "undefined") ? 0 : mode;
 	var container = KE.g[id].container;
+	KE.event.remove(document, 'mousedown', this.setSelectionHandler);
 	KE.g[id].iframeDoc.src = 'javascript:false';
 	KE.g[id].iframe.parentNode.removeChild(KE.g[id].iframe);
 	if (mode == 1) {
@@ -2563,6 +2564,7 @@ KE.create = function(id, mode) {
 	KE.event.input(iframeDoc, setSelectionHandler);
 	KE.event.add(iframeDoc, 'mouseup', setSelectionHandler);
 	KE.event.add(document, 'mousedown', setSelectionHandler);
+	this.setSelectionHandler = setSelectionHandler;
 	KE.onchange(id, function(id) {
 		if (KE.g[id].autoSetDataMode) {
 			KE.util.setData(id);
