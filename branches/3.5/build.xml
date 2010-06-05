@@ -6,17 +6,17 @@
 
 	<property name="src" location="src"/>
 	<property name="dist" location="dist"/>
-
 	<property name="version" value="3.5"/>
 	<property name="lang" value="zh_CN"/>
 	<property name="charset" value="utf-8"/>
-	<property name="kindeditor" value="kindeditor.js"/>
+	<property name="kefile" value="kindeditor.js"/>
+	<property name="kedir" value="${dist}/kindeditor-${version}-${lang}"/>
 
 	<target name="merge">
 		<tstamp>
 			<format property="thisyear" pattern="yyyy"/>
 		</tstamp>
-		<concat destfile="${kindeditor}"
+		<concat destfile="${kefile}"
 			encoding="${charset}"
 			outputencoding="${charset}">
 			<fileset file="${src}/header.js"/>
@@ -24,14 +24,14 @@
 			<fileset file="${src}/lang/${lang}.js"/>
 			<fileset file="${src}/plugin.js"/>
 		</concat>
-		<replaceregexp file="${kindeditor}"
+		<replaceregexp file="${kefile}"
 			match="\$\{VERSION\}"
 			replace="${version}"
 			encoding="${charset}"
 			byline="true"
 			flags="g"
 		/>
-		<replaceregexp file="${kindeditor}"
+		<replaceregexp file="${kefile}"
 			match="\$\{THISYEAR\}"
 			replace="${thisyear}"
 			encoding="${charset}"
@@ -41,17 +41,20 @@
 	</target>
 
 	<target name="copy" depends="merge">
-		<apply executable="svn">
-			<arg value="export" />
-			<arg value="." />
-			<arg value="${dist}/kindeditor-${version}-${lang}" />
-		</apply>
+		<delete dir="${dist}"/>
+		<mkdir dir="${dist}"/>
+		<exec executable="svn">
+			<arg line="export . ${kedir}" />
+		</exec>
 	</target>
 
 	<target name="dist" depends="copy">
-		<mkdir dir="${dist}/kindeditor-${version}-${lang}"/>
-		<zip destfile="${dist}/kindeditor-${version}-${lang}.zip"
-			basedir="${dist}/kindeditor-${version}-${lang}"
+		<delete dir="${kedir}/test"/>
+		<delete dir="${kedir}/lib"/>
+		<delete dir="${kedir}/src"/>
+		<delete file="${kedir}/build.xml"/>
+		<zip destfile="${kedir}.zip"
+			basedir="${kedir}"
 		/>
 	</target>
 

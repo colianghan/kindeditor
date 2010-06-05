@@ -4,6 +4,9 @@
 		<meta charset="utf-8" />
 		<title>KindEditor</title>
 		<style>
+			form {
+				margin: 0;
+			}
 			textarea {
 				display: block;
 			}
@@ -12,21 +15,21 @@
 		<script>
 			KE.show({
 				id : 'content1',
-				skinType: 'tinymce',
-				items : [
-					'source', '|', 'fullscreen', 'print', 'undo', 'redo', 'cut', 'copy', 'paste',
-					'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
-					'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
-					'superscript', '|', 'emoticons', 'link', 'unlink', '-',
-					'title', 'fontname', 'fontsize', '|', 'textcolor', 'bgcolor', 'bold',
-					'italic', 'underline', 'strikethrough', 'removeformat', 'selectall', '|', 'image',
-					'flash', 'media', 'table', 'hr', '|', 'about'
-				]
+				autoSetDataMode: false,
+				afterCreate : function(id) {
+					KE.event.add(KE.$('example'), 'submit', function() {
+						KE.util.setData(id);
+					});
+				}
 			});
 		</script>
 	</head>
 	<body>
-		<h3>TinyMCE风格</h3>
-		<textarea id="content1" name="content" style="width:700px;height:200px;visibility:hidden;"></textarea>
+		<h3>最佳性能模式</h3>
+		<form id="example" name="example" method="post" action="../php/demo.php">
+			<textarea id="content1" name="content1" style="width:700px;height:200px;visibility:hidden;"></textarea>
+			<br />
+			<input type="submit" name="button" value="提交内容" />
+		</form>
 	</body>
 </html>
