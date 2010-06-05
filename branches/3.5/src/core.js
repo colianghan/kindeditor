@@ -152,7 +152,7 @@ KE.event = {
 			func();
 		};
 		if (doc.addEventListener) {
-			this.add(doc, "domcontentloaded", readyFunc);
+			this.add(doc, "DOMContentLoaded", readyFunc);
 		} else if (doc.attachEvent){
 			this.add(doc, "readystatechange", function() {
 				if (doc.readyState == "complete") readyFunc();
@@ -361,15 +361,17 @@ KE.selection = function(doc) {
 			var range = new KE.range(doc);
 			range.setTextStart(keRange.startNode, keRange.startPos);
 			range.setTextEnd(keRange.endNode, keRange.endPos);
-			if (KE.util.getNodeType(range.startNode) == 88) {
-				this.range.setStart(range.startNode.parentNode, getNodePos(range.startNode));
+			var startNode = range.startNode;
+			var endNode = range.endNode;
+			if (KE.util.getNodeType(startNode) == 88) {
+				this.range.setStart(startNode.parentNode, getNodePos(range.startNode));
 			} else {
-				this.range.setStart(range.startNode, range.startPos);
+				this.range.setStart(startNode, range.startPos);
 			}
-			if (KE.util.getNodeType(range.endNode) == 88) {
-				this.range.setEnd(range.endNode.parentNode, getNodePos(range.endNode) + 1);
+			if (KE.util.getNodeType(endNode) == 88) {
+				this.range.setEnd(endNode.parentNode, getNodePos(range.endNode) + 1);
 			} else {
-				this.range.setEnd(range.endNode, range.endPos);
+				this.range.setEnd(endNode, range.endPos);
 			}
 			this.sel.removeAllRanges();
 			this.sel.addRange(this.range);
@@ -416,7 +418,12 @@ KE.range = function(doc) {
 			if (node == self.startNode) isStarted = true;
 			var range = new KE.range(doc);
 			range.selectTextNode(node);
-			if (range.comparePoints('START_TO_END', self) >= 0) return false;
+			var cmp = range.comparePoints('START_TO_END', self);
+			if (cmp > 0) {
+				return false;
+			} else if (cmp == 0) {
+				if (range.startNode !== range.endNode || range.startPos !== range.endPos) return false;
+			}
 			if (isStarted) nodeList.push(node);
 			return true;
 		});
@@ -610,7 +617,7 @@ KE.cmd = function(id) {
 			KE.each(attr[i], function(key, value) {
 				if (key.charAt(0) == '.') {
 					var jsKey = KE.util.getJsKey(key.substr(1));
-					eval('el.style.' + jsKey + ' = value;');
+					el.style[jsKey] = value;
 				} else {
 					el.setAttribute(key, value);
 				}
@@ -735,6 +742,7 @@ KE.cmd = function(id) {
 		return {left : leftFrag, right : parent};
 	};
 	this.remove = function(tags) {
+		var self = this;
 		var keRange = this.keRange;
 		var startNode = keRange.startNode;
 		var startPos = keRange.startPos;
@@ -742,7 +750,7 @@ KE.cmd = function(id) {
 		var endPos = keRange.endPos;
 		this.keSel.focus();
 		if (KE.util.inMarquee(keRange.getParentElement())) return;
-		if (keRange.getText().replace(/\s+/g, '') === '') return;
+		var isCollapsed = (keRange.getText().replace(/\s+/g, '') === '');
 		var tagNames = [];
 		KE.each(tags, function(key, val) {
 			if (key != '*') tagNames.push(key);
@@ -761,9 +769,18 @@ KE.cmd = function(id) {
 				endNode = range.startNode;
 			}
 		}
-		if (endParent) {
+		if (isCollapsed) {
+			if (!KE.browser.IE) return;
+			var node = keRange.startNode;
+			if (node.nodeType == 1) {
+				if (node.nodeName.toLowerCase() == 'br') return;
+				keRange.selectNode(node);
+			} else {
+				return;
+			}
+		} else if (endParent) {
 			var endFrags = this.splitNodeParent(endParent, endNode, endPos);
-			this.keRange.setEnd(endFrags.left, 0);
+			keRange.setEnd(endFrags.left, 0);
 			if (startParent == endParent) {
 				keRange.setStart(endFrags.left, 0);
 			}
@@ -771,7 +788,7 @@ KE.cmd = function(id) {
 		var removeAttr = function(node, attr) {
 			if (attr.charAt(0) == '.') {
 				var jsKey = KE.util.getJsKey(attr.substr(1));
-				eval('node.style.' + jsKey + ' = "";');
+				node.style[jsKey] = '';
 			} else {
 				node.removeAttribute(attr);
 			}
@@ -2553,13 +2570,10 @@ KE.create = function(id, mode) {
 		}
 		KE.history.add(id);
 	});
-	if (KE.browser.IE) KE.readonly(id, false);
-	window.setTimeout(function() {
-		if (!KE.browser.IE) KE.readonly(id, false);
-		KE.util.setFullHtml(id, srcTextarea.value);
-		if (mode > 0) KE.util.focus(id);
-		if (KE.g[id].afterCreate) KE.g[id].afterCreate(id);
-	}, 0);
+	KE.readonly(id, false);
+	KE.util.setFullHtml(id, srcTextarea.value);
+	if (mode > 0) KE.util.focus(id);
+	if (KE.g[id].afterCreate) KE.g[id].afterCreate(id);
 };
 
 KE.onchange = function(id, func) {
