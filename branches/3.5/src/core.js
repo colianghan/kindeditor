@@ -1451,7 +1451,7 @@ KE.util = {
 		html += '<head>';
 		html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 		html += '<title>KindEditor</title>';
-		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css?ver=' + KE.version + '" rel="stylesheet" type="text/css" />';
+		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css?ver=' + escape(KE.version) + '" rel="stylesheet" type="text/css" />';
 		var cssPath = KE.g[id].cssPath;
 		if (typeof cssPath == 'string') cssPath = [cssPath];
 		for (var i = 0, len = cssPath.length; i < len; i++) {
@@ -1519,7 +1519,6 @@ KE.util = {
 		} else {
 			return KE.format.getHtml(html, null, g.urlType);
 		}
-		return html;
 	},
 	getData : function(id, wyswygMode) {
 		var g = KE.g[id];
@@ -1968,11 +1967,6 @@ KE.dialog = function(arg){
 	this.widthMargin = 20;
 	this.heightMargin = 90;
 	this.zIndex = 19811214;
-	this.beforeHide;
-	this.afterHide;
-	this.beforeShow;
-	this.afterShow;
-	this.ondrag;
 	var minTop, minLeft, maxTop, maxLeft;
 	function setLimitNumber() {
 		var width = arg.width + this.widthMargin;
@@ -2163,10 +2157,12 @@ KE.dialog = function(arg){
 			dialogDoc.close();
 			KE.util.innerHtml(dialogDoc.body, arg.html);
 		} else {
-			if (typeof arg.file == "undefined") {
-				iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html?ver=' + KE.version;
+			var param = 'id=' + escape(id) + '&ver=' + escape(KE.version);
+			if (arg.file === undefined) {
+				iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html?' + param;
 			} else {
-				iframe.src = KE.g[id].pluginsPath + arg.file;
+				param = (/\?/.test(arg.file) ? '&' : '?') + param;
+				iframe.src = KE.g[id].pluginsPath + arg.file + param;
 			}
 		}
 		KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';

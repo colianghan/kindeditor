@@ -7,7 +7,7 @@ KE.plugin['about'] = {
 		var dialog = new KE.dialog({
 			id : id,
 			cmd : 'about',
-			file : 'about.html?id=' + id + '&ver=' + KE.version,
+			file : 'about.html',
 			width : 300,
 			height : 70,
 			loadingMode : true,
@@ -94,7 +94,7 @@ KE.plugin['plainpaste'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'plainpaste',
-			file : 'plainpaste.html?id=' + id + '&ver=' + KE.version,
+			file : 'plainpaste.html',
 			width : 400,
 			height : 300,
 			loadingMode : true,
@@ -122,7 +122,7 @@ KE.plugin['wordpaste'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'wordpaste',
-			file : 'wordpaste.html?id=' + id + '&ver=' + KE.version,
+			file : 'wordpaste.html',
 			width : 400,
 			height : 300,
 			loadingMode : true,
@@ -625,7 +625,7 @@ KE.plugin['flash'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'flash',
-			file : 'flash.html?id=' + id + '&ver=' + KE.version,
+			file : 'flash.html',
 			width : 400,
 			height : 140,
 			loadingMode : true,
@@ -725,7 +725,7 @@ KE.plugin['image'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'image',
-			file : 'image/image.html?id=' + id + '&ver=' + KE.version,
+			file : 'image/image.html',
 			width : 400,
 			height : 230,
 			loadingMode : true,
@@ -852,7 +852,7 @@ KE.plugin['link'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'link',
-			file : 'link/link.html?id=' + id + '&ver=' + KE.version,
+			file : 'link/link.html',
 			width : 400,
 			height : 100,
 			loadingMode : true,
@@ -1019,7 +1019,7 @@ KE.plugin['media'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'media',
-			file : 'media.html?id=' + id + '&ver=' + KE.version,
+			file : 'media.html',
 			width : 400,
 			height : 170,
 			loadingMode : true,
@@ -1184,7 +1184,7 @@ KE.plugin['advtable'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : cmd,
-			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
+			file : 'advtable/advtable.html',
 			width : 420,
 			height : 220,
 			loadingMode : true,

@@ -5,14 +5,14 @@
 * @author Roddy <luolonghao@gmail.com>
 * @site http://www.kindsoft.net/
 * @licence LGPL(http://www.opensource.org/licenses/lgpl-license.php)
-* @version 3.5
+* @version 3.5 (2010-06-06)
 *******************************************************************************/
 
 (function (undefined) {
 
 var KE = {};
 
-KE.version = '3.5';
+KE.version = '3.5 (2010-06-06)';
 
 KE.scriptPath = (function() {
 	var elements = document.getElementsByTagName('script');
@@ -1460,7 +1460,7 @@ KE.util = {
 		html += '<head>';
 		html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
 		html += '<title>KindEditor</title>';
-		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css?ver=' + KE.version + '" rel="stylesheet" type="text/css" />';
+		html += '<link href="' + KE.g[id].skinsPath + 'common/editor.css?ver=' + escape(KE.version) + '" rel="stylesheet" type="text/css" />';
 		var cssPath = KE.g[id].cssPath;
 		if (typeof cssPath == 'string') cssPath = [cssPath];
 		for (var i = 0, len = cssPath.length; i < len; i++) {
@@ -1528,7 +1528,6 @@ KE.util = {
 		} else {
 			return KE.format.getHtml(html, null, g.urlType);
 		}
-		return html;
 	},
 	getData : function(id, wyswygMode) {
 		var g = KE.g[id];
@@ -1977,11 +1976,6 @@ KE.dialog = function(arg){
 	this.widthMargin = 20;
 	this.heightMargin = 90;
 	this.zIndex = 19811214;
-	this.beforeHide;
-	this.afterHide;
-	this.beforeShow;
-	this.afterShow;
-	this.ondrag;
 	var minTop, minLeft, maxTop, maxLeft;
 	function setLimitNumber() {
 		var width = arg.width + this.widthMargin;
@@ -2172,10 +2166,12 @@ KE.dialog = function(arg){
 			dialogDoc.close();
 			KE.util.innerHtml(dialogDoc.body, arg.html);
 		} else {
-			if (typeof arg.file == "undefined") {
-				iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html?ver=' + KE.version;
+			var param = 'id=' + escape(id) + '&ver=' + escape(KE.version);
+			if (arg.file === undefined) {
+				iframe.src = KE.g[id].pluginsPath + arg.cmd + '.html?' + param;
 			} else {
-				iframe.src = KE.g[id].pluginsPath + arg.file;
+				param = (/\?/.test(arg.file) ? '&' : '?') + param;
+				iframe.src = KE.g[id].pluginsPath + arg.file + param;
 			}
 		}
 		KE.g[id].maskDiv.style.width = KE.util.getDocumentWidth() + 'px';
@@ -2831,7 +2827,7 @@ KE.plugin['about'] = {
 		var dialog = new KE.dialog({
 			id : id,
 			cmd : 'about',
-			file : 'about.html?id=' + id + '&ver=' + KE.version,
+			file : 'about.html',
 			width : 300,
 			height : 70,
 			loadingMode : true,
@@ -2918,7 +2914,7 @@ KE.plugin['plainpaste'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'plainpaste',
-			file : 'plainpaste.html?id=' + id + '&ver=' + KE.version,
+			file : 'plainpaste.html',
 			width : 400,
 			height : 300,
 			loadingMode : true,
@@ -2946,7 +2942,7 @@ KE.plugin['wordpaste'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'wordpaste',
-			file : 'wordpaste.html?id=' + id + '&ver=' + KE.version,
+			file : 'wordpaste.html',
 			width : 400,
 			height : 300,
 			loadingMode : true,
@@ -3449,7 +3445,7 @@ KE.plugin['flash'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'flash',
-			file : 'flash.html?id=' + id + '&ver=' + KE.version,
+			file : 'flash.html',
 			width : 400,
 			height : 140,
 			loadingMode : true,
@@ -3549,7 +3545,7 @@ KE.plugin['image'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'image',
-			file : 'image/image.html?id=' + id + '&ver=' + KE.version,
+			file : 'image/image.html',
 			width : 400,
 			height : 230,
 			loadingMode : true,
@@ -3676,7 +3672,7 @@ KE.plugin['link'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'link',
-			file : 'link/link.html?id=' + id + '&ver=' + KE.version,
+			file : 'link/link.html',
 			width : 400,
 			height : 100,
 			loadingMode : true,
@@ -3843,7 +3839,7 @@ KE.plugin['media'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : 'media',
-			file : 'media.html?id=' + id + '&ver=' + KE.version,
+			file : 'media.html',
 			width : 400,
 			height : 170,
 			loadingMode : true,
@@ -4008,7 +4004,7 @@ KE.plugin['advtable'] = {
 		this.dialog = new KE.dialog({
 			id : id,
 			cmd : cmd,
-			file : 'advtable/advtable.html?id=' + id + '&ver=' + KE.version,
+			file : 'advtable/advtable.html',
 			width : 420,
 			height : 220,
 			loadingMode : true,

@@ -1,4 +1,4 @@
-<project name="KindEditor" default="merge" basedir=".">
+<project name="KindEditor" default="merge_zh_CN" basedir=".">
 
 	<description>
 		KindEditor build file
@@ -7,16 +7,28 @@
 	<property name="src" location="src"/>
 	<property name="dist" location="dist"/>
 	<property name="version" value="3.5"/>
-	<property name="lang" value="zh_CN"/>
 	<property name="charset" value="utf-8"/>
-	<property name="kefile" value="kindeditor.js"/>
-	<property name="kedir" value="${dist}/kindeditor-${version}-${lang}"/>
+	<property name="filename" value="kindeditor"/>
+
+	<target name="set_en">
+		<property name="lang" value="en"/>
+	</target>
+
+	<target name="set_zh_CN">
+		<property name="lang" value="zh_CN"/>
+	</target>
+
+	<target name="set_prop">
+		<property name="kedir" value="${dist}/${filename}-${version}-${lang}"/>
+		<property name="kezip" value="${kedir}.zip"/>
+	</target>
 
 	<target name="merge">
 		<tstamp>
 			<format property="thisyear" pattern="yyyy"/>
+			<format property="ymd" pattern="yyyy-MM-dd"/>
 		</tstamp>
-		<concat destfile="${kefile}"
+		<concat destfile="${filename}.js"
 			encoding="${charset}"
 			outputencoding="${charset}">
 			<fileset file="${src}/header.js"/>
@@ -24,14 +36,14 @@
 			<fileset file="${src}/lang/${lang}.js"/>
 			<fileset file="${src}/plugin.js"/>
 		</concat>
-		<replaceregexp file="${kefile}"
+		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"
-			replace="${version}"
+			replace="${version} (${ymd})"
 			encoding="${charset}"
 			byline="true"
 			flags="g"
 		/>
-		<replaceregexp file="${kefile}"
+		<replaceregexp file="${filename}.js"
 			match="\$\{THISYEAR\}"
 			replace="${thisyear}"
 			encoding="${charset}"
@@ -41,14 +53,21 @@
 	</target>
 
 	<target name="copy" depends="merge">
-		<delete dir="${dist}"/>
 		<mkdir dir="${dist}"/>
+		<delete dir="${kedir}"/>
+		<delete file="${kezip}"/>
 		<exec executable="svn">
-			<arg line="export . ${kedir}" />
+			<arg line="export . ${kedir}"/>
 		</exec>
 	</target>
 
-	<target name="dist" depends="copy">
+	<target name="compile" depends="copy">
+		<exec executable="java">
+			<arg line="-jar lib/closure-compiler.jar --js=${kedir}/${filename}.js --js_output_file=${kedir}/${filename}-min.js"/>
+		</exec>
+	</target>
+
+	<target name="zip" depends="compile">
 		<delete dir="${kedir}/test"/>
 		<delete dir="${kedir}/lib"/>
 		<delete dir="${kedir}/src"/>
@@ -57,5 +76,9 @@
 			basedir="${kedir}"
 		/>
 	</target>
+
+	<target name="merge_zh_CN" depends="set_en,merge"/>
+	<target name="en" depends="set_en,set_prop,zip"/>
+	<target name="zh_CN" depends="set_zh_CN,set_prop,zip"/>
 
 </project>
