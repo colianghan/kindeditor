@@ -68,16 +68,18 @@
 	</target>
 
 	<target name="zip" depends="compile">
+		<copy file="${kedir}/docs/license.txt" todir="${kedir}"/>
 		<delete dir="${kedir}/test"/>
 		<delete dir="${kedir}/lib"/>
 		<delete dir="${kedir}/src"/>
+		<delete dir="${kedir}/docs"/>
 		<delete file="${kedir}/build.xml"/>
 		<zip destfile="${kedir}.zip"
 			basedir="${kedir}"
 		/>
 	</target>
 
-	<target name="merge_zh_CN" depends="set_en,merge"/>
+	<target name="merge_zh_CN" depends="set_zh_CN,merge"/>
 	<target name="en" depends="set_en,set_prop,zip"/>
 	<target name="zh_CN" depends="set_zh_CN,set_prop,zip"/>
 
