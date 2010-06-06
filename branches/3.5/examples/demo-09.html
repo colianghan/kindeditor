@@ -16,6 +16,7 @@
 			KE.show({
 				id : 'content1',
 				autoSetDataMode: false,
+				allowPreviewEmoticons : false,
 				afterCreate : function(id) {
 					KE.event.add(KE.$('example'), 'submit', function() {
 						KE.util.setData(id);
