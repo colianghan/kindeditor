@@ -65,16 +65,34 @@ KE.setting = {
 	],
 	htmlTags : {
 		font : ['color', 'size', 'face', '.background-color'],
-		span : ['style'],
-		div : ['class', 'align', 'style'],
-		table: ['class', 'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align', 'style'],
-		'td,th': ['class', 'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor', 'style'],
-		a : ['class', 'href', 'target', 'name', 'style'],
-		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', 'style', 'align', 'allowscriptaccess', '/'],
-		img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', 'style', '/'],
-		hr : ['class', '/'],
+		span : [
+			'.color', '.background-color', '.font-size', '.font-family', '.background',
+			'.font-weight', '.font-style', '.text-decoration', '.vertical-align'
+		],
+		div : [
+			'align', '.border', '.margin', '.padding', '.text-align', '.color',
+			'.background-color', '.font-size', '.font-family', '.font-weight', '.background',
+			'.font-style', '.text-decoration', '.vertical-align', '.margin-left'
+		],
+		table: [
+			'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align', 'bordercolor',
+			'.padding', '.margin', '.border', 'bgcolor', '.text-align', '.color', '.background-color',
+			'.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.background'
+		],
+		'td,th': [
+			'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor',
+			'.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight',
+			'.font-style', '.text-decoration', '.vertical-align', '.background'
+		],
+		a : ['href', 'target', 'name'],
+		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess', '/'],
+		img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
+		hr : ['/'],
 		br : ['/'],
-		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : ['align', 'style'],
+		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
+			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.background',
+			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
+		],
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	},
 	mediaTypes : {
