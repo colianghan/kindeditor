@@ -86,7 +86,8 @@ KE.setting = {
 		table: [
 			'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align', 'bordercolor',
 			'.padding', '.margin', '.border', 'bgcolor', '.text-align', '.color', '.background-color',
-			'.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.background'
+			'.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.background',
+			'.width', '.height'
 		],
 		'td,th': [
 			'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor',
@@ -1239,10 +1240,9 @@ KE.util = {
 		var x = 0, y = 0;
 		if (el.getBoundingClientRect) {
 			var box = el.getBoundingClientRect();
-			var el = this.getDocumentElement();
 			var pos = this.getScrollPos();
-			x = box.left + pos.x - el.clientLeft;
-			y = box.top + pos.y - el.clientTop;
+			x = box.left + pos.x;
+			y = box.top + pos.y;
 		} else {
             x = el.offsetLeft;
             y = el.offsetTop;

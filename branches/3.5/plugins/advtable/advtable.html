@@ -160,11 +160,12 @@
 						var dialog = KE.g[id].dialogStack[0];
 						dialog.beforeHide = removePicker;
 						dialog.ondrag = removePicker;
+						var scrollPos = KE.util.getScrollPos();
 						var iframePos = KE.util.getElementPos(dialog.iframe);
 						var pos = KE.util.getElementPos(el);
 						picker = new KE.colorpicker({
-							x : iframePos.x + pos.x,
-							y : iframePos.y + pos.y + 22,
+							x : iframePos.x + pos.x - scrollPos.x,
+							y : iframePos.y + pos.y - scrollPos.y + 22,
 							z : dialog.zIndex + 1,
 							onclick : function(color) {
 								setColor(el, color);
