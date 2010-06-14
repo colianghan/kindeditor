@@ -17,24 +17,37 @@ var _ua = navigator.userAgent.toLowerCase(),
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
 	_VERSION = _matches ? _matches[1] : '0';
 
-function _each(obj, fn) {
-	jQuery.each(obj, fn);
-}
-
 function _isArray(obj) {
-	return jQuery.isArray(obj);
+	return Object.prototype.toString.call(obj) === '[object Array]';
 }
 
 function _isFunction(obj) {
-	return jQuery.isFunction(obj);
+	return Object.prototype.toString.call(obj) === '[object Function]';
 }
 
 function _inArray(val, arr) {
-	return jQuery.inArray(val, arr);
+	for (var i = 0, len = arr.length; i < len; i++) {
+		if (val === arr[i]) return i;
+	}
+	return -1;
+}
+
+function _each(obj, fn) {
+	if (_isArray(obj)) {
+		for (var i = 0, len = obj.length; i < len; i++) {
+			if (fn(i, obj[i]) === false) break;
+		}
+	} else {
+		for (var key in obj) {
+			if (obj.hasOwnProperty(key)) {
+				if (fn(key, obj[key]) === false) break;
+			}
+		}
+	}
 }
 
 function _trim(str) {
-	return jQuery.trim(str);
+	return str.replace(/^\s+|\s+$/g, '');
 }
 
 function _toHex(color) {

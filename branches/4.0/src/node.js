@@ -14,7 +14,10 @@
 */
 (function (K, undefined) {
 
-var _query = K.query,
+var _IE = K.IE,
+	_VERSION = K.VERSION,
+	_query = K.query,
+	_formatStyle = K.formatStyle,
 	_trim = K.trim;
 
 function _node(expr, root) {
@@ -34,7 +37,28 @@ function _node(expr, root) {
 		doc : node.ownerDocument,
 		attr : function(key, val) {
 			if (val === undefined) {
-				return jQuery(node).attr(key);
+				key = key.toLowerCase();
+				if (_IE && _VERSION < 8) {
+					var div = this.doc.createElement('div');
+					div.appendChild(node.cloneNode(false));
+					var re = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g;
+					var arr, k, v, list = {};
+					while ((arr = re.exec(div.innerHTML.toLowerCase()))) {
+						k = arr[1] || arr[2] || arr[4] || arr[6];
+						v = arr[1] || (arr[2] ? arr[3] : (arr[4] ? arr[5] : arr[7]));
+						if (k === key) {
+							val = v;
+							break;
+						}
+					}
+				} else {
+					val = node.getAttribute(key, 2);
+				}
+				val = val === undefined ? null : val;
+				if (key === 'style' && val !== null) {
+					val = _formatStyle(val);
+				}
+				return val;
 			} else {
 				jQuery(node).attr(key, val);
 				return this;

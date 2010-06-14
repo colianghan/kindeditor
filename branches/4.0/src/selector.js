@@ -34,15 +34,16 @@ var _IE = K.IE,
 	_toHex = K.toHex;
 
 function _isAncestor(ancestor, node) {
-	while (node = node.parentNode) {
-		if (node === ancestor) return true;
+	var parent = node;
+	while (parent = parent.parentNode) {
+		if (parent === ancestor) return true;
 	}
 	return false;
 }
 
 function _formatStyle(style) {
 	return _trim(style.replace(/\s*([^\s]+?)\s*:(.*?)(;|$)/g, function($0, $1, $2) {
-		return $1.toLowerCase() + ':' + _toHex($2) + ';';
+		return _trim($1.toLowerCase()) + ':' + _trim(_toHex($2)) + ';';
 	}));
 }
 
@@ -215,5 +216,6 @@ function _queryAll(expr, root) {
 K.query = _query;
 K.queryAll = _queryAll;
 K.isAncestor = _isAncestor;
+K.formatStyle = _formatStyle;
 
 })(KindEditor);
