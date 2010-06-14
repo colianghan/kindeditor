@@ -23,6 +23,10 @@ var _IE = K.IE,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
 
+/**
+	Reference:
+	DOM Level 2: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html
+*/
 function _range(mixed) {
 	function toRange(rng) {
 		if (_IE) {
@@ -77,21 +81,22 @@ function _range(mixed) {
 				startPos -= testRange.text.length;
 				return {node: startNode, offset: startPos};
 			}
-			var start = getStartEnd(true);
-			var end = getStartEnd(false);
-			var range = _range(doc);
+			var start = getStartEnd(true),
+				end = getStartEnd(false),
+				range = _range(doc);
 			range.setStart(start.node, start.offset);
 			range.setEnd(end.node, end.offset);
 			return range;
 		} else {
-			var doc = rng.startContainer.ownerDocument;
-			var range = _range(doc);
-			range.setStart(rng.startContainer, rng.startOffset);
+			var startContainer = rng.startContainer,
+				doc = startContainer.ownerDocument || startContainer,
+				range = _range(doc);
+			range.setStart(startContainer, rng.startOffset);
 			range.setEnd(rng.endContainer, rng.endOffset);
 			return range;
 		}
 	}
-	if (_node(mixed).name !== '#document') {
+	if (!mixed.nodeName) {
 		return toRange(mixed);
 	}
 	var doc = mixed;
@@ -120,8 +125,8 @@ function _range(mixed) {
 		this.commonAncestorContainer = ancestor;
 	}
 	function compareAndUpdate() {
-		var rangeA = _range(doc);
-		var rangeB = _range(doc);
+		var rangeA = _range(doc),
+			rangeB = _range(doc);
 		rangeA.startContainer = rangeA.endContainer = this.startContainer;
 		rangeA.startOffset = rangeA.endOffset = this.startOffset;
 		rangeB.startContainer = rangeB.endContainer = this.endContainer;
@@ -148,6 +153,7 @@ function _range(mixed) {
 			compareAndUpdate.call(this);
 			updateCollapsed.call(this);
 			updateCommonAncestor.call(this);
+			return this;
 		},
 		setEnd : function(node, offset) {
 			this.endContainer = node;
@@ -159,22 +165,24 @@ function _range(mixed) {
 			compareAndUpdate.call(this);
 			updateCollapsed.call(this);
 			updateCommonAncestor.call(this);
+			return this;
 		},
 		setStartBefore : function(node) {
-			this.setStart(node.parentNode || doc, _node(node).index);
+			return this.setStart(node.parentNode || doc, _node(node).index);
 		},
 		setStartAfter : function(node) {
-			this.setStart(node.parentNode || doc, _node(node).index + 1);
+			return this.setStart(node.parentNode || doc, _node(node).index + 1);
 		},
 		setEndBefore : function(node) {
-			this.setEnd(node.parentNode || doc, _node(node).index);
+			return this.setEnd(node.parentNode || doc, _node(node).index);
 		},
 		setEndAfter : function(node) {
-			this.setEnd(node.parentNode || doc, _node(node).index + 1);
+			return this.setEnd(node.parentNode || doc, _node(node).index + 1);
 		},
 		selectNode : function(node) {
 			this.setStartBefore(node);
 			this.setEndAfter(node);
+			return this;
 		},
 		selectNodeContents : function(node) {
 			var knode = _node(node);
@@ -189,14 +197,16 @@ function _range(mixed) {
 					this.setEnd(node, 0);
 				}
 			}
+			return this;
 		},
 		collapse : function(toStart) {
 			if (toStart) this.setEnd(this.startContainer, this.startOffset);
 			else this.setStart(this.endContainer, this.endOffset);
+			return this;
 		},
 		compareBoundaryPoints : function(how, range) {
-			var rangeA = this.get();
-			var rangeB = range.get();
+			var rangeA = this.get(),
+				rangeB = range.get();
 			if (_IE) {
 				var arr = {};
 				arr[_START_TO_START] = 'StartToStart';
@@ -224,21 +234,62 @@ function _range(mixed) {
 			return range;
 		},
 		toString : function() {
-			var rng = this.get();
-			var str = _IE ? rng.text : rng.toString();
+			var rng = this.get(),
+				str = _IE ? rng.text : rng.toString();
 			return str.replace(/\r\n|\n|\r/g, '');
 		},
-		extractContents : function() {
-			// TODO
-		},
 		cloneContents : function() {
-			// TODO
+		},
+		deleteContents : function() {
+			return this;
+		},
+		extractContents : function() {
+		},
+		insertNode : function(node) {
+			var container = this.startContainer,
+				offset = this.startOffset,
+				afterNode,
+				parentNode,
+				endNode,
+				endTextNode,
+				endTextPos,
+				eq = container == this.endContainer;
+			if (this.endContainer.nodeType == 1) {
+				endNode = this.endContainer.childNodes[this.endOffset - 1];
+				eq = container == endNode;
+				if (eq) endTextPos = endNode.nodeValue.length;
+			}
+			if (container.nodeType == 1) {
+				afterNode = container.childNodes[offset];
+			} else {
+				if (offset == 0) {
+					afterNode = container;
+				} else if (offset < container.length) {
+					afterNode = container.splitText(offset);
+					if (eq) {
+						endTextNode = afterNode;
+						endTextPos = endTextPos ? endTextPos - offset : this.endOffset - offset;
+						this.setEnd(endTextNode, endTextPos);
+					}
+				} else {
+					parentNode = container.parentNode;
+				}
+			}
+			if (afterNode) afterNode.parentNode.insertBefore(node, afterNode);
+			if (parentNode) parentNode.appendChild(node);
+			this.setStartBefore(node);
+			if (endNode) this.setEndAfter(endNode);
+			return this;
+		},
+		surroundContents : function(node) {
+			node.appendChild(this.extractContents());
+			return this.insertNode(node);
 		},
 		get : function() {
 			function getBeforeLength(node) {
-				var doc = node.ownerDocument;
-				var len = 0;
-				var sibling = node.previousSibling;
+				var doc = node.ownerDocument,
+					len = 0,
+					sibling = node.previousSibling;
 				while (sibling) {
 					if (sibling.nodeType == 1) {
 						if (_node(sibling).paired()) {
@@ -256,15 +307,17 @@ function _range(mixed) {
 				return len;
 			}
 			function getEndRange(node, offset) {
-				var doc = node.ownerDocument || node;
-				var range = doc.body.createTextRange();
+				var doc = node.ownerDocument || node,
+					range = doc.body.createTextRange();
 				if (doc == node) {
 					range.collapse(true);
 					return range;
 				}
 				if (node.nodeType == 1) {
-					var children = node.childNodes;
-					var isStart, child, isTemp = false;
+					var children = node.childNodes,
+						isStart,
+						child,
+						isTemp = false;
 					if (offset == 0) {
 						child = children[0];
 						isStart = true;

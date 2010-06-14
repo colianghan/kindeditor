@@ -1,16 +1,23 @@
 module('range');
 
 test('range', function() {
-	expect(6);
+	var p = K.query('#test-data-01 p');
+	var strong = K.query('#test-data-01 strong');
 
-	var range = K.range(document);
-
+	var range, nativeRange;
+	range = K.range(document);
 	ok(range.startContainer === document);
 	ok(range.startOffset === 0);
 	ok(range.endContainer === document);
 	ok(range.endOffset === 0);
 	ok(range.collapsed === true);
 	ok(range.commonAncestorContainer === document);
+
+	range = K.range(document);
+	range.selectNodeContents(strong);
+	nativeRange = range.get();
+	var newRange = K.range(nativeRange);
+	same(range.toString(), newRange.toString());
 });
 
 test('range.setStart', function() {
@@ -387,3 +394,38 @@ test('range.toString', function() {
 	ok(range.toString().length > 100);
 });
 
+test('range.insertNode', function() {
+	var p = K.query('#test-data-01 p');
+	var strong = K.query('#test-data-01 strong');
+	var range, knode;
+
+	range = K.range(document);
+	range.selectNode(strong);
+	knode = K.node('<span>abc</span>');
+	range.insertNode(knode.get());
+	same(range.toString(), 'abcefg');
+	knode.remove();
+
+	range = K.range(document);
+	range.selectNode(strong.firstChild);
+	knode = K.node('<span>123</span>');
+	range.insertNode(knode.get());
+	same(range.toString(), '123efg');
+	knode.remove();
+
+	range = K.range(document);
+	range.setStart(strong.firstChild, 0);
+	range.setEnd(strong.firstChild, 3);
+	knode = K.node('<span>123</span>');
+	range.insertNode(knode.get());
+	same(range.toString(), '123efg');
+	knode.remove();
+
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	knode = K.node('<span>123</span>');
+	range.insertNode(knode.get());
+	same(range.toString(), '123f');
+	knode.remove();
+});

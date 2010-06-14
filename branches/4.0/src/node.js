@@ -110,6 +110,10 @@ function _node(expr, root) {
 			jQuery(node).append(val);
 			return this;
 		},
+		remove : function() {
+			jQuery(node).remove();
+			return this;
+		},
 		paired : function() {
 			var temp = _node('<div></div>').append(node.cloneNode(false));
 			return /<\/.*>/.test(temp.html());
