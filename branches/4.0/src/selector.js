@@ -152,16 +152,17 @@ function _queryAll(expr, root) {
 		return arr;
 	}
 	function select(expr, root) {
-		var arr = [];
-		var tag = expr.match(/^((?:\\.|[^.#\s\[<>])+)/) ? RegExp.$1.toLowerCase() : '*';
-		if (expr.match(/#((?:[\w\-]|\\.)+)$/)) {
-			arr = byId(RegExp.$1, tag, root);
-		} else if (expr.match(/\.((?:[\w\-]|\\.)+)$/)) {
-			arr = byClass(RegExp.$1, tag, root);
-		} else if (expr.match(/\[((?:[\w\-]|\\.)+)\]/)) {
-			arr = byAttr(RegExp.$1.toLowerCase(), null, tag, root);
-		} else if (expr.match(/\[((?:[\w\-]|\\.)+)\s*=\s*['"]?((?:\\.|[^'"]+)+)['"]?\]/)) {
-			var key = RegExp.$1.toLowerCase(), val = RegExp.$2;
+		var arr = [], matches;
+		matches = /^((?:\\.|[^.#\s\[<>])+)/.exec(expr);
+		var tag = matches ? matches[1] : '*';
+		if (matches = /#((?:[\w\-]|\\.)+)$/.exec(expr)) {
+			arr = byId(matches[1], tag, root);
+		} else if (matches = /\.((?:[\w\-]|\\.)+)$/.exec(expr)) {
+			arr = byClass(matches[1], tag, root);
+		} else if (matches = /\[((?:[\w\-]|\\.)+)\]/.exec(expr)) {
+			arr = byAttr(matches[1].toLowerCase(), null, tag, root);
+		} else if (matches = /\[((?:[\w\-]|\\.)+)\s*=\s*['"]?((?:\\.|[^'"]+)+)['"]?\]/.exec(expr)) {
+			var key = matches[1].toLowerCase(), val = matches[2];
 			if (key === 'id') arr = byId(val, tag, root);
 			else if (key === 'class') arr = byClass(val, tag, root);
 			else if (key === 'name') arr = byName(val, tag, root);

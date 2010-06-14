@@ -9,13 +9,13 @@
 
 (function (window, undefined) {
 
-var _ua = navigator.userAgent.toLowerCase();
-
-var _IE = (_ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1),
-	_GECKO = (_ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1),
-	_WEBKIT = (_ua.indexOf('applewebkit') > -1),
-	_OPERA = (_ua.indexOf('opera') > -1),
-	_VERSION = (_ua.match(/(msie|firefox|webkit|opera)[\/:\s](\d+)/) ? RegExp.$2 : '0');
+var _ua = navigator.userAgent.toLowerCase(),
+	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
+	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
+	_WEBKIT = _ua.indexOf('applewebkit') > -1,
+	_OPERA = _ua.indexOf('opera') > -1,
+	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
+	_VERSION = _matches ? _matches[1] : '0';
 
 function _each(obj, fn) {
 	jQuery.each(obj, fn);
