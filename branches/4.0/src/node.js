@@ -114,6 +114,9 @@ function _node(expr, root) {
 			jQuery(node).remove();
 			return this;
 		},
+		outer : function() {
+			return _node('<div></div>').html(node.cloneNode(true)).html();
+		},
 		paired : function() {
 			var temp = _node('<div></div>').append(node.cloneNode(false));
 			return /<\/.*>/.test(temp.html());

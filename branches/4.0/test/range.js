@@ -325,6 +325,20 @@ test('range.compareBoundaryPoints', function() {
 	ok(cmp === 1);
 	cmp = rangeA.compareBoundaryPoints(K.END_TO_START, rangeB);
 	ok(cmp === -1);
+	//8
+	rangeA = K.range(document);
+	rangeB = K.range(document);
+	rangeA.selectNode(p.childNodes[3]);
+	rangeB.selectNode(strong.firstChild);
+	rangeB.setEnd(strong.nextSibling, 4);
+	cmp = rangeA.compareBoundaryPoints(K.START_TO_START, rangeB);
+	ok(cmp === 1);
+	cmp = rangeA.compareBoundaryPoints(K.START_TO_END, rangeB);
+	ok(cmp === 1);
+	cmp = rangeA.compareBoundaryPoints(K.END_TO_END, rangeB);
+	ok(cmp === 1);
+	cmp = rangeA.compareBoundaryPoints(K.END_TO_START, rangeB);
+	ok(cmp === 1);
 
 });
 
@@ -394,25 +408,78 @@ test('range.toString', function() {
 	ok(range.toString().length > 100);
 });
 
-test('range.insertNode', function() {
+test('range.cloneContents', function() {
 	var p = K.query('#test-data-01 p');
 	var strong = K.query('#test-data-01 strong');
-	var range, knode;
+	var range, frag;
+	//1
+	range = K.range(document);
+	range.selectNode(strong);
+	frag = range.cloneContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	//2
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	frag = range.cloneContents();
+	same(K.node(frag).outer().toLowerCase(), 'f');
+	//3
+	range = K.range(document);
+	range.setStart(strong.firstChild, 0);
+	range.setEnd(strong.firstChild, 3);
+	frag = range.cloneContents();
+	same(K.node(frag).outer().toLowerCase(), 'efg');
+	//4
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.nextSibling, 1);
+	frag = range.cloneContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>h');
+	//5
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.nextSibling, 0);
+	frag = range.cloneContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>');
+	//6
+	range = K.range(document);
+	range.setStart(p, 0);
+	range.setEnd(p, 4);
+	frag = range.cloneContents();
+	ok(K.node(frag).children.length === 4);
+	//7
+	range = K.range(document);
+	range.selectNode(strong.firstChild);
+	range.setEnd(strong.nextSibling, 4);
+	frag = range.cloneContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>hijk');
+	//8
+	range = K.range(document);
+	range.setStart(strong.nextSibling, 4);
+	range.setEnd(p, 4);
+	frag = range.cloneContents();
+	ok(K.node(frag).children.length === 1);
+	same(K.node(frag).children[0].nodeName.toLowerCase(), 'img');
+});
 
+test('range.insertNode', function() {
+	var strong = K.query('#test-data-01 strong');
+	var range, knode;
+	//1
 	range = K.range(document);
 	range.selectNode(strong);
 	knode = K.node('<span>abc</span>');
 	range.insertNode(knode.get());
 	same(range.toString(), 'abcefg');
 	knode.remove();
-
+	//2
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
 	knode = K.node('<span>123</span>');
 	range.insertNode(knode.get());
 	same(range.toString(), '123efg');
 	knode.remove();
-
+	//3
 	range = K.range(document);
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
@@ -420,7 +487,7 @@ test('range.insertNode', function() {
 	range.insertNode(knode.get());
 	same(range.toString(), '123efg');
 	knode.remove();
-
+	//4
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
@@ -428,4 +495,16 @@ test('range.insertNode', function() {
 	range.insertNode(knode.get());
 	same(range.toString(), '123f');
 	knode.remove();
+	//5
+	var frag = document.createDocumentFragment();
+	var knode1 = K.node('<span>1</span>'),
+		knode2 = K.node('<span>2</span>');
+	frag.appendChild(knode1.get());
+	frag.appendChild(knode2.get());
+	range = K.range(document);
+	range.selectNode(strong);
+	range.insertNode(frag);
+	same(range.toString(), '12efg');
+	knode1.remove();
+	knode2.remove();
 });
