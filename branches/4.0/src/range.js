@@ -78,7 +78,13 @@ function _range(mixed) {
 			startContainer = self.startContainer,
 			startOffset = self.startOffset,
 			endContainer = self.endContainer,
-			endOffset = self.endOffset;
+			endOffset = self.endOffset,
+			nodeList = [],
+			newRange = self;
+		if (isDelete) {
+			newRange = self.cloneRange();
+			self.collapse(true);
+		}
 		function splitTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length,
 				centerNode;
@@ -91,7 +97,7 @@ function _range(mixed) {
 				var center = node;
 				if (startOffset > 0) center = node.splitText(startOffset);
 				if (endOffset < length) center.splitText(endOffset - startOffset);
-				center.parentNode.removeChild(center);
+				nodeList.push(center);
 			}
 			return centerNode;
 		}
@@ -111,19 +117,17 @@ function _range(mixed) {
 			while (node) {
 				var range = _range(doc);
 				range.selectNode(node);
-				if (range.compareBoundaryPoints(_END_TO_START, self) >= 0) return false;
+				if (range.compareBoundaryPoints(_END_TO_START, newRange) >= 0) return false;
 				var nextNode = node.nextSibling;
-				if (range.compareBoundaryPoints(_START_TO_END, self) > 0) {
-					//console.log('nodeName:' + node.nodeName);
-					//console.log('nodeValue:' + node.nodeValue);
+				if (range.compareBoundaryPoints(_START_TO_END, newRange) > 0) {
 					var type = node.nodeType;
 					if (type == 1) {
-						if (range.compareBoundaryPoints(_START_TO_START, self) >= 0) {
+						if (range.compareBoundaryPoints(_START_TO_START, newRange) >= 0) {
 							if (isCopy) {
 								frag.appendChild(node.cloneNode(true));
 							}
 							if (isDelete) {
-								node.parentNode.removeChild(node);
+								nodeList.push(node);
 							}
 						} else {
 							var childFlag;
@@ -143,14 +147,18 @@ function _range(mixed) {
 			return true;
 		}
 		var frag = doc.createDocumentFragment(),
-			ancestor = self.commonAncestorContainer;
+			ancestor = newRange.commonAncestorContainer;
 		if (ancestor.nodeType == 3) {
 			var textNode = getTextNode(ancestor);
 			if (textNode) frag.appendChild(textNode);
 		} else {
 			extractNodes(ancestor, frag);
 		}
-		return frag;
+		for (var i = 0, len = nodeList.length; i < len; i++) {
+			var node = nodeList[i];
+			node.parentNode.removeChild(node);
+		}
+		return isCopy ? frag : undefined;
 	}
 	return {
 		startContainer : doc,

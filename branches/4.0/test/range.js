@@ -417,6 +417,7 @@ test('range.cloneContents', function() {
 	range.selectNode(strong);
 	frag = range.cloneContents();
 	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	ok(!range.collapsed);
 	//2
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
@@ -460,6 +461,109 @@ test('range.cloneContents', function() {
 	frag = range.cloneContents();
 	ok(K.node(frag).children.length === 1);
 	same(K.node(frag).children[0].nodeName.toLowerCase(), 'img');
+});
+
+test('range.extractContents', function() {
+	var p = K.query('#test-data-01 p'),
+		cloneP, strong, range, frag;
+	//1
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	ok(range.collapsed);
+	document.body.removeChild(cloneP);
+	//2
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), 'f');
+	document.body.removeChild(cloneP);
+	//3
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 0);
+	range.setEnd(strong.firstChild, 3);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), 'efg');
+	document.body.removeChild(cloneP);
+	//4
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.nextSibling, 1);
+	console.log(strong.nextSibling);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>h');
+	document.body.removeChild(cloneP);
+	//5
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.nextSibling, 0);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>');
+	document.body.removeChild(cloneP);
+	//6
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(cloneP, 0);
+	range.setEnd(cloneP, 4);
+	frag = range.extractContents();
+	ok(K.node(frag).children.length === 4);
+	document.body.removeChild(cloneP);
+	//7
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong.firstChild);
+	range.setEnd(strong.nextSibling, 4);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>hijk');
+	document.body.removeChild(cloneP);
+	//8
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(cloneP, 3);
+	range.setEnd(cloneP, 4);
+	frag = range.extractContents();
+	ok(K.node(frag).children.length === 1);
+	same(K.node(frag).children[0].nodeName.toLowerCase(), 'img');
+	document.body.removeChild(cloneP);
+
+});
+
+test('range.deleteContents', function() {
+	var p = K.query('#test-data-01 p'),
+		cloneP, strong, range, frag;
+	//1
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	frag = range.deleteContents();
+	ok(range.collapsed);
+	ok(typeof frag === 'undefined');
+	document.body.removeChild(cloneP);
 });
 
 test('range.insertNode', function() {
