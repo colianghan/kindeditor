@@ -84,6 +84,10 @@ function _range(mixed) {
 		if (isDelete) {
 			newRange = self.cloneRange();
 			self.collapse(true);
+			if (startContainer.nodeType == 3 && startOffset == 0) {
+				self.setStart(startContainer.parentNode, 0);
+				self.setEnd(startContainer.parentNode, 0);
+			}
 		}
 		function splitTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length,
@@ -294,33 +298,45 @@ function _range(mixed) {
 			return copyAndDelete.call(this, true, true);
 		},
 		insertNode : function(node) {
-			var container = this.startContainer,
-				offset = this.startOffset,
+			var startContainer = this.startContainer,
+				startOffset = this.startOffset,
+				endContainer = this.endContainer,
+				endOffset = this.endOffset,
 				afterNode,
 				parentNode,
 				endNode,
 				endTextNode,
 				endTextPos,
-				eq = container == this.endContainer;
-			if (this.endContainer.nodeType == 1) {
-				endNode = this.endContainer.childNodes[this.endOffset - 1];
-				eq = container == endNode;
-				if (eq) endTextPos = endNode.nodeValue.length;
+				eq = startContainer == endContainer;
+			if (endContainer.nodeType == 1 && endOffset > 0) {
+				endNode = endContainer.childNodes[endOffset - 1];
+				if (endNode.nodeType == 3) {
+					eq = startContainer == endNode;
+					if (eq) endTextPos = endNode.nodeValue.length;
+				}
 			}
-			if (container.nodeType == 1) {
-				afterNode = container.childNodes[offset];
+			if (startContainer.nodeType == 1) {
+				if (startContainer.childNodes.length > 0) {
+					afterNode = startContainer.childNodes[startOffset];
+				} else {
+					parentNode = startContainer;
+				}
 			} else {
-				if (offset == 0) {
-					afterNode = container;
-				} else if (offset < container.length) {
-					afterNode = container.splitText(offset);
+				if (startOffset == 0) {
+					afterNode = startContainer;
+				} else if (startOffset < startContainer.length) {
+					afterNode = startContainer.splitText(startOffset);
 					if (eq) {
 						endTextNode = afterNode;
-						endTextPos = endTextPos ? endTextPos - offset : this.endOffset - offset;
+						endTextPos = endTextPos ? endTextPos - startOffset : this.endOffset - startOffset;
 						this.setEnd(endTextNode, endTextPos);
 					}
 				} else {
-					parentNode = container.parentNode;
+					if (startContainer.nextSibling) {
+						afterNode = startContainer.nextSibling;
+					} else {
+						parentNode = startContainer.parentNode;
+					}
 				}
 			}
 			if (afterNode) afterNode.parentNode.insertBefore(node, afterNode);
@@ -329,6 +345,7 @@ function _range(mixed) {
 				if (node.firstChild) this.setStartBefore(node.firstChild);
 			} else {
 				this.setStartBefore(node);
+				if (this.collapsed) endNode = node;
 			}
 			if (endNode) this.setEndAfter(endNode);
 			return this;

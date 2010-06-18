@@ -503,7 +503,6 @@ test('range.extractContents', function() {
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.nextSibling, 1);
-	console.log(strong.nextSibling);
 	frag = range.extractContents();
 	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>h');
 	document.body.removeChild(cloneP);
@@ -567,48 +566,109 @@ test('range.deleteContents', function() {
 });
 
 test('range.insertNode', function() {
-	var strong = K.query('#test-data-01 strong');
-	var range, knode;
+	var p = K.query('#test-data-01 p'),
+		cloneP, strong, range, frag;
 	//1
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.selectNode(strong);
-	knode = K.node('<span>abc</span>');
-	range.insertNode(knode.get());
+	range.insertNode(K.node('<span>abc</span>').get());
 	same(range.toString(), 'abcefg');
-	knode.remove();
+	document.body.removeChild(cloneP);
 	//2
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
-	knode = K.node('<span>123</span>');
-	range.insertNode(knode.get());
+	range.insertNode(K.node('<span>123</span>').get());
 	same(range.toString(), '123efg');
-	knode.remove();
+	document.body.removeChild(cloneP);
 	//3
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
-	knode = K.node('<span>123</span>');
-	range.insertNode(knode.get());
+	range.insertNode(K.node('<span>123</span>').get());
 	same(range.toString(), '123efg');
-	knode.remove();
+	document.body.removeChild(cloneP);
 	//4
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
-	knode = K.node('<span>123</span>');
-	range.insertNode(knode.get());
+	range.insertNode(K.node('<span>123</span>').get());
 	same(range.toString(), '123f');
-	knode.remove();
+	document.body.removeChild(cloneP);
 	//5
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
 	var frag = document.createDocumentFragment();
-	var knode1 = K.node('<span>1</span>'),
-		knode2 = K.node('<span>2</span>');
-	frag.appendChild(knode1.get());
-	frag.appendChild(knode2.get());
+	frag.appendChild(K.node('<span>1</span>').get());
+	frag.appendChild(K.node('<span>2</span>').get());
 	range = K.range(document);
 	range.selectNode(strong);
 	range.insertNode(frag);
 	same(range.toString(), '12efg');
-	knode1.remove();
-	knode2.remove();
+	document.body.removeChild(cloneP);
+});
+
+test('range.surroundContents', function() {
+	var p = K.query('#test-data-01 p'),
+		cloneP, strong, range;
+	//1
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	range.surroundContents(K.node('<span></span>').get());
+	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span><strong>efg</strong></span>');
+	document.body.removeChild(cloneP);
+	//2
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong.firstChild);
+	range.surroundContents(K.node('<span></span>').get());
+	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span>efg</span>');
+	document.body.removeChild(cloneP);
+	//3
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	range.surroundContents(K.node('<span></span>').get());
+	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span>f</span>');
+	document.body.removeChild(cloneP);
+	//4
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 0);
+	range.setEnd(strong.firstChild, 3);
+	range.surroundContents(K.node('<span></span>').get());
+	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span>efg</span>');
+	document.body.removeChild(cloneP);
+	//5
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(cloneP, 3);
+	range.surroundContents(K.node('<span></span>').get());
+	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span><strong>fg</strong>hijk</span>');
+	document.body.removeChild(cloneP);
 });
