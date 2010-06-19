@@ -209,18 +209,6 @@ test('range.collapse', function() {
 	ok(range.collapsed === true);
 });
 
-test('range.get', function() {
-	var p = K.query('#test-data-01 p');
-	var strong = K.query('#test-data-01 strong');
-	range = K.range(document);
-	range.selectNode(strong);
-	if (K.IE) {
-		same(range.get().text, 'efg');
-	} else {
-		same(range.get().toString(), 'efg');
-	}
-});
-
 test('range.compareBoundaryPoints', function() {
 	var p = K.query('#test-data-01 p');
 	var strong = K.query('#test-data-01 strong');
@@ -460,7 +448,7 @@ test('range.cloneContents', function() {
 	range.setEnd(p, 4);
 	frag = range.cloneContents();
 	ok(K.node(frag).children.length === 1);
-	same(K.node(frag).children[0].nodeName.toLowerCase(), 'img');
+	same(K.node(frag).children[0].name, 'img');
 });
 
 test('range.extractContents', function() {
@@ -545,7 +533,7 @@ test('range.extractContents', function() {
 	range.setEnd(cloneP, 4);
 	frag = range.extractContents();
 	ok(K.node(frag).children.length === 1);
-	same(K.node(frag).children[0].nodeName.toLowerCase(), 'img');
+	same(K.node(frag).children[0].name, 'img');
 	document.body.removeChild(cloneP);
 
 });
@@ -630,7 +618,7 @@ test('range.surroundContents', function() {
 	range = K.range(document);
 	range.selectNode(strong);
 	range.surroundContents(K.node('<span></span>').get());
-	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span><strong>efg</strong></span>');
+	same(range.html(), '<span><strong>efg</strong></span>');
 	document.body.removeChild(cloneP);
 	//2
 	cloneP = p.cloneNode(true);
@@ -639,7 +627,7 @@ test('range.surroundContents', function() {
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
 	range.surroundContents(K.node('<span></span>').get());
-	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span>efg</span>');
+	same(range.html(), '<span>efg</span>');
 	document.body.removeChild(cloneP);
 	//3
 	cloneP = p.cloneNode(true);
@@ -649,7 +637,7 @@ test('range.surroundContents', function() {
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
 	range.surroundContents(K.node('<span></span>').get());
-	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span>f</span>');
+	same(range.html(), '<span>f</span>');
 	document.body.removeChild(cloneP);
 	//4
 	cloneP = p.cloneNode(true);
@@ -659,7 +647,7 @@ test('range.surroundContents', function() {
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
 	range.surroundContents(K.node('<span></span>').get());
-	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span>efg</span>');
+	same(range.html(), '<span>efg</span>');
 	document.body.removeChild(cloneP);
 	//5
 	cloneP = p.cloneNode(true);
@@ -669,6 +657,6 @@ test('range.surroundContents', function() {
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(cloneP, 3);
 	range.surroundContents(K.node('<span></span>').get());
-	same(K.node(range.cloneContents()).outer().toLowerCase(), '<span><strong>fg</strong>hijk</span>');
+	same(range.html(), '<span><strong>fg</strong>hijk</span>');
 	document.body.removeChild(cloneP);
 });

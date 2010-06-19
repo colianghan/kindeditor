@@ -17,7 +17,6 @@
 var _IE = K.IE,
 	_node = K.node,
 	_inArray = K.inArray,
-	_isAncestor = K.isAncestor,
 	_START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
@@ -29,7 +28,7 @@ var _IE = K.IE,
 */
 function _range(mixed) {
 	if (!mixed.nodeName) {
-		return _toRange(mixed);
+		return mixed.get ? mixed : _toRange(mixed);
 	}
 	var doc = mixed;
 	function updateCollapsed() {
@@ -218,8 +217,8 @@ function _range(mixed) {
 				this.selectNode(node);
 			} else {
 				if (knode.children.length > 0) {
-					this.setStartBefore(knode.firstChild);
-					this.setEndAfter(knode.lastChild);
+					this.setStartBefore(knode.first.get());
+					this.setEndAfter(knode.last.get());
 				} else {
 					this.setStart(node, 0);
 					this.setEnd(node, 0);
@@ -271,8 +270,9 @@ function _range(mixed) {
 				}
 				if (childA && childB === childA.nextSibling) return -1;
 				if (childB && childA === childB.nextSibling) return 1;
-				if (how === _START_TO_START || how === _END_TO_START) return _isAncestor(nodeA, nodeB) ? -1 : 1;
-				if (how === _END_TO_END || how === _START_TO_END) return _isAncestor(nodeA, nodeB) ? 1 : -1;
+				var bool = _node(nodeB).isAncestor(nodeA);
+				if (how === _START_TO_START || how === _END_TO_START) return bool ? -1 : 1;
+				if (how === _END_TO_END || how === _START_TO_END) return bool ? 1 : -1;
 			} else {
 				return rangeA.compareBoundaryPoints(how, rangeB);
 			}
@@ -307,7 +307,8 @@ function _range(mixed) {
 				endNode,
 				endTextNode,
 				endTextPos,
-				eq = startContainer == endContainer;
+				eq = startContainer == endContainer,
+				isFrag = node.nodeName.toLowerCase() === '#document-fragment';
 			if (endContainer.nodeType == 1 && endOffset > 0) {
 				endNode = endContainer.childNodes[endOffset - 1];
 				if (endNode.nodeType == 3) {
@@ -341,8 +342,12 @@ function _range(mixed) {
 			}
 			if (afterNode) afterNode.parentNode.insertBefore(node, afterNode);
 			if (parentNode) parentNode.appendChild(node);
-			if (node.nodeName.toLowerCase() === '#document-fragment') {
+			if (isFrag) {
 				if (node.firstChild) this.setStartBefore(node.firstChild);
+				if (this.collapsed) {
+					if (afterNode) endNode = afterNode.previousSibling;
+					if (parentNode) endNode = parentNode.lastChild;
+				}
 			} else {
 				this.setStartBefore(node);
 				if (this.collapsed) endNode = node;
@@ -374,6 +379,10 @@ function _range(mixed) {
 				range.setEnd(endContainer, endOffset);
 			}
 			return range;
+		},
+		html : function() {
+			//TODO
+			return _node(this.cloneContents()).outer().toLowerCase();
 		}
 	};
 }

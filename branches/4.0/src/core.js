@@ -32,6 +32,11 @@ function _inArray(val, arr) {
 	return -1;
 }
 
+function _inString(val, str, delimiter) {
+	delimiter = delimiter === undefined ? ',' : delimiter;
+	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
+}
+
 function _each(obj, fn) {
 	if (_isArray(obj)) {
 		for (var i = 0, len = obj.length; i < len; i++) {
@@ -68,10 +73,13 @@ window.KindEditor = {
 	WEBKIT : _WEBKIT,
 	OPERA : _OPERA,
 	VERSION : _VERSION,
+	INLINE_TAGS : 'b,del,em,font,i,span,strike,strong,sub,sup,u',
+	SINGLE_TAGS : 'br,hr,img,area,col,embed,input,param',
 	each : _each,
 	isArray : _isArray,
 	isFunction : _isFunction,
 	inArray : _inArray,
+	inString : _inString,
 	trim : _trim,
 	toHex : _toHex
 };

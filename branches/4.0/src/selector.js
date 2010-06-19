@@ -213,9 +213,11 @@ function _queryAll(expr, root) {
 	return results;
 }
 
+K._isAncestor = _isAncestor;
+K._formatStyle = _formatStyle;
+K._getAttr = _getAttr;
+
 K.query = _query;
 K.queryAll = _queryAll;
-K.isAncestor = _isAncestor;
-K.formatStyle = _formatStyle;
 
 })(KindEditor);
