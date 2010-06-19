@@ -18,6 +18,7 @@
 var _each = K.each,
 	_node = K.node,
 	_range = K.range,
+	_IE = K.IE,
 	_INLINE_TAGS = K.INLINE_TAGS;
 
 /**
@@ -30,19 +31,37 @@ var _each = K.each,
 	});
 */
 function _cmd(mixed) {
-	var range = _range(mixed),
-		doc = range.startContainer.ownerDocument || range.startContainer,
-		win = doc.parentWindow || doc.defaultView;
+	var sel, doc;
+	function getWin(doc) {
+		return doc.parentWindow || doc.defaultView;
+	}
+	function getSel(doc) {
+		var win = getWin(doc);
+		return win.getSelection ? win.getSelection() : doc.selection;
+	}
+	if (mixed.nodeName) {
+		doc = mixed;
+		sel = getSel(doc);
+		var rng;
+		try {
+			if (sel.rangeCount > 0) rng = sel.getRangeAt(0);
+			else rng = sel.createRange();
+		} catch(e) {}
+		mixed = rng || doc;
+	} else {
+		var startContainer = mixed.startContainer;
+		doc = startContainer.ownerDocument || startContainer;
+		sel = getSel(doc);
+	}
+	var win = getWin(doc);
+	var range = _range(mixed);
+	function select(range) {
+		var rng = range.get();
+		if (_IE) rng.select();
+		else sel.addRange(rng);
+		win.focus();
+	}
 	return {
-		selection : function() {
-			var sel = win.getSelection ? win.getSelection() : doc.selection;
-			var rng;
-			try {
-				if (sel.rangeCount > 0) rng = sel.getRangeAt(0);
-				else rng = sel.createRange();
-			} catch(e) {}
-			range = _range(rng || doc);
-		},
 		wrap : function(mixed) {
 			var wrapper = _node(mixed),
 			frag = range.extractContents();
@@ -54,9 +73,10 @@ function _cmd(mixed) {
 				}
 			});
 			range.insertNode(frag);
+			select(range);
 		},
 		remove : function(options) {
-		
+			select(range);
 		},
 		bold : function() {
 			this.wrap('<strong></strong>');

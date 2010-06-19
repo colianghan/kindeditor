@@ -73,6 +73,7 @@ function _node(expr, root) {
 	}
 	var doc = node.ownerDocument || node;
 	var win = doc.parentWindow || doc.defaultView;
+	var oldDisplay = '';
 	var obj = {
 		name : node.nodeName.toLowerCase(),
 		type : node.nodeType,
@@ -132,10 +133,10 @@ function _node(expr, root) {
 			var camelKey = _toCamel(key),
 				val = '';
 			if (win.getComputedStyle) {
-				var style = win.getComputedStyle(el, null);
-				val = style[camelKey] || style.getPropertyValue(key) || el.style[camelKey];
-			} else if (el.currentStyle) {
-				val = el.currentStyle[camelKey] || el.style[camelKey];
+				var style = win.getComputedStyle(node, null);
+				val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
+			} else if (node.currentStyle) {
+				val = node.currentStyle[camelKey] || node.style[camelKey];
 			}
 			return val;
 		},
@@ -146,6 +147,18 @@ function _node(expr, root) {
 			node.appendChild(val.get ? val.get() : val);
 			return this;
 		},
+		before : function(val) {
+			node.parentNode.insertBefore(val.get ? val.get() : val, node);
+			return this;
+		},
+		after : function(val) {
+			if (node.nextSibling) {
+				node.parentNode.insertBefore(val.get ? val.get() : val, node.nextSibling);
+			} else {
+				this.append(val);
+			}
+			return this;
+		},
 		replaceWith : function(val) {
 			node.parentNode.replaceChild(val.get ? val.get() : val, node);
 			return this;
@@ -153,6 +166,15 @@ function _node(expr, root) {
 		remove : function() {
 			node.parentNode.removeChild(node);
 			return this;
+		},
+		show : function() {
+			if (this.computedCss('display') === 'none') this.css('display', oldDisplay);
+		},
+		hide : function() {
+			if (this.computedCss('display') !== 'none') {
+				oldDisplay = this.css('display');
+				this.css('display', 'none');
+			}
 		},
 		outer : function() {
 			return _node('<div></div>').append(this.clone(true)).html();
