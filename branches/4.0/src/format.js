@@ -9,19 +9,42 @@
 
 /**
 #using "core.js"
-#using "selector.js"
 */
 (function (K, undefined) {
 
 var _SINGLE_TAGS = K.SINGLE_TAGS,
 	_trim = K.trim,
-	_formatStyle = K._formatStyle,
-	_inString = K.inString;
+	_toHex = K.toHex,
+	_inString = K.inString,
+	_ATTR_REG = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
+	_STYLE_REG = /\s*([^\s]+?)\s*:(.*?)(;|$)/g;
+
+function _formatStyle(style) {
+	return _trim(style.replace(_STYLE_REG, function($0, $1, $2) {
+		return _trim($1.toLowerCase()) + ':' + _trim(_toHex($2)) + ';';
+	}));
+}
+
+function _getAttrList(tag) {
+	var list = {},
+		match;
+	while (match = _ATTR_REG.exec(tag)) {
+		var key = match[1] || match[2] || match[4] || match[6],
+			val = match[1] || (match[2] ? match[3] : (match[4] ? match[5] : match[7]));
+		list[key] = val;
+		if (key.toLowerCase() === 'style') {
+			var m;
+			while (m = _STYLE_REG.exec(val)) {
+				var k = _trim(m[1].toLowerCase()),
+					v = _trim(_toHex(m[2]));
+				list['.' + k] = v;
+			}
+		}
+	}
+	return list;
+}
 
 function _formatHtml(html) {
-	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
-		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
-	});
 	var re = /((?:\r\n|\n|\r)*)<(\/)?([\w-:]+)((?:\s+|(?:\s+[\w-:]+)|(?:\s+[\w-:]+=[^\s"'<>]+)|(?:\s+[\w-:]+="[^"]*")|(?:\s+[\w-:]+='[^']*'))*)(\/)?>((?:\r\n|\n|\r)*)/g;
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var startNewline = $1 || '',
@@ -64,5 +87,7 @@ function _formatHtml(html) {
 }
 
 K.formatHtml = _formatHtml;
+K._formatStyle = _formatStyle;
+K._getAttrList = _getAttrList;
 
 })(KindEditor);

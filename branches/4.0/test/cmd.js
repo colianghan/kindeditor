@@ -31,7 +31,7 @@ test('cmd.wrap', function() {
 	range.selectNodeContents(cloneP);
 	cmd = K.cmd(range);
 	cmd.wrap('<span style="color:red;"></span>');
-	ok(K.queryAll('span[style]', cloneP).length === 8);
+	ok(K.queryAll('span[style]', cloneP).length === 7);
 	equals(range.toString(), 'abcdefghijkxyz0123456789');
 	document.body.removeChild(cloneP);
 	//4
@@ -42,7 +42,7 @@ test('cmd.wrap', function() {
 	range.selectNodeContents(cloneP);
 	cmd = K.cmd(range);
 	cmd.wrap('<span class="aaa"></span>');
-	ok(K.queryAll('span[class="aaa"]', cloneP).length === 7);
+	ok(K.queryAll('span[class="aaa"]', cloneP).length === 6);
 	equals(range.toString(), 'abcdefghijkxyz0123456789');
 	document.body.removeChild(cloneP);
 	//5
@@ -66,5 +66,16 @@ test('cmd.wrap', function() {
 	cmd = K.cmd(range);
 	cmd.wrap('<span class="aaa"></span>');
 	equals(range.html(), '<span class="aaa">fg</span>');
+	document.body.removeChild(cloneP);
+	//7
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	equals(range.html(), '<strong>f</strong>');
 	document.body.removeChild(cloneP);
 });

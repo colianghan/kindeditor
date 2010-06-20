@@ -63,13 +63,17 @@ function _cmd(mixed) {
 	}
 	return {
 		wrap : function(mixed) {
-			var wrapper = _node(mixed),
+			var wrapper = _node(mixed, doc),
+			name = wrapper.name,
 			frag = range.extractContents();
 			_node(frag).each(function(node) {
-				if (node.type == 3) {
+				if (node.type == 3 && node.parent().name !== name) {
 					var clone = wrapper.clone(false);
 					clone.append(node.clone(true));
 					node.replaceWith(clone);
+				} else if (node.name === name) {
+					//node.attr();
+					//merge attributes
 				}
 			});
 			range.insertNode(frag);
@@ -85,10 +89,10 @@ function _cmd(mixed) {
 			this.wrap('<em></em>');
 		},
 		foreColor : function(val) {
-			this.wrap('<span style="color:' + val + ';"></strong>');
+			this.wrap('<span style="color:' + val + ';"></span>');
 		},
 		hiliteColor : function() {
-			this.wrap('<span style="background-color:' + val + ';"></strong>');
+			this.wrap('<span style="background-color:' + val + ';"></span>');
 		},
 		removeFormat : function() {
 			var options = {

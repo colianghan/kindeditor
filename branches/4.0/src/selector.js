@@ -9,6 +9,7 @@
 
 /**
 #using "core.js"
+#using "selector.js"
 */
 
 /**
@@ -30,8 +31,8 @@
 var _IE = K.IE,
 	_VERSION = K.VERSION,
 	_each = K.each,
-	_trim = K.trim,
-	_toHex = K.toHex;
+	_formatStyle = K._formatStyle,
+	_getAttrList = K._getAttrList;
 
 function _isAncestor(ancestor, node) {
 	var parent = node;
@@ -41,28 +42,14 @@ function _isAncestor(ancestor, node) {
 	return false;
 }
 
-function _formatStyle(style) {
-	return _trim(style.replace(/\s*([^\s]+?)\s*:(.*?)(;|$)/g, function($0, $1, $2) {
-		return _trim($1.toLowerCase()) + ':' + _trim(_toHex($2)) + ';';
-	}));
-}
-
 function _getAttr(el, key) {
 	key = key.toLowerCase();
 	var val = null;
 	if (_IE && _VERSION < 8) {
 		var div = el.ownerDocument.createElement('div');
 		div.appendChild(el.cloneNode(false));
-		var re = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g;
-		var arr, k, v, list = {};
-		while ((arr = re.exec(div.innerHTML.toLowerCase()))) {
-			k = arr[1] || arr[2] || arr[4] || arr[6];
-			v = arr[1] || (arr[2] ? arr[3] : (arr[4] ? arr[5] : arr[7]));
-			if (k === key) {
-				val = v;
-				break;
-			}
-		}
+		var list = _getAttrList(div.innerHTML.toLowerCase());
+		if (key in list) val = list[key];
 	} else {
 		val = el.getAttribute(key, 2);
 	}
@@ -214,7 +201,6 @@ function _queryAll(expr, root) {
 }
 
 K._isAncestor = _isAncestor;
-K._formatStyle = _formatStyle;
 K._getAttr = _getAttr;
 
 K.query = _query;

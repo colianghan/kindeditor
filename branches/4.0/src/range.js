@@ -31,138 +31,6 @@ function _range(mixed) {
 		return mixed.get ? mixed : _toRange(mixed);
 	}
 	var doc = mixed;
-	function updateCollapsed() {
-		this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
-	}
-	function updateCommonAncestor() {
-		function scan(node, fn) {
-			if (node === doc) return;
-			while (node) {
-				if (fn(node)) return;
-				node = node.parentNode;
-			}
-		}
-		var nodes = [];
-		scan(this.startContainer, function(node) {
-			nodes.push(node);
-		});
-		var ancestor = doc;
-		scan(this.endContainer, function(node) {
-			if (_inArray(node, nodes) >= 0) {
-				ancestor = node;
-				return true;
-			}
-		});
-		this.commonAncestorContainer = ancestor;
-	}
-	function compareAndUpdate() {
-		var rangeA = _range(doc),
-			rangeB = _range(doc);
-		rangeA.startContainer = rangeA.endContainer = this.startContainer;
-		rangeA.startOffset = rangeA.endOffset = this.startOffset;
-		rangeB.startContainer = rangeB.endContainer = this.endContainer;
-		rangeB.startOffset = rangeB.endOffset = this.endOffset;
-		if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
-			this.startContainer = this.endContainer;
-			this.startOffset = this.endOffset;
-		}
-	}
-	/*
-		cloneContents: copyAndDelete(true, false)
-		extractContents: copyAndDelete(true, true)
-		deleteContents: copyAndDelete(false, true)
-	*/
-	function copyAndDelete(isCopy, isDelete) {
-		var self = this,
-			startContainer = self.startContainer,
-			startOffset = self.startOffset,
-			endContainer = self.endContainer,
-			endOffset = self.endOffset,
-			nodeList = [],
-			newRange = self;
-		if (isDelete) {
-			newRange = self.cloneRange();
-			self.collapse(true);
-			if (startContainer.nodeType == 3 && startOffset == 0) {
-				self.setStart(startContainer.parentNode, 0);
-				self.setEnd(startContainer.parentNode, 0);
-			}
-		}
-		function splitTextNode(node, startOffset, endOffset) {
-			var length = node.nodeValue.length,
-				centerNode;
-			if (isCopy) {
-				var cloneNode = node.cloneNode(true),
-				centerNode = cloneNode.splitText(startOffset);
-				centerNode.splitText(endOffset - startOffset);
-			}
-			if (isDelete) {
-				var center = node;
-				if (startOffset > 0) center = node.splitText(startOffset);
-				if (endOffset < length) center.splitText(endOffset - startOffset);
-				nodeList.push(center);
-			}
-			return centerNode;
-		}
-		function getTextNode(node) {
-			if (node == startContainer && node == endContainer) {
-				return splitTextNode(node, startOffset, endOffset);
-			} else if (node == startContainer) {
-				return splitTextNode(node, startOffset, node.nodeValue.length);
-			} else if (node == endContainer) {
-				return splitTextNode(node, 0, endOffset);
-			} else {
-				return splitTextNode(node, 0, node.nodeValue.length);
-			}
-		}
-		function extractNodes(parent, frag) {
-			var node = parent.firstChild;
-			while (node) {
-				var range = _range(doc);
-				range.selectNode(node);
-				if (range.compareBoundaryPoints(_END_TO_START, newRange) >= 0) return false;
-				var nextNode = node.nextSibling;
-				if (range.compareBoundaryPoints(_START_TO_END, newRange) > 0) {
-					var type = node.nodeType;
-					if (type == 1) {
-						if (range.compareBoundaryPoints(_START_TO_START, newRange) >= 0) {
-							if (isCopy) {
-								frag.appendChild(node.cloneNode(true));
-							}
-							if (isDelete) {
-								nodeList.push(node);
-							}
-						} else {
-							var childFlag;
-							if (isCopy) {
-								childFlag = node.cloneNode(false);
-								frag.appendChild(childFlag);
-							}
-							if (!extractNodes(node, childFlag)) return false;
-						}
-					} else if (type == 3) {
-						var textNode = getTextNode(node);
-						if (textNode) frag.appendChild(textNode);
-					}
-				}
-				node = nextNode;
-			}
-			return true;
-		}
-		var frag = doc.createDocumentFragment(),
-			ancestor = newRange.commonAncestorContainer;
-		if (ancestor.nodeType == 3) {
-			var textNode = getTextNode(ancestor);
-			if (textNode) frag.appendChild(textNode);
-		} else {
-			extractNodes(ancestor, frag);
-		}
-		for (var i = 0, len = nodeList.length; i < len; i++) {
-			var node = nodeList[i];
-			node.parentNode.removeChild(node);
-		}
-		return isCopy ? frag : undefined;
-	}
 	return {
 		startContainer : doc,
 		startOffset : 0,
@@ -177,9 +45,9 @@ function _range(mixed) {
 				this.endContainer = node;
 				this.endOffset = offset;
 			}
-			compareAndUpdate.call(this);
-			updateCollapsed.call(this);
-			updateCommonAncestor.call(this);
+			_compareAndUpdate.call(this, doc);
+			_updateCollapsed.call(this);
+			_updateCommonAncestor.call(this, doc);
 			return this;
 		},
 		setEnd : function(node, offset) {
@@ -189,9 +57,9 @@ function _range(mixed) {
 				this.startContainer = node;
 				this.startOffset = offset;
 			}
-			compareAndUpdate.call(this);
-			updateCollapsed.call(this);
-			updateCommonAncestor.call(this);
+			_compareAndUpdate.call(this, doc);
+			_updateCollapsed.call(this);
+			_updateCommonAncestor.call(this, doc);
 			return this;
 		},
 		setStartBefore : function(node) {
@@ -289,13 +157,13 @@ function _range(mixed) {
 			return str.replace(/\r\n|\n|\r/g, '');
 		},
 		cloneContents : function() {
-			return copyAndDelete.call(this, true, false);
+			return _copyAndDelete.call(this, doc, true, false);
 		},
 		deleteContents : function() {
-			return copyAndDelete.call(this, false, true);
+			return _copyAndDelete.call(this, doc, false, true);
 		},
 		extractContents : function() {
-			return copyAndDelete.call(this, true, true);
+			return _copyAndDelete.call(this, doc, true, true);
 		},
 		insertNode : function(node) {
 			var startContainer = this.startContainer,
@@ -385,6 +253,142 @@ function _range(mixed) {
 			return _node(this.cloneContents()).outer().toLowerCase();
 		}
 	};
+}
+
+function _updateCollapsed() {
+	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
+}
+
+function _updateCommonAncestor(doc) {
+	function scan(node, fn) {
+		if (node === doc) return;
+		while (node) {
+			if (fn(node)) return;
+			node = node.parentNode;
+		}
+	}
+	var nodes = [];
+	scan(this.startContainer, function(node) {
+		nodes.push(node);
+	});
+	var ancestor = doc;
+	scan(this.endContainer, function(node) {
+		if (_inArray(node, nodes) >= 0) {
+			ancestor = node;
+			return true;
+		}
+	});
+	this.commonAncestorContainer = ancestor;
+}
+
+function _compareAndUpdate(doc) {
+	var rangeA = _range(doc),
+		rangeB = _range(doc);
+	rangeA.startContainer = rangeA.endContainer = this.startContainer;
+	rangeA.startOffset = rangeA.endOffset = this.startOffset;
+	rangeB.startContainer = rangeB.endContainer = this.endContainer;
+	rangeB.startOffset = rangeB.endOffset = this.endOffset;
+	if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
+		this.startContainer = this.endContainer;
+		this.startOffset = this.endOffset;
+	}
+}
+
+/*
+	cloneContents: copyAndDelete(true, false)
+	extractContents: copyAndDelete(true, true)
+	deleteContents: copyAndDelete(false, true)
+*/
+function _copyAndDelete(doc, isCopy, isDelete) {
+	var self = this,
+		startContainer = self.startContainer,
+		startOffset = self.startOffset,
+		endContainer = self.endContainer,
+		endOffset = self.endOffset,
+		nodeList = [],
+		newRange = self;
+	if (isDelete) {
+		newRange = self.cloneRange();
+		self.collapse(true);
+		if (startContainer.nodeType == 3 && startOffset == 0) {
+			self.setStart(startContainer.parentNode, 0);
+			self.setEnd(startContainer.parentNode, 0);
+		}
+	}
+	function splitTextNode(node, startOffset, endOffset) {
+		var length = node.nodeValue.length,
+			centerNode;
+		if (isCopy) {
+			var cloneNode = node.cloneNode(true),
+			centerNode = cloneNode.splitText(startOffset);
+			centerNode.splitText(endOffset - startOffset);
+		}
+		if (isDelete) {
+			var center = node;
+			if (startOffset > 0) center = node.splitText(startOffset);
+			if (endOffset < length) center.splitText(endOffset - startOffset);
+			nodeList.push(center);
+		}
+		return centerNode;
+	}
+	function getTextNode(node) {
+		if (node == startContainer && node == endContainer) {
+			return splitTextNode(node, startOffset, endOffset);
+		} else if (node == startContainer) {
+			return splitTextNode(node, startOffset, node.nodeValue.length);
+		} else if (node == endContainer) {
+			return splitTextNode(node, 0, endOffset);
+		} else {
+			return splitTextNode(node, 0, node.nodeValue.length);
+		}
+	}
+	function extractNodes(parent, frag) {
+		var node = parent.firstChild;
+		while (node) {
+			var range = _range(doc);
+			range.selectNode(node);
+			if (range.compareBoundaryPoints(_END_TO_START, newRange) >= 0) return false;
+			var nextNode = node.nextSibling;
+			if (range.compareBoundaryPoints(_START_TO_END, newRange) > 0) {
+				var type = node.nodeType;
+				if (type == 1) {
+					if (range.compareBoundaryPoints(_START_TO_START, newRange) >= 0) {
+						if (isCopy) {
+							frag.appendChild(node.cloneNode(true));
+						}
+						if (isDelete) {
+							nodeList.push(node);
+						}
+					} else {
+						var childFlag;
+						if (isCopy) {
+							childFlag = node.cloneNode(false);
+							frag.appendChild(childFlag);
+						}
+						if (!extractNodes(node, childFlag)) return false;
+					}
+				} else if (type == 3) {
+					var textNode = getTextNode(node);
+					if (textNode) frag.appendChild(textNode);
+				}
+			}
+			node = nextNode;
+		}
+		return true;
+	}
+	var frag = doc.createDocumentFragment(),
+		ancestor = newRange.commonAncestorContainer;
+	if (ancestor.nodeType == 3) {
+		var textNode = getTextNode(ancestor);
+		if (textNode) frag.appendChild(textNode);
+	} else {
+		extractNodes(ancestor, frag);
+	}
+	for (var i = 0, len = nodeList.length; i < len; i++) {
+		var node = nodeList[i];
+		node.parentNode.removeChild(node);
+	}
+	return isCopy ? frag : undefined;
 }
 
 function _getStartEnd(rng, isStart) {

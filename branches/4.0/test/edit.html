@@ -36,8 +36,8 @@
 		<h1>KindEditor Edit Test</h1>
 		<textarea name="content" cols="100" rows="20">abcdef</textarea>
 		<br />
-		<input type="button" id="bold" value="bold" />
-		<input type="button" id="foreColor" value="foreColor" />
+		<a href="javascript:;" id="bold">Bold</a>
+		<a href="javascript:;" id="foreColor">ForeColor</a>
 		<br />
 		<br />
 		<input type="button" id="create" value="Create" />
@@ -52,10 +52,12 @@
 			K.query('#bold').onclick = function() {
 				var cmd = K.cmd(edit.doc);
 				cmd.bold();
+				return false;
 			};
 			K.query('#foreColor').onclick = function() {
 				var cmd = K.cmd(edit.doc);
 				cmd.foreColor('#FF0000');
+				return false;
 			};
 			K.query('#create').onclick = function() {
 				edit.create();

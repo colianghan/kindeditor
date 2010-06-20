@@ -24,41 +24,6 @@ var _IE = K.IE,
 	_isAncestor = K._isAncestor,
 	_getAttr = K._getAttr;
 
-function _toCamel(key) {
-	var arr = key.split('-');
-	key = '';
-	for (var i = 0, len = arr.length; i < len; i++) {
-		var part = arr[i];
-		key += (i > 0) ? part.charAt(0).toUpperCase() + part.substr(1) : part;
-	}
-	return key;
-}
-
-function _updateProp(node) {
-	//node.first, node.last, node.children
-	var list = [], child = node.firstChild;
-	while (child) {
-		if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
-			list.push(_node(child));
-		}
-		child = child.nextSibling;
-	}
-	if (list.length > 0) {
-		this.first = list[0];
-		this.last = list[list.length - 1];
-	} else {
-		this.first = this.last = null;
-	}
-	this.children = list;
-	//node.index
-	var i = -1, sibling = node;
-	while (sibling) {
-		i++;
-		sibling = sibling.previousSibling;
-	}
-	this.index = i;
-}
-
 function _node(expr, root) {
 	var node;
 	if (!expr) return null;
@@ -177,13 +142,16 @@ function _node(expr, root) {
 			}
 		},
 		outer : function() {
-			return _node('<div></div>').append(this.clone(true)).html();
+			return _node('<div></div>', doc).append(this.clone(true)).html();
 		},
 		paired : function() {
 			return !_inString(this.name, _SINGLE_TAGS);
 		},
 		isAncestor : function(ancestor) {
 			return _isAncestor(ancestor.get ? ancestor.get() : ancestor, node);
+		},
+		parent : function() {
+			return _node(node.parentNode);
 		},
 		prev : function() {
 			return _node(node.previousSibling);
@@ -203,12 +171,49 @@ function _node(expr, root) {
 					n = next;
 				}
 			}
-			if (this.type == 1 || this.type == 3) fn(this);
 			walk(this);
+		},
+		toString : function() {
+			return this.type == 3 ? node.nodeValue : this.outer();
 		}
 	};
 	_updateProp.call(obj, node);
 	return obj;
+}
+
+function _toCamel(key) {
+	var arr = key.split('-');
+	key = '';
+	for (var i = 0, len = arr.length; i < len; i++) {
+		var part = arr[i];
+		key += (i > 0) ? part.charAt(0).toUpperCase() + part.substr(1) : part;
+	}
+	return key;
+}
+
+function _updateProp(node) {
+	//node.first, node.last, node.children
+	var list = [], child = node.firstChild;
+	while (child) {
+		if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
+			list.push(_node(child));
+		}
+		child = child.nextSibling;
+	}
+	if (list.length > 0) {
+		this.first = list[0];
+		this.last = list[list.length - 1];
+	} else {
+		this.first = this.last = null;
+	}
+	this.children = list;
+	//node.index
+	var i = -1, sibling = node;
+	while (sibling) {
+		i++;
+		sibling = sibling.previousSibling;
+	}
+	this.index = i;
 }
 
 K.node = _node;
