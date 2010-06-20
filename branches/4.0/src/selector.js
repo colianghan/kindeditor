@@ -31,7 +31,7 @@
 var _IE = K.IE,
 	_VERSION = K.VERSION,
 	_each = K.each,
-	_formatStyle = K._formatStyle,
+	_formatCss = K._formatCss,
 	_getAttrList = K._getAttrList;
 
 function _isAncestor(ancestor, node) {
@@ -54,7 +54,7 @@ function _getAttr(el, key) {
 		val = el.getAttribute(key, 2);
 	}
 	if (key === 'style' && val !== null) {
-		val = _formatStyle(val);
+		val = _formatCss(val);
 	}
 	return val;
 }

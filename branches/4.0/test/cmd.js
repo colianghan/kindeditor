@@ -42,7 +42,7 @@ test('cmd.wrap', function() {
 	range.selectNodeContents(cloneP);
 	cmd = K.cmd(range);
 	cmd.wrap('<span class="aaa"></span>');
-	ok(K.queryAll('span[class="aaa"]', cloneP).length === 6);
+	ok(K.queryAll('span[class="aaa"]', cloneP).length === 7);
 	equals(range.toString(), 'abcdefghijkxyz0123456789');
 	document.body.removeChild(cloneP);
 	//5

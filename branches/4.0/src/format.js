@@ -13,35 +13,41 @@
 (function (K, undefined) {
 
 var _SINGLE_TAGS = K.SINGLE_TAGS,
+	_each = K.each,
 	_trim = K.trim,
 	_toHex = K.toHex,
-	_inString = K.inString,
-	_ATTR_REG = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
-	_STYLE_REG = /\s*([^\s]+?)\s*:(.*?)(;|$)/g;
+	_inString = K.inString;
 
-function _formatStyle(style) {
-	return _trim(style.replace(_STYLE_REG, function($0, $1, $2) {
-		return _trim($1.toLowerCase()) + ':' + _trim(_toHex($2)) + ';';
-	}));
+function _getCssList(css) {
+	var list = {},
+		reg = /\s*([\w\-]+)\s*:([^;]*)(;|$)/g,
+		match;
+	while (match = reg.exec(css)) {
+		var key = _trim(match[1].toLowerCase()),
+			val = _trim(_toHex(match[2]));
+		list[key] = val;
+	}
+	return list;
 }
 
 function _getAttrList(tag) {
 	var list = {},
+		reg = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
-	while (match = _ATTR_REG.exec(tag)) {
+	while (match = reg.exec(tag)) {
 		var key = match[1] || match[2] || match[4] || match[6],
 			val = match[1] || (match[2] ? match[3] : (match[4] ? match[5] : match[7]));
 		list[key] = val;
-		if (key.toLowerCase() === 'style') {
-			var m;
-			while (m = _STYLE_REG.exec(val)) {
-				var k = _trim(m[1].toLowerCase()),
-					v = _trim(_toHex(m[2]));
-				list['.' + k] = v;
-			}
-		}
 	}
 	return list;
+}
+
+function _formatCss(css) {
+	var str = '';
+	_each(_getCssList(css), function(key, val) {
+		str += key + ':' + val + ';';
+	});
+	return str;
 }
 
 function _formatHtml(html) {
@@ -67,7 +73,7 @@ function _formatHtml(html) {
 				} else {
 					if (key === 'style') {
 						val = val.substr(1, val.length - 2);
-						val = _formatStyle(val);
+						val = _formatCss(val);
 						if (val === '') return '';
 						val = '"' + val + '"';
 					}
@@ -87,7 +93,8 @@ function _formatHtml(html) {
 }
 
 K.formatHtml = _formatHtml;
-K._formatStyle = _formatStyle;
+K._formatCss = _formatCss;
+K._getCssList = _getCssList;
 K._getAttrList = _getAttrList;
 
 })(KindEditor);

@@ -72,8 +72,12 @@ function _cmd(mixed) {
 					clone.append(node.clone(true));
 					node.replaceWith(clone);
 				} else if (node.name === name) {
-					//node.attr();
-					//merge attributes
+					_each(wrapper.attr(), function(key, val) {
+						if (key !== 'style') node.attr(key, val);
+					});
+					_each(wrapper.css(), function(key, val) {
+						node.css(key, val);
+					});
 				}
 			});
 			range.insertNode(frag);

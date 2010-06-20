@@ -20,6 +20,8 @@ var _IE = K.IE,
 	_query = K.query,
 	_trim = K.trim,
 	_inString = K.inString,
+	_getCssList = K._getCssList,
+	_getAttrList = K._getAttrList,
 	_formatHtml = K.formatHtml,
 	_isAncestor = K._isAncestor,
 	_getAttr = K._getAttr;
@@ -44,7 +46,9 @@ function _node(expr, root) {
 		type : node.nodeType,
 		doc : doc,
 		attr : function(key, val) {
-			if (val === undefined) {
+			if (key === undefined) {
+				return _getAttrList(this.outer());
+			} else if (val === undefined) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
@@ -87,7 +91,9 @@ function _node(expr, root) {
 			}
 		},
 		css : function(key, val) {
-			if (val === undefined) {
+			if (key === undefined) {
+				return _getCssList(this.attr('style'));
+			} else if (val === undefined) {
 				return jQuery(node).css(key);
 			} else {
 				jQuery(node).css(key, val);
