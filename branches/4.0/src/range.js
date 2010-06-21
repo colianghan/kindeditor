@@ -81,7 +81,7 @@ function _range(mixed) {
 		},
 		selectNodeContents : function(node) {
 			var knode = _node(node);
-			if (knode.type == 3 || !knode.paired()) {
+			if (knode.type == 3 || knode.isSingle()) {
 				this.selectNode(node);
 			} else {
 				if (knode.children.length > 0) {
@@ -468,7 +468,7 @@ function _getBeforeLength(node) {
 		sibling = node.previousSibling;
 	while (sibling) {
 		if (sibling.nodeType == 1) {
-			if (_node(sibling).paired()) {
+			if (!_node(sibling).isSingle()) {
 				var range = doc.body.createTextRange();
 				range.moveToElementText(sibling);
 				len += range.text.length;

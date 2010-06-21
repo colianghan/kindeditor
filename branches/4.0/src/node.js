@@ -16,7 +16,9 @@
 
 var _IE = K.IE,
 	_VERSION = K.VERSION,
-	_SINGLE_TAGS = K.SINGLE_TAGS,
+	_INLINE_TAG_MAP = K.INLINE_TAG_MAP,
+	_BLOCK_TAG_MAP = K.BLOCK_TAG_MAP,
+	_SINGLE_TAG_MAP = K.SINGLE_TAG_MAP,
 	_query = K.query,
 	_trim = K.trim,
 	_inString = K.inString,
@@ -150,8 +152,14 @@ function _node(expr, root) {
 		outer : function() {
 			return _node('<div></div>', doc).append(this.clone(true)).html();
 		},
-		paired : function() {
-			return !_inString(this.name, _SINGLE_TAGS);
+		isSingle : function() {
+			return this.name in _SINGLE_TAG_MAP;
+		},
+		isInline : function() {
+			return this.name in _INLINE_TAG_MAP;
+		},
+		isBlock : function() {
+			return this.name in _BLOCK_TAG_MAP;
 		},
 		isAncestor : function(ancestor) {
 			return _isAncestor(ancestor.get ? ancestor.get() : ancestor, node);

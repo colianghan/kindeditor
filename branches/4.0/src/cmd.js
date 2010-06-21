@@ -9,6 +9,7 @@
 
 /**
 #using "core.js"
+#using "format.js"
 #using "selector.js"
 #using "node.js"
 #using "range.js"

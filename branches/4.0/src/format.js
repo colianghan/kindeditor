@@ -12,7 +12,7 @@
 */
 (function (K, undefined) {
 
-var _SINGLE_TAGS = K.SINGLE_TAGS,
+var _SINGLE_TAG_MAP = K.SINGLE_TAG_MAP,
 	_each = K.each,
 	_trim = K.trim,
 	_toHex = K.toHex,
@@ -59,7 +59,7 @@ function _formatHtml(html) {
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
-		if (endSlash === '' && _inString(tagName, _SINGLE_TAGS)) endSlash = ' /';
+		if (endSlash === '' && tagName in _SINGLE_TAG_MAP) endSlash = ' /';
 		if (endNewline) endNewline = ' ';
 		if (tagName !== 'script' && tagName !== 'style') {
 			startNewline = '';
