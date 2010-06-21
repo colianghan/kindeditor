@@ -9,8 +9,9 @@
 
 /**
 #using "core.js"
+#using "html.js"
 #using "selector.js"
-#using "format.js"
+#using "event.js"
 */
 (function (K, undefined) {
 
@@ -19,18 +20,19 @@ var _IE = K.IE,
 	_INLINE_TAG_MAP = K.INLINE_TAG_MAP,
 	_BLOCK_TAG_MAP = K.BLOCK_TAG_MAP,
 	_SINGLE_TAG_MAP = K.SINGLE_TAG_MAP,
+	_each = K.each,
 	_query = K.query,
 	_trim = K.trim,
-	_inString = K.inString,
 	_getCssList = K._getCssList,
 	_getAttrList = K._getAttrList,
 	_formatHtml = K.formatHtml,
 	_isAncestor = K._isAncestor,
-	_getAttr = K._getAttr;
+	_getAttr = K._getAttr,
+	_bind = K._bind,
+	_unbind = K._unbind;
 
 function _node(expr, root) {
 	var node;
-	if (!expr) return null;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
 			node = jQuery(expr, root).get(0);
@@ -40,6 +42,7 @@ function _node(expr, root) {
 	} else {
 		node = expr;
 	}
+	if (!node) return null;
 	var doc = node.ownerDocument || node;
 	var win = doc.parentWindow || doc.defaultView;
 	var oldDisplay = '';
@@ -47,6 +50,14 @@ function _node(expr, root) {
 		name : node.nodeName.toLowerCase(),
 		type : node.nodeType,
 		doc : doc,
+		bind : function(type, fn) {
+			_bind(node, type, fn);
+			return this;
+		},
+		unbind : function(type, fn) {
+			_unbind(node, type, fn);
+			return this;
+		},
 		attr : function(key, val) {
 			if (key === undefined) {
 				return _getAttrList(this.outer());
@@ -117,27 +128,29 @@ function _node(expr, root) {
 			return _node(node.cloneNode(bool));
 		},
 		append : function(val) {
-			node.appendChild(val.get ? val.get() : val);
+			node.appendChild(_get(val));
 			return this;
 		},
 		before : function(val) {
-			node.parentNode.insertBefore(val.get ? val.get() : val, node);
+			node.parentNode.insertBefore(_get(val), node);
 			return this;
 		},
 		after : function(val) {
 			if (node.nextSibling) {
-				node.parentNode.insertBefore(val.get ? val.get() : val, node.nextSibling);
+				node.parentNode.insertBefore(_get(val), node.nextSibling);
 			} else {
 				this.append(val);
 			}
 			return this;
 		},
 		replaceWith : function(val) {
-			node.parentNode.replaceChild(val.get ? val.get() : val, node);
-			return this;
+			node.parentNode.replaceChild(_get(val), node);
+			this.unbind();
+			return _node(_get(val));
 		},
 		remove : function() {
 			node.parentNode.removeChild(node);
+			this.unbind();
 			return this;
 		},
 		show : function() {
@@ -162,7 +175,7 @@ function _node(expr, root) {
 			return this.name in _BLOCK_TAG_MAP;
 		},
 		isAncestor : function(ancestor) {
-			return _isAncestor(ancestor.get ? ancestor.get() : ancestor, node);
+			return _isAncestor(_get(ancestor), node);
 		},
 		parent : function() {
 			return _node(node.parentNode);
@@ -195,14 +208,17 @@ function _node(expr, root) {
 	return obj;
 }
 
-function _toCamel(key) {
-	var arr = key.split('-');
-	key = '';
-	for (var i = 0, len = arr.length; i < len; i++) {
-		var part = arr[i];
-		key += (i > 0) ? part.charAt(0).toUpperCase() + part.substr(1) : part;
-	}
-	return key;
+function _get(val) {
+	return val.get ? val.get() : val;
+}
+
+function _toCamel(str) {
+	var arr = str.split('-');
+	str = '';
+	_each(arr, function(key, val) {
+		str += (i > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
+	});
+	return str;
 }
 
 function _updateProp(node) {
@@ -231,6 +247,5 @@ function _updateProp(node) {
 }
 
 K.node = _node;
-K._toCamel = _toCamel;
 
 })(KindEditor);

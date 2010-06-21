@@ -9,6 +9,7 @@
 
 /**
 #using "core.js"
+#using "html.js"
 #using "selector.js"
 #using "node.js"
 */
