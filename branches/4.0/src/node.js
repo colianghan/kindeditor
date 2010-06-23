@@ -28,8 +28,9 @@ var _IE = K.IE,
 	_formatHtml = K.formatHtml,
 	_isAncestor = K._isAncestor,
 	_getAttr = K._getAttr,
-	_bind = K._bind,
-	_unbind = K._unbind;
+	_bind = K.bind,
+	_unbind = K.unbind,
+	_fire = K.fire;
 
 function _node(expr, root) {
 	var node;
@@ -56,6 +57,10 @@ function _node(expr, root) {
 		},
 		unbind : function(type, fn) {
 			_unbind(node, type, fn);
+			return this;
+		},
+		fire : function(type) {
+			_fire(node, type);
 			return this;
 		},
 		attr : function(key, val) {

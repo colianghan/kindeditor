@@ -17,12 +17,11 @@ var _ua = navigator.userAgent.toLowerCase(),
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
 	_VERSION = _matches ? _matches[1] : '0';
 
+/**
+Array functions
+*/
 function _isArray(obj) {
 	return Object.prototype.toString.call(obj) === '[object Array]';
-}
-
-function _isFunction(obj) {
-	return Object.prototype.toString.call(obj) === '[object Function]';
 }
 
 function _inArray(val, arr) {
@@ -30,11 +29,6 @@ function _inArray(val, arr) {
 		if (val === arr[i]) return i;
 	}
 	return -1;
-}
-
-function _inString(val, str, delimiter) {
-	delimiter = delimiter === undefined ? ',' : delimiter;
-	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
 function _each(obj, fn) {
@@ -50,9 +44,16 @@ function _each(obj, fn) {
 		}
 	}
 }
-
+/**
+String functions
+*/
 function _trim(str) {
 	return str.replace(/^\s+|\s+$/g, '');
+}
+
+function _inString(val, str, delimiter) {
+	delimiter = delimiter === undefined ? ',' : delimiter;
+	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
 function _toHex(color) {
@@ -94,7 +95,6 @@ window.KindEditor = {
 	FILL_ATTR_MAP : _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	each : _each,
 	isArray : _isArray,
-	isFunction : _isFunction,
 	inArray : _inArray,
 	inString : _inString,
 	trim : _trim,

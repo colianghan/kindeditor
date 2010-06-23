@@ -3,6 +3,7 @@ module('core');
 test('core', function() {
 	//browser version test
 	ok(/^\d+$/.test(K.VERSION));
+
 	//each test
 	var arr = ['a', 'b'];
 	var obj = {a : 'aa', b : 'bb', c : 0, d : null};
@@ -34,6 +35,7 @@ test('core', function() {
 		return true;
 	});
 	ok(i === 4);
+
 	//isArray test
 	ok(K.isArray([]) === true);
 	ok(K.isArray(['a', 'b']) === true);
@@ -43,6 +45,7 @@ test('core', function() {
 	ok(K.isArray('a') === false);
 	ok(K.isArray(0) === false);
 	ok(K.isArray('') === false);
+
 	//inArray test
 	arr = [null, 0, '', 10, '11', true];
 	ok(K.inArray(null, arr) === 0);
@@ -53,17 +56,15 @@ test('core', function() {
 	ok(K.inArray('11', arr) === 4);
 	ok(K.inArray(true, arr) === 5);
 	ok(K.inArray(false, arr) === -1);
+
 	//trim test
-	same(K.trim(' a '), 'a');
-	same(K.trim(' a a '), 'a a');
-	same(K.trim(' &nbsp; '), '&nbsp;');
+	equals(K.trim(' a '), 'a');
+	equals(K.trim(' a a '), 'a a');
+	equals(K.trim(' &nbsp; '), '&nbsp;');
 
-	//same(KC.escape('<strong>&lt;"</strong>'), '&lt;strong&gt;&amp;lt;&quot;&lt;/strong&gt;');
-
-	//same(KC.unescape('&lt;strong&gt;&amp;lt;&quot;&lt;/strong&gt;'), '<strong>&lt;"</strong>');
 	//toHex test
-	same(K.toHex('rgb(0, 0, 0)'), '#000000');
-	same(K.toHex('rgb(0, 0, 0)'), '#000000');
-	same(K.toHex(' rgb(0, 0, 0) rgb (255, 255, 255) '), ' #000000 #FFFFFF ');
+	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
+	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
+	equals(K.toHex(' rgb(0, 0, 0) rgb (255, 255, 255) '), ' #000000 #FFFFFF ');
 });
 
