@@ -116,6 +116,7 @@ test('unbind(el)', function() {
 (function () {
 	var outerEvent = document.getElementById('outerEvent');
 	var innerEvent = document.getElementById('innerEvent');
+	var eventMethod = document.getElementById('eventMethod');
 	var outerDiv = document.getElementById('outerDiv');
 	var innerDiv = document.getElementById('innerDiv');
 	K.bind(outerEvent, 'change', function(e) {
@@ -123,6 +124,8 @@ test('unbind(el)', function() {
 		if (outerEvent.value === 'none') return;
 		K.bind(outerDiv, outerEvent.value, function(e) {
 			console.log('outer: ' + outerEvent.value);
+			if (eventMethod.value === 'none') return;
+			e[eventMethod.value]();
 		});
 	});
 	K.bind(innerEvent, 'change', function(e) {
@@ -130,6 +133,8 @@ test('unbind(el)', function() {
 		if (innerEvent.value === 'none') return;
 		K.bind(innerDiv, innerEvent.value, function(e) {
 			console.log('inner: ' + innerEvent.value);
+			if (eventMethod.value === 'none') return;
+			e[eventMethod.value]();
 		});
 	});
 })();

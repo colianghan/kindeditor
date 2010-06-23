@@ -16,7 +16,7 @@ var _each = K.each,
 	_inArray = K.inArray;
 
 //add native event
-function _bindEvent(el, type, fn) { 
+function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
 	} else if (el.attachEvent){
@@ -32,10 +32,52 @@ function _unbindEvent(el, type, fn) {
 	}
 }
 
-function _event() {
-	return {
-	
+//Inspired by jQuery
+//http://github.com/jquery/jquery/blob/master/src/event.js
+var _props = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
+function _event(el, e) {
+	if (!e) return;
+	var obj = {},
+		doc = el.ownerDocument;
+	_each(_props, function(key, val) {
+		obj[val] = e[val];
+	});
+	if (!e.target) {
+		e.target = e.srcElement || doc;
+	}
+	if (e.target.nodeType === 3) {
+		e.target = e.target.parentNode;
+	}
+	if (!e.relatedTarget && e.fromElement) {
+		e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
+	}
+	if (e.pageX == null && e.clientX != null) {
+		var d = doc.documentElement, body = doc.body;
+		e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
+		e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
+	}
+	if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
+		e.which = e.charCode || e.keyCode;
+	}
+	if (!e.metaKey && e.ctrlKey) {
+		e.metaKey = e.ctrlKey;
+	}
+	if (!e.which && e.button !== undefined) {
+		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
+	}
+	obj.preventDefault = function() {
+		if (e.preventDefault) e.preventDefault();
+		e.returnValue = false;
 	};
+	obj.stopPropagation = function() {
+		if (e.stopPropagation) e.stopPropagation();
+		e.cancelBubble = true;
+	};
+	obj.stop = function() {
+		this.preventDefault();
+		this.stopPropagation();
+	};
+	return obj;
 }
 
 var _elList = [], _data = {};
@@ -63,7 +105,7 @@ function _bind(el, type, fn) {
 	if (_data[id][type].length == 0) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
-				if (key > 0 && val) val(e);
+				if (key > 0 && val) val(_event(el, e));
 			});
 		};
 	}
