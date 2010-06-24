@@ -91,7 +91,6 @@ function _cmd(mixed) {
 				}
 			});
 			range.insertNode(frag);
-			console.log(range);
 			_select(range);
 		},
 		remove : function(options) {

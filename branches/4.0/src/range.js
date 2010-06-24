@@ -118,28 +118,36 @@ function _range(mixed) {
 				}
 				if (how === _START_TO_END || how === _END_TO_END) {
 					nodeA = this.endContainer;
-					posA = this.endOffset;
+					posA = nodeA.nodeType == 1 ? this.endOffset - 1 : this.endOffset;
 				}
 				if (how === _START_TO_START || how === _START_TO_END) {
 					nodeB = range.startContainer;
 					posB = range.startOffset;
 				}
-				if (how === _END_TO_END || _END_TO_START) {
+				if (how === _END_TO_END || how === _END_TO_START) {
 					nodeB = range.endContainer;
-					posB = range.endOffset;
+					posB = nodeB.nodeType == 1 ? range.endOffset - 1 : range.endOffset;
 				}
 				if (nodeA === nodeB) return 0;
 				var childA = nodeA,
 					childB = nodeB;
 				if (nodeA.nodeType === 1) {
 					childA = nodeA.childNodes[posA];
+					if (childA === nodeB) {
+						if (how === _START_TO_START || how === _END_TO_START) return -1;
+						if (how === _END_TO_END || how === _START_TO_END) return 1;
+					}
 				}
 				if (nodeB.nodeType === 1) {
 					childB = nodeB.childNodes[posB];
+					if (childB === nodeA) {
+						if (how === _START_TO_START || how === _END_TO_START) return 1;
+						if (how === _END_TO_END || how === _START_TO_END) return -1;
+					}
 				}
 				if (childA && childB === childA.nextSibling) return -1;
 				if (childB && childA === childB.nextSibling) return 1;
-				var bool = _node(nodeB).isAncestor(nodeA);
+				var bool = _node(childB).isAncestor(childA);
 				if (how === _START_TO_START || how === _END_TO_START) return bool ? -1 : 1;
 				if (how === _END_TO_END || how === _START_TO_END) return bool ? 1 : -1;
 			} else {
@@ -307,9 +315,9 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 		endContainer = self.endContainer,
 		endOffset = self.endOffset,
 		nodeList = [],
-		newRange = self;
+		selfRange = self;
 	if (isDelete) {
-		newRange = self.cloneRange();
+		selfRange = self.cloneRange();
 		self.collapse(true);
 		if (startContainer.nodeType == 3 && startOffset == 0) {
 			self.setStart(startContainer.parentNode, 0);
@@ -348,13 +356,12 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 		while (node) {
 			var range = _range(doc);
 			range.selectNode(node);
-			if (range.compareBoundaryPoints(_END_TO_START, newRange) >= 0) return false;
-			console.log(node);
+			if (range.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) return false;
 			var nextNode = node.nextSibling;
-			if (range.compareBoundaryPoints(_START_TO_END, newRange) > 0) {
+			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
 				var type = node.nodeType;
 				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, newRange) >= 0) {
+					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -379,7 +386,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 		return true;
 	}
 	var frag = doc.createDocumentFragment(),
-		ancestor = newRange.commonAncestorContainer;
+		ancestor = selfRange.commonAncestorContainer;
 	if (ancestor.nodeType == 3) {
 		var textNode = getTextNode(ancestor);
 		if (textNode) frag.appendChild(textNode);

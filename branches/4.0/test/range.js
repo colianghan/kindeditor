@@ -327,7 +327,34 @@ test('range.compareBoundaryPoints', function() {
 	ok(cmp === 1);
 	cmp = rangeA.compareBoundaryPoints(K.END_TO_START, rangeB);
 	ok(cmp === 1);
-
+	//9
+	rangeA = K.range(document);
+	rangeB = K.range(document);
+	rangeA.selectNode(strong.previousSibling);
+	rangeB.setStart(p, 1);
+	rangeB.setEnd(strong.firstChild, 3);
+	cmp = rangeA.compareBoundaryPoints(K.START_TO_START, rangeB);
+	ok(cmp === -1);
+	cmp = rangeA.compareBoundaryPoints(K.START_TO_END, rangeB);
+	ok(cmp === 0);
+	cmp = rangeA.compareBoundaryPoints(K.END_TO_END, rangeB);
+	ok(cmp === -1);
+	cmp = rangeA.compareBoundaryPoints(K.END_TO_START, rangeB);
+	ok(cmp === -1);
+	//10
+	rangeA = K.range(document);
+	rangeB = K.range(document);
+	rangeA.selectNode(strong.previousSibling);
+	rangeB.selectNode(strong.firstChild);
+	rangeB.setEnd(strong.nextSibling, 4);
+	cmp = rangeA.compareBoundaryPoints(K.START_TO_START, rangeB);
+	ok(cmp === -1);
+	cmp = rangeA.compareBoundaryPoints(K.START_TO_END, rangeB);
+	ok(cmp === -1);
+	cmp = rangeA.compareBoundaryPoints(K.END_TO_END, rangeB);
+	ok(cmp === -1);
+	cmp = rangeA.compareBoundaryPoints(K.END_TO_START, rangeB);
+	ok(cmp === -1);
 });
 
 test('range.cloneRange', function() {
@@ -455,7 +482,7 @@ test('range.extractContents', function() {
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, frag;
 	//1
-	/*cloneP = p.cloneNode(true);
+	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
@@ -534,7 +561,7 @@ test('range.extractContents', function() {
 	frag = range.extractContents();
 	ok(K.node(frag).children.length === 1);
 	same(K.node(frag).children[0].name, 'img');
-	document.body.removeChild(cloneP);*/
+	document.body.removeChild(cloneP);
 	//9
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -544,7 +571,7 @@ test('range.extractContents', function() {
 	range.setEnd(strong.firstChild, 3);
 	frag = range.extractContents();
 	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
-	//document.body.removeChild(cloneP);
+	document.body.removeChild(cloneP);
 });
 
 test('range.deleteContents', function() {
