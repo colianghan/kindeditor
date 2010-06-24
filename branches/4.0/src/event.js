@@ -38,7 +38,7 @@ var _props = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clie
 function _event(el, e) {
 	if (!e) return;
 	var obj = {},
-		doc = el.ownerDocument;
+		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
 	_each(_props, function(key, val) {
 		obj[val] = e[val];
 	});

@@ -16,7 +16,7 @@
 
 var _each = K.each,
 	_node = K.node,
-	_range = K.range;
+	_cmd = K.cmd;
 
 function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
@@ -41,24 +41,30 @@ function _getInitHtml(cssPaths) {
 function _edit(expr, options) {
 	var srcElement = _node(expr),
 		iframe = null;
-	return {
+	var obj = {
+		cmd : null,
+		doc : null,
 		width : options.width || 0,
 		height : options.height || 0,
 		val : function(val) {
+			var self = this,
+				body = self.doc.body;
 			if (val === undefined) {
-				return _node(this.doc.body).html();
+				return _node(body).html();
 			} else {
-				_node(this.doc.body).html(val);
-				return this;
+				_node(body).html(val);
+				return self;
 			}
 		},
 		create : function() {
-			if (iframe !== null) return this;
+			var self = this;
+			if (iframe !== null) return self;
+			//create elements
 			iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
 			iframe.css({
 				display : 'block',
-				width : this.width,
-				height : this.height
+				width : self.width,
+				height : self.height
 			});
 			srcElement.before(iframe);
 			srcElement.hide();
@@ -67,18 +73,34 @@ function _edit(expr, options) {
 			doc.open();
 			doc.write(_getInitHtml());
 			doc.close();
-			this.doc = doc;
-			this.val(srcElement.val());
-			return this;
+			self.doc = doc;
+			self.val(srcElement.val());
+			self.cmd = _cmd(doc);
+			//add events
+			function selectionHandler(e) {
+				var cmd = _cmd(doc);
+				if (cmd) self.cmd = cmd;
+			}
+			self.oninput(selectionHandler);
+			_node(doc).bind('mouseup', selectionHandler);
+			_node(document).bind('mousedown', selectionHandler);
+			return self;
 		},
 		remove : function() {
-			if (iframe === null) return this;
+			var self = this,
+				doc = self.doc;
+			if (iframe === null) return self;
+			//remove events
+			_node(doc).unbind();
+			_node(doc.body).unbind();
+			_node(document).unbind();
+			//remove elements
 			srcElement.show();
-			srcElement.val(this.val());
-			this.doc.src = 'javascript:false';
+			srcElement.val(self.val());
+			doc.src = 'javascript:false';
 			iframe.remove();
 			iframe = null;
-			return this;
+			return self;
 		},
 		show : function() {
 			if (iframe === null) return this;
@@ -94,8 +116,28 @@ function _edit(expr, options) {
 			if (iframe === null) return this;
 			iframe.contentWindow.focus();
 			return this;
+		},
+		oninput : function(fn) {
+			var self = this,
+				doc = self.doc,
+				body = doc.body;
+			_node(doc).bind('keyup', function(e) {
+				if (!e.ctrlKey && !e.altKey && (e.keyCode < 16 || e.keyCode > 18) && e.keyCode != 116) {
+					fn(e);
+					e.stop();
+				}
+			});
+			function timeoutHandler(e) {
+				window.setTimeout(function() {
+					fn(e);
+				}, 1);
+			}
+			_node(body).bind('paste', timeoutHandler);
+			_node(body).bind('cut', timeoutHandler);
+			return self;
 		}
 	};
+	return obj;
 }
 
 K.edit = _edit;

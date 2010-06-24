@@ -20,6 +20,7 @@
 		<script src="../lib/jquery.js"></script>
 		<!-- include src files -->
 		<script src="../src/core.js"></script>
+		<script src="../src/event.js"></script>
 		<script src="../src/html.js"></script>
 		<script src="../src/selector.js"></script>
 		<script src="../src/node.js"></script>
@@ -50,14 +51,10 @@
 				height : '200px'
 			}).create();
 			K.query('#bold').onclick = function() {
-				var cmd = K.cmd(edit.doc);
-				cmd.bold();
-				return false;
+				edit.cmd.bold();
 			};
 			K.query('#foreColor').onclick = function() {
-				var cmd = K.cmd(edit.doc);
-				cmd.foreColor('#FF0000');
-				return false;
+				edit.cmd.foreColor('#FF0000');
 			};
 			K.query('#create').onclick = function() {
 				edit.create();

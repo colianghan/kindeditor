@@ -22,6 +22,15 @@ var _each = K.each,
 	_IE = K.IE,
 	_INLINE_TAGS = K.INLINE_TAGS;
 
+//get window by document
+function _getWin(doc) {
+	return doc.parentWindow || doc.defaultView;
+}
+//get current selection of a document
+function _getSel(doc) {
+	var win = _getWin(doc);
+	return win.getSelection ? win.getSelection() : doc.selection;
+}
 /**
 	Examples:
 	K.cmd(document).bold();
@@ -32,39 +41,39 @@ var _each = K.each,
 	});
 */
 function _cmd(mixed) {
-	var sel, doc;
-	function getWin(doc) {
-		return doc.parentWindow || doc.defaultView;
-	}
-	function getSel(doc) {
-		var win = getWin(doc);
-		return win.getSelection ? win.getSelection() : doc.selection;
-	}
+	var sel, doc, rng;
 	if (mixed.nodeName) {
-		doc = mixed;
-		sel = getSel(doc);
-		var rng;
+		//get selection and original range when mixed is a document or a node
+		doc = mixed.nodeName.toLowerCase() === '#document' ? mixed : mixed.ownerDocument;
+		sel = _getSel(doc);
 		try {
 			if (sel.rangeCount > 0) rng = sel.getRangeAt(0);
 			else rng = sel.createRange();
 		} catch(e) {}
 		mixed = rng || doc;
+		if (_IE) {
+			if (rng.parentElement().ownerDocument !== doc) return null;
+		}
 	} else {
+		//get selection and original range when mixed is K.range
 		var startContainer = mixed.startContainer;
 		doc = startContainer.ownerDocument || startContainer;
-		sel = getSel(doc);
+		sel = _getSel(doc);
+		rng = mixed.get();
 	}
-	var win = getWin(doc);
+	var win = _getWin(doc);
 	var range = _range(mixed);
-	function select(range) {
+	//select a K.range (add K.range to the selection)
+	function _select(range) {
 		var rng = range.get();
 		if (_IE) rng.select();
 		else sel.addRange(rng);
 		win.focus();
 	}
+	//new K.range object
 	return {
-		wrap : function(mixed) {
-			var wrapper = _node(mixed, doc),
+		wrap : function(val) {
+			var wrapper = _node(val, doc),
 			name = wrapper.name,
 			frag = range.extractContents();
 			_node(frag).each(function(node) {
@@ -82,10 +91,11 @@ function _cmd(mixed) {
 				}
 			});
 			range.insertNode(frag);
-			select(range);
+			console.log(range);
+			_select(range);
 		},
 		remove : function(options) {
-			select(range);
+			_select(range);
 		},
 		bold : function() {
 			this.wrap('<strong></strong>');

@@ -349,6 +349,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 			var range = _range(doc);
 			range.selectNode(node);
 			if (range.compareBoundaryPoints(_END_TO_START, newRange) >= 0) return false;
+			console.log(node);
 			var nextNode = node.nextSibling;
 			if (range.compareBoundaryPoints(_START_TO_END, newRange) > 0) {
 				var type = node.nodeType;

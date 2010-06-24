@@ -9,9 +9,9 @@
 
 /**
 #using "core.js"
+#using "event.js"
 #using "html.js"
 #using "selector.js"
-#using "event.js"
 */
 (function (K, undefined) {
 
@@ -36,6 +36,7 @@ function _node(expr, root) {
 	var node;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
+			//TODO
 			node = jQuery(expr, root).get(0);
 		} else {
 			node = _query(expr, root);
@@ -44,9 +45,9 @@ function _node(expr, root) {
 		node = expr;
 	}
 	if (!node) return null;
-	var doc = node.ownerDocument || node;
-	var win = doc.parentWindow || doc.defaultView;
-	var oldDisplay = '';
+	var doc = node.ownerDocument || node,
+		win = doc.parentWindow || doc.defaultView,
+		prevDisplay = '';
 	var obj = {
 		name : node.nodeName.toLowerCase(),
 		type : node.nodeType,
@@ -70,11 +71,13 @@ function _node(expr, root) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
+				//TODO
 				jQuery(node).attr(key, val);
 				return this;
 			}
 		},
 		removeAttr : function(key) {
+			//TODO
 			jQuery(node).removeAttr(key);
 			return this;
 		},
@@ -82,17 +85,21 @@ function _node(expr, root) {
 			return node;
 		},
 		hasClass : function(cls) {
+			//TODO
 			return jQuery(node).hasClass(cls);
 		},
 		addClass : function(cls) {
+			//TODO
 			jQuery(node).addClass(cls);
 			return this;
 		},
 		removeClass : function(cls) {
+			//TODO
 			jQuery(node).removeClass(cls);
 			return this;
 		},
 		html : function(val) {
+			//TODO
 			if (val === undefined) {
 				return _formatHtml(jQuery(node).html());
 			} else {
@@ -101,6 +108,7 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
+			//TODO
 			if (val === undefined) {
 				return jQuery(node).val();
 			} else {
@@ -112,8 +120,10 @@ function _node(expr, root) {
 			if (key === undefined) {
 				return _getCssList(this.attr('style'));
 			} else if (val === undefined) {
+				//TODO
 				return jQuery(node).css(key);
 			} else {
+				//TODO
 				jQuery(node).css(key, val);
 				return this;
 			}
@@ -159,11 +169,11 @@ function _node(expr, root) {
 			return this;
 		},
 		show : function() {
-			if (this.computedCss('display') === 'none') this.css('display', oldDisplay);
+			if (this.computedCss('display') === 'none') this.css('display', prevDisplay);
 		},
 		hide : function() {
 			if (this.computedCss('display') !== 'none') {
-				oldDisplay = this.css('display');
+				prevDisplay = this.css('display');
 				this.css('display', 'none');
 			}
 		},
@@ -221,7 +231,7 @@ function _toCamel(str) {
 	var arr = str.split('-');
 	str = '';
 	_each(arr, function(key, val) {
-		str += (i > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
+		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
 	});
 	return str;
 }

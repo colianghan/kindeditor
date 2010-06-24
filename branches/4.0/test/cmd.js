@@ -78,4 +78,15 @@ test('cmd.wrap', function() {
 	cmd.wrap('<strong></strong>');
 	equals(range.html(), '<strong>f</strong>');
 	document.body.removeChild(cloneP);
+	//8
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(cloneP, 1);
+	range.setEnd(strong.firstChild, 3);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	equals(range.html(), '<strong>efg</strong>');
+	document.body.removeChild(cloneP);
 });

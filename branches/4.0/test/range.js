@@ -455,7 +455,7 @@ test('range.extractContents', function() {
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, frag;
 	//1
-	cloneP = p.cloneNode(true);
+	/*cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
@@ -534,8 +534,17 @@ test('range.extractContents', function() {
 	frag = range.extractContents();
 	ok(K.node(frag).children.length === 1);
 	same(K.node(frag).children[0].name, 'img');
-	document.body.removeChild(cloneP);
-
+	document.body.removeChild(cloneP);*/
+	//9
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(cloneP, 1);
+	range.setEnd(strong.firstChild, 3);
+	frag = range.extractContents();
+	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	//document.body.removeChild(cloneP);
 });
 
 test('range.deleteContents', function() {
