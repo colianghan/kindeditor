@@ -36,8 +36,10 @@ function _node(expr, root) {
 	var node;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			//TODO
-			node = jQuery(expr, root).get(0);
+			var doc = root ? root.ownerDocument || root : document,
+				tmpDiv = doc.createElement('div');
+			tmpDiv.innerHTML = _formatHtml(expr);
+			node = tmpDiv.firstChild;
 		} else {
 			node = _query(expr, root);
 		}
@@ -71,60 +73,49 @@ function _node(expr, root) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
-				//TODO
-				jQuery(node).attr(key, val);
+				node.setAttribute(key, '' + val);
 				return this;
 			}
 		},
 		removeAttr : function(key) {
-			//TODO
-			jQuery(node).removeAttr(key);
+			this.attr(key, '');
+			node.removeAttribute(key);
 			return this;
 		},
 		get : function() {
 			return node;
 		},
 		hasClass : function(cls) {
-			//TODO
-			return jQuery(node).hasClass(cls);
+			return K.inString(cls, node.className, ' ');
+			
 		},
 		addClass : function(cls) {
-			//TODO
-			jQuery(node).addClass(cls);
+			if (!this.hasClass(cls)) node.className = _trim(node.className + ' ' + cls);
 			return this;
 		},
 		removeClass : function(cls) {
-			//TODO
-			jQuery(node).removeClass(cls);
+			if(this.hasClass(cls))
+				node.className = _trim(node.className.replace(new RegExp('\s*' + cls + '\s*'), ''));
 			return this;
 		},
 		html : function(val) {
-			//TODO
 			if (val === undefined) {
-				return _formatHtml(jQuery(node).html());
+				return _formatHtml(node.innerHTML);
 			} else {
-				jQuery(node).html(val);
+				node.innerHTML = _formatHtml(val);
 				return this;
 			}
 		},
 		val : function(val) {
-			//TODO
-			if (val === undefined) {
-				return jQuery(node).val();
-			} else {
-				jQuery(node).val(val);
-				return this;
-			}
+			return this.attr('value' , val);
 		},
 		css : function(key, val) {
 			if (key === undefined) {
 				return _getCssList(this.attr('style'));
 			} else if (val === undefined) {
-				//TODO
-				return jQuery(node).css(key);
+				return node.style[key] || this.computedCss(key) || '';
 			} else {
-				//TODO
-				jQuery(node).css(key, val);
+				node.style.cssText += ";" + key + ":" + val + (key == 'width' || key == 'height' ? 'px' : '');
 				return this;
 			}
 		},
@@ -178,16 +169,18 @@ function _node(expr, root) {
 			}
 		},
 		outer : function() {
-			return _node('<div></div>', doc).append(this.clone(true)).html();
+			var div = doc.createElement('div');
+			div.appendChild(node);
+			return _formatHtml(div.innerHTML);
 		},
 		isSingle : function() {
-			return this.name in _SINGLE_TAG_MAP;
+			return !!_SINGLE_TAG_MAP[this.name];
 		},
 		isInline : function() {
-			return this.name in _INLINE_TAG_MAP;
+			return !!_INLINE_TAG_MAP[this.name];
 		},
 		isBlock : function() {
-			return this.name in _BLOCK_TAG_MAP;
+			return !!_BLOCK_TAG_MAP[this.name];
 		},
 		isAncestor : function(ancestor) {
 			return _isAncestor(_get(ancestor), node);

@@ -33,14 +33,11 @@ function _getInitHtml(bodyClass, cssPaths) {
 		});
 	}
 	html += '</head>';
-	html += '<body class="' + bodyClass + '"></body>';
+	html += bodyClass ? '<body class="' + bodyClass + '"></body>' : '<body></body>';
 	html += '</html>';
 	return html;
 }
 
-/**
-
-*/
 function _edit(expr, options) {
 	var srcElement = _node(expr),
 		iframe = null,

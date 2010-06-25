@@ -36,7 +36,7 @@ function _getAttrList(tag) {
 		match;
 	while (match = reg.exec(tag)) {
 		var key = match[1] || match[2] || match[4] || match[6],
-			val = match[1] || (match[2] ? match[3] : (match[4] ? match[5] : match[7]));
+			val = (match[2] ? match[3] : (match[4] ? match[5] : match[7])) || '';
 		list[key] = val;
 	}
 	return list;
