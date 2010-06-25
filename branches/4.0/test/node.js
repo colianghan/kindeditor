@@ -13,6 +13,12 @@ test('node.attr/node.removeAttr', function() {
 	equals(knode.attr('class', 'aaa').attr('class'), 'aaa');
 	equals(knode.removeAttr('class').attr('class'), '');
 });
+test('node("html tag")',function(){
+	var node = K.node('<div><span></span></div>');
+	equals(node.name,'div')
+	equals(node.first.name,'span')
+})
+
 
 test("node.hasClass/node.addClass/node.removeClass", function() {
 	var knode = K.node('<div></div>');
