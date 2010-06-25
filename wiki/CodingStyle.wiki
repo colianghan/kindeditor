@@ -36,6 +36,60 @@ var arr = new Array(),
     fn = new Function('alert(1)');
 }}}
 
+4. 整个程序只允许有三个全局变量（K、KE、KindEditor），如果页面已经有K、KE全局变量就跳过，不会修改相应变量值。
+
+5. 程序中不直接使用K.xxx，统一放在头部和底部。主要是为了提高压缩率，并且合并模块时方便做更多的优化。
+
+Right:
+{{{
+(function (K, undefined) {
+
+var _IE = K.IE,
+    _trim = K.trim;
+
+//some code
+
+if (_IE) doIt();
+
+functin _inArray() {
+
+}
+
+//some code
+
+K.inArray = _inArray;
+
+})(KindEditor);
+}}}
+Wrong:
+{{{
+(function (K, undefined) {
+
+//some code
+
+if (K.IE) doIt();
+
+K.inArray = functin() {
+
+};
+
+//some code
+
+})(KindEditor);
+}}}
+
+
+===Names===
+
+|| 文件名 || lowercase || node.js, dialog.js ||
+|| 类名 || K.lowercase || K.node, K.dialog ||
+|| 全局变量名 || K.UPPER_CASE || K.IE, K.VERSION ||
+|| 全局函数 || K.camelCase || K.trim, K.inArray ||
+|| 类方法 || camelCase || node.attr, node.removeAttr ||
+|| 类成员变量 || camelCase || range.startContainer, node.children ||
+|| 模块里的一级局部变量 || _camelCase || _trim, _inArray ||
+|| 局部变量 || camelCase || str, nodeName ||
+
 ===Indentation===
 
 1. Use tabs, not spaces.
@@ -249,58 +303,6 @@ if (condition == false)
     return;
 }}}
 
-===Names===
-
-|| 文件名 || lowercase || node.js, dialog.js ||
-|| 类名 || K.lowercase || K.node, K.dialog ||
-|| 全局变量名 || K.UPPER_CASE || K.IE, K.VERSION ||
-|| 全局函数 || K.camelCase || K.trim, K.inArray ||
-|| 类方法 || camelCase || node.attr, node.removeAttr ||
-|| 类成员变量 || camelCase || range.startContainer, node.children ||
-|| 模块里的一级局部变量 || _camelCase || _trim, _inArray ||
-|| 局部变量 || camelCase || str, nodeName ||
-
-1. 整个程序只允许有三个全局变量（K、KE、KindEditor），如果页面已经有K、KE全局变量就跳过，不会修改相应变量值。
-
-2. 程序中不直接使用K.xxx，统一放在头部和底部。主要是为了提高压缩率，并且合并模块时方便做更多的优化。
-
-Right:
-{{{
-(function (K, undefined) {
-
-var _IE = K.IE,
-    _trim = K.trim;
-
-//some code
-
-if (_IE) doIt();
-
-functin _inArray() {
-
-}
-
-//some code
-
-K.inArray = _inArray;
-
-})(KindEditor);
-}}}
-Wrong:
-{{{
-(function (K, undefined) {
-
-//some code
-
-if (K.IE) doIt();
-
-K.inArray = functin() {
-
-};
-
-//some code
-
-})(KindEditor);
-}}}
 
 ===Reference===
 
