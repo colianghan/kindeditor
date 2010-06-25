@@ -48,28 +48,28 @@ test("node.hasClass/node.addClass/node.removeClass", function() {
 });
 
 test("node.val",function(){
-	equals(K.node('<input value="aa" />').val(),"aa");
-	equals(K.node('<div value="aa"></div>').val(),"aa");
-	equals(K.node('<input value="aa" />').val("bb").val(),"bb");
-	equals(K.node('<div value="aa"></div>').val("").val(),"");
+	equals(K.node('<input value="aa" />').val(), "aa");
+	equals(K.node('<div value="aa"></div>').val(), "aa");
+	equals(K.node('<input value="aa" />').val("bb").val(), "bb");
+	equals(K.node('<div value="aa"></div>').val("").val(), "");
 });
 
 test("node.css",function(){
 	var node = K.node('<div></div>');
-	equals(node.css('width','300').css('width'),'300px');
+	equals(node.css('width','300px').css('width'), '300px');
 	equals(node.css('border','1px solid #ccc').css('border'),node.css('border'));
-	node = K.node('#test-data-01')
-	equals(node.css('width'),'300px')
+	node = K.node('#test-data-01');
+	equals(node.css('width'), '300px');
 });
 
 test("node.html",function(){
 	var node = K.node('<div>xxx</div>');
-	equals(node.html(),'xxx');
-	equals(node.html('bbb').html(),'bbb')
+	equals(node.html(), 'xxx');
+	equals(node.html('bbb').html(), 'bbb');
 });
 
 test("node.outer",function(){
 	var node = K.node('<div>xxx</div>');
-	equals(node.outer(),'<div>xxx</div>');
+	equals(node.outer(), '<div>xxx</div>');
 	equals(node.addClass('aaa').outer(), '<div class="aaa">xxx</div>');
 });

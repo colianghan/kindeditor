@@ -114,14 +114,21 @@ function _node(expr, root) {
 			return this.attr('value' , val);
 		},
 		css : function(key, val) {
+			var self = this;
 			if (key === undefined) {
 				return _getCssList(this.attr('style'));
-			} else if (val === undefined) {
-				return node.style[key] || this.computedCss(key) || '';
-			} else {
-				node.style.cssText += ";" + key + ":" + val + (key == 'width' || key == 'height' ? 'px' : '');
+			}
+			if (typeof key === 'object') {
+				_each(key, function(k, v) {
+					self.css(k, v);
+				});
 				return this;
 			}
+			if (val === undefined) {
+				return node.style[key] || this.computedCss(key) || '';
+			}
+			node.style[_toCamel(key)] = val;
+			return this;
 		},
 		computedCss : function(key) {
 			var camelKey = _toCamel(key),
