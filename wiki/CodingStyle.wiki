@@ -4,6 +4,37 @@
 
 1. 所有文本文件统一使用UTF-8 无BOM编码，换行使用Windows格式（\r\n）。
 
+2. 所有字符串一般情况下使用单引号（'）定义，如果字符串中单引号比双引号多则用双引号（"），基本原则是尽量减少斜线转义字符。
+
+Right:
+{{{
+str = 'abc';
+str = '<div class="abc"></div>';
+str = "'";
+}}}
+Wrong:
+{{{
+str = "abc";
+str = "<div class=\"abc\"></div>";
+str = '\'';
+}}}
+
+3. 尽量使用[],{},/regex/,function () {}，而不是new Array(), new Object(), new RegExp(), new Function()。
+
+Right:
+{{{
+var arr = [],
+    obj = {},
+    reg = /\w+/g,
+    fn = function () { alert(1); };
+}}}
+Wrong:
+{{{
+var arr = new Array(),
+    obj = new Object(),
+    reg = new RegExp('\w+', 'g'),
+    fn = new Function('alert(1)');
+}}}
 
 ===Indentation===
 
@@ -196,7 +227,7 @@ if (condition)
         reallyLongParam5);
 }}}
 
-===null, false and 0===
+===true and false===
 
 1. Tests for true/false should all be done without equality comparisons.
 
@@ -220,5 +251,59 @@ if (condition == false)
 
 ===Names===
 
-Reference: 
-WebKit Coding Style Guidelines: http://webkit.org/coding/coding-style.html
+|| 文件名 || lowercase || node.js, dialog.js ||
+|| 类名 || K.lowercase || K.node, K.dialog ||
+|| 全局变量名 || K.UPPER_CASE || K.IE, K.VERSION ||
+|| 全局函数 || K.camelCase || K.trim, K.inArray ||
+|| 类方法 || camelCase || node.attr, node.removeAttr ||
+|| 类成员变量 || camelCase || range.startContainer, node.children ||
+|| 模块里的一级局部变量 || _camelCase || _trim, _inArray ||
+|| 局部变量 || camelCase || str, nodeName ||
+
+1. 整个程序只允许有三个全局变量（K、KE、KindEditor），如果页面已经有K、KE全局变量就跳过，不会修改相应变量值。
+
+2. 程序中不直接使用K.xxx，统一放在头部和底部。主要是为了提高压缩率，并且合并模块时方便做更多的优化。
+
+Right:
+{{{
+(function (K, undefined) {
+
+var _IE = K.IE,
+    _trim = K.trim;
+
+//some code
+
+if (_IE) doIt();
+
+functin _inArray() {
+
+}
+
+//some code
+
+K.inArray = _inArray;
+
+})(KindEditor);
+}}}
+Wrong:
+{{{
+(function (K, undefined) {
+
+//some code
+
+if (K.IE) doIt();
+
+K.inArray = functin() {
+
+};
+
+//some code
+
+})(KindEditor);
+}}}
+
+===Reference===
+
+ * http://webkit.org/coding/coding-style.html
+ * http://docs.jquery.com/JQuery_Core_Style_Guidelines
+ * http://o.dojotoolkit.org/developer/StyleGuide
