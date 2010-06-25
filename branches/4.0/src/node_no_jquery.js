@@ -41,7 +41,6 @@ function _node(expr, root) {
 			tmpDiv.innerHTML = expr;
 			node = tmpDiv.firstChild;
 			tmpDiv = null;
-			//node = jQuery(expr, root).get(0);
 		} else {
 			node = _query(expr, root);
 		}
@@ -75,9 +74,7 @@ function _node(expr, root) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
-				//TODO
 				node.setAttribute( key, "" + val );
-				//jQuery(node).attr(key, val);
 				return this;
 			}
 		},
@@ -85,7 +82,6 @@ function _node(expr, root) {
 			//TODO
 			this.attr(key,'');
 			node.removeAttribute(key);
-			//jQuery(node).removeAttr(key);
 			return this;
 		},
 		get : function() {
@@ -93,40 +89,35 @@ function _node(expr, root) {
 		},
 		hasClass : function(cls) {
 			//TODO
-			return node.className.indexOf(cls)>-1;
-			//return jQuery(node).hasClass(cls);
+			return K.inString(cls, node.className, ' ');
+			
 		},
 		addClass : function(cls) {
 			//TODO
 			if(!this.hasClass(cls))
-				node.className = _trim(node.className + " "+cls);
+				node.className = _trim(node.className + " " + cls);
 			//jQuery(node).addClass(cls);
 			return this;
 		},
 		removeClass : function(cls) {
 			//TODO
 			if(this.hasClass(cls))
-				node.className = _trim(node.className.replace(new RegExp("\s*"+cls+"\s*"),''));
-			//jQuery(node).removeClass(cls);
+				node.className = _trim(node.className.replace(new RegExp("\s*" + cls + "\s*"),''));
 			return this;
 		},
 		html : function(val) {
 			//TODO
+			var _f = _formatHtml;
 			if (val === undefined) {
-				return _formatHtml(jQuery(node).html());
+				return _f(node.innerHTML);
 			} else {
-				jQuery(node).html(val);
+				node.innerHTML = _f(val);
 				return this;
 			}
 		},
 		val : function(val) {
 			//TODO
-			if (val === undefined) {
-				return jQuery(node).val();
-			} else {
-				jQuery(node).val(val);
-				return this;
-			}
+			return this.attr('value' , val);
 		},
 		css : function(key, val) {
 			if (key === undefined) {
@@ -136,7 +127,7 @@ function _node(expr, root) {
 				return node.style[key]||this.computedCss(key)||'';
 			} else {
 				//TODO
-				node.style.cssText += ";"+key+":"+val;
+				node.style.cssText += ";"+key+":"+val+(key=='width'||key=='height'?'px':'');
 				return this;
 			}
 		},
@@ -190,23 +181,23 @@ function _node(expr, root) {
 			}
 		},
 		outer : function() {
-			//再次创建了一个node实例比较大
+			
 			var div = doc.createElement('div');
 			div.appendChild(node);
 			try{
-				return div.innerHTML;
+				return _formatHtml(div.innerHTML);
 			}catch(e){}
 			finally{div = null;}
-			//return _node('<div></div>', doc).append(this.clone(true)).html();
+		
 		},
 		isSingle : function() {
-			return this.name in _SINGLE_TAG_MAP;
+			return !!_SINGLE_TAG_MAP[this.name];
 		},
 		isInline : function() {
 			return this.name in _INLINE_TAG_MAP;
 		},
 		isBlock : function() {
-			return this.name in _BLOCK_TAG_MAP;
+			return !!_BLOCK_TAG_MAP[this.name];
 		},
 		isAncestor : function(ancestor) {
 			return _isAncestor(_get(ancestor), node);
