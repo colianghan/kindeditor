@@ -23,6 +23,7 @@ var _IE = K.IE,
 	_each = K.each,
 	_query = K.query,
 	_trim = K.trim,
+	_inString = K.inString,
 	_getCssList = K._getCssList,
 	_getAttrList = K._getAttrList,
 	_formatHtml = K.formatHtml,
@@ -37,9 +38,10 @@ function _node(expr, root) {
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
-				tmpDiv = doc.createElement('div');
-			tmpDiv.innerHTML = _formatHtml(expr);
-			node = tmpDiv.firstChild;
+				div = doc.createElement('div');
+			div.innerHTML = expr;
+			node = div.firstChild;
+			div = null;
 		} else {
 			node = _query(expr, root);
 		}
@@ -73,11 +75,13 @@ function _node(expr, root) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
+				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') key = 'className';
 				node.setAttribute(key, '' + val);
 				return this;
 			}
 		},
 		removeAttr : function(key) {
+			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') key = 'className';
 			this.attr(key, '');
 			node.removeAttribute(key);
 			return this;
@@ -86,7 +90,7 @@ function _node(expr, root) {
 			return node;
 		},
 		hasClass : function(cls) {
-			return K.inString(cls, node.className, ' ');
+			return _inString(cls, node.className, ' ');
 			
 		},
 		addClass : function(cls) {
@@ -152,11 +156,13 @@ function _node(expr, root) {
 		replaceWith : function(val) {
 			node.parentNode.replaceChild(_get(val), node);
 			this.unbind();
-			return _node(_get(val));
+			node = _get(val);
+			return this;
 		},
 		remove : function() {
 			node.parentNode.removeChild(node);
 			this.unbind();
+			node = null;
 			return this;
 		},
 		show : function() {
@@ -171,7 +177,12 @@ function _node(expr, root) {
 		outer : function() {
 			var div = doc.createElement('div');
 			div.appendChild(node);
-			return _formatHtml(div.innerHTML);
+			try {
+				return _formatHtml(div.innerHTML);
+			} catch(e) {}
+			finally{
+				div = null;
+			}
 		},
 		isSingle : function() {
 			return !!_SINGLE_TAG_MAP[this.name];

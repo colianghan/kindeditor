@@ -52,7 +52,7 @@ function _formatCss(css) {
 
 //Modified by zhanyi1022
 function _formatHtml(html) {
-	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s'"]*]))?)*\s*(\/)?>((?:[\r\n])*)/g;
+	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s"'<>]*))?)*\s*(\/)?>((?:[\r\n])*)/g;
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var startNewline = $1 || '',
 			startSlash = $2 || '',
@@ -60,7 +60,7 @@ function _formatHtml(html) {
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
-		if (endSlash === '' && tagName in _SINGLE_TAG_MAP) endSlash = ' /';
+		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) endSlash = ' /';
 		if (endNewline) endNewline = ' ';
 		if (tagName !== 'script' && tagName !== 'style') {
 			startNewline = '';

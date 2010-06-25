@@ -71,4 +71,5 @@ test("node.html",function(){
 test("node.outer",function(){
 	var node = K.node('<div>xxx</div>');
 	equals(node.outer(),'<div>xxx</div>');
+	equals(node.addClass('aaa').outer(), '<div class="aaa">xxx</div>');
 });
