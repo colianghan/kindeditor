@@ -302,6 +302,24 @@ if (condition == false)
     return;
 }}}
 
+===type checks===
+
+ * String: typeof object === "string"
+ * Number: typeof object === "number"
+ * Boolean: typeof object === "boolean"
+ * Object: typeof object === "object"
+ * Element: object.nodeType
+ * null: object === null
+ * null or undefined: object == null
+ * undefined:
+    * Global Variables: typeof variable === "undefined"
+    * Local Variables: variable === undefined
+    * Properties: object.prop === undefined
+
+===regexp===
+
+All RegExp operations should be done using .test() and .exec(). "string".match() is no longer used.
+
 
 ===Reference===
 
