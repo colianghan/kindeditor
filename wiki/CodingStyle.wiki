@@ -145,15 +145,17 @@ return condition ? 1:0;
 
 Right:
 {{{
-for (var i = 0; i < 10; i++)
+for (var i = 0; i < 10; i++) {
     doSomething();
+}
 
 f(a, b);
 }}}
 Wrong:
 {{{
-for (var i = 0 ; i < 10 ; i++)
+for (var i = 0 ; i < 10 ; i++) {
     doSomething();
+}
 
 f(a , b) ;
 }}}
@@ -162,19 +164,23 @@ f(a , b) ;
 
 Right:
 {{{
-if (condition)
+if (condition) {
     doIt();
+}
 
-for (var i = 0, len = arr.length; i < len; i++)
+for (var i = 0, len = arr.length; i < len; i++) {
     doIt();
+}
 }}}
 Wrong:
 {{{
-if(condition)
+if(condition){
     doIt();
+}
 
-for(var i = 0, len = arr.length; i < len; i++)
+for(var i = 0, len = arr.length; i < len; i++){
     doIt();
+}
 }}}
 
 5. Do not place spaces between a function and its parentheses, or between a parenthesis and its content.
@@ -253,11 +259,9 @@ function main()
 
 Right:
 {{{
-if (condition)
-    doIt();
+if (condition) doIt();
 
 if (condition) {
-    // Some comment
     doIt();
 }
 
@@ -268,12 +272,7 @@ if (condition) {
 }}}
 Wrong:
 {{{
-if (condition) {
-    doIt();
-}
-
 if (condition)
-    // Some comment
     doIt();
 
 if (condition)
