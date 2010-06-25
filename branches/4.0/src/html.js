@@ -50,52 +50,10 @@ function _formatCss(css) {
 	return str;
 }
 
-function _formatHtml(html) {
-	var re = /((?:\r\n|\n|\r)*)<(\/)?([\w-:]+)((?:\s+|(?:\s+[\w-:]+)|(?:\s+[\w-:]+=[^\s"'<>]+)|(?:\s+[\w-:]+="[^"]*")|(?:\s+[\w-:]+='[^']*'))*)(\/)?>((?:\r\n|\n|\r)*)/g;
-	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
-		var startNewline = $1 || '',
-			startSlash = $2 || '',
-			tagName = $3.toLowerCase(),
-			attr = $4 || '',
-			endSlash = $5 ? ' ' + $5 : '',
-			endNewline = $6 || '';
-		if (endSlash === '' && tagName in _SINGLE_TAG_MAP) endSlash = ' /';
-		if (endNewline) endNewline = ' ';
-		if (tagName !== 'script' && tagName !== 'style') {
-			startNewline = '';
-		}
-		if (attr !== '') {
-			attr = attr.replace(/\s*([\w-:]+)=([^\s"'<>]+|"[^"]*"|'[^']*')/g, function($0, $1, $2) {
-				var key = $1.toLowerCase(),
-					val = $2 || '';
-				if (val === '') {
-					val = '""';
-				} else {
-					if (key === 'style') {
-						val = val.substr(1, val.length - 2);
-						val = _formatCss(val);
-						if (val === '') return '';
-						val = '"' + val + '"';
-					}
-					if (val.charAt(0) !== '"') val = '"' + val + '"';
-				}
-				return ' ' + key + '=' + val + ' ';
-			});
-			attr = _trim(attr);
-			attr = attr.replace(/\s+/g, ' ');
-			if (attr) attr = ' ' + attr;
-			return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
-		} else {
-			return startNewline + '<' + startSlash + tagName + endSlash + '>' + endNewline;
-		}
-	});
-	return _trim(html);
-}
-//ÎÒÐÞ¸ÄµÄ
+//Modified by zhanyi1022
 function _formatHtml(html) {
 	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s'"]*]))?)*\s*(\/)?>((?:[\r\n])*)/g;
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
-		debugger;
 		var startNewline = $1 || '',
 			startSlash = $2 || '',
 			tagName = $3.toLowerCase(),

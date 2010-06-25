@@ -50,24 +50,26 @@
 				width : '600px',
 				height : '200px'
 			}).create();
-			K.query('#bold').onclick = function() {
+			K.node('#bold').bind('click', function(e) {
 				edit.cmd.bold();
-			};
-			K.query('#foreColor').onclick = function() {
+				e.stop();
+			});
+			K.node('#foreColor').bind('click', function(e) {
 				edit.cmd.foreColor('#FF0000');
-			};
-			K.query('#create').onclick = function() {
+				e.stop();
+			});
+			K.node('#create').bind('click', function(e) {
 				edit.create();
-			};
-			K.query('#remove').onclick = function() {
+			});
+			K.node('#remove').bind('click', function(e) {
 				edit.remove();
-			};
-			K.query('#show').onclick = function() {
+			});
+			K.node('#show').bind('click', function(e) {
 				edit.show();
-			};
-			K.query('#hide').onclick = function() {
+			});
+			K.node('#hide').bind('click', function(e) {
 				edit.hide();
-			};
+			});
 		</script>
 	</body>
 </html>

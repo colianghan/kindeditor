@@ -22,7 +22,7 @@ function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-function _getInitHtml(cssPaths) {
+function _getInitHtml(bodyClass, cssPaths) {
 	var html = '<!doctype html><html>';
 	html += '<head>';
 	html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
@@ -33,14 +33,19 @@ function _getInitHtml(cssPaths) {
 		});
 	}
 	html += '</head>';
-	html += '<body class="ke-content"></body>';
+	html += '<body class="' + bodyClass + '"></body>';
 	html += '</html>';
 	return html;
 }
 
+/**
+
+*/
 function _edit(expr, options) {
 	var srcElement = _node(expr),
-		iframe = null;
+		iframe = null,
+		bodyClass = options.bodyClass,
+		cssPaths = options.cssPaths;
 	var obj = {
 		cmd : null,
 		doc : null,
