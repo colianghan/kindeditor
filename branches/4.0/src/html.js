@@ -91,7 +91,49 @@ function _formatHtml(html) {
 	});
 	return _trim(html);
 }
-
+//ÎÒÐÞ¸ÄµÄ
+function _formatHtml(html) {
+	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s'"]*]))?)*\s*(\/)?>((?:[\r\n])*)/g;
+	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
+		debugger;
+		var startNewline = $1 || '',
+			startSlash = $2 || '',
+			tagName = $3.toLowerCase(),
+			attr = $4 || '',
+			endSlash = $5 ? ' ' + $5 : '',
+			endNewline = $6 || '';
+		if (endSlash === '' && tagName in _SINGLE_TAG_MAP) endSlash = ' /';
+		if (endNewline) endNewline = ' ';
+		if (tagName !== 'script' && tagName !== 'style') {
+			startNewline = '';
+		}
+		if (attr !== '') {
+			attr = attr.replace(/\s*([\w-:]+)=([^\s"'<>]+|"[^"]*"|'[^']*')/g, function($0, $1, $2) {
+				var key = $1.toLowerCase(),
+					val = $2 || '';
+				if (val === '') {
+					val = '""';
+				} else {
+					if (key === 'style') {
+						val = val.substr(1, val.length - 2);
+						val = _formatCss(val);
+						if (val === '') return '';
+						val = '"' + val + '"';
+					}
+					if (!/^['"]/.test(val)) val = '"' + val + '"';
+				}
+				return ' ' + key + '=' + val + ' ';
+			});
+			attr = _trim(attr);
+			attr = attr.replace(/\s+/g, ' ');
+			if (attr) attr = ' ' + attr;
+			return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
+		} else {
+			return startNewline + '<' + startSlash + tagName + endSlash + '>' + endNewline;
+		}
+	});
+	return _trim(html);
+}
 K.formatHtml = _formatHtml;
 K._formatCss = _formatCss;
 K._getCssList = _getCssList;
