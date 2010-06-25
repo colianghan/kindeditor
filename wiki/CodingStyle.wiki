@@ -1,0 +1,224 @@
+==KindEditor Coding Style Guidelines==
+
+===General===
+
+1. 所有文本文件统一使用UTF-8 无BOM编码，换行使用Windows格式（\r\n）。
+
+
+===Indentation===
+
+1. Use tabs, not spaces.
+
+2. 一次缩进用一个TAB。
+
+Right:
+{{{
+function main()
+{
+    return 0;
+}
+}}}
+Wrong:
+{{{
+function main() 
+{
+        return 0;
+}
+}}}
+
+===Space===
+
+1. Do not place spaces around unary operators.
+
+Right:
+{{{
+i++;
+}}}
+Wrong:
+{{{
+i ++;
+}}}
+
+2. Do place spaces around binary and ternary operators.
+
+Right:
+{{{
+y = m * x + b;
+f(a, b);
+c = a | b;
+return condition ? 1 : 0;
+}}}
+Wrong:
+{{{
+y=m*x+b;
+f(a,b);
+c = a|b;
+return condition ? 1:0;
+}}}
+
+3. Do not place spaces before comma and semicolon.
+
+Right:
+{{{
+for (var i = 0; i < 10; i++)
+    doSomething();
+
+f(a, b);
+}}}
+Wrong:
+{{{
+for (var i = 0 ; i < 10 ; i++)
+    doSomething();
+
+f(a , b) ;
+}}}
+
+4. Place spaces between control statements and their parentheses.
+
+Right:
+{{{
+if (condition)
+    doIt();
+
+for (var i = 0, len = arr.length; i < len; i++)
+    doIt();
+}}}
+Wrong:
+{{{
+if(condition)
+    doIt();
+
+for(var i = 0, len = arr.length; i < len; i++)
+    doIt();
+}}}
+
+5. Do not place spaces between a function and its parentheses, or between a parenthesis and its content.
+
+Right:
+{{{
+f(a, b);
+}}}
+Wrong:
+{{{
+f (a, b);
+f( a, b );
+}}}
+
+===Line breaking===
+
+1. 同时定义多个变量时，只使用一个var。
+
+Right:
+{{{
+var a,
+    b = {},
+    c = [],
+    d = function () {
+    };
+}}}
+Wrong:
+{{{
+var a;
+var b = {};
+var c = [];
+var d = function () {};
+}}}
+
+2. An else if statement should be written as an if statement when the prior if concludes with a return statement.
+
+Right:
+{{{
+if (condition) {
+    ...
+    return someValue;
+}
+if (condition) {
+    ...
+}
+}}}
+Wrong:
+{{{
+if (condition) {
+    ...
+    return someValue;
+} else if (condition) {
+    ...
+}
+}}}
+
+===Braces===
+
+1. 函数定义：开始花括号放在行尾。
+
+Right:
+{{{
+function main() {
+    ...
+}
+}}}
+Wrong:
+{{{
+function main()
+{
+    ...
+}
+}}}
+
+2. One-line control clauses should not use braces unless comments are included or a single statement spans multiple lines.
+
+Right:
+{{{
+if (condition)
+    doIt();
+
+if (condition) {
+    // Some comment
+    doIt();
+}
+
+if (condition) {
+    myFunction(reallyLongParam1, reallyLongParam2, ...
+        reallyLongParam5);
+}
+}}}
+Wrong:
+{{{
+if (condition) {
+    doIt();
+}
+
+if (condition)
+    // Some comment
+    doIt();
+
+if (condition)
+    myFunction(reallyLongParam1, reallyLongParam2, ...
+        reallyLongParam5);
+}}}
+
+===null, false and 0===
+
+1. Tests for true/false should all be done without equality comparisons.
+
+Right:
+{{{
+if (condition)
+    doIt();
+    
+if (!condition)
+    return;
+}}}
+
+Wrong:
+{{{
+if (condition == true)
+    doIt();
+    
+if (condition == false)
+    return;
+}}}
+
+===Names===
+
+Reference: 
+WebKit Coding Style Guidelines: http://webkit.org/coding/coding-style.html
