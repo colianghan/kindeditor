@@ -87,7 +87,7 @@ K.inArray = functin() {
 || 全局函数 || K.camelCase || K.trim, K.inArray ||
 || 类方法 || camelCase || node.attr, node.removeAttr ||
 || 类成员变量 || camelCase || range.startContainer, node.children ||
-|| 模块里的一级局部变量 || _camelCase || _trim, _inArray ||
+|| 模块里的一级局部变量 || `_`camelCase || `_`trim, `_`inArray ||
 || 局部变量 || camelCase || str, nodeName ||
 
 ===Indentation===
