@@ -12,7 +12,7 @@
 */
 (function (K, undefined) {
 
-var _SINGLE_TAG_MAP = K.SINGLE_TAG_MAP,
+var _SINGLE_TAG_MAP = K._SINGLE_TAG_MAP,
 	_each = K.each,
 	_trim = K.trim,
 	_toHex = K.toHex,

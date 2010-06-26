@@ -1,0 +1,1 @@
+java -jar lib/jsdoc-toolkit/jsrun.jar lib/jsdoc-toolkit/app/run.js -n -e=UTF-8 -c=conf/jsdoc.conf
