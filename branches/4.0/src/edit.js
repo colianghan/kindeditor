@@ -23,19 +23,15 @@ function _getIframeDoc(iframe) {
 }
 
 function _getInitHtml(bodyClass, cssPaths) {
-	var html = '<!doctype html><html>';
-	html += '<head>';
-	html += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-	html += '<title>KindEditor</title>';
+	//字符串连加效率低，改用[]
+	var html = ['<!doctype html><html><head><meta http-equiv="Content-Type" content="text/html; 		charset=utf-8"/><title>KindEditor</title>'];
 	if (cssPaths) {
 		_each(cssPaths, function(i, path) {
-			if (path !== '') html += '<link href="' + path + '" rel="stylesheet" />';
+			if (path !== '') html[i+1] = '<link href="' + path + '" rel="stylesheet" />';
 		});
 	}
-	html += '</head>';
-	html += bodyClass ? '<body class="' + bodyClass + '"></body>' : '<body></body>';
-	html += '</html>';
-	return html;
+	html.push('</head><body ' + (bodyClass?'class="' + bodyClass + '"':'') + '></body></html>');
+	return html.join('');	
 }
 
 function _edit(expr, options) {
@@ -105,18 +101,15 @@ function _edit(expr, options) {
 			return self;
 		},
 		show : function() {
-			if (iframe === null) return this;
-			iframe.show();
+			iframe&&iframe.contentWindow.show();                             
 			return this;
 		},
 		hide : function() {
-			if (iframe === null) return this;
-			iframe.hide();
+			iframe&&iframe.contentWindow.hide();
 			return this;
 		},
 		focus : function() {
-			if (iframe === null) return this;
-			iframe.contentWindow.focus();
+			iframe&&iframe.contentWindow.focus();
 			return this;
 		},
 		oninput : function(fn) {
@@ -130,7 +123,7 @@ function _edit(expr, options) {
 				}
 			});
 			function timeoutHandler(e) {
-				window.setTimeout(function() {
+				setTimeout(function() {
 					fn(e);
 				}, 1);
 			}
