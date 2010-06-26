@@ -167,7 +167,14 @@ function _node(expr, root) {
 			return this;
 		},
 		remove : function() {
-			node.parentNode.removeChild(node);
+			if(_IE){
+				var div = document.createElement('div');
+				div.appendChild(node.get());
+				div.innerHTML = null;
+				div = null;
+			}else{
+				ndoe.parentNode.removeChild(node);
+			}
 			this.unbind();
 			node = null;
 			return this;
@@ -182,14 +189,11 @@ function _node(expr, root) {
 			}
 		},
 		outer : function() {
-			var div = doc.createElement('div');
+			var div = doc.createElement('div'),html;
 			div.appendChild(node);
-			try {
-				return _formatHtml(div.innerHTML);
-			} catch(e) {}
-			finally{
-				div = null;
-			}
+			html = div.innerHTML;
+			div = null;
+			return html;
 		},
 		isSingle : function() {
 			return !!_SINGLE_TAG_MAP[this.name];
