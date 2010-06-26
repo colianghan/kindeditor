@@ -180,13 +180,16 @@ function _node(expr, root) {
 			return this;
 		},
 		show : function() {
-			if (this.computedCss('display') === 'none') this.css('display', prevDisplay);
+			if (this.computedCss('display') === 'none') 
+				this.css('display', prevDisplay);
+			return this;
 		},
 		hide : function() {
 			if (this.computedCss('display') !== 'none') {
 				prevDisplay = this.css('display');
 				this.css('display', 'none');
 			}
+			return this;
 		},
 		outer : function() {
 			var div = doc.createElement('div'),html;
