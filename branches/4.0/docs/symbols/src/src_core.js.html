@@ -14,238 +14,240 @@
 <span class='line'>  6</span>  */</span><span class="WHIT">
 <span class='line'>  7</span> 
 <span class='line'>  8</span> </span><span class="COMM">/**
-<span class='line'>  9</span>  * @fileOverview KindEditor 共同文件，定义共同变量和函数
-<span class='line'> 10</span>  * @author Longhao Luo
-<span class='line'> 11</span>  */</span><span class="WHIT">
-<span class='line'> 12</span> 
-<span class='line'> 13</span> </span><span class="COMM">/**
-<span class='line'> 14</span> 	@name KindEditor
-<span class='line'> 15</span> 	@namespace KindEditor 命名空间
-<span class='line'> 16</span> 	@description
-<span class='line'> 17</span> 	KindEditor 命名空间
-<span class='line'> 18</span> */</span><span class="WHIT">
-<span class='line'> 19</span> 
-<span class='line'> 20</span> </span><span class="COMM">/**
-<span class='line'> 21</span> 	@name K
-<span class='line'> 22</span> 	@namespace 命名空间 KindEditor 的简写
-<span class='line'> 23</span> 	@description
-<span class='line'> 24</span> 	&lt;p>命名空间 KindEditor 的简写。&lt;/p>
-<span class='line'> 25</span> 	&lt;p>注：当页面上已经有K全局变量时，不会覆盖原来的变量K，这时请使用KindEditor变量。&lt;/p>
-<span class='line'> 26</span> */</span><span class="WHIT">
-<span class='line'> 27</span> 
-<span class='line'> 28</span> </span><span class="COMM">/**
-<span class='line'> 29</span> 	@name KE
-<span class='line'> 30</span> 	@namespace 命名空间，为了兼容3.x
-<span class='line'> 31</span> 	@description
-<span class='line'> 32</span> 	命名空间，为了兼容3.x
-<span class='line'> 33</span> */</span><span class="WHIT">
-<span class='line'> 34</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">window</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'> 35</span> 
-<span class='line'> 36</span> </span><span class="COMM">/**
-<span class='line'> 37</span> 	@name KindEditor.IE
-<span class='line'> 38</span> 	@type {Boolean}
-<span class='line'> 39</span> 	@description
-<span class='line'> 40</span> 	当前浏览器内核为IE时true，否则false。
-<span class='line'> 41</span> */</span><span class="WHIT">
-<span class='line'> 42</span> </span><span class="COMM">/**
-<span class='line'> 43</span> 	@name KindEditor.GECKO
-<span class='line'> 44</span> 	@type {Boolean}
-<span class='line'> 45</span> 	@description
-<span class='line'> 46</span> 	当前浏览器内核为Gecko（Firefox）时true，否则false。
-<span class='line'> 47</span> */</span><span class="WHIT">
-<span class='line'> 48</span> </span><span class="COMM">/**
-<span class='line'> 49</span> 	@name KindEditor.WEBKIT
-<span class='line'> 50</span> 	@type {Boolean}
-<span class='line'> 51</span> 	@description
-<span class='line'> 52</span> 	当前浏览器内核为Webkit（Safari、Chrome）时true，否则false。
-<span class='line'> 53</span> */</span><span class="WHIT">
-<span class='line'> 54</span> </span><span class="COMM">/**
-<span class='line'> 55</span> 	@name KindEditor.OPERA
-<span class='line'> 56</span> 	@type {Boolean}
-<span class='line'> 57</span> 	@description
-<span class='line'> 58</span> 	当前浏览器内核为Opera时true，否则false。
-<span class='line'> 59</span> */</span><span class="WHIT">
-<span class='line'> 60</span> </span><span class="COMM">/**
-<span class='line'> 61</span> 	@name KindEditor.VERSION
-<span class='line'> 62</span> 	@type {Boolean}
-<span class='line'> 63</span> 	@description
-<span class='line'> 64</span> 	当前浏览器的版本号。
-<span class='line'> 65</span> */</span><span class="WHIT">
-<span class='line'> 66</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">_ua</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">navigator.userAgent.toLowerCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'> 67</span> </span><span class="WHIT">	</span><span class="NAME">_IE</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'msie'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'opera'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'> 68</span> </span><span class="WHIT">	</span><span class="NAME">_GECKO</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'gecko'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'khtml'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'> 69</span> </span><span class="WHIT">	</span><span class="NAME">_WEBKIT</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'applewebkit'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'> 70</span> </span><span class="WHIT">	</span><span class="NAME">_OPERA</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'opera'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'> 71</span> </span><span class="WHIT">	</span><span class="NAME">_matches</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="REGX">/(?:msie|firefox|webkit|opera)[\/:\s](\d+)/</span><span class="PUNC">.</span><span class="NAME">exec</span><span class="PUNC">(</span><span class="NAME">_ua</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'> 72</span> </span><span class="WHIT">	</span><span class="NAME">_VERSION</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_matches</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">_matches</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">'0'</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'> 73</span> 
-<span class='line'> 74</span> </span><span class="COMM">/**
-<span class='line'> 75</span> 	@name KindEditor.isArray
-<span class='line'> 76</span> 	@function
-<span class='line'> 77</span> 	@param {Mixed} val 要判断的变量
-<span class='line'> 78</span> 	@returns {Boolean} 变量为数组时返回true，否则返回false。
-<span class='line'> 79</span> 	@description
-<span class='line'> 80</span> 	判断一个变量是不是数组。
-<span class='line'> 81</span> 	@example
-<span class='line'> 82</span> 	var bool = K.isArray([1, 2, 3]); //返回true
-<span class='line'> 83</span> 	bool = K.isArray({one : 1}); //返回false
-<span class='line'> 84</span> */</span><span class="WHIT">
-<span class='line'> 85</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_isArray</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'> 86</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Object.prototype.toString.call</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="STRN">'[object Array]'</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'> 87</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'> 88</span> 
-<span class='line'> 89</span> </span><span class="COMM">/**
-<span class='line'> 90</span> 	@name KindEditor.inArray
-<span class='line'> 91</span> 	@function
-<span class='line'> 92</span> 	@param {Mixed} val 要查找的变量
-<span class='line'> 93</span> 	@param {Array} arr 目标数组
-<span class='line'> 94</span> 	@returns {Int}
-<span class='line'> 95</span> 	@description
-<span class='line'> 96</span> 	查找一个变量在一个数组中第一次出现的索引位置。如果没找到，则返回-1。
-<span class='line'> 97</span> 	@example
-<span class='line'> 98</span> 	var index = K.inArray(2, [1, 2, 3]); //返回1
-<span class='line'> 99</span> 	index = K.inArray(1, [1, 2, 3]); //返回0
-<span class='line'>100</span> 	index = K.inArray(10, [1, 2, 3]); //返回-1
-<span class='line'>101</span> */</span><span class="WHIT">
-<span class='line'>102</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_inArray</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arr</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>103</span> </span><span class="WHIT">	</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">arr.length</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">&lt;</span><span class="WHIT"> </span><span class="NAME">len</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>104</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">val</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">arr</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>105</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>106</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>107</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>108</span> 
-<span class='line'>109</span> </span><span class="COMM">/**
-<span class='line'>110</span> 	@name KindEditor.each
-<span class='line'>111</span> 	@function
-<span class='line'>112</span> 	@param {Object|Array} obj 要遍历的对象或数组
-<span class='line'>113</span> 	@param {function} fn 回调函数，回调函数的第一个参数为key，第二个参数为value。
-<span class='line'>114</span> 	@returns {undefined}
-<span class='line'>115</span> 	@description
-<span class='line'>116</span> 	遍历一个对象或数组。
-<span class='line'>117</span> 	@example
-<span class='line'>118</span> 	//遍历数组
-<span class='line'>119</span> 	K.each([1, 2, 3], function (i, val) {
-<span class='line'>120</span> 		console.log(i + ':' + val);
-<span class='line'>121</span> 	});
-<span class='line'>122</span> 	//遍历对象
-<span class='line'>123</span> 	K.each({one : 1, two : 2}, function (key, val) {
-<span class='line'>124</span> 		console.log(key + ':' + val);
-<span class='line'>125</span> 	});
-<span class='line'>126</span> */</span><span class="WHIT">
-<span class='line'>127</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_each</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">fn</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>128</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">_isArray</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>129</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">obj.length</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">&lt;</span><span class="WHIT"> </span><span class="NAME">len</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>130</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">fn</span><span class="PUNC">(</span><span class="NAME">i</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">obj</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">break</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>131</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>132</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>133</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">key</span><span class="WHIT"> </span><span class="KEYW">in</span><span class="WHIT"> </span><span class="NAME">obj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>134</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">obj.hasOwnProperty</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>135</span> </span><span class="WHIT">				</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">fn</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">obj</span><span class="PUNC">[</span><span class="NAME">key</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">break</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>136</span> </span><span class="WHIT">			</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>137</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>138</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>139</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>140</span> 
-<span class='line'>141</span> </span><span class="COMM">/**
-<span class='line'>142</span> 	@name KindEditor.trim
-<span class='line'>143</span> 	@function
-<span class='line'>144</span> 	@param {String} str
-<span class='line'>145</span> 	@returns {String}
-<span class='line'>146</span> 	@description
-<span class='line'>147</span> 	清除字符串两边的空白。
-<span class='line'>148</span> 	@example
-<span class='line'>149</span> 	var str = K.trim(' abc '); //返回"abc"
-<span class='line'>150</span> */</span><span class="WHIT">
-<span class='line'>151</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_trim</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>152</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.replace</span><span class="PUNC">(</span><span class="REGX">/^\s+|\s+$/g</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">''</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>153</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>154</span> 
-<span class='line'>155</span> </span><span class="COMM">/**
-<span class='line'>156</span> 	@name KindEditor.inString
-<span class='line'>157</span> 	@function
-<span class='line'>158</span> 	@param {String} val 要判断的字符串
-<span class='line'>159</span> 	@param {String} str 用delimiter分隔的目标字符串
-<span class='line'>160</span> 	@param {String} [delimiter = ","] 分隔符
-<span class='line'>161</span> 	@returns {Boolean}
-<span class='line'>162</span> 	@description
-<span class='line'>163</span> 	判断一个字符串是否包含在目标字符串里。
-<span class='line'>164</span> 	@example
-<span class='line'>165</span> 	var bool = K.inString('aaa', 'abc,aaa,bbb,ccc'); //返回true
-<span class='line'>166</span> 	bool = K.inString('aaa', 'abc aaa bbb ccc', ' '); //返回true
-<span class='line'>167</span> */</span><span class="WHIT">
-<span class='line'>168</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_inString</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>169</span> </span><span class="WHIT">	</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="STRN">','</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>170</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">str</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">indexOf</span><span class="PUNC">(</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">val</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">>=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>171</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>172</span> 
-<span class='line'>173</span> </span><span class="COMM">/**
-<span class='line'>174</span> 	@name KindEditor.toHex
-<span class='line'>175</span> 	@function
-<span class='line'>176</span> 	@param {String} color RGB颜色
-<span class='line'>177</span> 	@returns {String} 16进制颜色
-<span class='line'>178</span> 	@description
-<span class='line'>179</span> 	将RGB颜色转换成16进制颜色。
-<span class='line'>180</span> 	@example
-<span class='line'>181</span> 	var color = K.toHex('rgb(0, 0, 0)'); //返回"#000000"
-<span class='line'>182</span> */</span><span class="WHIT">
-<span class='line'>183</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_toHex</span><span class="PUNC">(</span><span class="NAME">color</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>184</span> </span><span class="WHIT">	</span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">s</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>185</span> </span><span class="WHIT">		</span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">parseInt</span><span class="PUNC">(</span><span class="NAME">s</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toString</span><span class="PUNC">(</span><span class="NUMB">16</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toUpperCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>186</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">s.length</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">'0'</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">s</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>187</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>188</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">color.replace</span><span class="PUNC">(</span><span class="REGX">/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/ig</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>189</span> </span><span class="WHIT">		</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">$0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">$1</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">$2</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">$3</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>190</span> </span><span class="WHIT">			</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="STRN">'#'</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">$1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">$2</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">$3</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>191</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>192</span> </span><span class="WHIT">	</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>193</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>194</span> 
-<span class='line'>195</span> </span><span class="COMM">/**
-<span class='line'>196</span> 	@name KindEditor.toMap
-<span class='line'>197</span> 	@function
-<span class='line'>198</span> 	@param {String} str 用delimiter分隔的字符串
-<span class='line'>199</span> 	@param {String} [delimiter = ","] 分隔符
-<span class='line'>200</span> 	@returns {Object}
-<span class='line'>201</span> 	@description
-<span class='line'>202</span> 	将一个字符串转换成对象。
-<span class='line'>203</span> 	@example
-<span class='line'>204</span> 	var map = K.toMap('abc,aaa,bbb'); //返回{abc : true, aaa : true, bbb : true}
-<span class='line'>205</span> */</span><span class="WHIT">
-<span class='line'>206</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>207</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">map</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>208</span> </span><span class="WHIT">		</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="STRN">','</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>209</span> </span><span class="WHIT">		</span><span class="NAME">arr</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">str.split</span><span class="PUNC">(</span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>210</span> </span><span class="WHIT">	</span><span class="NAME">_each</span><span class="PUNC">(</span><span class="NAME">arr</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">val</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>211</span> </span><span class="WHIT">		</span><span class="NAME">map</span><span class="PUNC">[</span><span class="NAME">val</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>212</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>213</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">map</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>214</span> </span><span class="PUNC">}</span><span class="WHIT">
-<span class='line'>215</span> 
-<span class='line'>216</span> </span><span class="NAME">window.KindEditor</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
-<span class='line'>217</span> </span><span class="WHIT">	</span><span class="NAME">IE</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_IE</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>218</span> </span><span class="WHIT">	</span><span class="NAME">GECKO</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_GECKO</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>219</span> </span><span class="WHIT">	</span><span class="NAME">WEBKIT</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_WEBKIT</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>220</span> </span><span class="WHIT">	</span><span class="NAME">OPERA</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_OPERA</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>221</span> </span><span class="WHIT">	</span><span class="NAME">VERSION</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_VERSION</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>222</span> </span><span class="WHIT">	</span><span class="COMM">// Inspired from http://ejohn.org/files/htmlparser.js</span><span class="WHIT">
-<span class='line'>223</span> </span><span class="WHIT">	</span><span class="COMM">// Inline Elements - HTML 4.01</span><span class="WHIT">
-<span class='line'>224</span> </span><span class="WHIT">	</span><span class="NAME">_INLINE_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>225</span> </span><span class="WHIT">	</span><span class="COMM">// Block Elements - HTML 4.01</span><span class="WHIT">
-<span class='line'>226</span> </span><span class="WHIT">	</span><span class="NAME">_BLOCK_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>227</span> </span><span class="WHIT">	</span><span class="COMM">// Single Elements - HTML 4.01</span><span class="WHIT">
-<span class='line'>228</span> </span><span class="WHIT">	</span><span class="NAME">_SINGLE_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>229</span> </span><span class="WHIT">	</span><span class="COMM">// Elements that you can, intentionally, leave open (and which close themselves)</span><span class="WHIT">
-<span class='line'>230</span> </span><span class="WHIT">	</span><span class="NAME">_AUTOCLOSE_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>231</span> </span><span class="WHIT">	</span><span class="COMM">// Attributes that have their values filled in disabled="disabled"</span><span class="WHIT">
-<span class='line'>232</span> </span><span class="WHIT">	</span><span class="NAME">_FILL_ATTR_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>233</span> </span><span class="WHIT">	</span><span class="NAME">each</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_each</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>234</span> </span><span class="WHIT">	</span><span class="NAME">isArray</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_isArray</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>235</span> </span><span class="WHIT">	</span><span class="NAME">inArray</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_inArray</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>236</span> </span><span class="WHIT">	</span><span class="NAME">inString</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_inString</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>237</span> </span><span class="WHIT">	</span><span class="NAME">trim</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_trim</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>238</span> </span><span class="WHIT">	</span><span class="NAME">toHex</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toHex</span><span class="PUNC">,</span><span class="WHIT">
-<span class='line'>239</span> </span><span class="WHIT">	</span><span class="NAME">toMap</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="WHIT">
-<span class='line'>240</span> </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>241</span> 
-<span class='line'>242</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">window</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>243</span> </span></pre></body></html>
+<span class='line'>  9</span>  * @name core.js
+<span class='line'> 10</span>  * @fileOverview 共同变量和函数
+<span class='line'> 11</span>  * @author Longhao Luo
+<span class='line'> 12</span>  */</span><span class="WHIT">
+<span class='line'> 13</span> 
+<span class='line'> 14</span> </span><span class="COMM">/**
+<span class='line'> 15</span> 	@name KindEditor
+<span class='line'> 16</span> 	@namespace KindEditor 命名空间
+<span class='line'> 17</span> 	@description
+<span class='line'> 18</span> 	KindEditor 命名空间
+<span class='line'> 19</span> */</span><span class="WHIT">
+<span class='line'> 20</span> 
+<span class='line'> 21</span> </span><span class="COMM">/**
+<span class='line'> 22</span> 	@name K
+<span class='line'> 23</span> 	@namespace 命名空间 KindEditor 的简写
+<span class='line'> 24</span> 	@description
+<span class='line'> 25</span> 	&lt;p>命名空间 KindEditor 的简写。&lt;/p>
+<span class='line'> 26</span> 	&lt;p>注：当页面上已经有K全局变量时，不会覆盖原来的变量K，这时可以使用KindEditor变量。&lt;/p>
+<span class='line'> 27</span> 	@see KindEditor
+<span class='line'> 28</span> */</span><span class="WHIT">
+<span class='line'> 29</span> 
+<span class='line'> 30</span> </span><span class="COMM">/**
+<span class='line'> 31</span> 	@name KE
+<span class='line'> 32</span> 	@namespace 命名空间，为了兼容3.x
+<span class='line'> 33</span> 	@description
+<span class='line'> 34</span> 	命名空间，为了兼容3.x
+<span class='line'> 35</span> */</span><span class="WHIT">
+<span class='line'> 36</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">window</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 37</span> 
+<span class='line'> 38</span> </span><span class="COMM">/**
+<span class='line'> 39</span> 	@name KindEditor.IE
+<span class='line'> 40</span> 	@type {Boolean}
+<span class='line'> 41</span> 	@description
+<span class='line'> 42</span> 	当前浏览器内核为IE时true，否则false。
+<span class='line'> 43</span> */</span><span class="WHIT">
+<span class='line'> 44</span> </span><span class="COMM">/**
+<span class='line'> 45</span> 	@name KindEditor.GECKO
+<span class='line'> 46</span> 	@type {Boolean}
+<span class='line'> 47</span> 	@description
+<span class='line'> 48</span> 	当前浏览器内核为Gecko（Firefox）时true，否则false。
+<span class='line'> 49</span> */</span><span class="WHIT">
+<span class='line'> 50</span> </span><span class="COMM">/**
+<span class='line'> 51</span> 	@name KindEditor.WEBKIT
+<span class='line'> 52</span> 	@type {Boolean}
+<span class='line'> 53</span> 	@description
+<span class='line'> 54</span> 	当前浏览器内核为Webkit（Safari、Chrome）时true，否则false。
+<span class='line'> 55</span> */</span><span class="WHIT">
+<span class='line'> 56</span> </span><span class="COMM">/**
+<span class='line'> 57</span> 	@name KindEditor.OPERA
+<span class='line'> 58</span> 	@type {Boolean}
+<span class='line'> 59</span> 	@description
+<span class='line'> 60</span> 	当前浏览器内核为Opera时true，否则false。
+<span class='line'> 61</span> */</span><span class="WHIT">
+<span class='line'> 62</span> </span><span class="COMM">/**
+<span class='line'> 63</span> 	@name KindEditor.VERSION
+<span class='line'> 64</span> 	@type {Boolean}
+<span class='line'> 65</span> 	@description
+<span class='line'> 66</span> 	当前浏览器的版本号。
+<span class='line'> 67</span> */</span><span class="WHIT">
+<span class='line'> 68</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">_ua</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">navigator.userAgent.toLowerCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 69</span> </span><span class="WHIT">	</span><span class="NAME">_IE</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'msie'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'opera'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 70</span> </span><span class="WHIT">	</span><span class="NAME">_GECKO</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'gecko'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'khtml'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 71</span> </span><span class="WHIT">	</span><span class="NAME">_WEBKIT</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'applewebkit'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 72</span> </span><span class="WHIT">	</span><span class="NAME">_OPERA</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_ua.indexOf</span><span class="PUNC">(</span><span class="STRN">'opera'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 73</span> </span><span class="WHIT">	</span><span class="NAME">_matches</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="REGX">/(?:msie|firefox|webkit|opera)[\/:\s](\d+)/</span><span class="PUNC">.</span><span class="NAME">exec</span><span class="PUNC">(</span><span class="NAME">_ua</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 74</span> </span><span class="WHIT">	</span><span class="NAME">_VERSION</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">_matches</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">_matches</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">'0'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 75</span> 
+<span class='line'> 76</span> </span><span class="COMM">/**
+<span class='line'> 77</span> 	@name KindEditor.isArray
+<span class='line'> 78</span> 	@function
+<span class='line'> 79</span> 	@param {Mixed} val 要判断的变量
+<span class='line'> 80</span> 	@returns {Boolean} 变量为数组时返回true，否则返回false。
+<span class='line'> 81</span> 	@description
+<span class='line'> 82</span> 	判断一个变量是不是数组。
+<span class='line'> 83</span> 	@example
+<span class='line'> 84</span> 	var bool = K.isArray([1, 2, 3]); //返回true
+<span class='line'> 85</span> 	bool = K.isArray({one : 1}); //返回false
+<span class='line'> 86</span> */</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_isArray</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 88</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Object.prototype.toString.call</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="STRN">'[object Array]'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 89</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 90</span> 
+<span class='line'> 91</span> </span><span class="COMM">/**
+<span class='line'> 92</span> 	@name KindEditor.inArray
+<span class='line'> 93</span> 	@function
+<span class='line'> 94</span> 	@param {Mixed} val 要查找的变量
+<span class='line'> 95</span> 	@param {Array} arr 目标数组
+<span class='line'> 96</span> 	@returns {Int}
+<span class='line'> 97</span> 	@description
+<span class='line'> 98</span> 	查找一个变量在一个数组中第一次出现的索引位置。如果没找到，则返回-1。
+<span class='line'> 99</span> 	@example
+<span class='line'>100</span> 	var index = K.inArray(2, [1, 2, 3]); //返回1
+<span class='line'>101</span> 	index = K.inArray(1, [1, 2, 3]); //返回0
+<span class='line'>102</span> 	index = K.inArray(10, [1, 2, 3]); //返回-1
+<span class='line'>103</span> */</span><span class="WHIT">
+<span class='line'>104</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_inArray</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arr</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>105</span> </span><span class="WHIT">	</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">arr.length</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">&lt;</span><span class="WHIT"> </span><span class="NAME">len</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>106</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">val</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">arr</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>107</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>108</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>109</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>110</span> 
+<span class='line'>111</span> </span><span class="COMM">/**
+<span class='line'>112</span> 	@name KindEditor.each
+<span class='line'>113</span> 	@function
+<span class='line'>114</span> 	@param {Object|Array} obj 要遍历的对象或数组
+<span class='line'>115</span> 	@param {function} fn 回调函数，回调函数的第一个参数为key，第二个参数为value。
+<span class='line'>116</span> 	@returns {undefined}
+<span class='line'>117</span> 	@description
+<span class='line'>118</span> 	遍历一个对象或数组。
+<span class='line'>119</span> 	@example
+<span class='line'>120</span> 	//遍历数组
+<span class='line'>121</span> 	K.each([1, 2, 3], function (i, val) {
+<span class='line'>122</span> 		console.log(i + ':' + val);
+<span class='line'>123</span> 	});
+<span class='line'>124</span> 	//遍历对象
+<span class='line'>125</span> 	K.each({one : 1, two : 2}, function (key, val) {
+<span class='line'>126</span> 		console.log(key + ':' + val);
+<span class='line'>127</span> 	});
+<span class='line'>128</span> */</span><span class="WHIT">
+<span class='line'>129</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_each</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">fn</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>130</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">_isArray</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>131</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">obj.length</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">&lt;</span><span class="WHIT"> </span><span class="NAME">len</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>132</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">fn</span><span class="PUNC">(</span><span class="NAME">i</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">obj</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">break</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>133</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>135</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">key</span><span class="WHIT"> </span><span class="KEYW">in</span><span class="WHIT"> </span><span class="NAME">obj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>136</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">obj.hasOwnProperty</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>137</span> </span><span class="WHIT">				</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">fn</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">obj</span><span class="PUNC">[</span><span class="NAME">key</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">break</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>138</span> </span><span class="WHIT">			</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>139</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>140</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>141</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>142</span> 
+<span class='line'>143</span> </span><span class="COMM">/**
+<span class='line'>144</span> 	@name KindEditor.trim
+<span class='line'>145</span> 	@function
+<span class='line'>146</span> 	@param {String} str
+<span class='line'>147</span> 	@returns {String}
+<span class='line'>148</span> 	@description
+<span class='line'>149</span> 	清除字符串两边的空白。
+<span class='line'>150</span> 	@example
+<span class='line'>151</span> 	var str = K.trim(' abc '); //返回"abc"
+<span class='line'>152</span> */</span><span class="WHIT">
+<span class='line'>153</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_trim</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>154</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.replace</span><span class="PUNC">(</span><span class="REGX">/^\s+|\s+$/g</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">''</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>155</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>156</span> 
+<span class='line'>157</span> </span><span class="COMM">/**
+<span class='line'>158</span> 	@name KindEditor.inString
+<span class='line'>159</span> 	@function
+<span class='line'>160</span> 	@param {String} val 要判断的字符串
+<span class='line'>161</span> 	@param {String} str 用delimiter分隔的目标字符串
+<span class='line'>162</span> 	@param {String} [delimiter = ","] 分隔符
+<span class='line'>163</span> 	@returns {Boolean}
+<span class='line'>164</span> 	@description
+<span class='line'>165</span> 	判断一个字符串是否包含在目标字符串里。
+<span class='line'>166</span> 	@example
+<span class='line'>167</span> 	var bool = K.inString('aaa', 'abc,aaa,bbb,ccc'); //返回true
+<span class='line'>168</span> 	bool = K.inString('aaa', 'abc aaa bbb ccc', ' '); //返回true
+<span class='line'>169</span> */</span><span class="WHIT">
+<span class='line'>170</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_inString</span><span class="PUNC">(</span><span class="NAME">val</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>171</span> </span><span class="WHIT">	</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="STRN">','</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>172</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">str</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">indexOf</span><span class="PUNC">(</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">val</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">>=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>173</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>174</span> 
+<span class='line'>175</span> </span><span class="COMM">/**
+<span class='line'>176</span> 	@name KindEditor.toHex
+<span class='line'>177</span> 	@function
+<span class='line'>178</span> 	@param {String} color RGB颜色
+<span class='line'>179</span> 	@returns {String} 16进制颜色
+<span class='line'>180</span> 	@description
+<span class='line'>181</span> 	将RGB颜色转换成16进制颜色。
+<span class='line'>182</span> 	@example
+<span class='line'>183</span> 	var color = K.toHex('rgb(0, 0, 0)'); //返回"#000000"
+<span class='line'>184</span> */</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_toHex</span><span class="PUNC">(</span><span class="NAME">color</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="WHIT">	</span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">s</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="WHIT">		</span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">parseInt</span><span class="PUNC">(</span><span class="NAME">s</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toString</span><span class="PUNC">(</span><span class="NUMB">16</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toUpperCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>188</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">s.length</span><span class="WHIT"> </span><span class="PUNC">></span><span class="WHIT"> </span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">'0'</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">s</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>189</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>190</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">color.replace</span><span class="PUNC">(</span><span class="REGX">/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/ig</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>191</span> </span><span class="WHIT">		</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">$0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">$1</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">$2</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">$3</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>192</span> </span><span class="WHIT">			</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="STRN">'#'</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">$1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">$2</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">hex</span><span class="PUNC">(</span><span class="NAME">$3</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>193</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>194</span> </span><span class="WHIT">	</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>195</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>196</span> 
+<span class='line'>197</span> </span><span class="COMM">/**
+<span class='line'>198</span> 	@name KindEditor.toMap
+<span class='line'>199</span> 	@function
+<span class='line'>200</span> 	@param {String} str 用delimiter分隔的字符串
+<span class='line'>201</span> 	@param {String} [delimiter = ","] 分隔符
+<span class='line'>202</span> 	@returns {Object}
+<span class='line'>203</span> 	@description
+<span class='line'>204</span> 	将一个字符串转换成对象。
+<span class='line'>205</span> 	@example
+<span class='line'>206</span> 	var map = K.toMap('abc,aaa,bbb'); //返回{abc : true, aaa : true, bbb : true}
+<span class='line'>207</span> */</span><span class="WHIT">
+<span class='line'>208</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>209</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">map</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>210</span> </span><span class="WHIT">		</span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="STRN">','</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">delimiter</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>211</span> </span><span class="WHIT">		</span><span class="NAME">arr</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">str.split</span><span class="PUNC">(</span><span class="NAME">delimiter</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>212</span> </span><span class="WHIT">	</span><span class="NAME">_each</span><span class="PUNC">(</span><span class="NAME">arr</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">val</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>213</span> </span><span class="WHIT">		</span><span class="NAME">map</span><span class="PUNC">[</span><span class="NAME">val</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>214</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>215</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">map</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>216</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>217</span> 
+<span class='line'>218</span> </span><span class="NAME">window.KindEditor</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>219</span> </span><span class="WHIT">	</span><span class="NAME">IE</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_IE</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>220</span> </span><span class="WHIT">	</span><span class="NAME">GECKO</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_GECKO</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>221</span> </span><span class="WHIT">	</span><span class="NAME">WEBKIT</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_WEBKIT</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>222</span> </span><span class="WHIT">	</span><span class="NAME">OPERA</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_OPERA</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>223</span> </span><span class="WHIT">	</span><span class="NAME">VERSION</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_VERSION</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>224</span> </span><span class="WHIT">	</span><span class="COMM">// Inspired from http://ejohn.org/files/htmlparser.js</span><span class="WHIT">
+<span class='line'>225</span> </span><span class="WHIT">	</span><span class="COMM">// Inline Elements - HTML 4.01</span><span class="WHIT">
+<span class='line'>226</span> </span><span class="WHIT">	</span><span class="NAME">_INLINE_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>227</span> </span><span class="WHIT">	</span><span class="COMM">// Block Elements - HTML 4.01</span><span class="WHIT">
+<span class='line'>228</span> </span><span class="WHIT">	</span><span class="NAME">_BLOCK_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>229</span> </span><span class="WHIT">	</span><span class="COMM">// Single Elements - HTML 4.01</span><span class="WHIT">
+<span class='line'>230</span> </span><span class="WHIT">	</span><span class="NAME">_SINGLE_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>231</span> </span><span class="WHIT">	</span><span class="COMM">// Elements that you can, intentionally, leave open (and which close themselves)</span><span class="WHIT">
+<span class='line'>232</span> </span><span class="WHIT">	</span><span class="NAME">_AUTOCLOSE_TAG_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>233</span> </span><span class="WHIT">	</span><span class="COMM">// Attributes that have their values filled in disabled="disabled"</span><span class="WHIT">
+<span class='line'>234</span> </span><span class="WHIT">	</span><span class="NAME">_FILL_ATTR_MAP</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="PUNC">(</span><span class="STRN">'checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>235</span> </span><span class="WHIT">	</span><span class="NAME">each</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_each</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>236</span> </span><span class="WHIT">	</span><span class="NAME">isArray</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_isArray</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>237</span> </span><span class="WHIT">	</span><span class="NAME">inArray</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_inArray</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>238</span> </span><span class="WHIT">	</span><span class="NAME">inString</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_inString</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>239</span> </span><span class="WHIT">	</span><span class="NAME">trim</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_trim</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>240</span> </span><span class="WHIT">	</span><span class="NAME">toHex</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toHex</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>241</span> </span><span class="WHIT">	</span><span class="NAME">toMap</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">_toMap</span><span class="WHIT">
+<span class='line'>242</span> </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>243</span> 
+<span class='line'>244</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">window</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>245</span> </span></pre></body></html>

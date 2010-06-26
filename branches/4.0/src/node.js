@@ -1,11 +1,15 @@
 /**
-* KindEditor - WYSIWYG HTML Editor
-* Copyright (C) 2006-${THISYEAR} Longhao Luo
-*
-* @site http://www.kindsoft.net/
-* @licence LGPL
-* @version ${VERSION}
-*/
+ * KindEditor - WYSIWYG HTML Editor
+ *
+ * Copyright (c) 2010 kindsoft.net All rights reserved.
+ * Released under LGPL License.
+ */
+
+/**
+ * @name node.js
+ * @fileOverview Node类
+ * @author Longhao Luo
+ */
 
 /**
 #using "core.js"
@@ -33,6 +37,19 @@ var _IE = K.IE,
 	_unbind = K.unbind,
 	_fire = K.fire;
 
+/**
+	@name KindEditor.node
+	@class Node类
+	@param {String|Node} expr DOM元素、选择器字符串、HTML
+	@param {Element} root DOM根元素，在root范围内选择DOM元素
+	@description
+	Node类，只能通过K.node(expr, root)创建，不能使用new Node()。
+	@example
+	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建K.node对象
+	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的K.node对象
+	knode = K.node(document.getElementById('id')); //返回原生Node的K.node对象
+*/
+
 function _node(expr, root) {
 	var node;
 	if (typeof expr === 'string') {
@@ -53,9 +70,43 @@ function _node(expr, root) {
 		win = doc.parentWindow || doc.defaultView,
 		prevDisplay = '';
 	var obj = {
+		/**
+			@name KindEditor.node#name
+			@property
+			@public
+			@type {String}
+			@description
+			节点名称。
+		*/
 		name : node.nodeName.toLowerCase(),
+		/**
+			@name KindEditor.node#type
+			@property
+			@public
+			@type {String}
+			@description
+			节点类型。1: Element, 3: textNode
+		*/
 		type : node.nodeType,
+		/**
+			@name KindEditor.node#doc
+			@property
+			@public
+			@type {document}
+			@description
+			包含Node的document对象。
+		*/
 		doc : doc,
+		/**
+			@name KindEditor.node#bind
+			@function
+			@public
+			@param {String} type
+			@param {String} fn
+			@returns {Node}
+			@description
+			绑定一个事件。
+		*/
 		bind : function(type, fn) {
 			_bind(node, type, fn);
 			return this;

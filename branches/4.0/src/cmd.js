@@ -1,11 +1,15 @@
 /**
-* KindEditor - WYSIWYG HTML Editor
-* Copyright (C) 2006-${THISYEAR} Longhao Luo
-*
-* @site http://www.kindsoft.net/
-* @licence LGPL
-* @version ${VERSION}
-*/
+ * KindEditor - WYSIWYG HTML Editor
+ *
+ * Copyright (c) 2010 kindsoft.net All rights reserved.
+ * Released under LGPL License.
+ */
+
+/**
+ * @name cmd.js
+ * @fileOverview 编辑命令集合，可代替execCommand、queryCommandState、queryCommandValue
+ * @author Longhao Luo
+ */
 
 /**
 #using "core.js"

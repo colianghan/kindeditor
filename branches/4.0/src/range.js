@@ -1,11 +1,15 @@
 /**
-* KindEditor - WYSIWYG HTML Editor
-* Copyright (C) 2006-${THISYEAR} Longhao Luo
-*
-* @site http://www.kindsoft.net/
-* @licence LGPL
-* @version ${VERSION}
-*/
+ * KindEditor - WYSIWYG HTML Editor
+ *
+ * Copyright (c) 2010 kindsoft.net All rights reserved.
+ * Released under LGPL License.
+ */
+
+/**
+ * @name range.js
+ * @fileOverview W3C Range、W3C Range和原生Range之间转换
+ * @author Longhao Luo
+ */
 
 /**
 #using "core.js"
@@ -24,21 +28,87 @@ var _IE = K.IE,
 	_END_TO_START = 3;
 
 /**
-	Reference:
-	DOM Level 2: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html
+	@name KindEditor.range
+	@class Range类
+	@param {Node|Range|K.range} 原生Node，原生Range，K.range
+	@description
+	Range类，包含W3C Range所有接口，此外还有包含K.range和原生Range之间的转换功能。
+	@example
+	var krange = K.range(document); //新建K.range对象
+	krange = K.range(originalRange); //将原生Range转换成K.range
+	@see <a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html" target="_blank">DOM Level 2 Reference</a>
 */
+
 function _range(mixed) {
 	if (!mixed.nodeName) {
 		return mixed.get ? mixed : _toRange(mixed);
 	}
 	var doc = mixed;
 	return {
+		/**
+			@name KindEditor.range#startContainer
+			@property
+			@public
+			@type {Node}
+			@description
+			Range的开始节点。
+		*/
 		startContainer : doc,
+		/**
+			@name KindEditor.range#startOffset
+			@property
+			@public
+			@type {Int}
+			@description
+			Range的开始节点的位置。
+		*/
 		startOffset : 0,
+		/**
+			@name KindEditor.range#endContainer
+			@property
+			@public
+			@type {Node}
+			@description
+			Range的结束节点。
+		*/
 		endContainer : doc,
+		/**
+			@name KindEditor.range#endOffset
+			@property
+			@public
+			@type {Int}
+			@description
+			Range的结束节点的位置。
+		*/
 		endOffset : 0,
+		/**
+			@name KindEditor.range#collapsed
+			@property
+			@public
+			@type {Boolean}
+			@description
+			Range的折叠状态，当Range处于折叠状态时true，否则false。
+		*/
 		collapsed : true,
+		/**
+			@name KindEditor.range#commonAncestorContainer
+			@property
+			@public
+			@type {Node}
+			@description
+			开始节点和结束节点的共同祖先Node。
+		*/
 		commonAncestorContainer : doc,
+		/**
+			@name KindEditor.range#setStart
+			@function
+			@public
+			@param {Node} node
+			@param {Int} offset
+			@returns {K.range}
+			@description
+			设置开始节点和位置。
+		*/
 		setStart : function(node, offset) {
 			this.startContainer = node;
 			this.startOffset = offset;

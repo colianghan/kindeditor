@@ -1,11 +1,15 @@
 /**
-* KindEditor - WYSIWYG HTML Editor
-* Copyright (C) 2006-${THISYEAR} Longhao Luo
-*
-* @site http://www.kindsoft.net/
-* @licence LGPL
-* @version ${VERSION}
-*/
+ * KindEditor - WYSIWYG HTML Editor
+ *
+ * Copyright (c) 2010 kindsoft.net All rights reserved.
+ * Released under LGPL License.
+ */
+
+/**
+ * @name selector.js
+ * @fileOverview 通过CSS选择器选择DOM元素
+ * @author Longhao Luo
+ */
 
 /**
 #using "core.js"

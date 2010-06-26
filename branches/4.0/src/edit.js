@@ -1,11 +1,15 @@
 /**
-* KindEditor - WYSIWYG HTML Editor
-* Copyright (C) 2006-${THISYEAR} Longhao Luo
-*
-* @site http://www.kindsoft.net/
-* @licence LGPL
-* @version ${VERSION}
-*/
+ * KindEditor - WYSIWYG HTML Editor
+ *
+ * Copyright (c) 2010 kindsoft.net All rights reserved.
+ * Released under LGPL License.
+ */
+
+/**
+ * @name edit.js
+ * @fileOverview iframe编辑区域
+ * @author Longhao Luo
+ */
 
 /**
 #using "core.js"
@@ -101,11 +105,11 @@ function _edit(expr, options) {
 			return self;
 		},
 		show : function() {
-			iframe && iframe.contentWindow.show();                             
+			iframe && iframe.show();                             
 			return this;
 		},
 		hide : function() {
-			iframe && iframe.contentWindow.hide();
+			iframe && iframe.hide();
 			return this;
 		},
 		focus : function() {

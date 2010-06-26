@@ -6,7 +6,8 @@
  */
 
 /**
- * @fileOverview KindEditor 共同文件，定义共同变量和函数
+ * @name core.js
+ * @fileOverview 共同变量和函数
  * @author Longhao Luo
  */
 
@@ -22,7 +23,8 @@
 	@namespace 命名空间 KindEditor 的简写
 	@description
 	<p>命名空间 KindEditor 的简写。</p>
-	<p>注：当页面上已经有K全局变量时，不会覆盖原来的变量K，这时请使用KindEditor变量。</p>
+	<p>注：当页面上已经有K全局变量时，不会覆盖原来的变量K，这时可以使用KindEditor变量。</p>
+	@see KindEditor
 */
 
 /**
