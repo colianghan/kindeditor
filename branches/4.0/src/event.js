@@ -105,7 +105,7 @@ function _bind(el, type, fn) {
 	if (_data[id][type].length == 0) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
-				if (key > 0 && val) val(_event(el, e));
+				if (key > 0 && val) val.call(el, _event(el, e));
 			});
 		};
 	}

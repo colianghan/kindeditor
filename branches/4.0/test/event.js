@@ -6,7 +6,6 @@ test('bind/unbind/fire', function() {
 	var result = '';
 	function click1(e) {
 		result += 'click1';
-		console.log('check');
 	}
 	//bind
 	K.bind(document, 'click', click1);
@@ -18,21 +17,25 @@ test('bind/unbind/fire', function() {
 	result = '';
 	K.fire(document, 'click');
 	equals(result, '');
+	function click2(e) {
+		this.innerHTML = 'click2';
+	}
+	var div = document.getElementById('test-data-01');
+	K.bind(div, 'click', click2);
+	K.fire(div, 'click');
+	equals(div.innerHTML, 'click2');
 });
 
 test('unbind(el, type, fn)', function() {
 	var result = '';
 	function click1(e) {
 		result += 'click1';
-		console.log('check');
 	}
 	function click2(e) {
 		result += 'click2';
-		console.log('check');
 	}
 	function mousedown1(e) {
 		result += 'mousedown1';
-		console.log('check');
 	}
 	K.bind(document, 'click', click1);
 	K.bind(document, 'click', click2);
@@ -61,15 +64,12 @@ test('unbind(el, type)', function() {
 	var result = '';
 	function click1(e) {
 		result += 'click1';
-		console.log('check');
 	}
 	function click2(e) {
 		result += 'click2';
-		console.log('check');
 	}
 	function mousedown1(e) {
 		result += 'mousedown1';
-		console.log('check');
 	}
 	K.bind(document, 'click', click1);
 	K.bind(document, 'click', click2);
