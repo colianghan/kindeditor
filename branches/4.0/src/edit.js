@@ -101,15 +101,15 @@ function _edit(expr, options) {
 			return self;
 		},
 		show : function() {
-			iframe&&iframe.contentWindow.show();                             
+			iframe && iframe.contentWindow.show();                             
 			return this;
 		},
 		hide : function() {
-			iframe&&iframe.contentWindow.hide();
+			iframe && iframe.contentWindow.hide();
 			return this;
 		},
 		focus : function() {
-			iframe&&iframe.contentWindow.focus();
+			iframe && iframe.contentWindow.focus();
 			return this;
 		},
 		oninput : function(fn) {
