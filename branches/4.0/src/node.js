@@ -39,15 +39,15 @@ var _IE = K.IE,
 
 /**
 	@name KindEditor.node
-	@class Node类
+	@class KNode类
 	@param {String|Node} expr DOM元素、选择器字符串、HTML
 	@param {Element} root DOM根元素，在root范围内选择DOM元素
 	@description
-	Node类，只能通过K.node(expr, root)创建，不能使用new Node()。
+	KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。
 	@example
-	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建K.node对象
-	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的K.node对象
-	knode = K.node(document.getElementById('id')); //返回原生Node的K.node对象
+	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
+	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
+	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象
 */
 
 function _node(expr, root) {
@@ -103,7 +103,7 @@ function _node(expr, root) {
 			@public
 			@param {String} type
 			@param {String} fn
-			@returns {Node}
+			@returns {KNode}
 			@description
 			绑定一个事件。
 		*/

@@ -2,7 +2,7 @@
 body
 {
 	font:12px "sans serif",tahoma,verdana,helvetica;
-	width: 800px;
+	width: 960px;
 }
 
 .header
@@ -33,6 +33,8 @@ pre.code
 	display: block;
 	padding: 8px;
 	border: 1px dashed #ccc;
+	width: 700px;
+	overflow-x: auto;
 }
 
 #index
@@ -49,7 +51,7 @@ pre.code
 #content
 {
 	margin-left: 190px;
-	width: 600px;
+	width: 760px;
 }
 
 .classList

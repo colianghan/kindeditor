@@ -11,7 +11,7 @@
 body
 {
 	font:12px "sans serif",tahoma,verdana,helvetica;
-	width: 800px;
+	width: 960px;
 }
 
 .header
@@ -42,6 +42,8 @@ pre.code
 	display: block;
 	padding: 8px;
 	border: 1px dashed #ccc;
+	width: 700px;
+	overflow-x: auto;
 }
 
 #index
@@ -58,7 +60,7 @@ pre.code
 #content
 {
 	margin-left: 190px;
-	width: 600px;
+	width: 760px;
 }
 
 .classList
@@ -267,6 +269,26 @@ ul.inheritsList
 							<td class="attributes">&lt;static&gt; &nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
+								KindEditor.<b><a href="../symbols/KindEditor.html#.END_TO_END">END_TO_END</a></b>
+								</div>
+								<div class="description">调用range.compareBoundaryPoints时使用。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								KindEditor.<b><a href="../symbols/KindEditor.html#.END_TO_START">END_TO_START</a></b>
+								</div>
+								<div class="description">调用range.compareBoundaryPoints时使用。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
 								KindEditor.<b><a href="../symbols/KindEditor.html#.GECKO">GECKO</a></b>
 								</div>
 								<div class="description">当前浏览器内核为Gecko（Firefox）时true，否则false。</div>
@@ -290,6 +312,26 @@ ul.inheritsList
 								KindEditor.<b><a href="../symbols/KindEditor.html#.OPERA">OPERA</a></b>
 								</div>
 								<div class="description">当前浏览器内核为Opera时true，否则false。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								KindEditor.<b><a href="../symbols/KindEditor.html#.START_TO_END">START_TO_END</a></b>
+								</div>
+								<div class="description">调用range.compareBoundaryPoints时使用。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								KindEditor.<b><a href="../symbols/KindEditor.html#.START_TO_START">START_TO_START</a></b>
+								</div>
+								<div class="description">调用range.compareBoundaryPoints时使用。</div>
 							</td>
 						</tr>
 					
@@ -373,6 +415,24 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&lt;static&gt; &nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont">KindEditor.<b><a href="../symbols/KindEditor.html#.query">query</a></b>(expr, root)
+								</div>
+								<div class="description">根据expr在root范围内查找DOM元素，并返回第一个元素。没找到则返回null。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">KindEditor.<b><a href="../symbols/KindEditor.html#.queryAll">queryAll</a></b>(expr, root)
+								</div>
+								<div class="description">根据expr在root范围内查找DOM元素，并返回所有元素。没找到则返回空数组。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont">KindEditor.<b><a href="../symbols/KindEditor.html#.toHex">toHex</a></b>(color)
 								</div>
 								<div class="description">将RGB颜色转换成16进制颜色。</div>
@@ -442,6 +502,70 @@ ul.inheritsList
 					Field Detail
 				</div>
 				
+					<a name=".END_TO_END"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">KindEditor.</span><b>END_TO_END</b>
+					
+					</div>
+					<div class="description">
+						调用range.compareBoundaryPoints时使用。
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_range.js.html">range.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">See:</dt>
+							
+							<dd><a href="../symbols/KindEditor.range.html#compareBoundaryPoints">KindEditor.range#compareBoundaryPoints</a></dd>
+							
+							</dl>
+						
+						
+
+					<hr />
+				
+					<a name=".END_TO_START"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">KindEditor.</span><b>END_TO_START</b>
+					
+					</div>
+					<div class="description">
+						调用range.compareBoundaryPoints时使用。
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_range.js.html">range.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">See:</dt>
+							
+							<dd><a href="../symbols/KindEditor.range.html#compareBoundaryPoints">KindEditor.range#compareBoundaryPoints</a></dd>
+							
+							</dl>
+						
+						
+
+					<hr />
+				
 					<a name=".GECKO"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
@@ -503,6 +627,70 @@ ul.inheritsList
 
 						
 						
+						
+						
+
+					<hr />
+				
+					<a name=".START_TO_END"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">KindEditor.</span><b>START_TO_END</b>
+					
+					</div>
+					<div class="description">
+						调用range.compareBoundaryPoints时使用。
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_range.js.html">range.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">See:</dt>
+							
+							<dd><a href="../symbols/KindEditor.range.html#compareBoundaryPoints">KindEditor.range#compareBoundaryPoints</a></dd>
+							
+							</dl>
+						
+						
+
+					<hr />
+				
+					<a name=".START_TO_START"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">KindEditor.</span><b>START_TO_START</b>
+					
+					</div>
+					<div class="description">
+						调用range.compareBoundaryPoints时使用。
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_range.js.html">range.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">See:</dt>
+							
+							<dd><a href="../symbols/KindEditor.range.html#compareBoundaryPoints">KindEditor.range#compareBoundaryPoints</a></dd>
+							
+							</dl>
 						
 						
 
@@ -787,6 +975,140 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name=".query"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{element}</span>
+					<span class="light">KindEditor.</span><b>query</b>(expr, root)
+					
+					</div>
+					<div class="description">
+						根据expr在root范围内查找DOM元素，并返回第一个元素。没找到则返回null。
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_selector.js.html">selector.js</a>.
+						
+						
+					</div>
+					
+					
+					
+					<pre class="code">
+	// Only support the following selector syntax.
+	// Patterns:
+	// *: any element
+	// E: an element of type E
+	// E[foo]: an E element with a "foo" attribute
+	// E[foo="bar"]: an E element whose "foo" attribute value is exactly equal to "bar"
+	// E.warning: an E element whose class is "warning" (the document language specifies how class is determined)
+	// E#myid: an E element with ID equal to "myid"
+	// E F: an F element descendant of an E element
+	// E > F: an F element child of an E element
+
+	var div = K.query('#id div');
+	var span = K.query('span.class', div);</pre>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>expr</b>
+									
+								</dt>
+								<dd>选择器查询语句。</dd>
+							
+								<dt>
+									<span class="light fixedFont">{element}</span> <b>root</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{element}</span> </dd>
+							
+							</dl>
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">See:</dt>
+							
+								<dd><a href="http://www.w3.org/TR/css3-selectors/" target="_blank">Selectors Level 3</a></dd>
+							
+							</dl>
+						
+
+					<hr />
+				
+					<a name=".queryAll"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{element[]}</span>
+					<span class="light">KindEditor.</span><b>queryAll</b>(expr, root)
+					
+					</div>
+					<div class="description">
+						根据expr在root范围内查找DOM元素，并返回所有元素。没找到则返回空数组。
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_selector.js.html">selector.js</a>.
+						
+						
+					</div>
+					
+					
+					
+					<pre class="code">
+	var divArray = K.query('#id div');
+	var spanArray = K.query('span.class', div);</pre>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>expr</b>
+									
+								</dt>
+								<dd>选择器查询语句。</dd>
+							
+								<dt>
+									<span class="light fixedFont">{element}</span> <b>root</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{element[]}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name=".toHex"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
@@ -949,7 +1271,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			Copyright &copy; 2010 <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.<br />
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sat Jun 26 2010 21:59:10 GMT+0800 (CST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jun 27 2010 12:47:15 GMT+0800 (CST)
 		</div>
 	</body>
 </html>

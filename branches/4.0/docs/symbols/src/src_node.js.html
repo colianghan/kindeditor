@@ -47,15 +47,15 @@
 <span class='line'> 39</span> 
 <span class='line'> 40</span> </span><span class="COMM">/**
 <span class='line'> 41</span> 	@name KindEditor.node
-<span class='line'> 42</span> 	@class Node类
+<span class='line'> 42</span> 	@class KNode类
 <span class='line'> 43</span> 	@param {String|Node} expr DOM元素、选择器字符串、HTML
 <span class='line'> 44</span> 	@param {Element} root DOM根元素，在root范围内选择DOM元素
 <span class='line'> 45</span> 	@description
-<span class='line'> 46</span> 	Node类，只能通过K.node(expr, root)创建，不能使用new Node()。
+<span class='line'> 46</span> 	KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。
 <span class='line'> 47</span> 	@example
-<span class='line'> 48</span> 	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建K.node对象
-<span class='line'> 49</span> 	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的K.node对象
-<span class='line'> 50</span> 	knode = K.node(document.getElementById('id')); //返回原生Node的K.node对象
+<span class='line'> 48</span> 	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
+<span class='line'> 49</span> 	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
+<span class='line'> 50</span> 	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象
 <span class='line'> 51</span> */</span><span class="WHIT">
 <span class='line'> 52</span> 
 <span class='line'> 53</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">_node</span><span class="PUNC">(</span><span class="NAME">expr</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">root</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
@@ -111,7 +111,7 @@
 <span class='line'>103</span> 			@public
 <span class='line'>104</span> 			@param {String} type
 <span class='line'>105</span> 			@param {String} fn
-<span class='line'>106</span> 			@returns {Node}
+<span class='line'>106</span> 			@returns {KNode}
 <span class='line'>107</span> 			@description
 <span class='line'>108</span> 			绑定一个事件。
 <span class='line'>109</span> 		*/</span><span class="WHIT">

@@ -17,19 +17,43 @@
 */
 
 /**
-	Only support the following selector syntax.
-	Patterns:
-	*: any element
-	E: an element of type E
-	E[foo]: an E element with a "foo" attribute
-	E[foo="bar"]: an E element whose "foo" attribute value is exactly equal to "bar"
-	E.warning: an E element whose class is "warning" (the document language specifies how class is determined)
-	E#myid: an E element with ID equal to "myid"
-	E F: an F element descendant of an E element
-	E > F: an F element child of an E element
-	Reference:
-	Selectors Level 3: http://www.w3.org/TR/css3-selectors/
+	@name KindEditor.query
+	@function
+	@param {String} expr 选择器查询语句。
+	@param {element} root
+	@returns {element}
+	@description
+	根据expr在root范围内查找DOM元素，并返回第一个元素。没找到则返回null。
+	@example
+	// Only support the following selector syntax.
+	// Patterns:
+	// *: any element
+	// E: an element of type E
+	// E[foo]: an E element with a "foo" attribute
+	// E[foo="bar"]: an E element whose "foo" attribute value is exactly equal to "bar"
+	// E.warning: an E element whose class is "warning" (the document language specifies how class is determined)
+	// E#myid: an E element with ID equal to "myid"
+	// E F: an F element descendant of an E element
+	// E > F: an F element child of an E element
+
+	var div = K.query('#id div');
+	var span = K.query('span.class', div);
+	@see <a href="http://www.w3.org/TR/css3-selectors/" target="_blank">Selectors Level 3</a>
 */
+
+/**
+	@name KindEditor.queryAll
+	@function
+	@param {String} expr 选择器查询语句。
+	@param {element} root
+	@returns {element[]}
+	@description
+	根据expr在root范围内查找DOM元素，并返回所有元素。没找到则返回空数组。
+	@example
+	var divArray = K.query('#id div');
+	var spanArray = K.query('span.class', div);
+*/
+
 (function (K, undefined) {
 
 var _IE = K.IE,

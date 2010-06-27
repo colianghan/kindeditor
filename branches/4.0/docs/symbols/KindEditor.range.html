@@ -11,7 +11,7 @@
 body
 {
 	font:12px "sans serif",tahoma,verdana,helvetica;
-	width: 800px;
+	width: 960px;
 }
 
 .header
@@ -42,6 +42,8 @@ pre.code
 	display: block;
 	padding: 8px;
 	border: 1px dashed #ccc;
+	width: 700px;
+	overflow-x: auto;
 }
 
 #index
@@ -58,7 +60,7 @@ pre.code
 #content
 {
 	margin-left: 190px;
-	width: 600px;
+	width: 760px;
 }
 
 .classList
@@ -218,7 +220,7 @@ ul.inheritsList
 				
 				
 			
-				Range类
+				KRange类
 				
 				
 					<br /><i>Defined in: </i> <a href="../symbols/src/src_range.js.html">range.js</a>.
@@ -240,9 +242,9 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.range.html#constructor">KindEditor.range</a></b>()
+								<b><a href="../symbols/KindEditor.range.html#constructor">KindEditor.range</a></b>(mixed)
 							</div>
-							<div class="description">Range类，包含W3C Range所有接口，此外还有包含K.range和原生Range之间的转换功能。</div>
+							<div class="description">KRange类，包含W3C Range所有接口，此外还有包含KRange和原生Range之间的转换功能。</div>
 						</td>
 					</tr>
 				</tbody>
@@ -347,9 +349,177 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#cloneContents">cloneContents</a></b>()
+								</div>
+								<div class="description">复制并返回KRange的内容。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#cloneRange">cloneRange</a></b>()
+								</div>
+								<div class="description">复制KRange。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#collapse">collapse</a></b>(toStart)
+								</div>
+								<div class="description">折叠KRange，当toStart为true时向前折叠，false时向后折叠。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#compareBoundaryPoints">compareBoundaryPoints</a></b>(how, range)
+								</div>
+								<div class="description"><p>根据how参数比较2个range的边界。</p>
+			<p>how参数的方向规则：</p>
+			<p>K.START_TO_START：比较目标range的开始位置和this range的开始位置。</p>
+			<p>K.START_TO_END：比较目标range的开始位置和this range的结束位置。</p>
+			<p>K.END_TO_END：比较目标range的结束位置和this range的结束位置。</p>
+			<p>K.END_TO_START：比较目标range的结束位置和this range的开始位置。</p></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#deleteContents">deleteContents</a></b>()
+								</div>
+								<div class="description">删除KRange的内容。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#extractContents">extractContents</a></b>()
+								</div>
+								<div class="description">删除并返回KRange的内容。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#get">get</a></b>()
+								</div>
+								<div class="description">将KRange转换成原生Range并返回。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#html">html</a></b>()
+								</div>
+								<div class="description">返回KRange内容的HTML。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#insertNode">insertNode</a></b>(node)
+								</div>
+								<div class="description">将指定Node插入到KRange的开始位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#selectNode">selectNode</a></b>(node)
+								</div>
+								<div class="description">将Node的开始位置和结束位置分别设为Range的开始位置和结束位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#selectNodeContents">selectNodeContents</a></b>(node)
+								</div>
+								<div class="description"><p>将Node的子节点的开始位置和结束位置分别设为Range的开始位置和结束位置。</p>
+			<p>对于文本节点和无结束符的元素，相当于使用selectNode。</p></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#setEnd">setEnd</a></b>(node, offset)
+								</div>
+								<div class="description">设置Range的结束节点和位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#setEndAfter">setEndAfter</a></b>(node)
+								</div>
+								<div class="description">将Node的结束位置设为Range的结束位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#setEndBefore">setEndBefore</a></b>(node)
+								</div>
+								<div class="description">将Node的开始位置设为Range的结束位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#setStart">setStart</a></b>(node, offset)
 								</div>
-								<div class="description">设置开始节点和位置。</div>
+								<div class="description">设置Range的开始节点和位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#setStartAfter">setStartAfter</a></b>(node)
+								</div>
+								<div class="description">将Node的结束位置设为Range的开始位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#setStartBefore">setStartBefore</a></b>(node)
+								</div>
+								<div class="description">将Node的开始位置设为Range的开始位置。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#surroundContents">surroundContents</a></b>(node)
+								</div>
+								<div class="description">用指定Node围住KRange的内容。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/KindEditor.range.html#toString">toString</a></b>()
+								</div>
+								<div class="description">返回KRange的文本内容。</div>
 							</td>
 						</tr>
 					
@@ -370,19 +540,19 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>KindEditor.range</b>()
+						<b>KindEditor.range</b>(mixed)
 				</div>
 				
 				<div class="description">
-					Range类，包含W3C Range所有接口，此外还有包含K.range和原生Range之间的转换功能。
+					KRange类，包含W3C Range所有接口，此外还有包含KRange和原生Range之间的转换功能。
 					
 				</div>
 				
 				
 				
 				<pre class="code">
-	var krange = K.range(document); //新建K.range对象
-	krange = K.range(originalRange); //将原生Range转换成K.range</pre>
+	var krange = K.range(document); //新建KRange对象
+	krange = K.range(originalRange); //将原生Range转换成KRange</pre>
 				
 				
 				
@@ -392,10 +562,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{Node|Range|K.range}</span>  <b>原生Node，原生Range，K.range</b>
+								<span class="light fixedFont">{document|Range}</span>  <b>mixed</b>
 								
 							</dt>
-								<dd></dd>
+								<dd>document或原生Range</dd>
 						
 						</dl>
 					
@@ -408,7 +578,7 @@ ul.inheritsList
 						<dl class="detailList">
 						<dt class="heading">See:</dt>
 						
-							<dd><a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html" target="_blank">DOM Level 2 Reference</a></dd>
+							<dd><a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html" target="_blank">DOM Level 2 Range Reference</a></dd>
 						
 						</dl>
 					
@@ -562,15 +732,434 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="setStart"> </a>
+					<a name="cloneContents"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{K.range}</span>
-					<b>setStart</b>(node, offset)
+					<span class="light">{documentFragment}</span>
+					<b>cloneContents</b>()
 					
 					</div>
 					<div class="description">
-						设置开始节点和位置。
+						复制并返回KRange的内容。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{documentFragment}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="cloneRange"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>cloneRange</b>()
+					
+					</div>
+					<div class="description">
+						复制KRange。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="collapse"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>collapse</b>(toStart)
+					
+					</div>
+					<div class="description">
+						折叠KRange，当toStart为true时向前折叠，false时向后折叠。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Boolean}</span> <b>toStart</b>
+									
+								</dt>
+								<dd>折叠方向，true或false</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="compareBoundaryPoints"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Int}</span>
+					<b>compareBoundaryPoints</b>(how, range)
+					
+					</div>
+					<div class="description">
+						<p>根据how参数比较2个range的边界。</p>
+			<p>how参数的方向规则：</p>
+			<p>K.START_TO_START：比较目标range的开始位置和this range的开始位置。</p>
+			<p>K.START_TO_END：比较目标range的开始位置和this range的结束位置。</p>
+			<p>K.END_TO_END：比较目标range的结束位置和this range的结束位置。</p>
+			<p>K.END_TO_START：比较目标range的结束位置和this range的开始位置。</p>
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Int}</span> <b>how</b>
+									
+								</dt>
+								<dd>位置信息，可设置K.START_TO_START、K.START_TO_END、K.END_TO_END、K.END_TO_START。</dd>
+							
+								<dt>
+									<span class="light fixedFont">{KRange}</span> <b>range</b>
+									
+								</dt>
+								<dd>目标range</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Int}</span> 当this range在目标range的左侧时返回-1，在目标range的右侧时返回1，相同时返回0。</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="deleteContents"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>deleteContents</b>()
+					
+					</div>
+					<div class="description">
+						删除KRange的内容。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="extractContents"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{documentFragment}</span>
+					<b>extractContents</b>()
+					
+					</div>
+					<div class="description">
+						删除并返回KRange的内容。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{documentFragment}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="get"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Range}</span>
+					<b>get</b>()
+					
+					</div>
+					<div class="description">
+						将KRange转换成原生Range并返回。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Range}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="html"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{String}</span>
+					<b>html</b>()
+					
+					</div>
+					<div class="description">
+						返回KRange内容的HTML。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{String}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="insertNode"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>insertNode</b>(node)
+					
+					</div>
+					<div class="description">
+						将指定Node插入到KRange的开始位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="selectNode"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>selectNode</b>(node)
+					
+					</div>
+					<div class="description">
+						将Node的开始位置和结束位置分别设为Range的开始位置和结束位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="selectNodeContents"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>selectNodeContents</b>(node)
+					
+					</div>
+					<div class="description">
+						<p>将Node的子节点的开始位置和结束位置分别设为Range的开始位置和结束位置。</p>
+			<p>对于文本节点和无结束符的元素，相当于使用selectNode。</p>
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setEnd"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>setEnd</b>(node, offset)
+					
+					</div>
+					<div class="description">
+						设置Range的结束节点和位置。
 						
 						
 					</div>
@@ -602,7 +1191,303 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{K.range}</span> </dd>
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setEndAfter"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>setEndAfter</b>(node)
+					
+					</div>
+					<div class="description">
+						将Node的结束位置设为Range的结束位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setEndBefore"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>setEndBefore</b>(node)
+					
+					</div>
+					<div class="description">
+						将Node的开始位置设为Range的结束位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setStart"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>setStart</b>(node, offset)
+					
+					</div>
+					<div class="description">
+						设置Range的开始节点和位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<span class="light fixedFont">{Int}</span> <b>offset</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setStartAfter"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>setStartAfter</b>(node)
+					
+					</div>
+					<div class="description">
+						将Node的结束位置设为Range的开始位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setStartBefore"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>setStartBefore</b>(node)
+					
+					</div>
+					<div class="description">
+						将Node的开始位置设为Range的开始位置。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="surroundContents"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{KRange}</span>
+					<b>surroundContents</b>(node)
+					
+					</div>
+					<div class="description">
+						用指定Node围住KRange的内容。
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Node}</span> <b>node</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{KRange}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="toString"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{String}</span>
+					<b>toString</b>()
+					
+					</div>
+					<div class="description">
+						返回KRange的文本内容。
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{String}</span> </dd>
 							
 							</dl>
 						
@@ -623,7 +1508,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			Copyright &copy; 2010 <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.<br />
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sat Jun 26 2010 21:59:10 GMT+0800 (CST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jun 27 2010 12:47:15 GMT+0800 (CST)
 		</div>
 	</body>
 </html>
