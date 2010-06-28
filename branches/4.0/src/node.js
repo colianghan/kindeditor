@@ -286,6 +286,10 @@ function _node(expr, root) {
 		},
 		toString : function() {
 			return this.type == 3 ? node.nodeValue : this.outer();
+		},
+		contain : function(node){
+			var n = this.get();
+			return n.contains ? n != node && n.contains(node) : !!(n.compareDocumentPosition(node) & 16);
 		}
 	};
 	_updateProp.call(obj, node);
