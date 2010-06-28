@@ -7,7 +7,7 @@
 
 /**
  * @name range.js
- * @fileOverview W3C Rangeã€�W3C Rangeå’ŒåŽŸç”ŸRangeä¹‹é—´è½¬æ�¢
+ * @fileOverview W3C Range、W3C Range和原生Range之间转换
  * @author Longhao Luo
  */
 
@@ -23,28 +23,28 @@
 	@name KindEditor.START_TO_START
 	@type {Int}
 	@description
-	è°ƒç”¨range.compareBoundaryPointsæ—¶ä½¿ç”¨ã€‚
+	调用range.compareBoundaryPoints时使用。
 	@see KindEditor.range#compareBoundaryPoints
 */
 /**
 	@name KindEditor.START_TO_END
 	@type {Int}
 	@description
-	è°ƒç”¨range.compareBoundaryPointsæ—¶ä½¿ç”¨ã€‚
+	调用range.compareBoundaryPoints时使用。
 	@see KindEditor.range#compareBoundaryPoints
 */
 /**
 	@name KindEditor.END_TO_END
 	@type {Int}
 	@description
-	è°ƒç”¨range.compareBoundaryPointsæ—¶ä½¿ç”¨ã€‚
+	调用range.compareBoundaryPoints时使用。
 	@see KindEditor.range#compareBoundaryPoints
 */
 /**
 	@name KindEditor.END_TO_START
 	@type {Int}
 	@description
-	è°ƒç”¨range.compareBoundaryPointsæ—¶ä½¿ç”¨ã€‚
+	调用range.compareBoundaryPoints时使用。
 	@see KindEditor.range#compareBoundaryPoints
 */
 var _IE = K.IE,
@@ -54,16 +54,16 @@ var _IE = K.IE,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
-	  
+
 /**
 	@name KindEditor.range
-	@class KRangeç±»
-	@param {document|Range} mixed documentæˆ–åŽŸç”ŸRange
+	@class KRange类
+	@param {document|Range} mixed document或原生Range
 	@description
-	KRangeç±»ï¼ŒåŒ…å�«W3C Rangeæ‰€æœ‰æŽ¥å�£ï¼Œæ­¤å¤–è¿˜æœ‰åŒ…å�«KRangeå’ŒåŽŸç”ŸRangeä¹‹é—´çš„è½¬æ�¢åŠŸèƒ½ã€‚
+	KRange类，包含W3C Range所有接口，此外还有包含KRange和原生Range之间的转换功能。
 	@example
-	var krange = K.range(document); //æ–°å»ºKRangeå¯¹è±¡
-	krange = K.range(originalRange); //å°†åŽŸç”ŸRangeè½¬æ�¢æˆ�KRange
+	var krange = K.range(document); //新建KRange对象
+	krange = K.range(originalRange); //将原生Range转换成KRange
 	@see <a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html" target="_blank">DOM Level 2 Range Reference</a>
 */
 
@@ -79,7 +79,7 @@ function _range(mixed) {
 			@public
 			@type {Node}
 			@description
-			Rangeçš„å¼€å§‹èŠ‚ç‚¹ã€‚
+			Range的开始节点。
 		*/
 		startContainer : doc,
 		/**
@@ -88,7 +88,7 @@ function _range(mixed) {
 			@public
 			@type {Int}
 			@description
-			Rangeçš„å¼€å§‹èŠ‚ç‚¹çš„ä½�ç½®ã€‚
+			Range的开始节点的位置。
 		*/
 		startOffset : 0,
 		/**
@@ -97,7 +97,7 @@ function _range(mixed) {
 			@public
 			@type {Node}
 			@description
-			Rangeçš„ç»“æ�ŸèŠ‚ç‚¹ã€‚
+			Range的结束节点。
 		*/
 		endContainer : doc,
 		/**
@@ -106,7 +106,7 @@ function _range(mixed) {
 			@public
 			@type {Int}
 			@description
-			Rangeçš„ç»“æ�ŸèŠ‚ç‚¹çš„ä½�ç½®ã€‚
+			Range的结束节点的位置。
 		*/
 		endOffset : 0,
 		/**
@@ -115,7 +115,7 @@ function _range(mixed) {
 			@public
 			@type {Boolean}
 			@description
-			Rangeçš„æŠ˜å� çŠ¶æ€�ï¼Œå½“Rangeå¤„äºŽæŠ˜å� çŠ¶æ€�æ—¶trueï¼Œå�¦åˆ™falseã€‚
+			Range的折叠状态，当Range处于折叠状态时true，否则false。
 		*/
 		collapsed : true,
 		/**
@@ -124,7 +124,7 @@ function _range(mixed) {
 			@public
 			@type {Node}
 			@description
-			å¼€å§‹èŠ‚ç‚¹å’Œç»“æ�ŸèŠ‚ç‚¹çš„å…±å�Œç¥–å…ˆNodeã€‚
+			开始节点和结束节点的共同祖先Node。
 		*/
 		commonAncestorContainer : doc,
 		/**
@@ -135,7 +135,7 @@ function _range(mixed) {
 			@param {Int} offset
 			@returns {KRange}
 			@description
-			è®¾ç½®Rangeçš„å¼€å§‹èŠ‚ç‚¹å’Œä½�ç½®ã€‚
+			设置Range的开始节点和位置。
 		*/
 		setStart : function(node, offset) {
 			this.startContainer = node;
@@ -157,7 +157,7 @@ function _range(mixed) {
 			@param {Int} offset
 			@returns {KRange}
 			@description
-			è®¾ç½®Rangeçš„ç»“æ�ŸèŠ‚ç‚¹å’Œä½�ç½®ã€‚
+			设置Range的结束节点和位置。
 		*/
 		setEnd : function(node, offset) {
 			this.endContainer = node;
@@ -178,7 +178,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			å°†Nodeçš„å¼€å§‹ä½�ç½®è®¾ä¸ºRangeçš„å¼€å§‹ä½�ç½®ã€‚
+			将Node的开始位置设为Range的开始位置。
 		*/
 		setStartBefore : function(node) {
 			return this.setStart(node.parentNode || doc, _node(node).index);
@@ -190,7 +190,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			å°†Nodeçš„ç»“æ�Ÿä½�ç½®è®¾ä¸ºRangeçš„å¼€å§‹ä½�ç½®ã€‚
+			将Node的结束位置设为Range的开始位置。
 		*/
 		setStartAfter : function(node) {
 			return this.setStart(node.parentNode || doc, _node(node).index + 1);
@@ -202,7 +202,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			å°†Nodeçš„å¼€å§‹ä½�ç½®è®¾ä¸ºRangeçš„ç»“æ�Ÿä½�ç½®ã€‚
+			将Node的开始位置设为Range的结束位置。
 		*/
 		setEndBefore : function(node) {
 			return this.setEnd(node.parentNode || doc, _node(node).index);
@@ -214,7 +214,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			å°†Nodeçš„ç»“æ�Ÿä½�ç½®è®¾ä¸ºRangeçš„ç»“æ�Ÿä½�ç½®ã€‚
+			将Node的结束位置设为Range的结束位置。
 		*/
 		setEndAfter : function(node) {
 			return this.setEnd(node.parentNode || doc, _node(node).index + 1);
@@ -226,7 +226,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			å°†Nodeçš„å¼€å§‹ä½�ç½®å’Œç»“æ�Ÿä½�ç½®åˆ†åˆ«è®¾ä¸ºRangeçš„å¼€å§‹ä½�ç½®å’Œç»“æ�Ÿä½�ç½®ã€‚
+			将Node的开始位置和结束位置分别设为Range的开始位置和结束位置。
 		*/
 		selectNode : function(node) {
 			this.setStartBefore(node);
@@ -240,8 +240,8 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			<p>å°†Nodeçš„å­�èŠ‚ç‚¹çš„å¼€å§‹ä½�ç½®å’Œç»“æ�Ÿä½�ç½®åˆ†åˆ«è®¾ä¸ºRangeçš„å¼€å§‹ä½�ç½®å’Œç»“æ�Ÿä½�ç½®ã€‚</p>
-			<p>å¯¹äºŽæ–‡æœ¬èŠ‚ç‚¹å’Œæ— ç»“æ�Ÿç¬¦çš„å…ƒç´ ï¼Œç›¸å½“äºŽä½¿ç”¨selectNodeã€‚</p>
+			<p>将Node的子节点的开始位置和结束位置分别设为Range的开始位置和结束位置。</p>
+			<p>对于文本节点和无结束符的元素，相当于使用selectNode。</p>
 		*/
 		selectNodeContents : function(node) {
 			var knode = _node(node);
@@ -262,10 +262,10 @@ function _range(mixed) {
 			@name KindEditor.range#collapse
 			@function
 			@public
-			@param {Boolean} toStart æŠ˜å� æ–¹å�‘ï¼Œtrueæˆ–false
+			@param {Boolean} toStart 折叠方向，true或false
 			@returns {KRange}
 			@description
-			æŠ˜å� KRangeï¼Œå½“toStartä¸ºtrueæ—¶å�‘å‰�æŠ˜å� ï¼Œfalseæ—¶å�‘å�ŽæŠ˜å� ã€‚
+			折叠KRange，当toStart为true时向前折叠，false时向后折叠。
 		*/
 		collapse : function(toStart) {
 			if (toStart) this.setEnd(this.startContainer, this.startOffset);
@@ -276,16 +276,16 @@ function _range(mixed) {
 			@name KindEditor.range#compareBoundaryPoints
 			@function
 			@public
-			@param {Int} how ä½�ç½®ä¿¡æ�¯ï¼Œå�¯è®¾ç½®K.START_TO_STARTã€�K.START_TO_ENDã€�K.END_TO_ENDã€�K.END_TO_STARTã€‚
-			@param {KRange} range ç›®æ ‡range
-			@returns {Int} å½“this rangeåœ¨ç›®æ ‡rangeçš„å·¦ä¾§æ—¶è¿”å›ž-1ï¼Œåœ¨ç›®æ ‡rangeçš„å�³ä¾§æ—¶è¿”å›ž1ï¼Œç›¸å�Œæ—¶è¿”å›ž0ã€‚
+			@param {Int} how 位置信息，可设置K.START_TO_START、K.START_TO_END、K.END_TO_END、K.END_TO_START。
+			@param {KRange} range 目标range
+			@returns {Int} 当this range在目标range的左侧时返回-1，在目标range的右侧时返回1，相同时返回0。
 			@description
-			<p>æ ¹æ�®howå�‚æ•°æ¯”è¾ƒ2ä¸ªrangeçš„è¾¹ç•Œã€‚</p>
-			<p>howå�‚æ•°çš„æ–¹å�‘è§„åˆ™ï¼š</p>
-			<p>K.START_TO_STARTï¼šæ¯”è¾ƒç›®æ ‡rangeçš„å¼€å§‹ä½�ç½®å’Œthis rangeçš„å¼€å§‹ä½�ç½®ã€‚</p>
-			<p>K.START_TO_ENDï¼šæ¯”è¾ƒç›®æ ‡rangeçš„å¼€å§‹ä½�ç½®å’Œthis rangeçš„ç»“æ�Ÿä½�ç½®ã€‚</p>
-			<p>K.END_TO_ENDï¼šæ¯”è¾ƒç›®æ ‡rangeçš„ç»“æ�Ÿä½�ç½®å’Œthis rangeçš„ç»“æ�Ÿä½�ç½®ã€‚</p>
-			<p>K.END_TO_STARTï¼šæ¯”è¾ƒç›®æ ‡rangeçš„ç»“æ�Ÿä½�ç½®å’Œthis rangeçš„å¼€å§‹ä½�ç½®ã€‚</p>
+			<p>根据how参数比较2个range的边界。</p>
+			<p>how参数的方向规则：</p>
+			<p>K.START_TO_START：比较目标range的开始位置和this range的开始位置。</p>
+			<p>K.START_TO_END：比较目标range的开始位置和this range的结束位置。</p>
+			<p>K.END_TO_END：比较目标range的结束位置和this range的结束位置。</p>
+			<p>K.END_TO_START：比较目标range的结束位置和this range的开始位置。</p>
 		*/
 		compareBoundaryPoints : function(how, range) {
 			var rangeA = this.get(),
@@ -347,7 +347,7 @@ function _range(mixed) {
 			@public
 			@returns {KRange}
 			@description
-			å¤�åˆ¶KRangeã€‚
+			复制KRange。
 		*/
 		cloneRange : function() {
 			var range = _range(doc);
@@ -361,7 +361,7 @@ function _range(mixed) {
 			@public
 			@returns {String}
 			@description
-			è¿”å›žKRangeçš„æ–‡æœ¬å†…å®¹ã€‚
+			返回KRange的文本内容。
 		*/
 		toString : function() {
 			//TODO
@@ -375,7 +375,7 @@ function _range(mixed) {
 			@public
 			@returns {documentFragment}
 			@description
-			å¤�åˆ¶å¹¶è¿”å›žKRangeçš„å†…å®¹ã€‚
+			复制并返回KRange的内容。
 		*/
 		cloneContents : function() {
 			return _copyAndDelete.call(this, doc, true, false);
@@ -386,7 +386,7 @@ function _range(mixed) {
 			@public
 			@returns {KRange}
 			@description
-			åˆ é™¤KRangeçš„å†…å®¹ã€‚
+			删除KRange的内容。
 		*/
 		deleteContents : function() {
 			return _copyAndDelete.call(this, doc, false, true);
@@ -397,7 +397,7 @@ function _range(mixed) {
 			@public
 			@returns {documentFragment}
 			@description
-			åˆ é™¤å¹¶è¿”å›žKRangeçš„å†…å®¹ã€‚
+			删除并返回KRange的内容。
 		*/
 		extractContents : function() {
 			return _copyAndDelete.call(this, doc, true, true);
@@ -409,7 +409,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			å°†æŒ‡å®šNodeæ�’å…¥åˆ°KRangeçš„å¼€å§‹ä½�ç½®ã€‚
+			将指定Node插入到KRange的开始位置。
 		*/
 		insertNode : function(node) {
 			var startContainer = this.startContainer,
@@ -476,7 +476,7 @@ function _range(mixed) {
 			@param {Node} node
 			@returns {KRange}
 			@description
-			ç”¨æŒ‡å®šNodeå›´ä½�KRangeçš„å†…å®¹ã€‚
+			用指定Node围住KRange的内容。
 		*/
 		surroundContents : function(node) {
 			node.appendChild(this.extractContents());
@@ -488,7 +488,7 @@ function _range(mixed) {
 			@public
 			@returns {Range}
 			@description
-			å°†KRangeè½¬æ�¢æˆ�åŽŸç”ŸRangeå¹¶è¿”å›žã€‚
+			将KRange转换成原生Range并返回。
 		*/
 		get : function() {
 			var startContainer = this.startContainer,
@@ -517,7 +517,7 @@ function _range(mixed) {
 			@public
 			@returns {String}
 			@description
-			è¿”å›žKRangeå†…å®¹çš„HTMLã€‚
+			返回KRange内容的HTML。
 		*/
 		html : function() {
 			//TODO
@@ -525,11 +525,11 @@ function _range(mixed) {
 		}
 	};
 }
-//æ›´æ–°collapsed
+//更新collapsed
 function _updateCollapsed() {
 	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
 }
-//æ›´æ–°commonAncestorContainer
+//更新commonAncestorContainer
 function _updateCommonAncestor(doc) {
 	var sp = this.startContainer;
 	while(sp){
@@ -540,7 +540,7 @@ function _updateCommonAncestor(doc) {
 	}
 	this.commonAncestorContainer = sp;
 }
-//æ£€æŸ¥å¼€å§‹èŠ‚ç‚¹å’Œç»“æ�ŸèŠ‚ç‚¹çš„ä½�ç½®ï¼Œæ ¡æ­£é”™è¯¯è®¾ç½®
+//检查开始节点和结束节点的位置，校正错误设置
 function _compareAndUpdate(doc) {
 	var rangeA = _range(doc),
 		rangeB = _range(doc);
@@ -555,7 +555,7 @@ function _compareAndUpdate(doc) {
 }
 
 /*
-	æ ¹æ�®å�‚æ•°å¤�åˆ¶æˆ–åˆ é™¤KRangeçš„å†…å®¹ã€‚
+	根据参数复制或删除KRange的内容。
 	cloneContents: copyAndDelete(true, false)
 	extractContents: copyAndDelete(true, true)
 	deleteContents: copyAndDelete(false, true)
@@ -651,7 +651,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 	}
 	return isCopy ? frag : self;
 }
-//æ ¹æ�®åŽŸç”ŸRangeï¼Œå�–å¾—å¼€å§‹èŠ‚ç‚¹å’Œç»“æ�ŸèŠ‚ç‚¹çš„ä½�ç½®ã€‚IEä¸“ç”¨
+//根据原生Range，取得开始节点和结束节点的位置。IE专用
 function _getStartEnd(rng, isStart) {
 	var doc = rng.parentElement().ownerDocument;
 	var range = _range(doc);
@@ -698,7 +698,7 @@ function _getStartEnd(rng, isStart) {
 	startPos -= testRange.text.length;
 	return {node: startNode, offset: startPos};
 }
-//å°†åŽŸç”ŸRangeè½¬æ�¢æˆ�KRange
+//将原生Range转换成KRange
 function _toRange(rng) {
 	if (_IE) {
 		var doc = rng.parentElement().ownerDocument;
@@ -722,7 +722,7 @@ function _toRange(rng) {
 		return range;
 	}
 }
-//å�–å¾—çˆ¶èŠ‚ç‚¹é‡Œçš„è¯¥èŠ‚ç‚¹å‰�çš„çº¯æ–‡æœ¬é•¿åº¦ã€‚IEä¸“ç”¨
+//取得父节点里的该节点前的纯文本长度。IE专用
 function _getBeforeLength(node) {
 	var doc = node.ownerDocument,
 		len = 0,
@@ -743,7 +743,7 @@ function _getBeforeLength(node) {
 	}
 	return len;
 }
-//æ ¹æ�®Nodeå’Œoffsetï¼Œå�–å¾—è¡¨ç¤ºè¯¥ä½�ç½®çš„åŽŸç”ŸRangeã€‚IEä¸“ç”¨
+//根据Node和offset，取得表示该位置的原生Range。IE专用
 function _getEndRange(node, offset) {
 	var doc = node.ownerDocument || node,
 		range = doc.body.createTextRange();
