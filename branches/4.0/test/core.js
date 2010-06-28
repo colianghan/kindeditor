@@ -1,10 +1,12 @@
 module('core');
 
-test('core', function() {
-	//browser version test
-	ok(/^\d+$/.test(K.VERSION));
+var K = KindEditor;
 
-	//each test
+test('VERSION', function() {
+	ok(/^\d+$/.test(K.VERSION));
+});
+
+test('each', function() {
 	var arr = ['a', 'b'];
 	var obj = {a : 'aa', b : 'bb', c : 0, d : null};
 	var i = 0;
@@ -35,8 +37,9 @@ test('core', function() {
 		return true;
 	});
 	ok(i === 4);
+});
 
-	//isArray test
+test('isArray', function() {
 	ok(K.isArray([]) === true);
 	ok(K.isArray(['a', 'b']) === true);
 	ok(K.isArray({a : 'a'}) === false);
@@ -45,8 +48,9 @@ test('core', function() {
 	ok(K.isArray('a') === false);
 	ok(K.isArray(0) === false);
 	ok(K.isArray('') === false);
+});
 
-	//inArray test
+test('inArray', function() {
 	arr = [null, 0, '', 10, '11', true];
 	ok(K.inArray(null, arr) === 0);
 	ok(K.inArray(0, arr) === 1);
@@ -56,13 +60,15 @@ test('core', function() {
 	ok(K.inArray('11', arr) === 4);
 	ok(K.inArray(true, arr) === 5);
 	ok(K.inArray(false, arr) === -1);
+});
 
-	//trim test
+test('trim', function() {
 	equals(K.trim(' a '), 'a');
 	equals(K.trim(' a a '), 'a a');
 	equals(K.trim(' &nbsp; '), '&nbsp;');
+});
 
-	//toHex test
+test('toHex', function() {
 	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
 	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
 	equals(K.toHex(' rgb(0, 0, 0) rgb (255, 255, 255) '), ' #000000 #FFFFFF ');

@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>KindEditor Edit Test</title>
+		<link rel="stylesheet" href="../lib/firebug/firebug-lite.css" />
+		<link rel="stylesheet" href="../lib/qunit/qunit.css" />
+		<style>
+			textarea {
+				display: block;
+				width: 600px;
+				height: 200px;
+			}
+			.ke-iframe {
+				border: 1px solid #A0A0A0;
+			}
+		</style>
+		<script src="../lib/firebug/firebug-lite.js"></script>
+		<script src="../lib/qunit/qunit.js"></script>
+		<script src="../lib/jquery.js"></script>
+		<!-- include src files -->
+		<script src="../kindeditor.js"></script>
+		<script>
+			firebug.env.css = '../lib/firebug/firebug-lite.css';
+			firebug.env.height = 160;
+		</script>
+	</head>
+	<body>
+		<h1>KindEditor Edit Test</h1>
+		<textarea name="content" cols="100" rows="20">abcdef</textarea>
+		<br />
+		<a href="javascript:;" id="bold">Bold</a>
+		<a href="javascript:;" id="foreColor">ForeColor</a>
+		<br />
+		<br />
+		<input type="button" id="create" value="Create" />
+		<input type="button" id="remove" value="Remove" />
+		<input type="button" id="show" value="Show" />
+		<input type="button" id="hide" value="Hide" />
+		<script>
+			var edit = K.edit('body textarea', {
+				width : '600px',
+				height : '200px'
+			}).create();
+			K.node('#bold').bind('click', function(e) {
+				edit.cmd.bold();
+				e.stop();
+			});
+			K.node('#foreColor').bind('click', function(e) {
+				edit.cmd.foreColor('#FF0000');
+				e.stop();
+			});
+			K.node('#create').bind('click', function(e) {
+				edit.create();
+			});
+			K.node('#remove').bind('click', function(e) {
+				edit.remove();
+			});
+			K.node('#show').bind('click', function(e) {
+				edit.show();
+			});
+			K.node('#hide').bind('click', function(e) {
+				edit.hide();
+			});
+		</script>
+	</body>
+</html>

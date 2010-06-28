@@ -22,10 +22,12 @@
 			<fileset file="${src}/core.js"/>
 			<fileset file="${src}/event.js"/>
 			<fileset file="${src}/html.js"/>
-			<fileset file="${src}/event.js"/>
-			<fileset file="${src}/event.js"/>
-			<fileset file="${src}/event.js"/>
-			<fileset file="${src}/event.js"/>
+			<fileset file="${src}/selector.js"/>
+			<fileset file="${src}/node.js"/>
+			<fileset file="${src}/range.js"/>
+			<fileset file="${src}/cmd.js"/>
+			<fileset file="${src}/edit.js"/>
+			<fileset file="${src}/main.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"
@@ -41,38 +43,32 @@
 			byline="true"
 			flags="g"
 		/>
-	</target>
-
-	<target name="copy" depends="merge">
-		<mkdir dir="${dist}"/>
-		<delete dir="${kedir}"/>
-		<delete file="${kezip}"/>
-		<exec executable="svn">
-			<arg line="export . ${kedir}"/>
-		</exec>
-	</target>
-
-	<target name="compile" depends="copy">
-		<exec executable="java">
-			<arg line="-jar lib/closure-compiler.jar --js=${kedir}/${filename}.js --js_output_file=${kedir}/${filename}-min.js"/>
-		</exec>
-	</target>
-
-	<target name="zip" depends="compile">
-		<copy file="${kedir}/docs/license.txt" todir="${kedir}"/>
-		<delete dir="${kedir}/test"/>
-		<delete dir="${kedir}/lib"/>
-		<delete dir="${kedir}/src"/>
-		<delete dir="${kedir}/docs"/>
-		<delete file="${kedir}/build.xml"/>
-		<zip destfile="${kedir}.zip"
-			basedir="${kedir}"
+		<replaceregexp file="${filename}.js"
+			match="/\*\*(\r\n|\n|\r).*?\*/"
+			replace=""
+			encoding="${charset}"
+			byline="false"
+			flags="gs"
+		/>
+		<replaceregexp file="${filename}.js"
+			match="(\r\n){3,}"
+			replace="\1\1"
+			encoding="${charset}"
+			byline="false"
+			flags="g"
 		/>
 	</target>
 
-	<target name="merge_zh_CN" depends="set_zh_CN,merge"/>
-	<target name="en" depends="set_en,set_prop,zip"/>
-	<target name="zh_CN" depends="set_zh_CN,set_prop,zip"/>
-	<target name="zh_TW" depends="set_zh_TW,set_prop,zip"/>
+	<target name="min" depends="merge">
+		<exec executable="java">
+			<arg line="-jar lib/closure-compiler.jar --js=${filename}.js --js_output_file=${filename}-min.js"/>
+		</exec>
+	</target>
+
+	<target name="docs">
+		<exec executable="java">
+			<arg line="-jar lib/jsdoc-toolkit/jsrun.jar lib/jsdoc-toolkit/app/run.js -n -e=UTF-8 -c=conf/jsdoc.conf"/>
+		</exec>
+	</target>
 
 </project>
