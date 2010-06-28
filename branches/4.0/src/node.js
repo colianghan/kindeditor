@@ -162,7 +162,14 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
-			return this.attr('value' , val);
+			var bool = node.value != null && node.value !== '';
+			if (val === undefined) {
+				return bool ? node.value : this.attr('value');
+			} else {
+				if (bool) node.value = val;
+				else this.attr('value' , val);
+				return this;
+			}
 		},
 		css : function(key, val) {
 			var self = this;
@@ -219,8 +226,8 @@ function _node(expr, root) {
 		},
 		remove : function() {
 			if(_IE){
-				var div = document.createElement('div');
-				div.appendChild(node.get());
+				var div = doc.createElement('div');
+				div.appendChild(node);
 				div.innerHTML = null;
 				div = null;
 			}else{
@@ -245,7 +252,7 @@ function _node(expr, root) {
 		outer : function() {
 			var div = doc.createElement('div'),html;
 			div.appendChild(node);
-			html = div.innerHTML;
+			html = _formatHtml(div.innerHTML);
 			div = null;
 			return html;
 		},
@@ -287,7 +294,7 @@ function _node(expr, root) {
 		toString : function() {
 			return this.type == 3 ? node.nodeValue : this.outer();
 		},
-		contain : function(node){
+		contain : function(node) {
 			var n = this.get();
 			return n.contains ? n != node && n.contains(node) : !!(n.compareDocumentPosition(node) & 16);
 		}

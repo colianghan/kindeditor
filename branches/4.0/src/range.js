@@ -520,8 +520,7 @@ function _range(mixed) {
 			返回KRange内容的HTML。
 		*/
 		html : function() {
-			//TODO
-			return _node(this.cloneContents()).outer().toLowerCase();
+			return _node(this.cloneContents()).outer();
 		}
 	};
 }
@@ -531,14 +530,22 @@ function _updateCollapsed() {
 }
 //更新commonAncestorContainer
 function _updateCommonAncestor(doc) {
-	var sp = this.startContainer;
-	while(sp){
-		if(_node(sp).contain(this.endContainer) || sp === this.endContainer){
-			break;
+	function getParents(node) {
+		var parents = [];
+		while (node) {
+			parents.push(node);
+			node = node.parentNode;
 		}
-		sp = sp.parentNode
+		return parents;
 	}
-	this.commonAncestorContainer = sp;
+	var parentsA = getParents(this.startContainer),
+		parentsB = getParents(this.endContainer),
+		i = 0, lenA = parentsA.length, lenB = parentsB.length, parentA, parentB;
+	while (++i) {
+		parentA = parentsA[lenA - i], parentB = parentsB[lenB - i];
+		if (!parentA || !parentB || parentA !== parentB) break;
+	}
+	this.commonAncestorContainer = parentsA[lenA - i + 1];
 }
 //检查开始节点和结束节点的位置，校正错误设置
 function _compareAndUpdate(doc) {

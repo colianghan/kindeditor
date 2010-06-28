@@ -28,14 +28,14 @@ function _getIframeDoc(iframe) {
 
 function _getInitHtml(bodyClass, cssPaths) {
 	//字符串连加效率低，改用[]
-	var html = ['<!doctype html><html><head><meta http-equiv="Content-Type" content="text/html; 		charset=utf-8"/><title>KindEditor</title>'];
+	var html = ['<!doctype html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>KindEditor</title>'];
 	if (cssPaths) {
 		_each(cssPaths, function(i, path) {
-			if (path !== '') html[i+1] = '<link href="' + path + '" rel="stylesheet" />';
+			if (path !== '') html[i + 1] = '<link href="' + path + '" rel="stylesheet" />';
 		});
 	}
-	html.push('</head><body ' + (bodyClass?'class="' + bodyClass + '"':'') + '></body></html>');
-	return html.join('');	
+	html.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
+	return html.join('');
 }
 
 function _edit(expr, options) {

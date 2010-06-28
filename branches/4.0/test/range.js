@@ -1,5 +1,7 @@
 module('range');
 
+var K = KindEditor;
+
 test('range', function() {
 	var p = K.query('#test-data-01 p');
 	var strong = K.query('#test-data-01 strong');
@@ -585,7 +587,7 @@ test('range.deleteContents', function() {
 	range.selectNode(strong);
 	frag = range.deleteContents();
 	ok(range.collapsed);
-	ok(typeof frag === 'undefined');
+	ok(frag === range);
 	document.body.removeChild(cloneP);
 });
 

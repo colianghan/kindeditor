@@ -52,6 +52,7 @@ test("node.val",function(){
 	equals(K.node('<div value="aa"></div>').val(), "aa");
 	equals(K.node('<input value="aa" />').val("bb").val(), "bb");
 	equals(K.node('<div value="aa"></div>').val("").val(), "");
+	equals(K.node('<textarea></textarea>').val('abc').val(), 'abc');
 });
 
 test("node.css",function(){
