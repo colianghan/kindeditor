@@ -17,11 +17,26 @@ test('each', function() {
 	});
 	ok(i === 2);
 	i = 0;
+	K.each(arr, function(idx) {
+		if (idx === 0) ok(this == 'a');
+		if (idx === 1) ok(this == 'b');
+		i++;
+	});
+	ok(i === 2);
+	i = 0;
 	K.each(obj, function(key, val) {
 		if (key === 'a') ok(val === 'aa');
 		if (key === 'b') ok(val === 'bb');
 		if (key === 'c') ok(val === 0);
 		if (key === 'd') ok(val === null);
+		i++;
+	});
+	ok(i === 4);
+	i = 0;
+	K.each(obj, function(key) {
+		if (key === 'a') ok(this == 'aa');
+		if (key === 'b') ok(this == 'bb');
+		if (key === 'c') ok(this == 0);
 		i++;
 	});
 	ok(i === 4);

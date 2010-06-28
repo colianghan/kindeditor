@@ -14,7 +14,7 @@
 /**
 #using "core.js"
 #using "node.js"
-#using "main.js"
+#using "cmd.js"
 */
 (function (K, undefined) {
 
@@ -26,11 +26,10 @@ function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-function _getInitHtml(bodyClass, cssPaths) {
-	//字符串连加效率低，改用[]
-	var html = ['<!doctype html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>KindEditor</title>'];
-	if (cssPaths) {
-		_each(cssPaths, function(i, path) {
+function _getInitHtml(bodyClass, cssFiles) {
+	var html = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
+	if (cssFiles) {
+		_each(cssFiles, function(i, path) {
 			if (path !== '') html[i + 1] = '<link href="' + path + '" rel="stylesheet" />';
 		});
 	}
@@ -38,45 +37,120 @@ function _getInitHtml(bodyClass, cssPaths) {
 	return html.join('');
 }
 
+function _iframeVal(val) {
+	var self = this,
+		body = self.doc.body;
+	if (val === undefined) {
+		return _node(body).html();
+	} else {
+		_node(body).html(val);
+		return self;
+	}
+}
+
+function _textareaVal(val) {
+	var self = this,
+		textarea = self.textarea;
+	if (val === undefined) {
+		return textarea.val();
+	} else {
+		textarea.val(val);
+		return self;
+	}
+}
+
+/**
+	@name KindEditor.edit
+	@class 可视化控件类
+	@param {String|Node} expr DOM元素、选择器字符串
+	@param {Object} options 可选配置
+	@description
+	可视化控件类。
+	@example
+	K.edit('textarea').create(); //将第一个匹配的textarea转换成可视化控件
+	K.edit(document.getElementById('textarea_id')).create();
+*/
 function _edit(expr, options) {
 	var srcElement = _node(expr),
-		iframe = null,
+		designMode = options.designMode === undefined ? true : options.designMode,
 		bodyClass = options.bodyClass,
-		cssPaths = options.cssPaths;
+		cssFiles = options.cssFiles;
+	function srcVal(val) {
+		return srcElement.hasVal() ? srcElement.val(val) : srcElement.html(val);
+	}
 	var obj = {
-		cmd : null,
-		doc : null,
+		/**
+			@name KindEditor.edit#cmd
+			@property
+			@public
+			@type {KCmd}
+			@description
+			可视化控件的cmd对象，可以执行cmd下的命令。
+		*/
+		/**
+			@name KindEditor.edit#doc
+			@property
+			@public
+			@type {iframeDocument}
+			@description
+			可视化控件iframe的document对象。
+		*/
+		/**
+			@name KindEditor.edit#iframe
+			@property
+			@public
+			@type {iframeElement}
+			@description
+			可视化控件的iframe对象。
+		*/
+		/**
+			@name KindEditor.edit#textarea
+			@property
+			@public
+			@type {textareaElement}
+			@description
+			可视化控件的textarea对象。
+		*/
 		width : options.width || 0,
 		height : options.height || 0,
 		val : function(val) {
-			var self = this,
-				body = self.doc.body;
-			if (val === undefined) {
-				return _node(body).html();
+			if (designMode) {
+				return _iframeVal.call(this, val);
 			} else {
-				_node(body).html(val);
-				return self;
+				return _textareaVal.call(this, val);
 			}
 		},
 		create : function() {
 			var self = this;
-			if (iframe !== null) return self;
+			if (self.iframe) return self;
 			//create elements
-			iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
+			var iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
 			iframe.css({
 				display : 'block',
 				width : self.width,
 				height : self.height
 			});
+			var textarea = _node('<textarea class="ke-textarea"></textarea>');
+			textarea.css({
+				display : 'block',
+				width : self.width,
+				height : self.height
+			});
+			if (designMode) textarea.hide()
+			else iframe.hide();
 			srcElement.before(iframe);
+			srcElement.before(textarea);
 			srcElement.hide();
 			var doc = _getIframeDoc(iframe.get());
 			doc.designMode = 'on';
 			doc.open();
-			doc.write(_getInitHtml());
+			doc.write(_getInitHtml(bodyClass, cssFiles));
 			doc.close();
+			self.iframe = iframe;
+			self.textarea = textarea;
 			self.doc = doc;
-			self.val(srcElement.val());
+			if (designMode) _iframeVal.call(self, srcVal());
+			else _textareaVal.call(self, srcVal());
 			self.cmd = _cmd(doc);
 			//add events
 			function selectionHandler(e) {
@@ -90,31 +164,59 @@ function _edit(expr, options) {
 		},
 		remove : function() {
 			var self = this,
+				iframe = self.iframe,
+				textarea = self.textarea,
 				doc = self.doc;
-			if (iframe === null) return self;
+			if (!iframe) return self;
 			//remove events
 			_node(doc).unbind();
 			_node(doc.body).unbind();
 			_node(document).unbind();
 			//remove elements
 			srcElement.show();
-			srcElement.val(self.val());
+			srcVal(self.val());
 			doc.src = 'javascript:false';
 			iframe.remove();
-			iframe = null;
+			textarea.remove();
+			self.iframe = self.textarea = null;
 			return self;
 		},
+		toggle : function(bool) {
+			var self = this,
+				iframe = self.iframe,
+				textarea = self.textarea;
+			if (!iframe) return self;
+			if (bool === undefined ? iframe.css('display') === 'none' : bool) {
+				textarea.hide();
+				_iframeVal.call(self, _textareaVal.call(self));
+				iframe.show();
+			} else {
+				iframe.hide();
+				_textareaVal.call(self, _iframeVal.call(self));
+				textarea.show();
+			}
+			return self;
+		},
+		toDesign : function() {
+			return this.toggle(true);
+		},
+		toSource : function() {
+			return this.toggle(false);
+		},
 		show : function() {
-			iframe && iframe.show();                             
-			return this;
+			var self = this;
+			self.iframe && self.iframe.show();                             
+			return self;
 		},
 		hide : function() {
-			iframe && iframe.hide();
-			return this;
+			var self = this;
+			self.iframe && self.iframe.hide();
+			return self;
 		},
 		focus : function() {
-			iframe && iframe.contentWindow.focus();
-			return this;
+			var self = this;
+			self.iframe && self.iframe.contentWindow.focus();
+			return self;
 		},
 		oninput : function(fn) {
 			var self = this,

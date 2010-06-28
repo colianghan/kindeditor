@@ -56,7 +56,7 @@ function _cmd(mixed) {
 		} catch(e) {}
 		mixed = rng || doc;
 		if (_IE) {
-			if (rng.parentElement().ownerDocument !== doc) return null;
+			if (!rng || rng.parentElement().ownerDocument !== doc) return null;
 		}
 	} else {
 		//get selection and original range when mixed is K.range

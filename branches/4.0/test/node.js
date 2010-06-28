@@ -67,6 +67,7 @@ test("node.html",function(){
 	var node = K.node('<div>xxx</div>');
 	equals(node.html(), 'xxx');
 	equals(node.html('bbb').html(), 'bbb');
+	equals(K.node('<textarea></textarea>').html('abc').html(), 'abc');
 });
 
 test("node.outer",function(){

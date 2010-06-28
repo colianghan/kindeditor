@@ -24,6 +24,7 @@ var _IE = K.IE,
 	_INLINE_TAG_MAP = K._INLINE_TAG_MAP,
 	_BLOCK_TAG_MAP = K._BLOCK_TAG_MAP,
 	_SINGLE_TAG_MAP = K._SINGLE_TAG_MAP,
+	_VALUE_TAG_MAP = K._VALUE_TAG_MAP,
 	_each = K.each,
 	_query = K.query,
 	_trim = K.trim,
@@ -49,7 +50,6 @@ var _IE = K.IE,
 	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
 	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象
 */
-
 function _node(expr, root) {
 	var node;
 	if (typeof expr === 'string') {
@@ -162,11 +162,10 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
-			var bool = node.value != null && node.value !== '';
 			if (val === undefined) {
-				return bool ? node.value : this.attr('value');
+				return this.hasVal() ? node.value : this.attr('value');
 			} else {
-				if (bool) node.value = val;
+				if (this.hasVal()) node.value = val;
 				else this.attr('value' , val);
 				return this;
 			}
@@ -255,6 +254,9 @@ function _node(expr, root) {
 			html = _formatHtml(div.innerHTML);
 			div = null;
 			return html;
+		},
+		hasVal : function() {
+			return !!_VALUE_TAG_MAP[this.name];
 		},
 		isSingle : function() {
 			return !!_SINGLE_TAG_MAP[this.name];

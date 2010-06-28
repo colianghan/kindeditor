@@ -118,8 +118,8 @@ function _inArray(val, arr) {
 	遍历一个对象或数组。
 	@example
 	//遍历数组
-	K.each([1, 2, 3], function (i, val) {
-		console.log(i + ':' + val);
+	K.each([1, 2, 3], function (i) {
+		console.log(i + ':' + this);
 	});
 	//遍历对象
 	K.each({one : 1, two : 2}, function (key, val) {
@@ -129,12 +129,12 @@ function _inArray(val, arr) {
 function _each(obj, fn) {
 	if (_isArray(obj)) {
 		for (var i = 0, len = obj.length; i < len; i++) {
-			if (fn(i, obj[i]) === false) break;
+			if (fn.call(obj[i], i, obj[i]) === false) break;
 		}
 	} else {
 		for (var key in obj) {
 			if (obj.hasOwnProperty(key)) {
-				if (fn(key, obj[key]) === false) break;
+				if (fn.call(obj[key], key, obj[key]) === false) break;
 			}
 		}
 	}
@@ -232,6 +232,8 @@ window.KindEditor = {
 	_AUTOCLOSE_TAG_MAP : _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	// Attributes that have their values filled in disabled="disabled"
 	_FILL_ATTR_MAP : _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
+	// Form element
+	_VALUE_TAG_MAP : _toMap('input,button,textarea,select'),
 	each : _each,
 	isArray : _isArray,
 	inArray : _inArray,
