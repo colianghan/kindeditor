@@ -531,25 +531,14 @@ function _updateCollapsed() {
 }
 //更新commonAncestorContainer
 function _updateCommonAncestor(doc) {
-	function scan(node, fn) {
-		if (node === doc) return;
-		while (node) {
-			if (fn(node)) return;
-			node = node.parentNode;
+	var sp = this.startContainer;
+	while(sp){
+		if(_node(sp).contain(this.endContainer) || sp === this.endContainer){
+			break;
 		}
+		sp = sp.parentNode
 	}
-	var nodes = [];
-	scan(this.startContainer, function(node) {
-		nodes.push(node);
-	});
-	var ancestor = doc;
-	scan(this.endContainer, function(node) {
-		if (_inArray(node, nodes) >= 0) {
-			ancestor = node;
-			return true;
-		}
-	});
-	this.commonAncestorContainer = ancestor;
+	this.commonAncestorContainer = sp;
 }
 //检查开始节点和结束节点的位置，校正错误设置
 function _compareAndUpdate(doc) {
