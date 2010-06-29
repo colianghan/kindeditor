@@ -4,7 +4,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>KindEditor 文档 - KindEditor.node</title>
+		<title>KindEditor 文档 - KindEditor.cmd</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -216,7 +216,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class KindEditor.node
+				Class KindEditor.cmd
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -224,16 +224,16 @@ ul.inheritsList
 				
 				
 			
-				KNode类
+				Command类
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/src_node.js.html">node.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/src_cmd.js.html">cmd.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class KindEditor.node.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class KindEditor.cmd.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -246,9 +246,9 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#constructor">KindEditor.node</a></b>(expr, root)
+								<b><a href="../symbols/KindEditor.cmd.html#constructor">KindEditor.cmd</a></b>(mixed)
 							</div>
-							<div class="description">KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。</div>
+							<div class="description">Command类，控制可视化编辑区域的HTML。</div>
 						</td>
 					</tr>
 				</tbody>
@@ -257,83 +257,8 @@ ul.inheritsList
 
 <!-- ============================== properties summary ===================== -->
 			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class KindEditor.node.">
-					<caption>Field Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Field Attributes</th>
-							<th scope="col">Field Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#doc">doc</a></b>
-								</div>
-								<div class="description">包含Node的document对象。</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#name">name</a></b>
-								</div>
-								<div class="description">节点名称。</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#type">type</a></b>
-								</div>
-								<div class="description">节点类型。1: Element, 3: textNode</div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
-			
 
 <!-- ============================== methods summary ======================== -->
-			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class KindEditor.node.">
-					<caption>Method Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Method Attributes</th>
-							<th scope="col">Method Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/KindEditor.node.html#bind">bind</a></b>(type, fn)
-								</div>
-								<div class="description">绑定一个事件。</div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
 			
 <!-- ============================== events summary ======================== -->
 			
@@ -346,20 +271,23 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>KindEditor.node</b>(expr, root)
+						<b>KindEditor.cmd</b>(mixed)
 				</div>
 				
 				<div class="description">
-					KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。
+					Command类，控制可视化编辑区域的HTML。
 					
 				</div>
 				
 				
 				
 				<pre class="code">
-	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
-	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
-	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象</pre>
+	K.cmd(document).bold();
+	K.cmd(document).wrap('<span style="color:red;"></span>');
+	K.cmd(document).remove({
+		span : '*',
+		div : 'class,border'
+	});</pre>
 				
 				
 				
@@ -369,16 +297,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{String|Node}</span>  <b>expr</b>
+								<span class="light fixedFont">{document|KRange}</span>  <b>mixed</b>
 								
 							</dt>
-								<dd>DOM元素、选择器字符串、HTML</dd>
-						
-							<dt>
-								<span class="light fixedFont">{Element}</span>  <b>root</b>
-								
-							</dt>
-								<dd>DOM根元素，在root范围内选择DOM元素</dd>
+								<dd>document或KRange</dd>
 						
 						</dl>
 					
@@ -394,133 +316,8 @@ ul.inheritsList
 
 <!-- ============================== field details ========================== -->		
 			
-				<div class="sectionTitle">
-					Field Detail
-				</div>
-				
-					<a name="doc"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>doc</b>
-					
-					</div>
-					<div class="description">
-						包含Node的document对象。
-						
-						
-					</div>
-					
-					
-
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="name"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>name</b>
-					
-					</div>
-					<div class="description">
-						节点名称。
-						
-						
-					</div>
-					
-					
-
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="type"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>type</b>
-					
-					</div>
-					<div class="description">
-						节点类型。1: Element, 3: textNode
-						
-						
-					</div>
-					
-					
-
-						
-						
-						
-						
-
-					
-				
-			
 
 <!-- ============================== method details ========================= -->		
-			
-				<div class="sectionTitle">
-					Method Detail
-				</div>
-				
-					<a name="bind"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{KNode}</span>
-					<b>bind</b>(type, fn)
-					
-					</div>
-					<div class="description">
-						绑定一个事件。
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{String}</span> <b>type</b>
-									
-								</dt>
-								<dd></dd>
-							
-								<dt>
-									<span class="light fixedFont">{String}</span> <b>fn</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{KNode}</span> </dd>
-							
-							</dl>
-						
-						
-						
-
-					
-				
 			
 			
 <!-- ============================== event details ========================= -->		
@@ -533,7 +330,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			Copyright &copy; 2010 <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.<br />
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Tue Jun 29 2010 13:39:01 GMT+0800 (CST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Tue Jun 29 2010 13:39:00 GMT+0800 (CST)
 		</div>
 	</body>
 </html>

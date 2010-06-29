@@ -75,9 +75,3 @@ test("node.outer",function(){
 	equals(node.outer(), '<div>xxx</div>');
 	equals(node.addClass('aaa').outer(), '<div class="aaa">xxx</div>');
 });
-
-test("node.contain",function(){
-	var node = K.node("<div><span>sjdfl</span></div>");
-	equals(node.contain(node.get().getElementsByTagName('span')[0]),true);
-	
-});

@@ -4,7 +4,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>KindEditor 文档 - KindEditor.node</title>
+		<title>KindEditor 文档 - KindEditor.edit</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -216,7 +216,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class KindEditor.node
+				Class KindEditor.edit
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -224,16 +224,16 @@ ul.inheritsList
 				
 				
 			
-				KNode类
+				可视化控件类
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/src_node.js.html">node.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/src_edit.js.html">edit.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class KindEditor.node.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class KindEditor.edit.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -246,9 +246,9 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#constructor">KindEditor.node</a></b>(expr, root)
+								<b><a href="../symbols/KindEditor.edit.html#constructor">KindEditor.edit</a></b>(expr, options)
 							</div>
-							<div class="description">KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。</div>
+							<div class="description">可视化控件类。</div>
 						</td>
 					</tr>
 				</tbody>
@@ -259,7 +259,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class KindEditor.node.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class KindEditor.edit.">
 					<caption>Field Summary</caption>
 					<thead>
 						<tr>
@@ -273,9 +273,9 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#doc">doc</a></b>
+								<b><a href="../symbols/KindEditor.edit.html#cmd">cmd</a></b>
 								</div>
-								<div class="description">包含Node的document对象。</div>
+								<div class="description">可视化控件的cmd对象，可以执行cmd下的命令。</div>
 							</td>
 						</tr>
 					
@@ -283,9 +283,9 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#name">name</a></b>
+								<b><a href="../symbols/KindEditor.edit.html#doc">doc</a></b>
 								</div>
-								<div class="description">节点名称。</div>
+								<div class="description">可视化控件iframe的document对象。</div>
 							</td>
 						</tr>
 					
@@ -293,9 +293,19 @@ ul.inheritsList
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
-								<b><a href="../symbols/KindEditor.node.html#type">type</a></b>
+								<b><a href="../symbols/KindEditor.edit.html#iframe">iframe</a></b>
 								</div>
-								<div class="description">节点类型。1: Element, 3: textNode</div>
+								<div class="description">可视化控件的iframe对象。</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/KindEditor.edit.html#textarea">textarea</a></b>
+								</div>
+								<div class="description">可视化控件的textarea对象。</div>
 							</td>
 						</tr>
 					
@@ -308,33 +318,6 @@ ul.inheritsList
 
 <!-- ============================== methods summary ======================== -->
 			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class KindEditor.node.">
-					<caption>Method Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Method Attributes</th>
-							<th scope="col">Method Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/KindEditor.node.html#bind">bind</a></b>(type, fn)
-								</div>
-								<div class="description">绑定一个事件。</div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
-			
 <!-- ============================== events summary ======================== -->
 			
 
@@ -346,20 +329,19 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>KindEditor.node</b>(expr, root)
+						<b>KindEditor.edit</b>(expr, options)
 				</div>
 				
 				<div class="description">
-					KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。
+					可视化控件类。
 					
 				</div>
 				
 				
 				
 				<pre class="code">
-	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
-	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
-	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象</pre>
+	K.edit('textarea').create(); //将第一个匹配的textarea转换成可视化控件
+	K.edit(document.getElementById('textarea_id')).create();</pre>
 				
 				
 				
@@ -372,13 +354,13 @@ ul.inheritsList
 								<span class="light fixedFont">{String|Node}</span>  <b>expr</b>
 								
 							</dt>
-								<dd>DOM元素、选择器字符串、HTML</dd>
+								<dd>DOM元素、选择器字符串</dd>
 						
 							<dt>
-								<span class="light fixedFont">{Element}</span>  <b>root</b>
+								<span class="light fixedFont">{Object}</span>  <b>options</b>
 								
 							</dt>
-								<dd>DOM根元素，在root范围内选择DOM元素</dd>
+								<dd>可选配置</dd>
 						
 						</dl>
 					
@@ -398,6 +380,28 @@ ul.inheritsList
 					Field Detail
 				</div>
 				
+					<a name="cmd"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>cmd</b>
+					
+					</div>
+					<div class="description">
+						可视化控件的cmd对象，可以执行cmd下的命令。
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="doc"> </a>
 					<div class="fixedFont">
 					
@@ -406,7 +410,7 @@ ul.inheritsList
 					
 					</div>
 					<div class="description">
-						包含Node的document对象。
+						可视化控件iframe的document对象。
 						
 						
 					</div>
@@ -420,15 +424,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="name"> </a>
+					<a name="iframe"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>name</b>
+					<b>iframe</b>
 					
 					</div>
 					<div class="description">
-						节点名称。
+						可视化控件的iframe对象。
 						
 						
 					</div>
@@ -442,15 +446,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="type"> </a>
+					<a name="textarea"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>type</b>
+					<b>textarea</b>
 					
 					</div>
 					<div class="description">
-						节点类型。1: Element, 3: textNode
+						可视化控件的textarea对象。
 						
 						
 					</div>
@@ -468,60 +472,6 @@ ul.inheritsList
 
 <!-- ============================== method details ========================= -->		
 			
-				<div class="sectionTitle">
-					Method Detail
-				</div>
-				
-					<a name="bind"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{KNode}</span>
-					<b>bind</b>(type, fn)
-					
-					</div>
-					<div class="description">
-						绑定一个事件。
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{String}</span> <b>type</b>
-									
-								</dt>
-								<dd></dd>
-							
-								<dt>
-									<span class="light fixedFont">{String}</span> <b>fn</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{KNode}</span> </dd>
-							
-							</dl>
-						
-						
-						
-
-					
-				
-			
 			
 <!-- ============================== event details ========================= -->		
 			
@@ -533,7 +483,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			Copyright &copy; 2010 <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.<br />
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Tue Jun 29 2010 13:39:01 GMT+0800 (CST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Tue Jun 29 2010 13:39:00 GMT+0800 (CST)
 		</div>
 	</body>
 </html>

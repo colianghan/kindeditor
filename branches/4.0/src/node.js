@@ -224,16 +224,11 @@ function _node(expr, root) {
 			return this;
 		},
 		remove : function() {
-			if(_IE){
-				var div = doc.createElement('div');
-				div.appendChild(node);
-				div.innerHTML = null;
-				div = null;
-			}else{
-				node.parentNode.removeChild(node);
-			}
 			this.unbind();
-			node = null;
+			var div = doc.createElement('div');
+			div.appendChild(node);
+			div.innerHTML = null;
+			div = node = null;
 			return this;
 		},
 		show : function() {
@@ -295,10 +290,6 @@ function _node(expr, root) {
 		},
 		toString : function() {
 			return this.type == 3 ? node.nodeValue : this.outer();
-		},
-		contain : function(node) {
-			var n = this.get();
-			return n.contains ? n != node && n.contains(node) : !!(n.compareDocumentPosition(node) & 16);
 		}
 	};
 	_updateProp.call(obj, node);

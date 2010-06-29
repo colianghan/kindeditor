@@ -66,7 +66,6 @@ var _IE = K.IE,
 	krange = K.range(originalRange); //将原生Range转换成KRange
 	@see <a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html" target="_blank">DOM Level 2 Range Reference</a>
 */
-
 function _range(mixed) {
 	if (!mixed.nodeName) {
 		return mixed.get ? mixed : _toRange(mixed);
@@ -298,14 +297,14 @@ function _range(mixed) {
 				arr[_END_TO_START] = 'StartToEnd';
 				var cmp = rangeA.compareEndPoints(arr[how], rangeB);
 				if (cmp !== 0) return cmp;
-				var nodeA, nodeB, posA, posB;
+				var nodeA, nodeB, nodeC, posA, posB;
 				if (how === _START_TO_START || how === _END_TO_START) {
 					nodeA = this.startContainer;
 					posA = this.startOffset;
 				}
 				if (how === _START_TO_END || how === _END_TO_END) {
 					nodeA = this.endContainer;
-					posA = nodeA.nodeType == 1 ? this.endOffset - 1 : this.endOffset;
+					posA = this.endOffset;
 				}
 				if (how === _START_TO_START || how === _START_TO_END) {
 					nodeB = range.startContainer;
@@ -313,30 +312,30 @@ function _range(mixed) {
 				}
 				if (how === _END_TO_END || how === _END_TO_START) {
 					nodeB = range.endContainer;
-					posB = nodeB.nodeType == 1 ? range.endOffset - 1 : range.endOffset;
+					posB = range.endOffset;
 				}
-				if (nodeA === nodeB) return 0;
-				var childA = nodeA,
-					childB = nodeB;
-				if (nodeA.nodeType === 1) {
-					childA = nodeA.childNodes[posA];
-					if (childA === nodeB) {
-						if (how === _START_TO_START || how === _END_TO_START) return -1;
-						if (how === _END_TO_END || how === _START_TO_END) return 1;
-					}
+				//nodeA和nodeA相同时
+				if (nodeA === nodeB) {
+					var diff = posA - posB;
+					return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
 				}
-				if (nodeB.nodeType === 1) {
-					childB = nodeB.childNodes[posB];
-					if (childB === nodeA) {
-						if (how === _START_TO_START || how === _END_TO_START) return 1;
-						if (how === _END_TO_END || how === _START_TO_END) return -1;
-					}
+				//nodeA是nodeB的祖先时
+				nodeC = nodeB;
+				while (nodeC && nodeC.parentNode !== nodeA) {
+					nodeC = nodeC.parentNode;
 				}
-				if (childA && childB === childA.nextSibling) return -1;
-				if (childB && childA === childB.nextSibling) return 1;
-				var bool = _node(childB).isAncestor(childA);
-				if (how === _START_TO_START || how === _END_TO_START) return bool ? -1 : 1;
-				if (how === _END_TO_END || how === _START_TO_END) return bool ? 1 : -1;
+				if (nodeC) {
+					return _node(nodeC).index >= posA ? -1 : 1;
+				}
+				//nodeB是nodeA的祖先时
+				nodeC = nodeA;
+				while (nodeC && nodeC.parentNode !== nodeB) {
+					nodeC = nodeC.parentNode;
+				}
+				if (nodeC) {
+					return _node(nodeC).index >= posB ? 1 : -1;
+				}
+				//其它情况，暂时不需要
 			} else {
 				return rangeA.compareBoundaryPoints(how, rangeB);
 			}
@@ -560,7 +559,6 @@ function _compareAndUpdate(doc) {
 		this.startOffset = this.endOffset;
 	}
 }
-
 /*
 	根据参数复制或删除KRange的内容。
 	cloneContents: copyAndDelete(true, false)
@@ -654,7 +652,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 	}
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
-		node.parentNode.removeChild(node);
+		_node(node).remove();
 	}
 	return isCopy ? frag : self;
 }
@@ -678,10 +676,7 @@ function _getStartEnd(rng, isStart) {
 		var cmp = testRange.compareEndPoints('StartToStart', pointRange);
 		if (cmp > 0) isEnd = true;
 		if (cmp == 0) {
-			var range = _range(doc);
-			if (node.nodeType == 1) range.selectNode(node);
-			else range.setStartBefore(node);
-			return {node: range.startContainer, offset: range.startOffset};
+			return {node: node.parentNode, offset: i};
 		}
 		if (node.nodeType == 1) {
 			var nodeRange = rng.duplicate();

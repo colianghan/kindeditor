@@ -35,8 +35,14 @@ function _getSel(doc) {
 	var win = _getWin(doc);
 	return win.getSelection ? win.getSelection() : doc.selection;
 }
+
 /**
-	Examples:
+	@name KindEditor.cmd
+	@class Command类
+	@param {document|KRange} mixed document或KRange
+	@description
+	Command类，控制可视化编辑区域的HTML。
+	@example
 	K.cmd(document).bold();
 	K.cmd(document).wrap('<span style="color:red;"></span>');
 	K.cmd(document).remove({
@@ -59,7 +65,7 @@ function _cmd(mixed) {
 			if (!rng || rng.parentElement().ownerDocument !== doc) return null;
 		}
 	} else {
-		//get selection and original range when mixed is K.range
+		//get selection and original range when mixed is KRange
 		var startContainer = mixed.startContainer;
 		doc = startContainer.ownerDocument || startContainer;
 		sel = _getSel(doc);
@@ -67,14 +73,14 @@ function _cmd(mixed) {
 	}
 	var win = _getWin(doc);
 	var range = _range(mixed);
-	//select a K.range (add K.range to the selection)
+	//add KRange to the selection
 	function _select(range) {
 		var rng = range.get();
 		if (_IE) rng.select();
 		else sel.addRange(rng);
 		win.focus();
 	}
-	//new K.range object
+	//create KRange object
 	return {
 		wrap : function(val) {
 			var wrapper = _node(val, doc),
