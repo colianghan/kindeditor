@@ -19,6 +19,7 @@
 (function (K, undefined) {
 
 var _each = K.each,
+	_isArray = K.isArray,
 	_node = K.node,
 	_cmd = K.cmd;
 
@@ -26,15 +27,22 @@ function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-function _getInitHtml(bodyClass, cssFiles) {
-	var html = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
-	if (cssFiles) {
-		_each(cssFiles, function(i, path) {
-			if (path !== '') html[i + 1] = '<link href="' + path + '" rel="stylesheet" />';
-		});
+function _getInitHtml(bodyClass, css) {
+	var arr = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
+	if (css) {
+		if (typeof css == 'string' && !/\{[\s\S]*\}/g.test(css)) {
+			css = [css];
+		}
+		if (_isArray(css)) {
+			_each(css, function(i, path) {
+				if (path !== '') arr.push('<link href="' + path + '" rel="stylesheet" />');
+			});
+		} else {
+			arr.push('<style>' + css + '</style>');
+		}
 	}
-	html.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
-	return html.join('');
+	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
+	return arr.join('');
 }
 
 function _iframeVal(val) {
@@ -74,7 +82,7 @@ function _edit(expr, options) {
 	var srcElement = _node(expr),
 		designMode = options.designMode === undefined ? true : options.designMode,
 		bodyClass = options.bodyClass,
-		cssFiles = options.cssFiles;
+		css = options.css;
 	function srcVal(val) {
 		return srcElement.hasVal() ? srcElement.val(val) : srcElement.html(val);
 	}
@@ -144,7 +152,7 @@ function _edit(expr, options) {
 			var doc = _getIframeDoc(iframe.get());
 			doc.designMode = 'on';
 			doc.open();
-			doc.write(_getInitHtml(bodyClass, cssFiles));
+			doc.write(_getInitHtml(bodyClass, css));
 			doc.close();
 			self.iframe = iframe;
 			self.textarea = textarea;
@@ -186,14 +194,20 @@ function _edit(expr, options) {
 				iframe = self.iframe,
 				textarea = self.textarea;
 			if (!iframe) return self;
-			if (bool === undefined ? iframe.css('display') === 'none' : bool) {
-				textarea.hide();
-				_iframeVal.call(self, _textareaVal.call(self));
-				iframe.show();
+			if (bool === undefined ? !designMode : bool) {
+				if (!designMode) {
+					textarea.hide();
+					_iframeVal.call(self, _textareaVal.call(self));
+					iframe.show();
+					designMode = true;
+				}
 			} else {
-				iframe.hide();
-				_textareaVal.call(self, _iframeVal.call(self));
-				textarea.show();
+				if (designMode) {
+					iframe.hide();
+					_textareaVal.call(self, _iframeVal.call(self));
+					textarea.show();
+					designMode = false;
+				}
 			}
 			return self;
 		},

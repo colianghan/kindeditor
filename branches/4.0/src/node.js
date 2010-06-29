@@ -230,7 +230,7 @@ function _node(expr, root) {
 				div.innerHTML = null;
 				div = null;
 			}else{
-				ndoe.parentNode.removeChild(node);
+				node.parentNode.removeChild(node);
 			}
 			this.unbind();
 			node = null;

@@ -1,9 +1,11 @@
 var K = KindEditor;
 
 var edit = K.edit('body textarea', {
-	width : '600px',
+	width : '700px',
 	height : '200px',
-	designMode : false
+	designMode : true,
+	bodyClass : 'ke-content',
+	css : 'body {font: 12px/1.5;margin:0;}'
 }).create();
 K.node('#bold').bind('click', function(e) {
 	edit.cmd.bold();
