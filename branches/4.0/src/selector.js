@@ -62,12 +62,22 @@ var _IE = K.IE,
 	_formatCss = K._formatCss,
 	_getAttrList = K._getAttrList;
 
-function _isAncestor(ancestor, node) {
-	var parent = node;
-	while (parent = parent.parentNode) {
-		if (parent === ancestor) return true;
+function _contains(nodeA, nodeB) {
+	var docA = nodeA.ownerDocument || nodeA,
+		docB = nodeB.ownerDocument || nodeB;
+	if (docA !== docB) return false;
+	if (nodeB === docB) return false;
+	if (nodeA === docA) return true;
+	if (nodeA.nodeType === 3) return false;
+	if (nodeB.nodeType === 3) {
+		nodeB = nodeB.parentNode;
+		if (!nodeB) return false;
+		if (nodeA === nodeB) return true;
 	}
-	return false;
+	if (nodeA.compareDocumentPosition) {
+		return !!(nodeA.compareDocumentPosition(nodeB) & 16);
+	}
+	return nodeA !== nodeB && nodeA.contains(nodeB);
 }
 
 function _getAttr(el, key) {
@@ -109,7 +119,7 @@ function _queryAll(expr, root) {
 		var doc = root.ownerDocument || root;
 		var el = doc.getElementById(stripslashes(id));
 		if (el) {
-			if (cmpTag(tag, el.nodeName) && _isAncestor(root, el)) arr.push(el);
+			if (cmpTag(tag, el.nodeName) && _contains(root, el)) arr.push(el);
 		}
 		return arr;
 	}
@@ -126,7 +136,7 @@ function _queryAll(expr, root) {
 			var els = doc.querySelectorAll((root.nodeName !== '#document' ? root.nodeName + ' ' : '') + tag + '.' + className);
 			for (var i = 0, len = els.length, el; i < len; i++) {
 				el = els[i];
-				if (_isAncestor(root, el)) arr.push(el);
+				if (_contains(root, el)) arr.push(el);
 			}
 		} else {
 			var els = root.getElementsByTagName(tag);
@@ -228,7 +238,7 @@ function _queryAll(expr, root) {
 	return results;
 }
 
-K._isAncestor = _isAncestor;
+K._contains = _contains;
 K._getAttr = _getAttr;
 
 K.query = _query;

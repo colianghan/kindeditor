@@ -217,19 +217,9 @@ function _edit(expr, options) {
 		toSource : function() {
 			return this.toggle(false);
 		},
-		show : function() {
-			var self = this;
-			self.iframe && self.iframe.show();                             
-			return self;
-		},
-		hide : function() {
-			var self = this;
-			self.iframe && self.iframe.hide();
-			return self;
-		},
 		focus : function() {
 			var self = this;
-			self.iframe && self.iframe.contentWindow.focus();
+			if (self.iframe && designMode) self.iframe.contentWindow.focus();
 			return self;
 		},
 		oninput : function(fn) {

@@ -26,16 +26,6 @@ var _each = K.each,
 	_IE = K.IE,
 	_INLINE_TAGS = K.INLINE_TAGS;
 
-//get window by document
-function _getWin(doc) {
-	return doc.parentWindow || doc.defaultView;
-}
-//get current selection of a document
-function _getSel(doc) {
-	var win = _getWin(doc);
-	return win.getSelection ? win.getSelection() : doc.selection;
-}
-
 /**
 	@name KindEditor.cmd
 	@class Command类
@@ -73,19 +63,28 @@ function _cmd(mixed) {
 	}
 	var win = _getWin(doc);
 	var range = _range(mixed);
-	//add KRange to the selection
-	function _select(range) {
-		var rng = range.get();
-		if (_IE) rng.select();
-		else sel.addRange(rng);
-		win.focus();
-	}
 	//create KRange object
 	return {
 		wrap : function(val) {
-			var wrapper = _node(val, doc),
-			name = wrapper.name,
-			frag = range.extractContents();
+			var wrapper = _node(val, doc);
+			//非inline标签
+			if (!wrapper.isInline()) {
+				var clone = wrapper.clone(false);
+				range.surroundContents(clone.get());
+				_select(sel, range);
+				return this;
+			}
+			//inline标签，collapsed = true
+			if (range.collapsed) {
+				var clone = wrapper.clone(false);
+				range.insertNode(clone.get());
+				range.selectNodeContents(clone.get());
+				_select(sel, range);
+				return this;
+			}
+			//inline标签，collapsed = false
+			var frag = range.extractContents(),
+				name = wrapper.name;
 			_node(frag).each(function(node) {
 				if (node.type == 3 && node.parent().name !== name) {
 					var clone = wrapper.clone(false);
@@ -101,22 +100,30 @@ function _cmd(mixed) {
 				}
 			});
 			range.insertNode(frag);
-			_select(range);
+			_select(sel, range);
+			return this;
 		},
 		remove : function(options) {
-			_select(range);
+			_select(sel, range);
+			return this;
 		},
 		bold : function() {
-			this.wrap('<strong></strong>');
+			return this.wrap('<strong></strong>');
 		},
 		italic : function() {
-			this.wrap('<em></em>');
+			return this.wrap('<em></em>');
 		},
 		foreColor : function(val) {
-			this.wrap('<span style="color:' + val + ';"></span>');
+			return this.wrap('<span style="color:' + val + ';"></span>');
 		},
-		hiliteColor : function() {
-			this.wrap('<span style="background-color:' + val + ';"></span>');
+		hiliteColor : function(val) {
+			return this.wrap('<span style="background-color:' + val + ';"></span>');
+		},
+		fontSize : function(val) {
+			return this.wrap('<span style="font-size:' + val + ';"></span>');
+		},
+		fontFamily : function(val) {
+			return this.wrap('<span style="font-family:' + val + ';"></span>');
 		},
 		removeFormat : function() {
 			var options = {
@@ -127,21 +134,49 @@ function _cmd(mixed) {
 				options[val] = '*';
 			});
 			this.remove(options);
+			return this;
 		}
 	};
 }
 
-function _execCommand(doc, cmdName, ui, val) {
-	var cmd = _cmd(doc);
-	cmd[cmdName].call(cmd, val);
+//get window by document
+function _getWin(doc) {
+	return doc.parentWindow || doc.defaultView;
 }
-
-function _queryCommandValue(doc, cmdName) {
-
+//get current selection of a document
+function _getSel(doc) {
+	var win = _getWin(doc);
+	return win.getSelection ? win.getSelection() : doc.selection;
+}
+//add KRange to the selection
+function _select(sel, range) {
+	var sc = range.startContainer, so = range.startOffset,
+		ec = range.endContainer, eo = range.endOffset,
+		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
+	//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>，IE专用
+	//Webkit和Opera这个方法没有效果，需要研究
+	if (_IE && sc.nodeType == 1 && range.collapsed) {
+		var empty = doc.createTextNode(' ');
+		ec.appendChild(empty);
+		rng = doc.body.createTextRange();
+		rng.moveToElementText(ec);
+		rng.collapse(false);
+		rng.select();
+		ec.removeChild(empty);
+		win.focus();
+		return;
+	}
+	//case 2: 一般情况
+	rng = range.get();
+	if (_IE) {
+		rng.select();
+	} else {
+		sel.removeAllRanges();
+		sel.addRange(rng);
+	}
+	win.focus();
 }
 
 K.cmd = _cmd;
-K.execCommand = _execCommand;
-K.queryCommandValue = _queryCommandValue;
 
 })(KindEditor);

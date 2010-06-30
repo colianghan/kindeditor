@@ -289,7 +289,7 @@ function _range(mixed) {
 		compareBoundaryPoints : function(how, range) {
 			var rangeA = this.get(),
 				rangeB = range.get();
-			if (_IE) {
+			if (!doc.createRange) {
 				var arr = {};
 				arr[_START_TO_START] = 'StartToStart';
 				arr[_START_TO_END] = 'EndToStart';
@@ -365,7 +365,7 @@ function _range(mixed) {
 		toString : function() {
 			//TODO
 			var rng = this.get(),
-				str = _IE ? rng.text : rng.toString();
+				str = doc.createRange ? rng.toString() : rng.text;
 			return str.replace(/\r\n|\n|\r/g, '');
 		},
 		/**
@@ -497,16 +497,12 @@ function _range(mixed) {
 				range;
 			if (doc.createRange) {
 				range = doc.createRange();
-				range.selectNodeContents(doc.body);
-			} else {
-				range = doc.body.createTextRange();
-			}
-			if (_IE) {
-				range.setEndPoint('StartToStart', _getEndRange(startContainer, startOffset));
-				range.setEndPoint('EndToStart', _getEndRange(endContainer, endOffset));
-			} else {
 				range.setStart(startContainer, startOffset);
 				range.setEnd(endContainer, endOffset);
+			} else {
+				range = doc.body.createTextRange();
+				range.setEndPoint('StartToStart', _getEndRange(startContainer, startOffset));
+				range.setEndPoint('EndToStart', _getEndRange(endContainer, endOffset));
 			}
 			return range;
 		},

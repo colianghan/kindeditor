@@ -5,15 +5,26 @@ var edit = K.edit('body textarea', {
 	height : '200px',
 	designMode : true,
 	bodyClass : 'ke-content',
-	css : 'body {font: 12px/1.5;margin:0;}'
+	css : 'body {font-size:12px;margin:0;}'
 }).create();
-K.node('#bold').bind('click', function(e) {
-	edit.cmd.bold();
-	e.stop();
-});
-K.node('#foreColor').bind('click', function(e) {
-	edit.cmd.foreColor('#FF0000');
-	e.stop();
+
+var cmds = {
+	bold : '',
+	italic : '',
+	foreColor : '#FF0000',
+	hiliteColor : '#DDDDDD',
+	fontSize : '32px',
+	fontFamily : 'Arial Black'
+};
+K.each(cmds, function(key, val) {
+	var a = K.node('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
+		return function(e) {
+			edit.cmd[key](val);
+			e.stop();
+		};
+	})(key, val));
+	K.node('#cmdArea').append(a);
+	K.node('#cmdArea').append(document.createTextNode(' '));
 });
 K.node('#create').bind('click', function(e) {
 	edit.create();
@@ -29,10 +40,4 @@ K.node('#source').bind('click', function(e) {
 });
 K.node('#toggle').bind('click', function(e) {
 	edit.toggle();
-});
-K.node('#show').bind('click', function(e) {
-	edit.show();
-});
-K.node('#hide').bind('click', function(e) {
-	edit.hide();
 });

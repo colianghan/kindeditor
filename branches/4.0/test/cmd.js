@@ -91,4 +91,26 @@ test('cmd.wrap', function() {
 	cmd.wrap('<strong></strong>');
 	equals(range.html(), '<strong>efg</strong>');
 	document.body.removeChild(cloneP);
+	//9
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNodeContents(strong);
+	range.collapse(true);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	equals(strong.innerHTML.toLowerCase(), '<strong></strong>efg');
+	document.body.removeChild(cloneP);
+	//10
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNodeContents(cloneP);
+	cmd = K.cmd(range);
+	cmd.wrap('<div></div>');
+	equals(K.node(cloneP).first.name, 'div');
+	same(K.node(cloneP).children.length, 1);
+	document.body.removeChild(cloneP);
 });

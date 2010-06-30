@@ -2,6 +2,22 @@ module('node');
 
 var K = KindEditor;
 
+test('node(html)',function(){
+	var node = K.node('<div><span></span></div>');
+	equals(node.name, 'div');
+	equals(node.first.name, 'span');
+});
+
+test('node(selector)',function(){
+	var node = K.node('p > strong');
+	equals(node.name, 'strong');
+});
+
+test('node(textNode)',function(){
+	var node = K.node(document.createTextNode('abc'));
+	equals(node.name, '#text');
+});
+
 test('node.attr/node.removeAttr', function() {
 	equals(K.node('#test-data-01').attr('src', 'aaa').attr('src'), 'aaa');
 	equals(K.node('#test-data-02').attr('src', 'aaa').removeAttr('src').attr('src'), '');
@@ -14,12 +30,6 @@ test('node.attr/node.removeAttr', function() {
 	var knode = K.node('<div></div>');
 	equals(knode.attr('class', 'aaa').attr('class'), 'aaa');
 	equals(knode.removeAttr('class').attr('class'), '');
-});
-
-test('node("html tag")',function(){
-	var node = K.node('<div><span></span></div>');
-	equals(node.name, 'div');
-	equals(node.first.name, 'span');
 });
 
 test("node.hasClass/node.addClass/node.removeClass", function() {
@@ -45,6 +55,15 @@ test("node.hasClass/node.addClass/node.removeClass", function() {
 	knode.removeClass('ccc');
 	ok(!knode.hasClass('ccc'));
 	equals(div.className, '');
+});
+
+test("node.contains",function(){
+	ok(K.node('#test-data-01 p').contains(K.node('#test-data-01 p')) === false);
+	ok(K.node('#test-data-01').contains(K.node('#test-data-01 p')) === true);
+	ok(K.node('#test-data-01 strong').contains(K.node('#test-data-01 strong').first) === true);
+	ok(K.node(document).contains(K.node('#test-data-01 strong')) === true);
+	ok(K.node(document).contains(document) === false);
+	ok(K.node('#test-data-01 strong').first.contains(K.node('#test-data-01 strong')) === false);
 });
 
 test("node.val",function(){

@@ -32,7 +32,7 @@ var _IE = K.IE,
 	_getCssList = K._getCssList,
 	_getAttrList = K._getAttrList,
 	_formatHtml = K.formatHtml,
-	_isAncestor = K._isAncestor,
+	_contains = K._contains,
 	_getAttr = K._getAttr,
 	_bind = K.bind,
 	_unbind = K.unbind,
@@ -262,8 +262,8 @@ function _node(expr, root) {
 		isBlock : function() {
 			return !!_BLOCK_TAG_MAP[this.name];
 		},
-		isAncestor : function(ancestor) {
-			return _isAncestor(_get(ancestor), node);
+		contains : function(otherNode) {
+			return _contains(node, _get(otherNode));
 		},
 		parent : function() {
 			return _node(node.parentNode);

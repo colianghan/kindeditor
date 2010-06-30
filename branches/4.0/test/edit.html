@@ -16,6 +16,10 @@
 			}
 		</style>
 		<script src="../lib/firebug/firebug-lite.js"></script>
+		<script>
+			firebug.env.css = '../lib/firebug/firebug-lite.css';
+			firebug.env.height = 160;
+		</script>
 		<script src="../lib/qunit/qunit.js"></script>
 		<script src="../lib/jquery.js"></script>
 		<link rel="stylesheet" href="../themes/default/default.css" />
@@ -28,17 +32,27 @@
 		<script src="../src/range.js"></script>
 		<script src="../src/cmd.js"></script>
 		<script src="../src/edit.js"></script>
-		<script>
-			firebug.env.css = '../lib/firebug/firebug-lite.css';
-			firebug.env.height = 160;
-		</script>
 	</head>
 	<body>
 		<h1>KindEditor Edit Test</h1>
-		<textarea name="content" cols="100" rows="20">abcdef</textarea>
+		<textarea name="content" cols="100" rows="20">
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+<p>测试</p>
+</textarea>
 		<br />
-		<a href="javascript:;" id="bold">Bold</a>
-		<a href="javascript:;" id="foreColor">ForeColor</a>
+		<div id="cmdArea"></div>
 		<br />
 		<br />
 		<input type="button" id="create" value="Create" />
@@ -46,8 +60,6 @@
 		<input type="button" id="design" value="Design Mode" />
 		<input type="button" id="source" value="Source Mode" />
 		<input type="button" id="toggle" value="Toggle Mode" />
-		<input type="button" id="show" value="Show" />
-		<input type="button" id="hide" value="Hide" />
 		<script src="edit.js"></script>
 	</body>
 </html>
