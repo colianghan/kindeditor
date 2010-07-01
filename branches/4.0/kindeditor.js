@@ -8,7 +8,9 @@
 * @version 4.0 (2010-07-01)
 *******************************************************************************/
 
-(function (window, undefined) {
+(function () {
+
+var _undef;
 
 var _ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -48,7 +50,7 @@ function _trim(str) {
 }
 
 function _inString(val, str, delimiter) {
-	delimiter = delimiter === undefined ? ',' : delimiter;
+	delimiter = delimiter === _undef ? ',' : delimiter;
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
@@ -66,7 +68,7 @@ function _toHex(color) {
 
 function _toMap(str, delimiter) {
 	var map = {},
-		delimiter = delimiter === undefined ? ',' : delimiter,
+		delimiter = delimiter === _undef ? ',' : delimiter,
 		arr = str.split(delimiter);
 	_each(arr, function(key, val) {
 		map[val] = true;
@@ -143,7 +145,7 @@ function _event(el, e) {
 	if (!e.metaKey && e.ctrlKey) {
 		e.metaKey = e.ctrlKey;
 	}
-	if (!e.which && e.button !== undefined) {
+	if (!e.which && e.button !== _undef) {
 		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
 	}
 	obj.preventDefault = function() {
@@ -175,9 +177,9 @@ function _getId(el) {
 
 function _bind(el, type, fn) {
 	var id = _getId(el);
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
-			if (val === undefined) _data[id][type].splice(key, 1);
+			if (val === _undef) _data[id][type].splice(key, 1);
 		});
 		_unbindEvent(el, type, _data[id][type][0]);
 	} else {
@@ -198,7 +200,7 @@ function _bind(el, type, fn) {
 
 function _unbind(el, type, fn) {
 	var id = _getId(el);
-	if (type === undefined) {
+	if (type === _undef) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
 				_unbindEvent(el, key, val[0]);
@@ -207,15 +209,15 @@ function _unbind(el, type, fn) {
 		}
 		return;
 	}
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
-		if (fn === undefined) {
+	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
+		if (fn === _undef) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			_data[id][type] = [];
 		} else {
 			for (var i = 0, len = _data[id][type].length; i < len; i++) {
 				if (_data[id][type][i] === fn) delete _data[id][type][i];
 			}
-			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
+			if (_data[id][type].length == 2 && _data[id][type][1] === _undef) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				_data[id][type] = [];
 			}
@@ -225,7 +227,7 @@ function _unbind(el, type, fn) {
 
 function _fire(el, type) {
 	var id = _getId(el);
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
@@ -533,9 +535,9 @@ function _node(expr, root) {
 			return _getAttr(node, key);
 		},
 		attr : function(key, val) {
-			if (key === undefined) {
+			if (key === _undef) {
 				return _getAttrList(this.outer());
-			} else if (val === undefined) {
+			} else if (val === _undef) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
@@ -567,7 +569,7 @@ function _node(expr, root) {
 			return this;
 		},
 		html : function(val) {
-			if (val === undefined) {
+			if (val === _undef) {
 				return _formatHtml(node.innerHTML);
 			} else {
 				node.innerHTML = _formatHtml(val);
@@ -575,7 +577,7 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
-			if (val === undefined) {
+			if (val === _undef) {
 				return this.hasVal() ? node.value : this.attr('value');
 			} else {
 				if (this.hasVal()) node.value = val;
@@ -585,7 +587,7 @@ function _node(expr, root) {
 		},
 		css : function(key, val) {
 			var self = this;
-			if (key === undefined) {
+			if (key === _undef) {
 				return _getCssList(this.attr('style'));
 			}
 			if (typeof key === 'object') {
@@ -594,7 +596,7 @@ function _node(expr, root) {
 				});
 				return this;
 			}
-			if (val === undefined) {
+			if (val === _undef) {
 				return node.style[key] || this.computedCss(key) || '';
 			}
 			node.style[_toCamel(key)] = val;
@@ -688,7 +690,7 @@ function _node(expr, root) {
 			return _node(node.nextSibling);
 		},
 		each : function(fn, order) {
-			order = (order === undefined) ? true : order;
+			order = (order === _undef) ? true : order;
 			function walk(knode) {
 				var n = order ? knode.first : knode.last;
 				if (!n) return;
@@ -1564,7 +1566,7 @@ function _getInitHtml(bodyClass, css) {
 function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
-	if (val === undefined) {
+	if (val === _undef) {
 		return _node(body).html();
 	} else {
 		_node(body).html(val);
@@ -1575,7 +1577,7 @@ function _iframeVal(val) {
 function _textareaVal(val) {
 	var self = this,
 		textarea = self.textarea;
-	if (val === undefined) {
+	if (val === _undef) {
 		return textarea.val();
 	} else {
 		textarea.val(val);
@@ -1585,7 +1587,7 @@ function _textareaVal(val) {
 
 function _edit(expr, options) {
 	var srcElement = _node(expr),
-		designMode = options.designMode === undefined ? true : options.designMode,
+		designMode = options.designMode === _undef ? true : options.designMode,
 		bodyClass = options.bodyClass,
 		css = options.css;
 	function srcVal(val) {
@@ -1627,7 +1629,7 @@ function _edit(expr, options) {
 			srcElement.before(textarea);
 			srcElement.hide();
 			var doc = _getIframeDoc(iframe.get());
-			doc.designMode = 'on';
+			//doc.designMode = 'on';
 			doc.open();
 			doc.write(_getInitHtml(bodyClass, css));
 			doc.close();
@@ -1691,7 +1693,7 @@ function _edit(expr, options) {
 				iframe = self.iframe,
 				textarea = self.textarea;
 			if (!iframe) return self;
-			if (bool === undefined ? !designMode : bool) {
+			if (bool === _undef ? !designMode : bool) {
 				if (!designMode) {
 					textarea.hide();
 					_iframeVal.call(self, _textareaVal.call(self));
@@ -1757,7 +1759,7 @@ _each(_K, function(key, val) {
 	K[key] = val;
 });
 
-if (window.K === undefined) window.K = K;
+if (window.K === _undef) window.K = K;
 window.KindEditor = K;
 
-})(window);
+})();

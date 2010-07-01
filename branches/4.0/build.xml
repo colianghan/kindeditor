@@ -86,4 +86,10 @@
 		</exec>
 	</target>
 
+	<target name="check">
+		<exec executable="java">
+			<arg line="-jar lib/jslint/js.jar lib/jslint/jslint-check.js"/>
+		</exec>
+	</target>
+
 </project>

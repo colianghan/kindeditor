@@ -30,5 +30,5 @@ _each(_K, function(key, val) {
 	K[key] = val;
 });
 
-if (window.K === undefined) window.K = K;
+if (window.K === _undef) window.K = K;
 window.KindEditor = K;

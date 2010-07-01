@@ -103,9 +103,9 @@ function _node(expr, root) {
 			return _getAttr(node, key);
 		},
 		attr : function(key, val) {
-			if (key === undefined) {
+			if (key === _undef) {
 				return _getAttrList(this.outer());
-			} else if (val === undefined) {
+			} else if (val === _undef) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
@@ -137,7 +137,7 @@ function _node(expr, root) {
 			return this;
 		},
 		html : function(val) {
-			if (val === undefined) {
+			if (val === _undef) {
 				return _formatHtml(node.innerHTML);
 			} else {
 				node.innerHTML = _formatHtml(val);
@@ -145,7 +145,7 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
-			if (val === undefined) {
+			if (val === _undef) {
 				return this.hasVal() ? node.value : this.attr('value');
 			} else {
 				if (this.hasVal()) node.value = val;
@@ -155,7 +155,7 @@ function _node(expr, root) {
 		},
 		css : function(key, val) {
 			var self = this;
-			if (key === undefined) {
+			if (key === _undef) {
 				return _getCssList(this.attr('style'));
 			}
 			if (typeof key === 'object') {
@@ -164,7 +164,7 @@ function _node(expr, root) {
 				});
 				return this;
 			}
-			if (val === undefined) {
+			if (val === _undef) {
 				return node.style[key] || this.computedCss(key) || '';
 			}
 			node.style[_toCamel(key)] = val;
@@ -258,7 +258,7 @@ function _node(expr, root) {
 			return _node(node.nextSibling);
 		},
 		each : function(fn, order) {
-			order = (order === undefined) ? true : order;
+			order = (order === _undef) ? true : order;
 			function walk(knode) {
 				var n = order ? knode.first : knode.last;
 				if (!n) return;

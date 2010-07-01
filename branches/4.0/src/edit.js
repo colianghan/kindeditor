@@ -42,7 +42,7 @@ function _getInitHtml(bodyClass, css) {
 function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
-	if (val === undefined) {
+	if (val === _undef) {
 		return _node(body).html();
 	} else {
 		_node(body).html(val);
@@ -53,7 +53,7 @@ function _iframeVal(val) {
 function _textareaVal(val) {
 	var self = this,
 		textarea = self.textarea;
-	if (val === undefined) {
+	if (val === _undef) {
 		return textarea.val();
 	} else {
 		textarea.val(val);
@@ -74,7 +74,7 @@ function _textareaVal(val) {
 */
 function _edit(expr, options) {
 	var srcElement = _node(expr),
-		designMode = options.designMode === undefined ? true : options.designMode,
+		designMode = options.designMode === _undef ? true : options.designMode,
 		bodyClass = options.bodyClass,
 		css = options.css;
 	function srcVal(val) {
@@ -147,7 +147,7 @@ function _edit(expr, options) {
 			srcElement.before(textarea);
 			srcElement.hide();
 			var doc = _getIframeDoc(iframe.get());
-			doc.designMode = 'on';
+			//doc.designMode = 'on';
 			doc.open();
 			doc.write(_getInitHtml(bodyClass, css));
 			doc.close();
@@ -211,7 +211,7 @@ function _edit(expr, options) {
 				iframe = self.iframe,
 				textarea = self.textarea;
 			if (!iframe) return self;
-			if (bool === undefined ? !designMode : bool) {
+			if (bool === _undef ? !designMode : bool) {
 				if (!designMode) {
 					textarea.hide();
 					_iframeVal.call(self, _textareaVal.call(self));

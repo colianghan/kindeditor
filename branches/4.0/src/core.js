@@ -34,7 +34,7 @@
 	命名空间，为了兼容3.x
 */
 
-/**/ var undefined;
+var _undef;
 
 /**
 	@name KindEditor.IE
@@ -169,7 +169,7 @@ function _trim(str) {
 	bool = K.inString('aaa', 'abc aaa bbb ccc', ' '); //返回true
 */
 function _inString(val, str, delimiter) {
-	delimiter = delimiter === undefined ? ',' : delimiter;
+	delimiter = delimiter === _undef ? ',' : delimiter;
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
@@ -208,7 +208,7 @@ function _toHex(color) {
 */
 function _toMap(str, delimiter) {
 	var map = {},
-		delimiter = delimiter === undefined ? ',' : delimiter,
+		delimiter = delimiter === _undef ? ',' : delimiter,
 		arr = str.split(delimiter);
 	_each(arr, function(key, val) {
 		map[val] = true;
