@@ -259,8 +259,6 @@ function main()
 
 Right:
 {{{
-if (condition) doIt();
-
 if (condition) {
     doIt();
 }
@@ -272,6 +270,8 @@ if (condition) {
 }}}
 Wrong:
 {{{
+if (condition) doIt();
+
 if (condition)
     doIt();
 
@@ -286,20 +286,24 @@ if (condition)
 
 Right:
 {{{
-if (condition)
+if (condition) {
     doIt();
+}
     
-if (!condition)
+if (!condition) {
     return;
+}
 }}}
 
 Wrong:
 {{{
-if (condition == true)
+if (condition == true) {
     doIt();
+}
     
-if (condition == false)
+if (condition == false) {
     return;
+}
 }}}
 
 ===type checks===
