@@ -38,47 +38,6 @@ var arr = new Array(),
 
 4. 整个程序只允许有三个全局变量（K、KE、KindEditor），如果页面已经有K、KE全局变量就跳过，不会修改相应变量值。
 
-5. 程序中不直接使用K.xxx，统一放在头部和底部。主要是为了提高压缩率，并且合并模块时方便做更多的优化。
-
-Right:
-{{{
-(function (K, undefined) {
-
-var _IE = K.IE,
-    _trim = K.trim;
-
-//some code
-
-if (_IE) doIt();
-
-functin _inArray() {
-
-}
-
-//some code
-
-K.inArray = _inArray;
-
-})(KindEditor);
-}}}
-Wrong:
-{{{
-(function (K, undefined) {
-
-//some code
-
-if (K.IE) doIt();
-
-K.inArray = functin() {
-
-};
-
-//some code
-
-})(KindEditor);
-}}}
-
-
 ===Names===
 
 || 文件名 || lowercase || node.js, dialog.js ||
