@@ -247,7 +247,7 @@ function _queryAll(expr, root) {
 			var els = [];
 			for (var j = 0, len = results.length, val = results[j]; j < len; j++) {
 				var subResults = select(part, val);
-				for (var k = 0, l = subResults.length, v = subResults[j]; k < l; k++) {
+				for (var k = 0, l = subResults.length, v = subResults[k]; k < l; k++) {
 					if (isChild) {
 						if (val === v.parentNode) {
 							els.push(v);
