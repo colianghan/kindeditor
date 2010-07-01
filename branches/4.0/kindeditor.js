@@ -3,8 +3,8 @@
 * Copyright (C) 2006-2010 Longhao Luo
 *
 * @author Longhao Luo <luolonghao@gmail.com>
-* @website http://www.kindsoft.net/
-* @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
+* @website http:
+* @licence LGPL(http:
 * @version 4.0 (2010-07-01)
 *******************************************************************************/
 
@@ -101,7 +101,6 @@ var K = {
 	toMap : _toMap
 };
 
-//add native event
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
@@ -109,7 +108,7 @@ function _bindEvent(el, type, fn) {
 		el.attachEvent('on' + type, fn);
 	}
 }
-//remove native event
+
 function _unbindEvent(el, type, fn) {
 	if (el.removeEventListener){
 		el.removeEventListener(type, fn, false);
@@ -118,8 +117,6 @@ function _unbindEvent(el, type, fn) {
 	}
 }
 
-//Inspired by jQuery
-//http://github.com/jquery/jquery/blob/master/src/event.js
 var _props = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
 function _event(el, e) {
 	if (!e) {
@@ -283,7 +280,6 @@ function _formatCss(css) {
 	return str;
 }
 
-//Modified by zhanyi1022
 function _formatHtml(html) {
 	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s"'<>]*))?)*\s*(\/)?>((?:[\r\n])*)/g;
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
@@ -808,7 +804,7 @@ function _node(expr, root) {
 		}
 	};
 	function _updateProp(node) {
-		//node.first, node.last, node.children
+
 		var list = [], child = node.firstChild;
 		while (child) {
 			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
@@ -823,7 +819,7 @@ function _node(expr, root) {
 			this.first = this.last = null;
 		}
 		this.children = list;
-		//node.index
+
 		var i = -1, sibling = node;
 		while (sibling) {
 			i++;
@@ -842,11 +838,10 @@ var _START_TO_START = 0,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
 
-//更新collapsed
 function _updateCollapsed() {
 	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
 }
-//更新commonAncestorContainer
+
 function _updateCommonAncestor(doc) {
 	function getParents(node) {
 		var parents = [];
@@ -868,7 +863,7 @@ function _updateCommonAncestor(doc) {
 	}
 	this.commonAncestorContainer = parentsA[lenA - i + 1];
 }
-//检查开始节点和结束节点的位置，校正错误设置
+
 function _compareAndUpdate(doc) {
 	var rangeA = _range(doc),
 		rangeB = _range(doc);
@@ -881,12 +876,7 @@ function _compareAndUpdate(doc) {
 		this.startOffset = this.endOffset;
 	}
 }
-/*
-	根据参数复制或删除KRange的内容。
-	cloneContents: copyAndDelete(true, false)
-	extractContents: copyAndDelete(true, true)
-	deleteContents: copyAndDelete(false, true)
-*/
+
 function _copyAndDelete(doc, isCopy, isDelete) {
 	var self = this,
 		startContainer = self.startContainer,
@@ -989,7 +979,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 	}
 	return isCopy ? frag : self;
 }
-//根据原生Range，取得开始节点和结束节点的位置。IE专用
+
 function _getStartEnd(rng, isStart) {
 	var doc = rng.parentElement().ownerDocument;
 	var range = _range(doc);
@@ -1040,7 +1030,7 @@ function _getStartEnd(rng, isStart) {
 	startPos -= testRange.text.length;
 	return {node: startNode, offset: startPos};
 }
-//将原生Range转换成KRange
+
 function _toRange(rng) {
 	var doc, range;
 	if (_IE) {
@@ -1065,7 +1055,7 @@ function _toRange(rng) {
 		return range;
 	}
 }
-//取得父节点里的该节点前的纯文本长度。IE专用
+
 function _getBeforeLength(node) {
 	var doc = node.ownerDocument,
 		len = 0,
@@ -1086,7 +1076,7 @@ function _getBeforeLength(node) {
 	}
 	return len;
 }
-//根据Node和offset，取得表示该位置的原生Range。IE专用
+
 function _getEndRange(node, offset) {
 	var doc = node.ownerDocument || node,
 		range = doc.body.createTextRange();
@@ -1260,12 +1250,12 @@ function _range(mixed) {
 					nodeB = range.endContainer;
 					posB = range.endOffset;
 				}
-				//nodeA和nodeA相同时
+
 				if (nodeA === nodeB) {
 					var diff = posA - posB;
 					return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
 				}
-				//nodeA是nodeB的祖先时
+
 				nodeC = nodeB;
 				while (nodeC && nodeC.parentNode !== nodeA) {
 					nodeC = nodeC.parentNode;
@@ -1273,7 +1263,7 @@ function _range(mixed) {
 				if (nodeC) {
 					return _node(nodeC).index >= posA ? -1 : 1;
 				}
-				//nodeB是nodeA的祖先时
+
 				nodeC = nodeA;
 				while (nodeC && nodeC.parentNode !== nodeB) {
 					nodeC = nodeC.parentNode;
@@ -1281,7 +1271,7 @@ function _range(mixed) {
 				if (nodeC) {
 					return _node(nodeC).index >= posB ? 1 : -1;
 				}
-				//其它情况，暂时不需要
+
 			} else {
 				return rangeA.compareBoundaryPoints(how, rangeB);
 			}
@@ -1295,7 +1285,7 @@ function _range(mixed) {
 		},
 
 		toString : function() {
-			//TODO
+
 			var rng = this.get(),
 				str = doc.createRange ? rng.toString() : rng.text;
 			return str.replace(/\r\n|\n|\r/g, '');
@@ -1423,7 +1413,6 @@ K.START_TO_END = _START_TO_END;
 K.END_TO_END = _END_TO_END;
 K.END_TO_START = _END_TO_START;
 
-//original queryCommandValue
 function _nativeCommandValue(doc, cmd) {
 	var val = '';
 	try {
@@ -1434,22 +1423,21 @@ function _nativeCommandValue(doc, cmd) {
 	}
 	return val;
 }
-//get window by document
+
 function _getWin(doc) {
 	return doc.parentWindow || doc.defaultView;
 }
-//get current selection of a document
+
 function _getSel(doc) {
 	var win = _getWin(doc);
 	return win.getSelection ? win.getSelection() : doc.selection;
 }
-//add KRange to the selection
+
 function _select(sel, range) {
 	var sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-	//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>，IE专用
-	//Webkit和Opera这个方法没有效果，需要研究
+
 	if (_IE && sc.nodeType == 1 && range.collapsed) {
 		var empty = doc.createTextNode(' ');
 		ec.appendChild(empty);
@@ -1461,7 +1449,7 @@ function _select(sel, range) {
 		win.focus();
 		return;
 	}
-	//case 2: 一般情况
+
 	rng = range.get();
 	if (_IE) {
 		rng.select();
@@ -1471,7 +1459,7 @@ function _select(sel, range) {
 	}
 	win.focus();
 }
-//判断一个node是否有指定属性或CSS
+
 function _hasAttrOrCss(node, map, mapKey) {
 	var knode = _node(node), arr, newMap = {};
 	mapKey = mapKey || knode.name;
@@ -1515,7 +1503,7 @@ function _getCommonNode(range, map) {
 function _cmd(mixed) {
 	var sel, doc, rng;
 	if (mixed.nodeName) {
-		//get selection and original range when mixed is a document or a node
+
 		doc = mixed.ownerDocument || mixed;
 		sel = _getSel(doc);
 		try {
@@ -1530,7 +1518,7 @@ function _cmd(mixed) {
 			return null;
 		}
 	} else {
-		//get selection and original range when mixed is KRange
+
 		var startContainer = mixed.startContainer;
 		doc = startContainer.ownerDocument || startContainer;
 		sel = _getSel(doc);
@@ -1538,18 +1526,18 @@ function _cmd(mixed) {
 	}
 	var win = _getWin(doc),
 		range = _range(mixed);
-	//create KRange object
+
 	return {
 		wrap : function(val) {
 			var wrapper = _node(val, doc), clone;
-			//非inline标签
+
 			if (!wrapper.isInline()) {
 				clone = wrapper.clone(false);
 				range.surroundContents(clone.get());
 				_select(sel, range);
 				return this;
 			}
-			//inline标签，collapsed = true
+
 			if (range.collapsed) {
 				clone = wrapper.clone(false);
 				range.insertNode(clone.get());
@@ -1557,7 +1545,7 @@ function _cmd(mixed) {
 				_select(sel, range);
 				return this;
 			}
-			//inline标签，collapsed = false
+
 			var frag = range.extractContents(),
 				name = wrapper.name;
 			_node(frag).each(function(node) {
@@ -1581,11 +1569,11 @@ function _cmd(mixed) {
 			return this;
 		},
 		remove : function(map) {
-			//collapsed = true
+
 			if (range.collapsed) {
 				return this;
 			}
-			//collapsed = false
+
 			var frag = range.extractContents(),
 				name = wrapper.name;
 			_node(frag).each(function(node) {
@@ -1608,11 +1596,11 @@ function _cmd(mixed) {
 			_select(sel, range);
 			return this;
 		},
-		//Reference: document.execCommand
+
 		exec : function(cmd, val) {
 			return this[cmd.toLowerCase()](val);
 		},
-		//Reference: document.queryCommandState
+
 		state : function(cmd) {
 			var bool = false;
 			try {
@@ -1620,7 +1608,7 @@ function _cmd(mixed) {
 			} catch (e) {}
 			return bool;
 		},
-		//Reference: document.queryCommandValue
+
 		val : function(cmd) {
 			function lc(val) {
 				return val.toLowerCase();
@@ -1783,7 +1771,7 @@ function _edit(expr, options) {
 			if (self.iframe) {
 				return self;
 			}
-			//create elements
+
 			var iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
 			iframe.css({
 				display : 'block',
@@ -1805,7 +1793,7 @@ function _edit(expr, options) {
 			srcElement.before(textarea);
 			srcElement.hide();
 			var doc = _getIframeDoc(iframe.get());
-			//doc.designMode = 'on';
+
 			doc.open();
 			doc.write(_getInitHtml(bodyClass, css));
 			doc.close();
@@ -1818,8 +1806,7 @@ function _edit(expr, options) {
 				_textareaVal.call(self, srcVal());
 			}
 			self.cmd = _cmd(doc);
-			//add events
-			//焦点离开编辑区域时保存selection
+
 			function selectionHandler(e) {
 				var cmd = _cmd(doc);
 				if (cmd) {
@@ -1829,7 +1816,7 @@ function _edit(expr, options) {
 			self.oninput(selectionHandler);
 			_node(doc).bind('mouseup', selectionHandler);
 			_node(document).bind('mousedown', selectionHandler);
-			//点击编辑区域或输入内容时取得commmand value
+
 			function commandValueHandler(e) {
 				_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
 					var cmdVal = self.cmd.val(this);
@@ -1837,7 +1824,7 @@ function _edit(expr, options) {
 			}
 			self.oninput(commandValueHandler);
 			_node(doc).bind('click', commandValueHandler);
-			//点击编辑区域或输入内容时取得command state
+
 			function commandStateHandler(e) {
 				var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
 				_each(cmds, function() {
@@ -1856,11 +1843,11 @@ function _edit(expr, options) {
 			if (!iframe) {
 				return self;
 			}
-			//remove events
+
 			_node(doc).unbind();
 			_node(doc.body).unbind();
 			_node(document).unbind();
-			//remove elements
+
 			srcElement.show();
 			srcVal(self.val());
 			iframe.remove();
@@ -1933,10 +1920,7 @@ K.edit = _edit;
 var _K = K;
 
 K = function(options) {
-	//_node(document).ready(function() {
-	//	var el = _K.create(options);
-	//	_node(options.src).append(el);
-	//});
+
 };
 
 _each(_K, function(key, val) {

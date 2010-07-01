@@ -90,7 +90,7 @@ function _compareAndUpdate(doc) {
 		this.startOffset = this.endOffset;
 	}
 }
-/*
+/**
 	根据参数复制或删除KRange的内容。
 	cloneContents: copyAndDelete(true, false)
 	extractContents: copyAndDelete(true, true)

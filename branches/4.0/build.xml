@@ -52,6 +52,13 @@
 			flags="gs"
 		/>
 		<replaceregexp file="${filename}.js"
+			match="//.*$"
+			replace=""
+			encoding="${charset}"
+			byline="true"
+			flags="g"
+		/>
+		<replaceregexp file="${filename}.js"
 			match="(\r\n|\n|\r)/\*\*/.*(\r\n|\n|\r)"
 			replace="\1"
 			encoding="${charset}"
