@@ -7,3 +7,5 @@
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
 * @version ${VERSION}
 *******************************************************************************/
+
+(function (window, undefined) {

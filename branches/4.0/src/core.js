@@ -33,7 +33,8 @@
 	@description
 	命名空间，为了兼容3.x
 */
-(function (window, undefined) {
+
+/**/ var undefined;
 
 /**
 	@name KindEditor.IE
@@ -215,25 +216,19 @@ function _toMap(str, delimiter) {
 	return map;
 }
 
-window.KindEditor = {
+var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
+	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
+	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
+	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
+	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
+
+var K = {
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,
 	OPERA : _OPERA,
 	VERSION : _VERSION,
-	// Inspired from http://ejohn.org/files/htmlparser.js
-	// Inline Elements - HTML 4.01
-	_INLINE_TAG_MAP : _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
-	// Block Elements - HTML 4.01
-	_BLOCK_TAG_MAP : _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
-	// Single Elements - HTML 4.01
-	_SINGLE_TAG_MAP : _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
-	// Elements that you can, intentionally, leave open (and which close themselves)
-	_AUTOCLOSE_TAG_MAP : _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
-	// Attributes that have their values filled in disabled="disabled"
-	_FILL_ATTR_MAP : _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
-	// Form element
-	_VALUE_TAG_MAP : _toMap('input,button,textarea,select'),
 	each : _each,
 	isArray : _isArray,
 	inArray : _inArray,
@@ -242,5 +237,3 @@ window.KindEditor = {
 	toHex : _toHex,
 	toMap : _toMap
 };
-
-})(window);

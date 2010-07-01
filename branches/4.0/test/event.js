@@ -1,7 +1,5 @@
 module('event');
 
-var K = KindEditor;
-
 test('bind/unbind/fire', function() {
 	var result = '';
 	function click1(e) {

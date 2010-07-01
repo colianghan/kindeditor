@@ -18,7 +18,7 @@
 		<concat destfile="${filename}.js"
 			encoding="${charset}"
 			outputencoding="${charset}">
-			<fileset file="${src}/copyright.js"/>
+			<fileset file="${src}/header.js"/>
 			<fileset file="${src}/core.js"/>
 			<fileset file="${src}/event.js"/>
 			<fileset file="${src}/html.js"/>
@@ -28,6 +28,7 @@
 			<fileset file="${src}/cmd.js"/>
 			<fileset file="${src}/edit.js"/>
 			<fileset file="${src}/main.js"/>
+			<fileset file="${src}/footer.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"
@@ -49,6 +50,20 @@
 			encoding="${charset}"
 			byline="false"
 			flags="gs"
+		/>
+		<replaceregexp file="${filename}.js"
+			match="(\r\n|\n|\r)/\*\*/.*(\r\n|\n|\r)"
+			replace="\1"
+			encoding="${charset}"
+			byline="false"
+			flags="g"
+		/>
+		<replaceregexp file="${filename}.js"
+			match="\s+$"
+			replace=""
+			encoding="${charset}"
+			byline="true"
+			flags="g"
 		/>
 		<replaceregexp file="${filename}.js"
 			match="(\r\n){3,}"

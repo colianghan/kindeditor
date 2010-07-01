@@ -1,7 +1,5 @@
 module('selector');
 
-var K = KindEditor;
-
 test('query', function() {
 	var div = K.query('#test-data-01');
 	var strong = K.query('#test-data-01 strong');

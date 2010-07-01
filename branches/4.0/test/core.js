@@ -1,7 +1,5 @@
 module('core');
 
-var K = KindEditor;
-
 test('VERSION', function() {
 	ok(/^\d+$/.test(K.VERSION));
 });

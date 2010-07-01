@@ -14,13 +14,6 @@
 /**
 #using "core.js"
 */
-(function (K, undefined) {
-
-var _SINGLE_TAG_MAP = K._SINGLE_TAG_MAP,
-	_each = K.each,
-	_trim = K.trim,
-	_toHex = K.toHex,
-	_inString = K.inString;
 
 function _getCssList(css) {
 	var list = {},
@@ -96,9 +89,5 @@ function _formatHtml(html) {
 	});
 	return _trim(html);
 }
-K.formatHtml = _formatHtml;
-K._formatCss = _formatCss;
-K._getCssList = _getCssList;
-K._getAttrList = _getAttrList;
 
-})(KindEditor);
+K.formatHtml = _formatHtml;

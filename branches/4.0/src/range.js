@@ -17,7 +17,6 @@
 #using "selector.js"
 #using "node.js"
 */
-(function (K, undefined) {
 
 /**
 	@name KindEditor.START_TO_START
@@ -47,10 +46,7 @@
 	调用range.compareBoundaryPoints时使用。
 	@see KindEditor.range#compareBoundaryPoints
 */
-var _IE = K.IE,
-	_node = K.node,
-	_inArray = K.inArray,
-	_START_TO_START = 0,
+var _START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
@@ -795,5 +791,3 @@ K.START_TO_START = _START_TO_START;
 K.START_TO_END = _START_TO_END;
 K.END_TO_END = _END_TO_END;
 K.END_TO_START = _END_TO_START;
-
-})(KindEditor);

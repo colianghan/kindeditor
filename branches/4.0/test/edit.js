@@ -1,4 +1,3 @@
-var K = KindEditor;
 
 var edit = K.edit('body textarea', {
 	width : '700px',
@@ -19,7 +18,7 @@ var cmds = {
 K.each(cmds, function(key, val) {
 	var a = K.node('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
 		return function(e) {
-			edit.cmd[key](val);
+			edit.cmd.exec(key, val);
 			e.stop();
 		};
 	})(key, val));

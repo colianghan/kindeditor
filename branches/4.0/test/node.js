@@ -1,7 +1,5 @@
 module('node');
 
-var K = KindEditor;
-
 test('node(html)',function(){
 	var node = K.node('<div><span></span></div>');
 	equals(node.name, 'div');

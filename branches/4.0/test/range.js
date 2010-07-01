@@ -1,7 +1,5 @@
 module('range');
 
-var K = KindEditor;
-
 test('range', function() {
 	var p = K.query('#test-data-01 p');
 	var strong = K.query('#test-data-01 strong');

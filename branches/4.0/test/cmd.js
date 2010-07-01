@@ -1,7 +1,5 @@
 module('cmd');
 
-var K = KindEditor;
-
 test('cmd.wrap', function() {
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, cmd;

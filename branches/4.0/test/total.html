@@ -35,19 +35,17 @@
 		<br />
 		<input type="button" id="create" value="Create" />
 		<input type="button" id="remove" value="Remove" />
-		<input type="button" id="show" value="Show" />
-		<input type="button" id="hide" value="Hide" />
 		<script>
 			var edit = K.edit('body textarea', {
-				width : '600px',
-				height : '200px'
+				width : '700px',
+				height : '100px'
 			}).create();
 			K.node('#bold').bind('click', function(e) {
 				edit.cmd.bold();
 				e.stop();
 			});
 			K.node('#foreColor').bind('click', function(e) {
-				edit.cmd.foreColor('#FF0000');
+				edit.cmd.forecolor('#FF0000');
 				e.stop();
 			});
 			K.node('#create').bind('click', function(e) {
@@ -55,12 +53,6 @@
 			});
 			K.node('#remove').bind('click', function(e) {
 				edit.remove();
-			});
-			K.node('#show').bind('click', function(e) {
-				edit.show();
-			});
-			K.node('#hide').bind('click', function(e) {
-				edit.hide();
 			});
 		</script>
 	</body>

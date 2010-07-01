@@ -16,12 +16,6 @@
 #using "node.js"
 #using "cmd.js"
 */
-(function (K, undefined) {
-
-var _each = K.each,
-	_isArray = K.isArray,
-	_node = K.node,
-	_cmd = K.cmd;
 
 function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
@@ -121,6 +115,9 @@ function _edit(expr, options) {
 		*/
 		width : options.width || 0,
 		height : options.height || 0,
+		html : function(val) {
+			this.val(val);
+		},
 		val : function(val) {
 			if (designMode) {
 				return _iframeVal.call(this, val);
@@ -161,6 +158,7 @@ function _edit(expr, options) {
 			else _textareaVal.call(self, srcVal());
 			self.cmd = _cmd(doc);
 			//add events
+			//焦点离开编辑区域时保存selection
 			function selectionHandler(e) {
 				var cmd = _cmd(doc);
 				if (cmd) self.cmd = cmd;
@@ -168,6 +166,25 @@ function _edit(expr, options) {
 			self.oninput(selectionHandler);
 			_node(doc).bind('mouseup', selectionHandler);
 			_node(document).bind('mousedown', selectionHandler);
+			//点击编辑区域或输入内容时取得commmand value
+			function commandValueHandler(e) {
+				_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
+					var cmdVal = self.cmd.val(this);
+					console.log(cmdVal);
+				});
+			}
+			self.oninput(commandValueHandler);
+			_node(doc).bind('click', commandValueHandler);
+			//点击编辑区域或输入内容时取得command state
+			function commandStateHandler(e) {
+				var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
+				_each(cmds, function() {
+					var cmdState = self.cmd.state(this);
+					console.log(cmdState);
+				});
+			}
+			self.oninput(commandStateHandler);
+			_node(doc).bind('click', commandStateHandler);
 			return self;
 		},
 		remove : function() {
@@ -246,5 +263,3 @@ function _edit(expr, options) {
 }
 
 K.edit = _edit;
-
-})(KindEditor);

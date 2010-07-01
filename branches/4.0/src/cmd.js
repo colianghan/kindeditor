@@ -18,13 +18,6 @@
 #using "node.js"
 #using "range.js"
 */
-(function (K, undefined) {
-
-var _each = K.each,
-	_node = K.node,
-	_range = K.range,
-	_IE = K.IE,
-	_INLINE_TAGS = K.INLINE_TAGS;
 
 /**
 	@name KindEditor.cmd
@@ -44,7 +37,7 @@ function _cmd(mixed) {
 	var sel, doc, rng;
 	if (mixed.nodeName) {
 		//get selection and original range when mixed is a document or a node
-		doc = mixed.nodeName.toLowerCase() === '#document' ? mixed : mixed.ownerDocument;
+		doc = mixed.ownerDocument || mixed;
 		sel = _getSel(doc);
 		try {
 			if (sel.rangeCount > 0) rng = sel.getRangeAt(0);
@@ -103,9 +96,84 @@ function _cmd(mixed) {
 			_select(sel, range);
 			return this;
 		},
-		remove : function(options) {
+		remove : function(map) {
+			//collapsed = true
+			if (range.collapsed) {
+				return this;
+			}
+			//collapsed = false
+			var frag = range.extractContents(),
+				name = wrapper.name;
+			_node(frag).each(function(node) {
+				if (node.type == 3 && node.parent().name !== name) {
+					var clone = wrapper.clone(false);
+					clone.append(node.clone(true));
+					node.replaceWith(clone);
+				} else if (node.name === name) {
+					_each(wrapper.attr(), function(key, val) {
+						if (key !== 'style') node.attr(key, val);
+					});
+					_each(wrapper.css(), function(key, val) {
+						node.css(key, val);
+					});
+				}
+			});
+			range.insertNode(frag);
 			_select(sel, range);
 			return this;
+		},
+		//Reference: document.execCommand
+		exec : function(cmd, val) {
+			return this[cmd.toLowerCase()](val);
+		},
+		//Reference: document.queryCommandState
+		state : function(cmd) {
+			var bool = false;
+			try {
+				bool = doc.queryCommandState(cmd);
+			} catch (e) {}
+			return bool;
+		},
+		//Reference: document.queryCommandValue
+		val : function(cmd) {
+			function lc(val) {
+				return val.toLowerCase();
+			}
+			cmd = lc(cmd);
+			var val = '';
+			if (cmd === 'fontfamily' || cmd === 'fontname') {
+				val = _nativeCommandValue(doc, 'fontname');
+				val = val.replace(/['"]/g, '');
+				return lc(val);
+			}
+			if (cmd === 'formatblock') {
+				val = _nativeCommandValue(doc, cmd);
+				if (val === '') {
+					var el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
+					if (el) val = el.nodeName;
+				}
+				if (val === 'Normal') val = 'p';
+				return lc(val);
+			}
+			if (cmd === 'fontsize') {
+				var el = _getCommonNode(range, {'*' : '.font-size'});
+				if (el) val = _node(el).css('font-size');
+				return lc(val);
+			}
+			if (cmd === 'forecolor') {
+				var el = _getCommonNode(range, {'*' : '.color'});
+				if (el) val = _node(el).css('color');
+				val = _toHex(val);
+				if (val === '') val = 'default';
+				return lc(val);
+			}
+			if (cmd === 'hilitecolor') {
+				var el = _getCommonNode(range, {'*' : '.background-color'});
+				val = _toHex(val);
+				if (val === '') val = 'default';
+				return lc(val);
+			}
+			return val;
 		},
 		bold : function() {
 			return this.wrap('<strong></strong>');
@@ -113,19 +181,22 @@ function _cmd(mixed) {
 		italic : function() {
 			return this.wrap('<em></em>');
 		},
-		foreColor : function(val) {
+		forecolor : function(val) {
 			return this.wrap('<span style="color:' + val + ';"></span>');
 		},
-		hiliteColor : function(val) {
+		hilitecolor : function(val) {
 			return this.wrap('<span style="background-color:' + val + ';"></span>');
 		},
-		fontSize : function(val) {
+		fontsize : function(val) {
 			return this.wrap('<span style="font-size:' + val + ';"></span>');
 		},
-		fontFamily : function(val) {
+		fontname : function(val) {
+			return this.fontfamily(val);
+		},
+		fontfamily : function(val) {
 			return this.wrap('<span style="font-family:' + val + ';"></span>');
 		},
-		removeFormat : function() {
+		removeformat : function() {
 			var options = {
 				'*' : 'class,style'
 			},
@@ -138,7 +209,12 @@ function _cmd(mixed) {
 		}
 	};
 }
-
+//original queryCommandValue
+function _nativeCommandValue(doc, cmd) {
+	var val = doc.queryCommandValue(cmd);
+	if (typeof val !== 'string') val = '';
+	return val;
+}
 //get window by document
 function _getWin(doc) {
 	return doc.parentWindow || doc.defaultView;
@@ -176,7 +252,42 @@ function _select(sel, range) {
 	}
 	win.focus();
 }
+/**
+	根据规则取得range的共通祖先
+	example:
+	_getCommonNode(range, {
+		'*' : '.font-weight',
+		'strong,b' : '*'
+	});
+*/
+function _getCommonNode(range, map) {
+	var node = range.commonAncestorContainer, knode, arr;
+	while (node) {
+		if (_hasAttrOrCss(node, map, '*')) return node;
+		if (_hasAttrOrCss(node, map)) return node;
+		node = node.parentNode;
+	}
+	return null;
+}
+//判断一个node是否有指定属性或CSS
+function _hasAttrOrCss(node, map, mapKey) {
+	var knode = _node(node), mapKey = mapKey || knode.name, arr, newMap = {};
+	if (knode.type !== 1) return false;
+	_each(map, function(key, val) {
+		arr = key.split(',');
+		for (var i = 0, len = arr.length, v = arr[i]; i < len; i++) {
+			newMap[v] = val;
+		}
+	});
+	if (newMap[mapKey]) {
+		arr = newMap[mapKey].split(',');
+		for (var i = 0, len = arr.length, val = arr[i]; i < len; i++) {
+			if (val.charAt(0) === '.' && knode.css(val.substr(1)) !== '') return true;
+			if (val.charAt(0) !== '.' && knode.attr(val) !== '') return true;
+		}
+	}
+	return false;
+}
 
 K.cmd = _cmd;
 
-})(KindEditor);

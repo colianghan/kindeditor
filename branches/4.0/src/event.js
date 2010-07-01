@@ -14,10 +14,6 @@
 /**
 #using "core.js"
 */
-(function (K, undefined) {
-
-var _each = K.each,
-	_inArray = K.inArray;
 
 //add native event
 function _bindEvent(el, type, fn) {
@@ -156,5 +152,3 @@ function _fire(el, type) {
 K.bind = _bind;
 K.unbind = _unbind;
 K.fire = _fire;
-
-})(KindEditor);

@@ -54,14 +54,6 @@
 	var spanArray = K.query('span.class', div);
 */
 
-(function (K, undefined) {
-
-var _IE = K.IE,
-	_VERSION = K.VERSION,
-	_each = K.each,
-	_formatCss = K._formatCss,
-	_getAttrList = K._getAttrList;
-
 function _contains(nodeA, nodeB) {
 	var docA = nodeA.ownerDocument || nodeA,
 		docB = nodeB.ownerDocument || nodeB;
@@ -238,10 +230,5 @@ function _queryAll(expr, root) {
 	return results;
 }
 
-K._contains = _contains;
-K._getAttr = _getAttr;
-
 K.query = _query;
 K.queryAll = _queryAll;
-
-})(KindEditor);

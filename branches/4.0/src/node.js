@@ -17,26 +17,6 @@
 #using "html.js"
 #using "selector.js"
 */
-(function (K, undefined) {
-
-var _IE = K.IE,
-	_VERSION = K.VERSION,
-	_INLINE_TAG_MAP = K._INLINE_TAG_MAP,
-	_BLOCK_TAG_MAP = K._BLOCK_TAG_MAP,
-	_SINGLE_TAG_MAP = K._SINGLE_TAG_MAP,
-	_VALUE_TAG_MAP = K._VALUE_TAG_MAP,
-	_each = K.each,
-	_query = K.query,
-	_trim = K.trim,
-	_inString = K.inString,
-	_getCssList = K._getCssList,
-	_getAttrList = K._getAttrList,
-	_formatHtml = K.formatHtml,
-	_contains = K._contains,
-	_getAttr = K._getAttr,
-	_bind = K.bind,
-	_unbind = K.unbind,
-	_fire = K.fire;
 
 /**
 	@name KindEditor.node
@@ -118,6 +98,9 @@ function _node(expr, root) {
 		fire : function(type) {
 			_fire(node, type);
 			return this;
+		},
+		hasAttr : function(key) {
+			return _getAttr(node, key);
 		},
 		attr : function(key, val) {
 			if (key === undefined) {
@@ -335,5 +318,3 @@ function _updateProp(node) {
 }
 
 K.node = _node;
-
-})(KindEditor);
