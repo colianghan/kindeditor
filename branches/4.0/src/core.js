@@ -34,7 +34,7 @@
 	命名空间，为了兼容3.x
 */
 
-var _undef;
+/**/ var undefined;
 
 /**
 	@name KindEditor.IE
@@ -104,7 +104,9 @@ function _isArray(val) {
 */
 function _inArray(val, arr) {
 	for (var i = 0, len = arr.length; i < len; i++) {
-		if (val === arr[i]) return i;
+		if (val === arr[i]) {
+			return i;
+		}
 	}
 	return -1;
 }
@@ -130,12 +132,16 @@ function _inArray(val, arr) {
 function _each(obj, fn) {
 	if (_isArray(obj)) {
 		for (var i = 0, len = obj.length; i < len; i++) {
-			if (fn.call(obj[i], i, obj[i]) === false) break;
+			if (fn.call(obj[i], i, obj[i]) === false) {
+				break;
+			}
 		}
 	} else {
 		for (var key in obj) {
 			if (obj.hasOwnProperty(key)) {
-				if (fn.call(obj[key], key, obj[key]) === false) break;
+				if (fn.call(obj[key], key, obj[key]) === false) {
+					break;
+				}
 			}
 		}
 	}
@@ -169,7 +175,7 @@ function _trim(str) {
 	bool = K.inString('aaa', 'abc aaa bbb ccc', ' '); //返回true
 */
 function _inString(val, str, delimiter) {
-	delimiter = delimiter === _undef ? ',' : delimiter;
+	delimiter = delimiter === undefined ? ',' : delimiter;
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
@@ -184,8 +190,8 @@ function _inString(val, str, delimiter) {
 	var color = K.toHex('rgb(0, 0, 0)'); //返回"#000000"
 */
 function _toHex(color) {
-	function hex(s) {
-		s = parseInt(s).toString(16).toUpperCase();
+	function hex(d) {
+		var s = parseInt(d, 10).toString(16).toUpperCase();
 		return s.length > 1 ? s : '0' + s;
 	}
 	return color.replace(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/ig,
@@ -207,9 +213,8 @@ function _toHex(color) {
 	var map = K.toMap('abc,aaa,bbb'); //返回{abc : true, aaa : true, bbb : true}
 */
 function _toMap(str, delimiter) {
-	var map = {},
-		delimiter = delimiter === _undef ? ',' : delimiter,
-		arr = str.split(delimiter);
+	delimiter = delimiter === undefined ? ',' : delimiter;
+	var map = {}, arr = str.split(delimiter);
 	_each(arr, function(key, val) {
 		map[val] = true;
 	});

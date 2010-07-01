@@ -39,19 +39,10 @@ K.node('#source').bind('click', function(e) {
 });
 K.node('#toggle').bind('click', function(e) {
 	edit.toggle();
-});
-
-
-function KNode(node) {
-	return {
-		name : node.nodeName,
-		type : node.nodeType,
-		get : function() {
-			return node;
+	(function(){
+		for (var i = 0; i < 100; i++) {
+			var d = document.createElement('div');
+			d.onclick=function(){};
 		}
-	};
-}
-
-for (var i = 0; i < 100; i++) {
-	var knode = KNode(document);
-}
+	})();
+});

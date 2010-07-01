@@ -8,12 +8,12 @@ JSLINT(src, { evil: true, forin: true });
 // (in contradiction with JSLint) more information here:
 // http://docs.jquery.com/JQuery_Core_Style_Guidelines
 var ok = {
-	// "Expected an identifier and instead saw 'undefined' (a reserved word).": true,
+	"Expected an identifier and instead saw 'undefined' (a reserved word).": true,
 	"Use '===' to compare with 'null'.": true,
 	"Use '!==' to compare with 'null'.": true,
 	"Expected an assignment or function call and instead saw an expression.": true,
-	"Expected a 'break' statement before 'case'.": true
-
+	"Expected a 'break' statement before 'case'.": true,
+	"Unsafe character.": true
 };
 
 var e = JSLINT.errors, found = 0, w;

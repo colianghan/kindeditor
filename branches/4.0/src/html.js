@@ -19,7 +19,7 @@ function _getCssList(css) {
 	var list = {},
 		reg = /\s*([\w\-]+)\s*:([^;]*)(;|$)/g,
 		match;
-	while (match = reg.exec(css)) {
+	while ((match = reg.exec(css))) {
 		var key = _trim(match[1].toLowerCase()),
 			val = _trim(_toHex(match[2]));
 		list[key] = val;
@@ -31,7 +31,7 @@ function _getAttrList(tag) {
 	var list = {},
 		reg = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
-	while (match = reg.exec(tag)) {
+	while ((match = reg.exec(tag))) {
 		var key = match[1] || match[2] || match[4] || match[6],
 			val = (match[2] ? match[3] : (match[4] ? match[5] : match[7])) || '';
 		list[key] = val;
@@ -57,8 +57,12 @@ function _formatHtml(html) {
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
-		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) endSlash = ' /';
-		if (endNewline) endNewline = ' ';
+		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) {
+			endSlash = ' /';
+		}
+		if (endNewline) {
+			endNewline = ' ';
+		}
 		if (tagName !== 'script' && tagName !== 'style') {
 			startNewline = '';
 		}
@@ -72,16 +76,22 @@ function _formatHtml(html) {
 					if (key === 'style') {
 						val = val.substr(1, val.length - 2);
 						val = _formatCss(val);
-						if (val === '') return '';
+						if (val === '') {
+							return '';
+						}
 						val = '"' + val + '"';
 					}
-					if (!/^['"]/.test(val)) val = '"' + val + '"';
+					if (!/^['"]/.test(val)) {
+						val = '"' + val + '"';
+					}
 				}
 				return ' ' + key + '=' + val + ' ';
 			});
 			attr = _trim(attr);
 			attr = attr.replace(/\s+/g, ' ');
-			if (attr) attr = ' ' + attr;
+			if (attr) {
+				attr = ' ' + attr;
+			}
 			return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 		} else {
 			return startNewline + '<' + startSlash + tagName + endSlash + '>' + endNewline;

@@ -29,7 +29,9 @@ function _getInitHtml(bodyClass, css) {
 		}
 		if (_isArray(css)) {
 			_each(css, function(i, path) {
-				if (path !== '') arr.push('<link href="' + path + '" rel="stylesheet" />');
+				if (path !== '') {
+					arr.push('<link href="' + path + '" rel="stylesheet" />');
+				}
 			});
 		} else {
 			arr.push('<style>' + css + '</style>');
@@ -42,7 +44,7 @@ function _getInitHtml(bodyClass, css) {
 function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
-	if (val === _undef) {
+	if (val === undefined) {
 		return _node(body).html();
 	} else {
 		_node(body).html(val);
@@ -53,7 +55,7 @@ function _iframeVal(val) {
 function _textareaVal(val) {
 	var self = this,
 		textarea = self.textarea;
-	if (val === _undef) {
+	if (val === undefined) {
 		return textarea.val();
 	} else {
 		textarea.val(val);
@@ -74,7 +76,7 @@ function _textareaVal(val) {
 */
 function _edit(expr, options) {
 	var srcElement = _node(expr),
-		designMode = options.designMode === _undef ? true : options.designMode,
+		designMode = options.designMode === undefined ? true : options.designMode,
 		bodyClass = options.bodyClass,
 		css = options.css;
 	function srcVal(val) {
@@ -127,7 +129,9 @@ function _edit(expr, options) {
 		},
 		create : function() {
 			var self = this;
-			if (self.iframe) return self;
+			if (self.iframe) {
+				return self;
+			}
 			//create elements
 			var iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
 			iframe.css({
@@ -141,8 +145,11 @@ function _edit(expr, options) {
 				width : self.width,
 				height : self.height
 			});
-			if (designMode) textarea.hide()
-			else iframe.hide();
+			if (designMode) {
+				textarea.hide();
+			} else {
+				iframe.hide();
+			}
 			srcElement.before(iframe);
 			srcElement.before(textarea);
 			srcElement.hide();
@@ -154,14 +161,19 @@ function _edit(expr, options) {
 			self.iframe = iframe;
 			self.textarea = textarea;
 			self.doc = doc;
-			if (designMode) _iframeVal.call(self, srcVal());
-			else _textareaVal.call(self, srcVal());
+			if (designMode) {
+				_iframeVal.call(self, srcVal());
+			} else {
+				_textareaVal.call(self, srcVal());
+			}
 			self.cmd = _cmd(doc);
 			//add events
 			//焦点离开编辑区域时保存selection
 			function selectionHandler(e) {
 				var cmd = _cmd(doc);
-				if (cmd) self.cmd = cmd;
+				if (cmd) {
+					self.cmd = cmd;
+				}
 			}
 			self.oninput(selectionHandler);
 			_node(doc).bind('mouseup', selectionHandler);
@@ -170,7 +182,6 @@ function _edit(expr, options) {
 			function commandValueHandler(e) {
 				_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
 					var cmdVal = self.cmd.val(this);
-					console.log(cmdVal);
 				});
 			}
 			self.oninput(commandValueHandler);
@@ -180,7 +191,6 @@ function _edit(expr, options) {
 				var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
 				_each(cmds, function() {
 					var cmdState = self.cmd.state(this);
-					console.log(cmdState);
 				});
 			}
 			self.oninput(commandStateHandler);
@@ -192,7 +202,9 @@ function _edit(expr, options) {
 				iframe = self.iframe,
 				textarea = self.textarea,
 				doc = self.doc;
-			if (!iframe) return self;
+			if (!iframe) {
+				return self;
+			}
 			//remove events
 			_node(doc).unbind();
 			_node(doc.body).unbind();
@@ -200,7 +212,6 @@ function _edit(expr, options) {
 			//remove elements
 			srcElement.show();
 			srcVal(self.val());
-			doc.src = 'javascript:false';
 			iframe.remove();
 			textarea.remove();
 			self.iframe = self.textarea = null;
@@ -210,8 +221,10 @@ function _edit(expr, options) {
 			var self = this,
 				iframe = self.iframe,
 				textarea = self.textarea;
-			if (!iframe) return self;
-			if (bool === _undef ? !designMode : bool) {
+			if (!iframe) {
+				return self;
+			}
+			if (bool === undefined ? !designMode : bool) {
 				if (!designMode) {
 					textarea.hide();
 					_iframeVal.call(self, _textareaVal.call(self));
@@ -236,7 +249,9 @@ function _edit(expr, options) {
 		},
 		focus : function() {
 			var self = this;
-			if (self.iframe && designMode) self.iframe.contentWindow.focus();
+			if (self.iframe && designMode) {
+				self.iframe.contentWindow.focus();
+			}
 			return self;
 		},
 		oninput : function(fn) {

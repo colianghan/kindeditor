@@ -8,9 +8,7 @@
 * @version 4.0 (2010-07-01)
 *******************************************************************************/
 
-(function () {
-
-var _undef;
+(function (window, undefined) {
 
 var _ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -26,7 +24,9 @@ function _isArray(val) {
 
 function _inArray(val, arr) {
 	for (var i = 0, len = arr.length; i < len; i++) {
-		if (val === arr[i]) return i;
+		if (val === arr[i]) {
+			return i;
+		}
 	}
 	return -1;
 }
@@ -34,12 +34,16 @@ function _inArray(val, arr) {
 function _each(obj, fn) {
 	if (_isArray(obj)) {
 		for (var i = 0, len = obj.length; i < len; i++) {
-			if (fn.call(obj[i], i, obj[i]) === false) break;
+			if (fn.call(obj[i], i, obj[i]) === false) {
+				break;
+			}
 		}
 	} else {
 		for (var key in obj) {
 			if (obj.hasOwnProperty(key)) {
-				if (fn.call(obj[key], key, obj[key]) === false) break;
+				if (fn.call(obj[key], key, obj[key]) === false) {
+					break;
+				}
 			}
 		}
 	}
@@ -50,13 +54,13 @@ function _trim(str) {
 }
 
 function _inString(val, str, delimiter) {
-	delimiter = delimiter === _undef ? ',' : delimiter;
+	delimiter = delimiter === undefined ? ',' : delimiter;
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
 function _toHex(color) {
-	function hex(s) {
-		s = parseInt(s).toString(16).toUpperCase();
+	function hex(d) {
+		var s = parseInt(d, 10).toString(16).toUpperCase();
 		return s.length > 1 ? s : '0' + s;
 	}
 	return color.replace(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/ig,
@@ -67,9 +71,8 @@ function _toHex(color) {
 }
 
 function _toMap(str, delimiter) {
-	var map = {},
-		delimiter = delimiter === _undef ? ',' : delimiter,
-		arr = str.split(delimiter);
+	delimiter = delimiter === undefined ? ',' : delimiter;
+	var map = {}, arr = str.split(delimiter);
 	_each(arr, function(key, val) {
 		map[val] = true;
 	});
@@ -119,7 +122,9 @@ function _unbindEvent(el, type, fn) {
 //http://github.com/jquery/jquery/blob/master/src/event.js
 var _props = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
 function _event(el, e) {
-	if (!e) return;
+	if (!e) {
+		return;
+	}
 	var obj = {},
 		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
 	_each(_props, function(key, val) {
@@ -145,15 +150,19 @@ function _event(el, e) {
 	if (!e.metaKey && e.ctrlKey) {
 		e.metaKey = e.ctrlKey;
 	}
-	if (!e.which && e.button !== _undef) {
+	if (!e.which && e.button !== undefined) {
 		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
 	}
 	obj.preventDefault = function() {
-		if (e.preventDefault) e.preventDefault();
+		if (e.preventDefault) {
+			e.preventDefault();
+		}
 		e.returnValue = false;
 	};
 	obj.stopPropagation = function() {
-		if (e.stopPropagation) e.stopPropagation();
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		}
 		e.cancelBubble = true;
 	};
 	obj.stop = function() {
@@ -177,18 +186,22 @@ function _getId(el) {
 
 function _bind(el, type, fn) {
 	var id = _getId(el);
-	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
+	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
-			if (val === _undef) _data[id][type].splice(key, 1);
+			if (val === undefined) {
+				_data[id][type].splice(key, 1);
+			}
 		});
 		_unbindEvent(el, type, _data[id][type][0]);
 	} else {
 		_data[id][type] = [];
 	}
-	if (_data[id][type].length == 0) {
+	if (_data[id][type].length === 0) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
-				if (key > 0 && val) val.call(el, _event(el, e));
+				if (key > 0 && val) {
+					val.call(el, _event(el, e));
+				}
 			});
 		};
 	}
@@ -200,7 +213,7 @@ function _bind(el, type, fn) {
 
 function _unbind(el, type, fn) {
 	var id = _getId(el);
-	if (type === _undef) {
+	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
 				_unbindEvent(el, key, val[0]);
@@ -209,15 +222,17 @@ function _unbind(el, type, fn) {
 		}
 		return;
 	}
-	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
-		if (fn === _undef) {
+	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+		if (fn === undefined) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			_data[id][type] = [];
 		} else {
 			for (var i = 0, len = _data[id][type].length; i < len; i++) {
-				if (_data[id][type][i] === fn) delete _data[id][type][i];
+				if (_data[id][type][i] === fn) {
+					delete _data[id][type][i];
+				}
 			}
-			if (_data[id][type].length == 2 && _data[id][type][1] === _undef) {
+			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				_data[id][type] = [];
 			}
@@ -227,7 +242,7 @@ function _unbind(el, type, fn) {
 
 function _fire(el, type) {
 	var id = _getId(el);
-	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
+	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
@@ -240,7 +255,7 @@ function _getCssList(css) {
 	var list = {},
 		reg = /\s*([\w\-]+)\s*:([^;]*)(;|$)/g,
 		match;
-	while (match = reg.exec(css)) {
+	while ((match = reg.exec(css))) {
 		var key = _trim(match[1].toLowerCase()),
 			val = _trim(_toHex(match[2]));
 		list[key] = val;
@@ -252,7 +267,7 @@ function _getAttrList(tag) {
 	var list = {},
 		reg = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
-	while (match = reg.exec(tag)) {
+	while ((match = reg.exec(tag))) {
 		var key = match[1] || match[2] || match[4] || match[6],
 			val = (match[2] ? match[3] : (match[4] ? match[5] : match[7])) || '';
 		list[key] = val;
@@ -278,8 +293,12 @@ function _formatHtml(html) {
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
-		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) endSlash = ' /';
-		if (endNewline) endNewline = ' ';
+		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) {
+			endSlash = ' /';
+		}
+		if (endNewline) {
+			endNewline = ' ';
+		}
 		if (tagName !== 'script' && tagName !== 'style') {
 			startNewline = '';
 		}
@@ -293,16 +312,22 @@ function _formatHtml(html) {
 					if (key === 'style') {
 						val = val.substr(1, val.length - 2);
 						val = _formatCss(val);
-						if (val === '') return '';
+						if (val === '') {
+							return '';
+						}
 						val = '"' + val + '"';
 					}
-					if (!/^['"]/.test(val)) val = '"' + val + '"';
+					if (!/^['"]/.test(val)) {
+						val = '"' + val + '"';
+					}
 				}
 				return ' ' + key + '=' + val + ' ';
 			});
 			attr = _trim(attr);
 			attr = attr.replace(/\s+/g, ' ');
-			if (attr) attr = ' ' + attr;
+			if (attr) {
+				attr = ' ' + attr;
+			}
 			return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 		} else {
 			return startNewline + '<' + startSlash + tagName + endSlash + '>' + endNewline;
@@ -316,14 +341,26 @@ K.formatHtml = _formatHtml;
 function _contains(nodeA, nodeB) {
 	var docA = nodeA.ownerDocument || nodeA,
 		docB = nodeB.ownerDocument || nodeB;
-	if (docA !== docB) return false;
-	if (nodeB === docB) return false;
-	if (nodeA === docA) return true;
-	if (nodeA.nodeType === 3) return false;
+	if (docA !== docB) {
+		return false;
+	}
+	if (nodeB === docB) {
+		return false;
+	}
+	if (nodeA === docA) {
+		return true;
+	}
+	if (nodeA.nodeType === 3) {
+		return false;
+	}
 	if (nodeB.nodeType === 3) {
 		nodeB = nodeB.parentNode;
-		if (!nodeB) return false;
-		if (nodeA === nodeB) return true;
+		if (!nodeB) {
+			return false;
+		}
+		if (nodeA === nodeB) {
+			return true;
+		}
 	}
 	if (nodeA.compareDocumentPosition) {
 		return !!(nodeA.compareDocumentPosition(nodeB) & 16);
@@ -338,7 +375,9 @@ function _getAttr(el, key) {
 		var div = el.ownerDocument.createElement('div');
 		div.appendChild(el.cloneNode(false));
 		var list = _getAttrList(div.innerHTML.toLowerCase());
-		if (key in list) val = list[key];
+		if (key in list) {
+			val = list[key];
+		}
 	} else {
 		val = el.getAttribute(key, 2);
 	}
@@ -348,15 +387,12 @@ function _getAttr(el, key) {
 	return val;
 }
 
-function _query(expr, root) {
-	var arr = _queryAll(expr, root);
-	return arr.length > 0 ? arr[0] : null;
-}
-
 function _queryAll(expr, root) {
 	root = root || document;
 	function escape(str) {
-		if (typeof str != 'string') return str;
+		if (typeof str != 'string') {
+			return str;
+		}
 		return str.replace(/([^\w\-])/g, '\\$1');
 	}
 	function stripslashes(str) {
@@ -370,33 +406,40 @@ function _queryAll(expr, root) {
 		var doc = root.ownerDocument || root;
 		var el = doc.getElementById(stripslashes(id));
 		if (el) {
-			if (cmpTag(tag, el.nodeName) && _contains(root, el)) arr.push(el);
+			if (cmpTag(tag, el.nodeName) && _contains(root, el)) {
+				arr.push(el);
+			}
 		}
 		return arr;
 	}
 	function byClass(className, tag, root) {
-		var doc = root.ownerDocument || root;
-		var arr = [];
+		var doc = root.ownerDocument || root, arr = [], els, i, len, el;
 		if (root.getElementsByClassName) {
-			var els = root.getElementsByClassName(stripslashes(className));
-			for (var i = 0, len = els.length, el; i < len; i++) {
+			els = root.getElementsByClassName(stripslashes(className));
+			for (i = 0, len = els.length; i < len; i++) {
 				el = els[i];
-				if (cmpTag(tag, el.nodeName)) arr.push(el);
+				if (cmpTag(tag, el.nodeName)) {
+					arr.push(el);
+				}
 			}
 		} else if (doc.querySelectorAll) {
-			var els = doc.querySelectorAll((root.nodeName !== '#document' ? root.nodeName + ' ' : '') + tag + '.' + className);
-			for (var i = 0, len = els.length, el; i < len; i++) {
+			els = doc.querySelectorAll((root.nodeName !== '#document' ? root.nodeName + ' ' : '') + tag + '.' + className);
+			for (i = 0, len = els.length; i < len; i++) {
 				el = els[i];
-				if (_contains(root, el)) arr.push(el);
+				if (_contains(root, el)) {
+					arr.push(el);
+				}
 			}
 		} else {
-			var els = root.getElementsByTagName(tag);
+			els = root.getElementsByTagName(tag);
 			className = ' ' + className + ' ';
-			for (var i = 0, len = els.length, el; i < len; i++) {
+			for (i = 0, len = els.length; i < len; i++) {
 				el = els[i];
 				if (el.nodeType == 1) {
 					var cls = el.className;
-					if (cls && (' ' + cls + ' ').indexOf(className) > -1) arr.push(el);
+					if (cls && (' ' + cls + ' ').indexOf(className) > -1) {
+						arr.push(el);
+					}
 				}
 			}
 		}
@@ -408,7 +451,9 @@ function _queryAll(expr, root) {
 		for (var i = 0, len = els.length, el; i < len; i++) {
 			el = els[i];
 			if (cmpTag(tag, el.nodeName)) {
-				if (el.getAttributeNode('name')) arr.push(el);
+				if (el.getAttributeNode('name')) {
+					arr.push(el);
+				}
 			}
 		}
 		return arr;
@@ -420,9 +465,13 @@ function _queryAll(expr, root) {
 			el = els[i];
 			if (el.nodeType == 1) {
 				if (val === null) {
-					if (_getAttr(el, key) !== null) arr.push(el);
+					if (_getAttr(el, key) !== null) {
+						arr.push(el);
+					}
 				} else {
-					if (val === escape(_getAttr(el, key))) arr.push(el);
+					if (val === escape(_getAttr(el, key))) {
+						arr.push(el);
+					}
 				}
 			}
 		}
@@ -432,38 +481,47 @@ function _queryAll(expr, root) {
 		var arr = [], matches;
 		matches = /^((?:\\.|[^.#\s\[<>])+)/.exec(expr);
 		var tag = matches ? matches[1] : '*';
-		if (matches = /#((?:[\w\-]|\\.)+)$/.exec(expr)) {
+		if ((matches = /#((?:[\w\-]|\\.)+)$/.exec(expr))) {
 			arr = byId(matches[1], tag, root);
-		} else if (matches = /\.((?:[\w\-]|\\.)+)$/.exec(expr)) {
+		} else if ((matches = /\.((?:[\w\-]|\\.)+)$/.exec(expr))) {
 			arr = byClass(matches[1], tag, root);
-		} else if (matches = /\[((?:[\w\-]|\\.)+)\]/.exec(expr)) {
+		} else if ((matches = /\[((?:[\w\-]|\\.)+)\]/.exec(expr))) {
 			arr = byAttr(matches[1].toLowerCase(), null, tag, root);
-		} else if (matches = /\[((?:[\w\-]|\\.)+)\s*=\s*['"]?((?:\\.|[^'"]+)+)['"]?\]/.exec(expr)) {
+		} else if ((matches = /\[((?:[\w\-]|\\.)+)\s*=\s*['"]?((?:\\.|[^'"]+)+)['"]?\]/.exec(expr))) {
 			var key = matches[1].toLowerCase(), val = matches[2];
-			if (key === 'id') arr = byId(val, tag, root);
-			else if (key === 'class') arr = byClass(val, tag, root);
-			else if (key === 'name') arr = byName(val, tag, root);
-			else arr = byAttr(key, val, tag, root);
+			if (key === 'id') {
+				arr = byId(val, tag, root);
+			} else if (key === 'class') {
+				arr = byClass(val, tag, root);
+			} else if (key === 'name') {
+				arr = byName(val, tag, root);
+			} else {
+				arr = byAttr(key, val, tag, root);
+			}
 		} else {
 			var els = root.getElementsByTagName(tag);
 			for (var i = 0, len = els.length, el; i < len; i++) {
 				el = els[i];
-				if (el.nodeType == 1) arr.push(el);
+				if (el.nodeType == 1) {
+					arr.push(el);
+				}
 			}
 		}
 		return arr;
 	}
 	var parts = [];
 	var arr, re = /((?:\\.|[^\s>])+|[\s>])/g;
-	while (arr = re.exec(expr)) {
-		if (arr[1] !== ' ') parts.push(arr[1]);
+	while ((arr = re.exec(expr))) {
+		if (arr[1] !== ' ') {
+			parts.push(arr[1]);
+		}
 	}
 	var results = [];
 	if (parts.length == 1) {
 		return select(parts[0], root);
 	}
 	var el, isChild = false;
-	for (var i = 0, len = parts.length; i < len; i++) {
+	for (var i = 0, lenth = parts.length; i < lenth; i++) {
 		var part = parts[i];
 		if (part === '>') {
 			isChild = true;
@@ -471,33 +529,56 @@ function _queryAll(expr, root) {
 		}
 		if (i > 0) {
 			var els = [];
-			_each(results, function(key, val) {
-				_each(select(part, val), function(k, v) {
+			for (var j = 0, len = results.length, val = results[j]; j < len; j++) {
+				var subResults = select(part, val);
+				for (var k = 0, l = subResults.length, v = subResults[j]; k < l; k++) {
 					if (isChild) {
-						if (val === v.parentNode) els.push(v);
+						if (val === v.parentNode) {
+							els.push(v);
+						}
 					} else {
 						els.push(v);
 					}
-				});
-			});
+				}
+			}
 			results = els;
 		} else {
 			results = select(part, root);
 		}
-		if (results.length == 0) return [];
+		if (results.length === 0) {
+			return [];
+		}
 	}
 	return results;
+}
+
+function _query(expr, root) {
+	var arr = _queryAll(expr, root);
+	return arr.length > 0 ? arr[0] : null;
 }
 
 K.query = _query;
 K.queryAll = _queryAll;
 
+function _get(val) {
+	return val.get ? val.get() : val;
+}
+
+function _toCamel(str) {
+	var arr = str.split('-');
+	str = '';
+	_each(arr, function(key, val) {
+		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
+	});
+	return str;
+}
+
 function _node(expr, root) {
 	var node;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			var doc = root ? root.ownerDocument || root : document,
-				div = doc.createElement('div');
+			var ownerDocument = root ? root.ownerDocument || root : document,
+				div = ownerDocument.createElement('div');
 			div.innerHTML = expr;
 			node = div.firstChild;
 			div = null;
@@ -507,7 +588,9 @@ function _node(expr, root) {
 	} else {
 		node = expr;
 	}
-	if (!node) return null;
+	if (!node) {
+		return null;
+	}
 	var doc = node.ownerDocument || node,
 		win = doc.parentWindow || doc.defaultView,
 		prevDisplay = '';
@@ -535,19 +618,23 @@ function _node(expr, root) {
 			return _getAttr(node, key);
 		},
 		attr : function(key, val) {
-			if (key === _undef) {
+			if (key === undefined) {
 				return _getAttrList(this.outer());
-			} else if (val === _undef) {
+			} else if (val === undefined) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
-				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') key = 'className';
+				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+					key = 'className';
+				}
 				node.setAttribute(key, '' + val);
 				return this;
 			}
 		},
 		removeAttr : function(key) {
-			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') key = 'className';
+			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+				key = 'className';
+			}
 			this.attr(key, '');
 			node.removeAttribute(key);
 			return this;
@@ -560,16 +647,19 @@ function _node(expr, root) {
 
 		},
 		addClass : function(cls) {
-			if (!this.hasClass(cls)) node.className = _trim(node.className + ' ' + cls);
+			if (!this.hasClass(cls)) {
+				node.className = _trim(node.className + ' ' + cls);
+			}
 			return this;
 		},
 		removeClass : function(cls) {
-			if(this.hasClass(cls))
-				node.className = _trim(node.className.replace(new RegExp('\s*' + cls + '\s*'), ''));
+			if (this.hasClass(cls)) {
+				node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+			}
 			return this;
 		},
 		html : function(val) {
-			if (val === _undef) {
+			if (val === undefined) {
 				return _formatHtml(node.innerHTML);
 			} else {
 				node.innerHTML = _formatHtml(val);
@@ -577,17 +667,20 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
-			if (val === _undef) {
+			if (val === undefined) {
 				return this.hasVal() ? node.value : this.attr('value');
 			} else {
-				if (this.hasVal()) node.value = val;
-				else this.attr('value' , val);
+				if (this.hasVal()) {
+					node.value = val;
+				} else {
+					this.attr('value' , val);
+				}
 				return this;
 			}
 		},
 		css : function(key, val) {
 			var self = this;
-			if (key === _undef) {
+			if (key === undefined) {
 				return _getCssList(this.attr('style'));
 			}
 			if (typeof key === 'object') {
@@ -596,7 +689,7 @@ function _node(expr, root) {
 				});
 				return this;
 			}
-			if (val === _undef) {
+			if (val === undefined) {
 				return node.style[key] || this.computedCss(key) || '';
 			}
 			node.style[_toCamel(key)] = val;
@@ -647,8 +740,9 @@ function _node(expr, root) {
 			return this;
 		},
 		show : function() {
-			if (this.computedCss('display') === 'none')
+			if (this.computedCss('display') === 'none') {
 				this.css('display', prevDisplay);
+			}
 			return this;
 		},
 		hide : function() {
@@ -690,14 +784,20 @@ function _node(expr, root) {
 			return _node(node.nextSibling);
 		},
 		each : function(fn, order) {
-			order = (order === _undef) ? true : order;
+			order = (order === undefined) ? true : order;
 			function walk(knode) {
 				var n = order ? knode.first : knode.last;
-				if (!n) return;
+				if (!n) {
+					return;
+				}
 				while (n) {
 					var next = order ? n.next() : n.prev();
-					if (fn(n)) return true;
-					if (walk(n)) return;
+					if (fn(n)) {
+						return true;
+					}
+					if (walk(n)) {
+						return;
+					}
 					n = next;
 				}
 			}
@@ -707,46 +807,32 @@ function _node(expr, root) {
 			return this.type == 3 ? node.nodeValue : this.outer();
 		}
 	};
+	function _updateProp(node) {
+		//node.first, node.last, node.children
+		var list = [], child = node.firstChild;
+		while (child) {
+			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
+				list.push(_node(child));
+			}
+			child = child.nextSibling;
+		}
+		if (list.length > 0) {
+			this.first = list[0];
+			this.last = list[list.length - 1];
+		} else {
+			this.first = this.last = null;
+		}
+		this.children = list;
+		//node.index
+		var i = -1, sibling = node;
+		while (sibling) {
+			i++;
+			sibling = sibling.previousSibling;
+		}
+		this.index = i;
+	}
 	_updateProp.call(obj, node);
 	return obj;
-}
-
-function _get(val) {
-	return val.get ? val.get() : val;
-}
-
-function _toCamel(str) {
-	var arr = str.split('-');
-	str = '';
-	_each(arr, function(key, val) {
-		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
-	});
-	return str;
-}
-
-function _updateProp(node) {
-	//node.first, node.last, node.children
-	var list = [], child = node.firstChild;
-	while (child) {
-		if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
-			list.push(_node(child));
-		}
-		child = child.nextSibling;
-	}
-	if (list.length > 0) {
-		this.first = list[0];
-		this.last = list[list.length - 1];
-	} else {
-		this.first = this.last = null;
-	}
-	this.children = list;
-	//node.index
-	var i = -1, sibling = node;
-	while (sibling) {
-		i++;
-		sibling = sibling.previousSibling;
-	}
-	this.index = i;
 }
 
 K.node = _node;
@@ -755,6 +841,302 @@ var _START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
+
+//更新collapsed
+function _updateCollapsed() {
+	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
+}
+//更新commonAncestorContainer
+function _updateCommonAncestor(doc) {
+	function getParents(node) {
+		var parents = [];
+		while (node) {
+			parents.push(node);
+			node = node.parentNode;
+		}
+		return parents;
+	}
+	var parentsA = getParents(this.startContainer),
+		parentsB = getParents(this.endContainer),
+		i = 0, lenA = parentsA.length, lenB = parentsB.length, parentA, parentB;
+	while (++i) {
+		parentA = parentsA[lenA - i];
+		parentB = parentsB[lenB - i];
+		if (!parentA || !parentB || parentA !== parentB) {
+			break;
+		}
+	}
+	this.commonAncestorContainer = parentsA[lenA - i + 1];
+}
+//检查开始节点和结束节点的位置，校正错误设置
+function _compareAndUpdate(doc) {
+	var rangeA = _range(doc),
+		rangeB = _range(doc);
+	rangeA.startContainer = rangeA.endContainer = this.startContainer;
+	rangeA.startOffset = rangeA.endOffset = this.startOffset;
+	rangeB.startContainer = rangeB.endContainer = this.endContainer;
+	rangeB.startOffset = rangeB.endOffset = this.endOffset;
+	if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
+		this.startContainer = this.endContainer;
+		this.startOffset = this.endOffset;
+	}
+}
+/*
+	根据参数复制或删除KRange的内容。
+	cloneContents: copyAndDelete(true, false)
+	extractContents: copyAndDelete(true, true)
+	deleteContents: copyAndDelete(false, true)
+*/
+function _copyAndDelete(doc, isCopy, isDelete) {
+	var self = this,
+		startContainer = self.startContainer,
+		startOffset = self.startOffset,
+		endContainer = self.endContainer,
+		endOffset = self.endOffset,
+		nodeList = [],
+		selfRange = self;
+	if (isDelete) {
+		selfRange = self.cloneRange();
+		self.collapse(true);
+		if (startContainer.nodeType == 3 && startOffset === 0) {
+			self.setStart(startContainer.parentNode, 0);
+			self.setEnd(startContainer.parentNode, 0);
+		}
+	}
+	function splitTextNode(node, startOffset, endOffset) {
+		var length = node.nodeValue.length, centerNode;
+		if (isCopy) {
+			var cloneNode = node.cloneNode(true);
+			centerNode = cloneNode.splitText(startOffset);
+			centerNode.splitText(endOffset - startOffset);
+		}
+		if (isDelete) {
+			var center = node;
+			if (startOffset > 0) {
+				center = node.splitText(startOffset);
+			}
+			if (endOffset < length) {
+				center.splitText(endOffset - startOffset);
+			}
+			nodeList.push(center);
+		}
+		return centerNode;
+	}
+	function getTextNode(node) {
+		if (node == startContainer && node == endContainer) {
+			return splitTextNode(node, startOffset, endOffset);
+		} else if (node == startContainer) {
+			return splitTextNode(node, startOffset, node.nodeValue.length);
+		} else if (node == endContainer) {
+			return splitTextNode(node, 0, endOffset);
+		} else {
+			return splitTextNode(node, 0, node.nodeValue.length);
+		}
+	}
+	function extractNodes(parent, frag) {
+		var node = parent.firstChild;
+		while (node) {
+			var range = _range(doc);
+			range.selectNode(node);
+			if (range.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
+				return false;
+			}
+			var nextNode = node.nextSibling;
+			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
+				var type = node.nodeType;
+				if (type == 1) {
+					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0) {
+						if (isCopy) {
+							frag.appendChild(node.cloneNode(true));
+						}
+						if (isDelete) {
+							nodeList.push(node);
+						}
+					} else {
+						var childFlag;
+						if (isCopy) {
+							childFlag = node.cloneNode(false);
+							frag.appendChild(childFlag);
+						}
+						if (!extractNodes(node, childFlag)) {
+							return false;
+						}
+					}
+				} else if (type == 3) {
+					var textNode = getTextNode(node);
+					if (textNode) {
+						frag.appendChild(textNode);
+					}
+				}
+			}
+			node = nextNode;
+		}
+		return true;
+	}
+	var frag = doc.createDocumentFragment(),
+		ancestor = selfRange.commonAncestorContainer;
+	if (ancestor.nodeType == 3) {
+		var textNode = getTextNode(ancestor);
+		if (textNode) {
+			frag.appendChild(textNode);
+		}
+	} else {
+		extractNodes(ancestor, frag);
+	}
+	for (var i = 0, len = nodeList.length; i < len; i++) {
+		var node = nodeList[i];
+		_node(node).remove();
+	}
+	return isCopy ? frag : self;
+}
+//根据原生Range，取得开始节点和结束节点的位置。IE专用
+function _getStartEnd(rng, isStart) {
+	var doc = rng.parentElement().ownerDocument;
+	var range = _range(doc);
+	var pointRange = rng.duplicate();
+	pointRange.collapse(isStart);
+	var parent = pointRange.parentElement();
+	var children = parent.childNodes;
+	if (children.length === 0) {
+		range.selectNode(parent);
+		return {node: range.startContainer, offset: range.startOffset};
+	}
+	var startNode = doc, startPos = 0, isEnd = false;
+	var testRange = rng.duplicate();
+	testRange.moveToElementText(parent);
+	for (var i = 0, len = children.length; i < len; i++) {
+		var node = children[i];
+		var cmp = testRange.compareEndPoints('StartToStart', pointRange);
+		if (cmp > 0) {
+			isEnd = true;
+		}
+		if (cmp === 0) {
+			return {node: node.parentNode, offset: i};
+		}
+		if (node.nodeType == 1) {
+			var nodeRange = rng.duplicate();
+			nodeRange.moveToElementText(node);
+			testRange.setEndPoint('StartToEnd', nodeRange);
+			if (isEnd) {
+				startPos += nodeRange.text.length;
+			} else {
+				startPos = 0;
+			}
+		} else if (node.nodeType == 3) {
+			testRange.moveStart('character', node.nodeValue.length);
+			startPos += node.nodeValue.length;
+		}
+		if (!isEnd) {
+			startNode = node;
+		}
+	}
+	if (!isEnd && startNode.nodeType == 1) {
+		range.setStartAfter(parent.lastChild);
+		return {node: range.startContainer, offset: range.startOffset};
+	}
+	testRange = rng.duplicate();
+	testRange.moveToElementText(parent);
+	testRange.setEndPoint('StartToEnd', pointRange);
+	startPos -= testRange.text.length;
+	return {node: startNode, offset: startPos};
+}
+//将原生Range转换成KRange
+function _toRange(rng) {
+	var doc, range;
+	if (_IE) {
+		doc = rng.parentElement().ownerDocument;
+		if (rng.item) {
+			range = _range(doc);
+			range.selectNode(rng.item(0));
+			return range;
+		}
+		var start = _getStartEnd(rng, true),
+			end = _getStartEnd(rng, false);
+		range = _range(doc);
+		range.setStart(start.node, start.offset);
+		range.setEnd(end.node, end.offset);
+		return range;
+	} else {
+		var startContainer = rng.startContainer;
+		doc = startContainer.ownerDocument || startContainer;
+		range = _range(doc);
+		range.setStart(startContainer, rng.startOffset);
+		range.setEnd(rng.endContainer, rng.endOffset);
+		return range;
+	}
+}
+//取得父节点里的该节点前的纯文本长度。IE专用
+function _getBeforeLength(node) {
+	var doc = node.ownerDocument,
+		len = 0,
+		sibling = node.previousSibling;
+	while (sibling) {
+		if (sibling.nodeType == 1) {
+			if (!_node(sibling).isSingle()) {
+				var range = doc.body.createTextRange();
+				range.moveToElementText(sibling);
+				len += range.text.length;
+			} else {
+				len += 1;
+			}
+		} else if (sibling.nodeType == 3) {
+			len += sibling.nodeValue.length;
+		}
+		sibling = sibling.previousSibling;
+	}
+	return len;
+}
+//根据Node和offset，取得表示该位置的原生Range。IE专用
+function _getEndRange(node, offset) {
+	var doc = node.ownerDocument || node,
+		range = doc.body.createTextRange();
+	if (doc == node) {
+		range.collapse(true);
+		return range;
+	}
+	if (node.nodeType == 1) {
+		var children = node.childNodes, isStart, child, isTemp = false, temp;
+		if (offset === 0) {
+			child = children[0];
+			isStart = true;
+		} else {
+			child = children[offset - 1];
+			isStart = false;
+		}
+		if (!child) {
+			temp = doc.createTextNode(' ');
+			node.appendChild(temp);
+			child = temp;
+			isTemp = true;
+		}
+		if (child.nodeName.toLowerCase() === 'head') {
+			if (offset === 1) {
+				isStart = true;
+			}
+			if (offset === 2) {
+				isStart = false;
+			}
+			range.collapse(isStart);
+			return range;
+		}
+		if (child.nodeType == 1) {
+			range.moveToElementText(child);
+			range.collapse(isStart);
+		} else {
+			range.moveToElementText(node);
+			if (isTemp) {
+				node.removeChild(temp);
+			}
+			var len = _getBeforeLength(child);
+			len = isStart ? len : len + child.nodeValue.length;
+			range.moveStart('character', len);
+		}
+	} else if (node.nodeType == 3) {
+		range.moveToElementText(node.parentNode);
+		range.moveStart('character', offset + _getBeforeLength(node));
+	}
+	return range;
+}
 
 function _range(mixed) {
 	if (!mixed.nodeName) {
@@ -840,8 +1222,11 @@ function _range(mixed) {
 		},
 
 		collapse : function(toStart) {
-			if (toStart) this.setEnd(this.startContainer, this.startOffset);
-			else this.setStart(this.endContainer, this.endOffset);
+			if (toStart) {
+				this.setEnd(this.startContainer, this.startOffset);
+			} else {
+				this.setStart(this.endContainer, this.endOffset);
+			}
 			return this;
 		},
 
@@ -855,7 +1240,9 @@ function _range(mixed) {
 				arr[_END_TO_END] = 'EndToEnd';
 				arr[_END_TO_START] = 'StartToEnd';
 				var cmp = rangeA.compareEndPoints(arr[how], rangeB);
-				if (cmp !== 0) return cmp;
+				if (cmp !== 0) {
+					return cmp;
+				}
 				var nodeA, nodeB, nodeC, posA, posB;
 				if (how === _START_TO_START || how === _END_TO_START) {
 					nodeA = this.startContainer;
@@ -942,7 +1329,9 @@ function _range(mixed) {
 				endNode = endContainer.childNodes[endOffset - 1];
 				if (endNode.nodeType == 3) {
 					eq = startContainer == endNode;
-					if (eq) endTextPos = endNode.nodeValue.length;
+					if (eq) {
+						endTextPos = endNode.nodeValue.length;
+					}
 				}
 			}
 			if (startContainer.nodeType == 1) {
@@ -952,7 +1341,7 @@ function _range(mixed) {
 					parentNode = startContainer;
 				}
 			} else {
-				if (startOffset == 0) {
+				if (startOffset === 0) {
 					afterNode = startContainer;
 				} else if (startOffset < startContainer.length) {
 					afterNode = startContainer.splitText(startOffset);
@@ -969,19 +1358,33 @@ function _range(mixed) {
 					}
 				}
 			}
-			if (afterNode) afterNode.parentNode.insertBefore(node, afterNode);
-			if (parentNode) parentNode.appendChild(node);
+			if (afterNode) {
+				afterNode.parentNode.insertBefore(node, afterNode);
+			}
+			if (parentNode) {
+				parentNode.appendChild(node);
+			}
 			if (isFrag) {
-				if (node.firstChild) this.setStartBefore(node.firstChild);
+				if (node.firstChild) {
+					this.setStartBefore(node.firstChild);
+				}
 				if (this.collapsed) {
-					if (afterNode) endNode = afterNode.previousSibling;
-					if (parentNode) endNode = parentNode.lastChild;
+					if (afterNode) {
+						endNode = afterNode.previousSibling;
+					}
+					if (parentNode) {
+						endNode = parentNode.lastChild;
+					}
 				}
 			} else {
 				this.setStartBefore(node);
-				if (this.collapsed) endNode = node;
+				if (this.collapsed) {
+					endNode = node;
+				}
 			}
-			if (endNode) this.setEndAfter(endNode);
+			if (endNode) {
+				this.setEndAfter(endNode);
+			}
 			return this;
 		},
 
@@ -1013,276 +1416,6 @@ function _range(mixed) {
 		}
 	};
 }
-//更新collapsed
-function _updateCollapsed() {
-	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
-}
-//更新commonAncestorContainer
-function _updateCommonAncestor(doc) {
-	function getParents(node) {
-		var parents = [];
-		while (node) {
-			parents.push(node);
-			node = node.parentNode;
-		}
-		return parents;
-	}
-	var parentsA = getParents(this.startContainer),
-		parentsB = getParents(this.endContainer),
-		i = 0, lenA = parentsA.length, lenB = parentsB.length, parentA, parentB;
-	while (++i) {
-		parentA = parentsA[lenA - i], parentB = parentsB[lenB - i];
-		if (!parentA || !parentB || parentA !== parentB) break;
-	}
-	this.commonAncestorContainer = parentsA[lenA - i + 1];
-}
-//检查开始节点和结束节点的位置，校正错误设置
-function _compareAndUpdate(doc) {
-	var rangeA = _range(doc),
-		rangeB = _range(doc);
-	rangeA.startContainer = rangeA.endContainer = this.startContainer;
-	rangeA.startOffset = rangeA.endOffset = this.startOffset;
-	rangeB.startContainer = rangeB.endContainer = this.endContainer;
-	rangeB.startOffset = rangeB.endOffset = this.endOffset;
-	if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
-		this.startContainer = this.endContainer;
-		this.startOffset = this.endOffset;
-	}
-}
-/*
-	根据参数复制或删除KRange的内容。
-	cloneContents: copyAndDelete(true, false)
-	extractContents: copyAndDelete(true, true)
-	deleteContents: copyAndDelete(false, true)
-*/
-function _copyAndDelete(doc, isCopy, isDelete) {
-	var self = this,
-		startContainer = self.startContainer,
-		startOffset = self.startOffset,
-		endContainer = self.endContainer,
-		endOffset = self.endOffset,
-		nodeList = [],
-		selfRange = self;
-	if (isDelete) {
-		selfRange = self.cloneRange();
-		self.collapse(true);
-		if (startContainer.nodeType == 3 && startOffset == 0) {
-			self.setStart(startContainer.parentNode, 0);
-			self.setEnd(startContainer.parentNode, 0);
-		}
-	}
-	function splitTextNode(node, startOffset, endOffset) {
-		var length = node.nodeValue.length,
-			centerNode;
-		if (isCopy) {
-			var cloneNode = node.cloneNode(true),
-			centerNode = cloneNode.splitText(startOffset);
-			centerNode.splitText(endOffset - startOffset);
-		}
-		if (isDelete) {
-			var center = node;
-			if (startOffset > 0) center = node.splitText(startOffset);
-			if (endOffset < length) center.splitText(endOffset - startOffset);
-			nodeList.push(center);
-		}
-		return centerNode;
-	}
-	function getTextNode(node) {
-		if (node == startContainer && node == endContainer) {
-			return splitTextNode(node, startOffset, endOffset);
-		} else if (node == startContainer) {
-			return splitTextNode(node, startOffset, node.nodeValue.length);
-		} else if (node == endContainer) {
-			return splitTextNode(node, 0, endOffset);
-		} else {
-			return splitTextNode(node, 0, node.nodeValue.length);
-		}
-	}
-	function extractNodes(parent, frag) {
-		var node = parent.firstChild;
-		while (node) {
-			var range = _range(doc);
-			range.selectNode(node);
-			if (range.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) return false;
-			var nextNode = node.nextSibling;
-			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
-				var type = node.nodeType;
-				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0) {
-						if (isCopy) {
-							frag.appendChild(node.cloneNode(true));
-						}
-						if (isDelete) {
-							nodeList.push(node);
-						}
-					} else {
-						var childFlag;
-						if (isCopy) {
-							childFlag = node.cloneNode(false);
-							frag.appendChild(childFlag);
-						}
-						if (!extractNodes(node, childFlag)) return false;
-					}
-				} else if (type == 3) {
-					var textNode = getTextNode(node);
-					if (textNode) frag.appendChild(textNode);
-				}
-			}
-			node = nextNode;
-		}
-		return true;
-	}
-	var frag = doc.createDocumentFragment(),
-		ancestor = selfRange.commonAncestorContainer;
-	if (ancestor.nodeType == 3) {
-		var textNode = getTextNode(ancestor);
-		if (textNode) frag.appendChild(textNode);
-	} else {
-		extractNodes(ancestor, frag);
-	}
-	for (var i = 0, len = nodeList.length; i < len; i++) {
-		var node = nodeList[i];
-		_node(node).remove();
-	}
-	return isCopy ? frag : self;
-}
-//根据原生Range，取得开始节点和结束节点的位置。IE专用
-function _getStartEnd(rng, isStart) {
-	var doc = rng.parentElement().ownerDocument;
-	var range = _range(doc);
-	var pointRange = rng.duplicate();
-	pointRange.collapse(isStart);
-	var parent = pointRange.parentElement();
-	var children = parent.childNodes;
-	if (children.length == 0) {
-		range.selectNode(parent);
-		return {node: range.startContainer, offset: range.startOffset};
-	}
-	var startNode = doc, startPos = 0, isEnd = false;
-	var testRange = rng.duplicate();
-	testRange.moveToElementText(parent);
-	for (var i = 0, len = children.length; i < len; i++) {
-		var node = children[i];
-		var cmp = testRange.compareEndPoints('StartToStart', pointRange);
-		if (cmp > 0) isEnd = true;
-		if (cmp == 0) {
-			return {node: node.parentNode, offset: i};
-		}
-		if (node.nodeType == 1) {
-			var nodeRange = rng.duplicate();
-			nodeRange.moveToElementText(node);
-			testRange.setEndPoint('StartToEnd', nodeRange);
-			if (isEnd) startPos += nodeRange.text.length;
-			else startPos = 0;
-		} else if (node.nodeType == 3) {
-			testRange.moveStart('character', node.nodeValue.length);
-			startPos += node.nodeValue.length;
-		}
-		if (!isEnd) startNode = node;
-	}
-	if (!isEnd && startNode.nodeType == 1) {
-		range.setStartAfter(parent.lastChild);
-		return {node: range.startContainer, offset: range.startOffset};
-	}
-	testRange = rng.duplicate();
-	testRange.moveToElementText(parent);
-	testRange.setEndPoint('StartToEnd', pointRange);
-	startPos -= testRange.text.length;
-	return {node: startNode, offset: startPos};
-}
-//将原生Range转换成KRange
-function _toRange(rng) {
-	if (_IE) {
-		var doc = rng.parentElement().ownerDocument;
-		if (rng.item) {
-			var range = _range(doc);
-			range.selectNode(rng.item(0));
-			return range;
-		}
-		var start = _getStartEnd(rng, true),
-			end = _getStartEnd(rng, false),
-			range = _range(doc);
-		range.setStart(start.node, start.offset);
-		range.setEnd(end.node, end.offset);
-		return range;
-	} else {
-		var startContainer = rng.startContainer,
-			doc = startContainer.ownerDocument || startContainer,
-			range = _range(doc);
-		range.setStart(startContainer, rng.startOffset);
-		range.setEnd(rng.endContainer, rng.endOffset);
-		return range;
-	}
-}
-//取得父节点里的该节点前的纯文本长度。IE专用
-function _getBeforeLength(node) {
-	var doc = node.ownerDocument,
-		len = 0,
-		sibling = node.previousSibling;
-	while (sibling) {
-		if (sibling.nodeType == 1) {
-			if (!_node(sibling).isSingle()) {
-				var range = doc.body.createTextRange();
-				range.moveToElementText(sibling);
-				len += range.text.length;
-			} else {
-				len += 1;
-			}
-		} else if (sibling.nodeType == 3) {
-			len += sibling.nodeValue.length;
-		}
-		sibling = sibling.previousSibling;
-	}
-	return len;
-}
-//根据Node和offset，取得表示该位置的原生Range。IE专用
-function _getEndRange(node, offset) {
-	var doc = node.ownerDocument || node,
-		range = doc.body.createTextRange();
-	if (doc == node) {
-		range.collapse(true);
-		return range;
-	}
-	if (node.nodeType == 1) {
-		var children = node.childNodes,
-			isStart,
-			child,
-			isTemp = false;
-		if (offset == 0) {
-			child = children[0];
-			isStart = true;
-		} else {
-			child = children[offset - 1];
-			isStart = false;
-		}
-		if (!child) {
-			var temp = doc.createTextNode(' ');
-			node.appendChild(temp);
-			child = temp;
-			isTemp = true;
-		}
-		if (child.nodeName.toLowerCase() === 'head') {
-			if (offset === 1) isStart = true;
-			if (offset === 2) isStart = false;
-			range.collapse(isStart);
-			return range;
-		}
-		if (child.nodeType == 1) {
-			range.moveToElementText(child);
-			range.collapse(isStart);
-		} else {
-			range.moveToElementText(node);
-			if (isTemp) node.removeChild(temp);
-			var len = _getBeforeLength(child);
-			len = isStart ? len : len + child.nodeValue.length;
-			range.moveStart('character', len);
-		}
-	} else if (node.nodeType == 3) {
-		range.moveToElementText(node.parentNode);
-		range.moveStart('character', offset + _getBeforeLength(node));
-	}
-	return range;
-}
 
 K.range = _range;
 K.START_TO_START = _START_TO_START;
@@ -1290,186 +1423,15 @@ K.START_TO_END = _START_TO_END;
 K.END_TO_END = _END_TO_END;
 K.END_TO_START = _END_TO_START;
 
-function _cmd(mixed) {
-	var sel, doc, rng;
-	if (mixed.nodeName) {
-		//get selection and original range when mixed is a document or a node
-		doc = mixed.ownerDocument || mixed;
-		sel = _getSel(doc);
-		try {
-			if (sel.rangeCount > 0) rng = sel.getRangeAt(0);
-			else rng = sel.createRange();
-		} catch(e) {}
-		mixed = rng || doc;
-		if (_IE) {
-			if (!rng || rng.parentElement().ownerDocument !== doc) return null;
-		}
-	} else {
-		//get selection and original range when mixed is KRange
-		var startContainer = mixed.startContainer;
-		doc = startContainer.ownerDocument || startContainer;
-		sel = _getSel(doc);
-		rng = mixed.get();
-	}
-	var win = _getWin(doc);
-	var range = _range(mixed);
-	//create KRange object
-	return {
-		wrap : function(val) {
-			var wrapper = _node(val, doc);
-			//非inline标签
-			if (!wrapper.isInline()) {
-				var clone = wrapper.clone(false);
-				range.surroundContents(clone.get());
-				_select(sel, range);
-				return this;
-			}
-			//inline标签，collapsed = true
-			if (range.collapsed) {
-				var clone = wrapper.clone(false);
-				range.insertNode(clone.get());
-				range.selectNodeContents(clone.get());
-				_select(sel, range);
-				return this;
-			}
-			//inline标签，collapsed = false
-			var frag = range.extractContents(),
-				name = wrapper.name;
-			_node(frag).each(function(node) {
-				if (node.type == 3 && node.parent().name !== name) {
-					var clone = wrapper.clone(false);
-					clone.append(node.clone(true));
-					node.replaceWith(clone);
-				} else if (node.name === name) {
-					_each(wrapper.attr(), function(key, val) {
-						if (key !== 'style') node.attr(key, val);
-					});
-					_each(wrapper.css(), function(key, val) {
-						node.css(key, val);
-					});
-				}
-			});
-			range.insertNode(frag);
-			_select(sel, range);
-			return this;
-		},
-		remove : function(map) {
-			//collapsed = true
-			if (range.collapsed) {
-				return this;
-			}
-			//collapsed = false
-			var frag = range.extractContents(),
-				name = wrapper.name;
-			_node(frag).each(function(node) {
-				if (node.type == 3 && node.parent().name !== name) {
-					var clone = wrapper.clone(false);
-					clone.append(node.clone(true));
-					node.replaceWith(clone);
-				} else if (node.name === name) {
-					_each(wrapper.attr(), function(key, val) {
-						if (key !== 'style') node.attr(key, val);
-					});
-					_each(wrapper.css(), function(key, val) {
-						node.css(key, val);
-					});
-				}
-			});
-			range.insertNode(frag);
-			_select(sel, range);
-			return this;
-		},
-		//Reference: document.execCommand
-		exec : function(cmd, val) {
-			return this[cmd.toLowerCase()](val);
-		},
-		//Reference: document.queryCommandState
-		state : function(cmd) {
-			var bool = false;
-			try {
-				bool = doc.queryCommandState(cmd);
-			} catch (e) {}
-			return bool;
-		},
-		//Reference: document.queryCommandValue
-		val : function(cmd) {
-			function lc(val) {
-				return val.toLowerCase();
-			}
-			cmd = lc(cmd);
-			var val = '';
-			if (cmd === 'fontfamily' || cmd === 'fontname') {
-				val = _nativeCommandValue(doc, 'fontname');
-				val = val.replace(/['"]/g, '');
-				return lc(val);
-			}
-			if (cmd === 'formatblock') {
-				val = _nativeCommandValue(doc, cmd);
-				if (val === '') {
-					var el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
-					if (el) val = el.nodeName;
-				}
-				if (val === 'Normal') val = 'p';
-				return lc(val);
-			}
-			if (cmd === 'fontsize') {
-				var el = _getCommonNode(range, {'*' : '.font-size'});
-				if (el) val = _node(el).css('font-size');
-				return lc(val);
-			}
-			if (cmd === 'forecolor') {
-				var el = _getCommonNode(range, {'*' : '.color'});
-				if (el) val = _node(el).css('color');
-				val = _toHex(val);
-				if (val === '') val = 'default';
-				return lc(val);
-			}
-			if (cmd === 'hilitecolor') {
-				var el = _getCommonNode(range, {'*' : '.background-color'});
-				val = _toHex(val);
-				if (val === '') val = 'default';
-				return lc(val);
-			}
-			return val;
-		},
-		bold : function() {
-			return this.wrap('<strong></strong>');
-		},
-		italic : function() {
-			return this.wrap('<em></em>');
-		},
-		forecolor : function(val) {
-			return this.wrap('<span style="color:' + val + ';"></span>');
-		},
-		hilitecolor : function(val) {
-			return this.wrap('<span style="background-color:' + val + ';"></span>');
-		},
-		fontsize : function(val) {
-			return this.wrap('<span style="font-size:' + val + ';"></span>');
-		},
-		fontname : function(val) {
-			return this.fontfamily(val);
-		},
-		fontfamily : function(val) {
-			return this.wrap('<span style="font-family:' + val + ';"></span>');
-		},
-		removeformat : function() {
-			var options = {
-				'*' : 'class,style'
-			},
-			tags = _INLINE_TAGS.split(',');
-			_each(tags, function(key, val) {
-				options[val] = '*';
-			});
-			this.remove(options);
-			return this;
-		}
-	};
-}
 //original queryCommandValue
 function _nativeCommandValue(doc, cmd) {
-	var val = doc.queryCommandValue(cmd);
-	if (typeof val !== 'string') val = '';
+	var val = '';
+	try {
+		val = doc.queryCommandValue(cmd);
+	} catch (e) {}
+	if (typeof val !== 'string') {
+		val = '';
+	}
 	return val;
 }
 //get window by document
@@ -1509,20 +1471,13 @@ function _select(sel, range) {
 	}
 	win.focus();
 }
-
-function _getCommonNode(range, map) {
-	var node = range.commonAncestorContainer, knode, arr;
-	while (node) {
-		if (_hasAttrOrCss(node, map, '*')) return node;
-		if (_hasAttrOrCss(node, map)) return node;
-		node = node.parentNode;
-	}
-	return null;
-}
 //判断一个node是否有指定属性或CSS
 function _hasAttrOrCss(node, map, mapKey) {
-	var knode = _node(node), mapKey = mapKey || knode.name, arr, newMap = {};
-	if (knode.type !== 1) return false;
+	var knode = _node(node), arr, newMap = {};
+	mapKey = mapKey || knode.name;
+	if (knode.type !== 1) {
+		return false;
+	}
 	_each(map, function(key, val) {
 		arr = key.split(',');
 		for (var i = 0, len = arr.length, v = arr[i]; i < len; i++) {
@@ -1532,11 +1487,225 @@ function _hasAttrOrCss(node, map, mapKey) {
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
 		for (var i = 0, len = arr.length, val = arr[i]; i < len; i++) {
-			if (val.charAt(0) === '.' && knode.css(val.substr(1)) !== '') return true;
-			if (val.charAt(0) !== '.' && knode.attr(val) !== '') return true;
+			if (val.charAt(0) === '.' && knode.css(val.substr(1)) !== '') {
+				return true;
+			}
+			if (val.charAt(0) !== '.' && knode.attr(val) !== '') {
+				return true;
+			}
 		}
 	}
 	return false;
+}
+
+function _getCommonNode(range, map) {
+	var node = range.commonAncestorContainer, knode, arr;
+	while (node) {
+		if (_hasAttrOrCss(node, map, '*')) {
+			return node;
+		}
+		if (_hasAttrOrCss(node, map)) {
+			return node;
+		}
+		node = node.parentNode;
+	}
+	return null;
+}
+
+function _cmd(mixed) {
+	var sel, doc, rng;
+	if (mixed.nodeName) {
+		//get selection and original range when mixed is a document or a node
+		doc = mixed.ownerDocument || mixed;
+		sel = _getSel(doc);
+		try {
+			if (sel.rangeCount > 0) {
+				rng = sel.getRangeAt(0);
+			} else {
+				rng = sel.createRange();
+			}
+		} catch(e) {}
+		mixed = rng || doc;
+		if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
+			return null;
+		}
+	} else {
+		//get selection and original range when mixed is KRange
+		var startContainer = mixed.startContainer;
+		doc = startContainer.ownerDocument || startContainer;
+		sel = _getSel(doc);
+		rng = mixed.get();
+	}
+	var win = _getWin(doc),
+		range = _range(mixed);
+	//create KRange object
+	return {
+		wrap : function(val) {
+			var wrapper = _node(val, doc), clone;
+			//非inline标签
+			if (!wrapper.isInline()) {
+				clone = wrapper.clone(false);
+				range.surroundContents(clone.get());
+				_select(sel, range);
+				return this;
+			}
+			//inline标签，collapsed = true
+			if (range.collapsed) {
+				clone = wrapper.clone(false);
+				range.insertNode(clone.get());
+				range.selectNodeContents(clone.get());
+				_select(sel, range);
+				return this;
+			}
+			//inline标签，collapsed = false
+			var frag = range.extractContents(),
+				name = wrapper.name;
+			_node(frag).each(function(node) {
+				if (node.type == 3 && node.parent().name !== name) {
+					clone = wrapper.clone(false);
+					clone.append(node.clone(true));
+					node.replaceWith(clone);
+				} else if (node.name === name) {
+					_each(wrapper.attr(), function(key, val) {
+						if (key !== 'style') {
+							node.attr(key, val);
+						}
+					});
+					_each(wrapper.css(), function(key, val) {
+						node.css(key, val);
+					});
+				}
+			});
+			range.insertNode(frag);
+			_select(sel, range);
+			return this;
+		},
+		remove : function(map) {
+			//collapsed = true
+			if (range.collapsed) {
+				return this;
+			}
+			//collapsed = false
+			var frag = range.extractContents(),
+				name = wrapper.name;
+			_node(frag).each(function(node) {
+				if (node.type == 3 && node.parent().name !== name) {
+					var clone = wrapper.clone(false);
+					clone.append(node.clone(true));
+					node.replaceWith(clone);
+				} else if (node.name === name) {
+					_each(wrapper.attr(), function(key, val) {
+						if (key !== 'style') {
+							node.attr(key, val);
+						}
+					});
+					_each(wrapper.css(), function(key, val) {
+						node.css(key, val);
+					});
+				}
+			});
+			range.insertNode(frag);
+			_select(sel, range);
+			return this;
+		},
+		//Reference: document.execCommand
+		exec : function(cmd, val) {
+			return this[cmd.toLowerCase()](val);
+		},
+		//Reference: document.queryCommandState
+		state : function(cmd) {
+			var bool = false;
+			try {
+				bool = doc.queryCommandState(cmd);
+			} catch (e) {}
+			return bool;
+		},
+		//Reference: document.queryCommandValue
+		val : function(cmd) {
+			function lc(val) {
+				return val.toLowerCase();
+			}
+			cmd = lc(cmd);
+			var val = '', el;
+			if (cmd === 'fontfamily' || cmd === 'fontname') {
+				val = _nativeCommandValue(doc, 'fontname');
+				val = val.replace(/['"]/g, '');
+				return lc(val);
+			}
+			if (cmd === 'formatblock') {
+				val = _nativeCommandValue(doc, cmd);
+				if (val === '') {
+					el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
+					if (el) {
+						val = el.nodeName;
+					}
+				}
+				if (val === 'Normal') {
+					val = 'p';
+				}
+				return lc(val);
+			}
+			if (cmd === 'fontsize') {
+				el = _getCommonNode(range, {'*' : '.font-size'});
+				if (el) {
+					val = _node(el).css('font-size');
+				}
+				return lc(val);
+			}
+			if (cmd === 'forecolor') {
+				el = _getCommonNode(range, {'*' : '.color'});
+				if (el) {
+					val = _node(el).css('color');
+				}
+				val = _toHex(val);
+				if (val === '') {
+					val = 'default';
+				}
+				return lc(val);
+			}
+			if (cmd === 'hilitecolor') {
+				el = _getCommonNode(range, {'*' : '.background-color'});
+				val = _toHex(val);
+				if (val === '') {
+					val = 'default';
+				}
+				return lc(val);
+			}
+			return val;
+		},
+		bold : function() {
+			return this.wrap('<strong></strong>');
+		},
+		italic : function() {
+			return this.wrap('<em></em>');
+		},
+		forecolor : function(val) {
+			return this.wrap('<span style="color:' + val + ';"></span>');
+		},
+		hilitecolor : function(val) {
+			return this.wrap('<span style="background-color:' + val + ';"></span>');
+		},
+		fontsize : function(val) {
+			return this.wrap('<span style="font-size:' + val + ';"></span>');
+		},
+		fontname : function(val) {
+			return this.fontfamily(val);
+		},
+		fontfamily : function(val) {
+			return this.wrap('<span style="font-family:' + val + ';"></span>');
+		},
+		removeformat : function() {
+			var options = {
+				'*' : 'class,style'
+			},
+			tags = _INLINE_TAGS.split(',');
+			_each(tags, function(key, val) {
+				options[val] = '*';
+			});
+			this.remove(options);
+			return this;
+		}
+	};
 }
 
 K.cmd = _cmd;
@@ -1553,7 +1722,9 @@ function _getInitHtml(bodyClass, css) {
 		}
 		if (_isArray(css)) {
 			_each(css, function(i, path) {
-				if (path !== '') arr.push('<link href="' + path + '" rel="stylesheet" />');
+				if (path !== '') {
+					arr.push('<link href="' + path + '" rel="stylesheet" />');
+				}
 			});
 		} else {
 			arr.push('<style>' + css + '</style>');
@@ -1566,7 +1737,7 @@ function _getInitHtml(bodyClass, css) {
 function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
-	if (val === _undef) {
+	if (val === undefined) {
 		return _node(body).html();
 	} else {
 		_node(body).html(val);
@@ -1577,7 +1748,7 @@ function _iframeVal(val) {
 function _textareaVal(val) {
 	var self = this,
 		textarea = self.textarea;
-	if (val === _undef) {
+	if (val === undefined) {
 		return textarea.val();
 	} else {
 		textarea.val(val);
@@ -1587,7 +1758,7 @@ function _textareaVal(val) {
 
 function _edit(expr, options) {
 	var srcElement = _node(expr),
-		designMode = options.designMode === _undef ? true : options.designMode,
+		designMode = options.designMode === undefined ? true : options.designMode,
 		bodyClass = options.bodyClass,
 		css = options.css;
 	function srcVal(val) {
@@ -1609,7 +1780,9 @@ function _edit(expr, options) {
 		},
 		create : function() {
 			var self = this;
-			if (self.iframe) return self;
+			if (self.iframe) {
+				return self;
+			}
 			//create elements
 			var iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
 			iframe.css({
@@ -1623,8 +1796,11 @@ function _edit(expr, options) {
 				width : self.width,
 				height : self.height
 			});
-			if (designMode) textarea.hide()
-			else iframe.hide();
+			if (designMode) {
+				textarea.hide();
+			} else {
+				iframe.hide();
+			}
 			srcElement.before(iframe);
 			srcElement.before(textarea);
 			srcElement.hide();
@@ -1636,14 +1812,19 @@ function _edit(expr, options) {
 			self.iframe = iframe;
 			self.textarea = textarea;
 			self.doc = doc;
-			if (designMode) _iframeVal.call(self, srcVal());
-			else _textareaVal.call(self, srcVal());
+			if (designMode) {
+				_iframeVal.call(self, srcVal());
+			} else {
+				_textareaVal.call(self, srcVal());
+			}
 			self.cmd = _cmd(doc);
 			//add events
 			//焦点离开编辑区域时保存selection
 			function selectionHandler(e) {
 				var cmd = _cmd(doc);
-				if (cmd) self.cmd = cmd;
+				if (cmd) {
+					self.cmd = cmd;
+				}
 			}
 			self.oninput(selectionHandler);
 			_node(doc).bind('mouseup', selectionHandler);
@@ -1652,7 +1833,6 @@ function _edit(expr, options) {
 			function commandValueHandler(e) {
 				_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
 					var cmdVal = self.cmd.val(this);
-					console.log(cmdVal);
 				});
 			}
 			self.oninput(commandValueHandler);
@@ -1662,7 +1842,6 @@ function _edit(expr, options) {
 				var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
 				_each(cmds, function() {
 					var cmdState = self.cmd.state(this);
-					console.log(cmdState);
 				});
 			}
 			self.oninput(commandStateHandler);
@@ -1674,7 +1853,9 @@ function _edit(expr, options) {
 				iframe = self.iframe,
 				textarea = self.textarea,
 				doc = self.doc;
-			if (!iframe) return self;
+			if (!iframe) {
+				return self;
+			}
 			//remove events
 			_node(doc).unbind();
 			_node(doc.body).unbind();
@@ -1682,7 +1863,6 @@ function _edit(expr, options) {
 			//remove elements
 			srcElement.show();
 			srcVal(self.val());
-			doc.src = 'javascript:false';
 			iframe.remove();
 			textarea.remove();
 			self.iframe = self.textarea = null;
@@ -1692,8 +1872,10 @@ function _edit(expr, options) {
 			var self = this,
 				iframe = self.iframe,
 				textarea = self.textarea;
-			if (!iframe) return self;
-			if (bool === _undef ? !designMode : bool) {
+			if (!iframe) {
+				return self;
+			}
+			if (bool === undefined ? !designMode : bool) {
 				if (!designMode) {
 					textarea.hide();
 					_iframeVal.call(self, _textareaVal.call(self));
@@ -1718,7 +1900,9 @@ function _edit(expr, options) {
 		},
 		focus : function() {
 			var self = this;
-			if (self.iframe && designMode) self.iframe.contentWindow.focus();
+			if (self.iframe && designMode) {
+				self.iframe.contentWindow.focus();
+			}
 			return self;
 		},
 		oninput : function(fn) {
@@ -1759,7 +1943,9 @@ _each(_K, function(key, val) {
 	K[key] = val;
 });
 
-if (window.K === _undef) window.K = K;
+if (window.K === undefined) {
+	window.K = K;
+}
 window.KindEditor = K;
 
-})();
+})(window);

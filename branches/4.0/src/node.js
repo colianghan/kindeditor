@@ -18,6 +18,19 @@
 #using "selector.js"
 */
 
+function _get(val) {
+	return val.get ? val.get() : val;
+}
+
+function _toCamel(str) {
+	var arr = str.split('-');
+	str = '';
+	_each(arr, function(key, val) {
+		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
+	});
+	return str;
+}
+
 /**
 	@name KindEditor.node
 	@class KNode类
@@ -34,8 +47,8 @@ function _node(expr, root) {
 	var node;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			var doc = root ? root.ownerDocument || root : document,
-				div = doc.createElement('div');
+			var ownerDocument = root ? root.ownerDocument || root : document,
+				div = ownerDocument.createElement('div');
 			div.innerHTML = expr;
 			node = div.firstChild;
 			div = null;
@@ -45,7 +58,9 @@ function _node(expr, root) {
 	} else {
 		node = expr;
 	}
-	if (!node) return null;
+	if (!node) {
+		return null;
+	}
 	var doc = node.ownerDocument || node,
 		win = doc.parentWindow || doc.defaultView,
 		prevDisplay = '';
@@ -103,19 +118,23 @@ function _node(expr, root) {
 			return _getAttr(node, key);
 		},
 		attr : function(key, val) {
-			if (key === _undef) {
+			if (key === undefined) {
 				return _getAttrList(this.outer());
-			} else if (val === _undef) {
+			} else if (val === undefined) {
 				val = _getAttr(node, key);
 				return val === null ? '' : val;
 			} else {
-				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') key = 'className';
+				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+					key = 'className';
+				}
 				node.setAttribute(key, '' + val);
 				return this;
 			}
 		},
 		removeAttr : function(key) {
-			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') key = 'className';
+			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+				key = 'className';
+			}
 			this.attr(key, '');
 			node.removeAttribute(key);
 			return this;
@@ -128,16 +147,19 @@ function _node(expr, root) {
 			
 		},
 		addClass : function(cls) {
-			if (!this.hasClass(cls)) node.className = _trim(node.className + ' ' + cls);
+			if (!this.hasClass(cls)) {
+				node.className = _trim(node.className + ' ' + cls);
+			}
 			return this;
 		},
 		removeClass : function(cls) {
-			if(this.hasClass(cls))
-				node.className = _trim(node.className.replace(new RegExp('\s*' + cls + '\s*'), ''));
+			if (this.hasClass(cls)) {
+				node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+			}
 			return this;
 		},
 		html : function(val) {
-			if (val === _undef) {
+			if (val === undefined) {
 				return _formatHtml(node.innerHTML);
 			} else {
 				node.innerHTML = _formatHtml(val);
@@ -145,17 +167,20 @@ function _node(expr, root) {
 			}
 		},
 		val : function(val) {
-			if (val === _undef) {
+			if (val === undefined) {
 				return this.hasVal() ? node.value : this.attr('value');
 			} else {
-				if (this.hasVal()) node.value = val;
-				else this.attr('value' , val);
+				if (this.hasVal()) {
+					node.value = val;
+				} else {
+					this.attr('value' , val);
+				}
 				return this;
 			}
 		},
 		css : function(key, val) {
 			var self = this;
-			if (key === _undef) {
+			if (key === undefined) {
 				return _getCssList(this.attr('style'));
 			}
 			if (typeof key === 'object') {
@@ -164,7 +189,7 @@ function _node(expr, root) {
 				});
 				return this;
 			}
-			if (val === _undef) {
+			if (val === undefined) {
 				return node.style[key] || this.computedCss(key) || '';
 			}
 			node.style[_toCamel(key)] = val;
@@ -215,8 +240,9 @@ function _node(expr, root) {
 			return this;
 		},
 		show : function() {
-			if (this.computedCss('display') === 'none') 
+			if (this.computedCss('display') === 'none') {
 				this.css('display', prevDisplay);
+			}
 			return this;
 		},
 		hide : function() {
@@ -258,14 +284,20 @@ function _node(expr, root) {
 			return _node(node.nextSibling);
 		},
 		each : function(fn, order) {
-			order = (order === _undef) ? true : order;
+			order = (order === undefined) ? true : order;
 			function walk(knode) {
 				var n = order ? knode.first : knode.last;
-				if (!n) return;
+				if (!n) {
+					return;
+				}
 				while (n) {
 					var next = order ? n.next() : n.prev();
-					if (fn(n)) return true;
-					if (walk(n)) return;
+					if (fn(n)) {
+						return true;
+					}
+					if (walk(n)) {
+						return;
+					}
 					n = next;
 				}
 			}
@@ -275,46 +307,32 @@ function _node(expr, root) {
 			return this.type == 3 ? node.nodeValue : this.outer();
 		}
 	};
+	function _updateProp(node) {
+		//node.first, node.last, node.children
+		var list = [], child = node.firstChild;
+		while (child) {
+			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
+				list.push(_node(child));
+			}
+			child = child.nextSibling;
+		}
+		if (list.length > 0) {
+			this.first = list[0];
+			this.last = list[list.length - 1];
+		} else {
+			this.first = this.last = null;
+		}
+		this.children = list;
+		//node.index
+		var i = -1, sibling = node;
+		while (sibling) {
+			i++;
+			sibling = sibling.previousSibling;
+		}
+		this.index = i;
+	}
 	_updateProp.call(obj, node);
 	return obj;
-}
-
-function _get(val) {
-	return val.get ? val.get() : val;
-}
-
-function _toCamel(str) {
-	var arr = str.split('-');
-	str = '';
-	_each(arr, function(key, val) {
-		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
-	});
-	return str;
-}
-
-function _updateProp(node) {
-	//node.first, node.last, node.children
-	var list = [], child = node.firstChild;
-	while (child) {
-		if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
-			list.push(_node(child));
-		}
-		child = child.nextSibling;
-	}
-	if (list.length > 0) {
-		this.first = list[0];
-		this.last = list[list.length - 1];
-	} else {
-		this.first = this.last = null;
-	}
-	this.children = list;
-	//node.index
-	var i = -1, sibling = node;
-	while (sibling) {
-		i++;
-		sibling = sibling.previousSibling;
-	}
-	this.index = i;
 }
 
 K.node = _node;

@@ -36,7 +36,9 @@ function _unbindEvent(el, type, fn) {
 //http://github.com/jquery/jquery/blob/master/src/event.js
 var _props = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
 function _event(el, e) {
-	if (!e) return;
+	if (!e) {
+		return;
+	}
 	var obj = {},
 		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
 	_each(_props, function(key, val) {
@@ -62,15 +64,19 @@ function _event(el, e) {
 	if (!e.metaKey && e.ctrlKey) {
 		e.metaKey = e.ctrlKey;
 	}
-	if (!e.which && e.button !== _undef) {
+	if (!e.which && e.button !== undefined) {
 		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
 	}
 	obj.preventDefault = function() {
-		if (e.preventDefault) e.preventDefault();
+		if (e.preventDefault) {
+			e.preventDefault();
+		}
 		e.returnValue = false;
 	};
 	obj.stopPropagation = function() {
-		if (e.stopPropagation) e.stopPropagation();
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		}
 		e.cancelBubble = true;
 	};
 	obj.stop = function() {
@@ -94,18 +100,22 @@ function _getId(el) {
 
 function _bind(el, type, fn) {
 	var id = _getId(el);
-	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
+	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
-			if (val === _undef) _data[id][type].splice(key, 1);
+			if (val === undefined) {
+				_data[id][type].splice(key, 1);
+			}
 		});
 		_unbindEvent(el, type, _data[id][type][0]);
 	} else {
 		_data[id][type] = [];
 	}
-	if (_data[id][type].length == 0) {
+	if (_data[id][type].length === 0) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
-				if (key > 0 && val) val.call(el, _event(el, e));
+				if (key > 0 && val) {
+					val.call(el, _event(el, e));
+				}
 			});
 		};
 	}
@@ -117,7 +127,7 @@ function _bind(el, type, fn) {
 
 function _unbind(el, type, fn) {
 	var id = _getId(el);
-	if (type === _undef) {
+	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
 				_unbindEvent(el, key, val[0]);
@@ -126,15 +136,17 @@ function _unbind(el, type, fn) {
 		}
 		return;
 	}
-	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
-		if (fn === _undef) {
+	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+		if (fn === undefined) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			_data[id][type] = [];
 		} else {
 			for (var i = 0, len = _data[id][type].length; i < len; i++) {
-				if (_data[id][type][i] === fn) delete _data[id][type][i];
+				if (_data[id][type][i] === fn) {
+					delete _data[id][type][i];
+				}
 			}
-			if (_data[id][type].length == 2 && _data[id][type][1] === _undef) {
+			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				_data[id][type] = [];
 			}
@@ -144,7 +156,7 @@ function _unbind(el, type, fn) {
 
 function _fire(el, type) {
 	var id = _getId(el);
-	if (_data[id][type] !== _undef && _data[id][type].length > 0) {
+	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
