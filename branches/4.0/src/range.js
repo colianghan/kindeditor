@@ -154,7 +154,8 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
 				var type = node.nodeType;
 				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0) {
+					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0
+						&& range.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -200,15 +201,13 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 }
 //根据原生Range，取得开始节点和结束节点的位置。IE专用
 function _getStartEnd(rng, isStart) {
-	var doc = rng.parentElement().ownerDocument;
-	var range = _range(doc);
-	var pointRange = rng.duplicate();
+	var doc = rng.parentElement().ownerDocument,
+		pointRange = rng.duplicate();
 	pointRange.collapse(isStart);
-	var parent = pointRange.parentElement();
-	var children = parent.childNodes;
+	var parent = pointRange.parentElement(),
+		children = parent.childNodes;
 	if (children.length === 0) {
-		range.selectNode(parent);
-		return {node: range.startContainer, offset: range.startOffset};
+		return {node: parent.parentNode, offset: _node(parent).index};
 	}
 	var startNode = doc, startPos = 0, isEnd = false;
 	var testRange = rng.duplicate();
@@ -240,8 +239,7 @@ function _getStartEnd(rng, isStart) {
 		}
 	}
 	if (!isEnd && startNode.nodeType == 1) {
-		range.setStartAfter(parent.lastChild);
-		return {node: range.startContainer, offset: range.startOffset};
+		return {node: parent, offset: _node(parent.lastChild).index + 1};
 	}
 	testRange = rng.duplicate();
 	testRange.moveToElementText(parent);
@@ -712,8 +710,8 @@ function _range(mixed) {
 				startOffset = this.startOffset,
 				endContainer = this.endContainer,
 				endOffset = this.endOffset,
-				afterNode,
-				parentNode,
+				insertNode,
+				appendNode,
 				endNode,
 				endTextNode,
 				endTextPos,
@@ -729,45 +727,44 @@ function _range(mixed) {
 				}
 			}
 			if (startContainer.nodeType == 1) {
-				if (startContainer.childNodes.length > 0) {
-					afterNode = startContainer.childNodes[startOffset];
-				} else {
-					parentNode = startContainer;
+				insertNode = startContainer.childNodes[startOffset];
+				if (!insertNode) {
+					appendNode = startContainer;
 				}
 			} else {
 				if (startOffset === 0) {
-					afterNode = startContainer;
+					insertNode = startContainer;
 				} else if (startOffset < startContainer.length) {
-					afterNode = startContainer.splitText(startOffset);
+					insertNode = startContainer.splitText(startOffset);
 					if (eq) {
-						endTextNode = afterNode;
+						endTextNode = insertNode;
 						endTextPos = endTextPos ? endTextPos - startOffset : this.endOffset - startOffset;
 						this.setEnd(endTextNode, endTextPos);
 					}
 				} else {
 					if (startContainer.nextSibling) {
-						afterNode = startContainer.nextSibling;
+						insertNode = startContainer.nextSibling;
 					} else {
-						parentNode = startContainer.parentNode;
+						appendNode = startContainer.parentNode;
 					}
 				}
 			}
-			if (afterNode) {
-				afterNode.parentNode.insertBefore(node, afterNode);
+			if (insertNode) {
+				insertNode.parentNode.insertBefore(node, insertNode);
 			}
-			if (parentNode) {
-				parentNode.appendChild(node);
+			if (appendNode) {
+				appendNode.appendChild(node);
 			}
 			if (isFrag) {
 				if (node.firstChild) {
 					this.setStartBefore(node.firstChild);
 				}
 				if (this.collapsed) {
-					if (afterNode) {
-						endNode = afterNode.previousSibling;
+					if (insertNode) {
+						endNode = insertNode.previousSibling;
 					}
-					if (parentNode) {
-						endNode = parentNode.lastChild;
+					if (appendNode) {
+						endNode = appendNode.lastChild;
 					}
 				}
 			} else {

@@ -13,7 +13,8 @@ var cmds = {
 	foreColor : '#FF0000',
 	hiliteColor : '#DDDDDD',
 	fontSize : '32px',
-	fontFamily : 'Arial Black'
+	fontFamily : 'Arial Black',
+	removeFormat : ''
 };
 K.each(cmds, function(key, val) {
 	var a = K.node('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
@@ -39,10 +40,4 @@ K.node('#source').bind('click', function(e) {
 });
 K.node('#toggle').bind('click', function(e) {
 	edit.toggle();
-	(function(){
-		for (var i = 0; i < 100; i++) {
-			var d = document.createElement('div');
-			d.onclick=function(){};
-		}
-	})();
 });

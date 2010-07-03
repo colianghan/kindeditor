@@ -30,6 +30,7 @@ function _inArray(val, arr) {
 	}
 	return -1;
 }
+var d;  
 
 function _each(obj, fn) {
 	if (_isArray(obj)) {
@@ -570,14 +571,11 @@ function _toCamel(str) {
 }
 
 function _node(expr, root) {
-	var node;
+	var node, divArea;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			var ownerDocument = root ? root.ownerDocument || root : document,
-				div = ownerDocument.createElement('div');
-			div.innerHTML = expr;
-			node = div.firstChild;
-			div = null;
+			var ownerDocument = root ? root.ownerDocument || root : document;
+			node = ownerDocument.createElement('textarea');
 		} else {
 			node = _query(expr, root);
 		}
@@ -597,6 +595,10 @@ function _node(expr, root) {
 		type : node.nodeType,
 
 		doc : doc,
+		
+		getDiv : function() {
+			return divArea;
+		},
 
 		bind : function(type, fn) {
 			_bind(node, type, fn);
@@ -729,10 +731,12 @@ function _node(expr, root) {
 		},
 		remove : function() {
 			this.unbind();
-			var div = doc.createElement('div');
-			div.appendChild(node);
-			div.innerHTML = null;
-			div = node = null;
+			d = d || doc.createElement('div');  
+			d.appendChild(node);  
+			d.innerHTML = '';  
+			//d = null;
+			node = null;
+			//node.parentNode.removeChild(node);
 			return this;
 		},
 		show : function() {
@@ -1768,91 +1772,23 @@ function _edit(expr, options) {
 		},
 		create : function() {
 			var self = this;
-			if (self.iframe) {
-				return self;
-			}
-
-			var iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
-			iframe.css({
-				display : 'block',
-				width : self.width,
-				height : self.height
-			});
 			var textarea = _node('<textarea class="ke-textarea"></textarea>');
 			textarea.css({
 				display : 'block',
 				width : self.width,
 				height : self.height
 			});
-			if (designMode) {
-				textarea.hide();
-			} else {
-				iframe.hide();
-			}
-			srcElement.before(iframe);
 			srcElement.before(textarea);
-			srcElement.hide();
-			var doc = _getIframeDoc(iframe.get());
-
-			doc.open();
-			doc.write(_getInitHtml(bodyClass, css));
-			doc.close();
-			self.iframe = iframe;
 			self.textarea = textarea;
-			self.doc = doc;
-			if (designMode) {
-				_iframeVal.call(self, srcVal());
-			} else {
-				_textareaVal.call(self, srcVal());
-			}
-			self.cmd = _cmd(doc);
-
-			function selectionHandler(e) {
-				var cmd = _cmd(doc);
-				if (cmd) {
-					self.cmd = cmd;
-				}
-			}
-			self.oninput(selectionHandler);
-			_node(doc).bind('mouseup', selectionHandler);
-			_node(document).bind('mousedown', selectionHandler);
-
-			function commandValueHandler(e) {
-				_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
-					var cmdVal = self.cmd.val(this);
-				});
-			}
-			self.oninput(commandValueHandler);
-			_node(doc).bind('click', commandValueHandler);
-
-			function commandStateHandler(e) {
-				var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
-				_each(cmds, function() {
-					var cmdState = self.cmd.state(this);
-				});
-			}
-			self.oninput(commandStateHandler);
-			_node(doc).bind('click', commandStateHandler);
+			srcElement.hide();
 			return self;
 		},
 		remove : function() {
 			var self = this,
-				iframe = self.iframe,
-				textarea = self.textarea,
-				doc = self.doc;
-			if (!iframe) {
-				return self;
-			}
-
-			_node(doc).unbind();
-			_node(doc.body).unbind();
-			_node(document).unbind();
-
+				textarea = self.textarea;
 			srcElement.show();
-			srcVal(self.val());
-			iframe.remove();
 			textarea.remove();
-			self.iframe = self.textarea = null;
+			self.textarea = null;
 			return self;
 		},
 		toggle : function(bool) {

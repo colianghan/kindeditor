@@ -154,10 +154,10 @@ function _edit(expr, options) {
 			srcElement.before(textarea);
 			srcElement.hide();
 			var doc = _getIframeDoc(iframe.get());
-			//doc.designMode = 'on';
 			doc.open();
 			doc.write(_getInitHtml(bodyClass, css));
 			doc.close();
+			doc.body.contentEditable = 'true';
 			self.iframe = iframe;
 			self.textarea = textarea;
 			self.doc = doc;
@@ -179,22 +179,22 @@ function _edit(expr, options) {
 			_node(doc).bind('mouseup', selectionHandler);
 			_node(document).bind('mousedown', selectionHandler);
 			//点击编辑区域或输入内容时取得commmand value
-			function commandValueHandler(e) {
-				_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
-					var cmdVal = self.cmd.val(this);
-				});
-			}
-			self.oninput(commandValueHandler);
-			_node(doc).bind('click', commandValueHandler);
+			//function commandValueHandler(e) {
+			//	_each('formatblock,fontfamily,fontsize,forecolor,hilitecolor'.split(','), function() {
+			//		var cmdVal = self.cmd.val(this);
+			//	});
+			//}
+			//self.oninput(commandValueHandler);
+			//_node(doc).bind('click', commandValueHandler);
 			//点击编辑区域或输入内容时取得command state
-			function commandStateHandler(e) {
-				var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
-				_each(cmds, function() {
-					var cmdState = self.cmd.state(this);
-				});
-			}
-			self.oninput(commandStateHandler);
-			_node(doc).bind('click', commandStateHandler);
+			//function commandStateHandler(e) {
+			//	var cmds = 'justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,indent,outdent,subscript,superscript,bold,italic,underline,strikethrough'.split(',');
+			//	_each(cmds, function() {
+			//		var cmdState = self.cmd.state(this);
+			//	});
+			//}
+			//self.oninput(commandStateHandler);
+			//_node(doc).bind('click', commandStateHandler);
 			return self;
 		},
 		remove : function() {

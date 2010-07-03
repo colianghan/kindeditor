@@ -572,6 +572,16 @@ test('range.extractContents', function() {
 	frag = range.extractContents();
 	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
 	document.body.removeChild(cloneP);
+	//10
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(cloneP, 0);
+	range.setEnd(strong.firstChild, 1);
+	frag = range.extractContents();
+	same(K.node(frag).outer(), 'abcd<strong>e</strong>');
+	document.body.removeChild(cloneP);
 });
 
 test('range.deleteContents', function() {

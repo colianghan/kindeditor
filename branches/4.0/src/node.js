@@ -44,14 +44,13 @@ function _toCamel(str) {
 	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象
 */
 function _node(expr, root) {
-	var node;
+	var node, doc;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			var ownerDocument = root ? root.ownerDocument || root : document,
-				div = ownerDocument.createElement('div');
+			doc = root ? root.ownerDocument || root : document;
+			var div = doc.createElement('div');
 			div.innerHTML = expr;
 			node = div.firstChild;
-			div = null;
 		} else {
 			node = _query(expr, root);
 		}
@@ -233,10 +232,10 @@ function _node(expr, root) {
 		},
 		remove : function() {
 			this.unbind();
-			var div = doc.createElement('div');
-			div.appendChild(node);
-			div.innerHTML = null;
-			div = node = null;
+			if (node.parentNode) {
+				node.parentNode.removeChild(node);
+			}
+			node = null;
 			return this;
 		},
 		show : function() {
@@ -292,10 +291,10 @@ function _node(expr, root) {
 				}
 				while (n) {
 					var next = order ? n.next() : n.prev();
-					if (fn(n)) {
-						return true;
+					if (fn(n) === false) {
+						return false;
 					}
-					if (walk(n)) {
+					if (walk(n) === false) {
 						return;
 					}
 					n = next;

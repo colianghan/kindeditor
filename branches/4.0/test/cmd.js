@@ -112,3 +112,112 @@ test('cmd.wrap', function() {
 	same(K.node(cloneP).children.length, 1);
 	document.body.removeChild(cloneP);
 });
+
+test('cmd.remove', function() {
+	var p = K.query('#test-data-01 p'),
+		cloneP, strong, range, cmd;
+	//1
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	cmd = K.cmd(range);
+	cmd.remove({
+		strong : '*'
+	});
+	equals(cmd.range.html(), 'efg');
+	document.body.removeChild(cloneP);
+	//2
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'*' : '*'
+	});
+	equals(cmd.range.html(), 'efg');
+	document.body.removeChild(cloneP);
+	//3
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'span' : '*'
+	});
+	equals(cmd.range.html(), '<strong>efg</strong>');
+	document.body.removeChild(cloneP);
+	//4
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : '*'
+	});
+	equals(cmd.range.toString(), 'f');
+	document.body.removeChild(cloneP);
+	//5
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 0);
+	range.setEnd(strong.firstChild, 3);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : '*'
+	});
+	equals(cmd.range.toString(), 'efg');
+	document.body.removeChild(cloneP);
+	//6
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	K.node(strong).addClass('abc').css('color', '#FF0000');
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : 'class'
+	});
+	equals(cmd.range.html().toLowerCase(), '<strong style="color:#ff0000;">f</strong>');
+	document.body.removeChild(cloneP);
+	//7
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	K.node(strong).addClass('abc').css('color', '#FF0000');
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : 'class,style'
+	});
+	equals(cmd.range.html().toLowerCase(), '<strong>f</strong>');
+	document.body.removeChild(cloneP);
+	//8
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	K.node(strong).addClass('abc').css('color', '#FF0000');
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : 'class,.color,.background-color'
+	});
+	equals(cmd.range.html().toLowerCase(), '<strong>f</strong>');
+	document.body.removeChild(cloneP);
+});
