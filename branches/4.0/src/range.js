@@ -117,21 +117,16 @@ function _compareAndUpdate() {
 	deleteContents: copyAndDelete(false, true)
 */
 function _copyAndDelete(isCopy, isDelete) {
-	var self = this,
-		doc = self.doc,
-		startContainer = self.startContainer,
-		startOffset = self.startOffset,
-		endContainer = self.endContainer,
-		endOffset = self.endOffset,
-		nodeList = [],
-		selfRange = self;
+	var self = this, doc = self.doc,
+		sc = self.startContainer, so = self.startOffset,
+		ec = self.endContainer, eo = self.endOffset,
+		nodeList = [], selfRange = self;
 	if (isDelete) {
 		selfRange = self.cloneRange();
-		self.collapse(true);
-		if (startContainer.nodeType == 3 && startOffset === 0) {
-			self.setStart(startContainer.parentNode, 0);
-			self.setEnd(startContainer.parentNode, 0);
+		if (sc.nodeType == 3 && so === 0) {
+			self.setStart(sc.parentNode, 0);
 		}
+		self.collapse(true);
 	}
 	function splitTextNode(node, startOffset, endOffset) {
 		var length = node.nodeValue.length, centerNode;
@@ -152,30 +147,26 @@ function _copyAndDelete(isCopy, isDelete) {
 		}
 		return centerNode;
 	}
-	function getTextNode(node) {
-		if (node == startContainer && node == endContainer) {
-			return splitTextNode(node, startOffset, endOffset);
-		} else if (node == startContainer) {
-			return splitTextNode(node, startOffset, node.nodeValue.length);
-		} else if (node == endContainer) {
-			return splitTextNode(node, 0, endOffset);
-		} else {
-			return splitTextNode(node, 0, node.nodeValue.length);
-		}
-	}
 	function extractNodes(parent, frag) {
-		var node = parent.firstChild;
+		var textNode;
+		if (parent.nodeType == 3) {
+			textNode = splitTextNode(parent, so, eo);
+			if (isCopy) {
+				frag.appendChild(textNode);
+			}
+			return false;
+		}
+		var node = parent.firstChild, testRange, nextNode;
 		while (node) {
-			var range = new KRange(doc);
-			range.selectNode(node);
-			if (range.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
+			testRange = new KRange(doc);
+			testRange.selectNode(node);
+			if (testRange.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
 				return false;
 			}
-			var nextNode = node.nextSibling;
-			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
-				var type = node.nodeType;
-				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && range.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
+			nextNode = node.nextSibling;
+			if (testRange.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
+				if (node.nodeType == 1) {
+					if (testRange.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && testRange.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -188,34 +179,36 @@ function _copyAndDelete(isCopy, isDelete) {
 							childFlag = node.cloneNode(false);
 							frag.appendChild(childFlag);
 						}
-						if (!extractNodes(node, childFlag)) {
+						if (extractNodes(node, childFlag) === false) {
 							return false;
 						}
 					}
-				} else if (type == 3) {
-					var textNode = getTextNode(node);
-					if (textNode) {
+				} else if (node.nodeType == 3) {
+					if (node == sc && node == ec) {
+						textNode = splitTextNode(node, so, eo);
+					} else if (node == sc) {
+						textNode = splitTextNode(node, so, node.nodeValue.length);
+					} else if (node == ec) {
+						textNode = splitTextNode(node, 0, eo);
+					} else {
+						textNode = splitTextNode(node, 0, node.nodeValue.length);
+					}
+					if (isCopy) {
 						frag.appendChild(textNode);
 					}
 				}
 			}
 			node = nextNode;
 		}
-		return true;
 	}
-	var frag = doc.createDocumentFragment(),
-		ancestor = selfRange.commonAncestorContainer;
-	if (ancestor.nodeType == 3) {
-		var textNode = getTextNode(ancestor);
-		if (textNode) {
-			frag.appendChild(textNode);
-		}
-	} else {
-		extractNodes(ancestor, frag);
-	}
+	var frag = doc.createDocumentFragment();
+	extractNodes(selfRange.commonAncestorContainer, frag);
+	//isDelete为true时，删除range内容
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
-		_node(node).remove();
+		if (node.parentNode) {
+			node.parentNode.removeChild(node);
+		}
 	}
 	return isCopy ? frag : self;
 }

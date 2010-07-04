@@ -47,7 +47,6 @@ function _select() {
 		sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-	this.range = range;
 	//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>，IE专用
 	//Webkit和Opera这个方法没有效果，需要研究
 	if (_IE && sc.nodeType == 1 && range.collapsed) {
@@ -317,7 +316,7 @@ KCmd.prototype = {
 				wrapTextNode(parent, so, eo);
 				return false;
 			}
-			var testRange, nextNode, knode, type;
+			var testRange, nextNode, knode;
 			while (node) {
 				testRange = _range(doc);
 				testRange.selectNode(node);
@@ -326,8 +325,7 @@ KCmd.prototype = {
 				}
 				nextNode = node.nextSibling;
 				if (testRange.compareBoundaryPoints(_START_TO_END, range) > 0) {
-					type = node.nodeType;
-					if (type == 1) {
+					if (node.nodeType == 1) {
 						knode = _node(node);
 						if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0 &&
 							testRange.compareBoundaryPoints(_END_TO_END, range) <= 0 &&
@@ -338,7 +336,7 @@ KCmd.prototype = {
 								return false;
 							}
 						}
-					} else if (type == 3) {
+					} else if (node.nodeType == 3) {
 						if (node == sc && node == ec) {
 							wrapTextNode(node, so, eo);
 						} else if (node == sc) {
