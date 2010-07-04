@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-01)
+* @version 4.0 (2010-07-04)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -30,7 +30,6 @@ function _inArray(val, arr) {
 	}
 	return -1;
 }
-var d;  
 
 function _each(obj, fn) {
 	if (_isArray(obj)) {
@@ -570,12 +569,271 @@ function _toCamel(str) {
 	return str;
 }
 
+function KNode(node) {
+	var self = this;
+	self.node = node;
+
+	self.doc = self.node.ownerDocument || self.node;
+
+	self.name = self.node.nodeName.toLowerCase();
+
+	self.type = self.node.nodeType;
+	self.win = self.doc.parentWindow || self.doc.defaultView;
+
+	self._prevDisplay = '';
+}
+
+KNode.prototype = {
+
+	bind : function(type, fn) {
+		_bind(this.node, type, fn);
+		return this;
+	},
+	unbind : function(type, fn) {
+		_unbind(this.node, type, fn);
+		return this;
+	},
+	fire : function(type) {
+		_fire(this.node, type);
+		return this;
+	},
+	hasAttr : function(key) {
+		return _getAttr(this.node, key);
+	},
+	attr : function(key, val) {
+		var self = this, node = self.node;
+		if (key === undefined) {
+			return _getAttrList(self.outer());
+		} else if (val === undefined) {
+			val = _getAttr(node, key);
+			return val === null ? '' : val;
+		} else {
+			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+				key = 'className';
+			}
+			node.setAttribute(key, '' + val);
+			return self;
+		}
+	},
+	removeAttr : function(key) {
+		var self = this;
+		if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+			key = 'className';
+		}
+		self.attr(key, '');
+		self.node.removeAttribute(key);
+		return self;
+	},
+	get : function() {
+		return this.node;
+	},
+	hasClass : function(cls) {
+		return _inString(cls, this.node.className, ' ');
+	},
+	addClass : function(cls) {
+		var self = this, node = self.node;
+		if (!self.hasClass(cls)) {
+			node.className = _trim(node.className + ' ' + cls);
+		}
+		return self;
+	},
+	removeClass : function(cls) {
+		var self = this, node = self.node;
+		if (self.hasClass(cls)) {
+			node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+		}
+		return self;
+	},
+	html : function(val) {
+		var self = this, node = self.node;
+		if (val === undefined) {
+			return _formatHtml(node.innerHTML);
+		} else {
+			node.innerHTML = _formatHtml(val);
+			return self;
+		}
+	},
+	val : function(val) {
+		var self = this, node = self.node;
+		if (val === undefined) {
+			return self.hasVal() ? node.value : self.attr('value');
+		} else {
+			if (self.hasVal()) {
+				node.value = val;
+			} else {
+				self.attr('value' , val);
+			}
+			return self;
+		}
+	},
+	css : function(key, val) {
+		var self = this, node = self.node;
+		if (key === undefined) {
+			return _getCssList(self.attr('style'));
+		}
+		if (typeof key === 'object') {
+			_each(key, function(k, v) {
+				self.css(k, v);
+			});
+			return self;
+		}
+		if (val === undefined) {
+			return node.style[key] || self.computedCss(key) || '';
+		}
+		node.style[_toCamel(key)] = val;
+		return self;
+	},
+	computedCss : function(key) {
+		var self = this, node = self.node, camelKey = _toCamel(key), val = '';
+		if (self.win.getComputedStyle) {
+			var style = self.win.getComputedStyle(node, null);
+			val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
+		} else if (node.currentStyle) {
+			val = node.currentStyle[camelKey] || node.style[camelKey];
+		}
+		return val;
+	},
+	clone : function(bool) {
+		return new KNode(this.node.cloneNode(bool));
+	},
+	append : function(val) {
+		this.node.appendChild(_get(val));
+		return this;
+	},
+	before : function(val) {
+		var self = this, node = self.node;
+		node.parentNode.insertBefore(_get(val), node);
+		return self;
+	},
+	after : function(val) {
+		var self = this, node = self.node;
+		if (node.nextSibling) {
+			node.parentNode.insertBefore(_get(val), node.nextSibling);
+		} else {
+			self.append(val);
+		}
+		return self;
+	},
+	replaceWith : function(val) {
+		val = _get(val);
+		var self = this, node = self.node;
+		node.parentNode.replaceChild(val, node);
+		self.unbind();
+		self.node = val;
+		return self;
+	},
+	remove : function() {
+		var self = this, node = self.node;
+		self.unbind();
+		if (node.parentNode) {
+			node.parentNode.removeChild(node);
+		}
+		self.node = null;
+		return self;
+	},
+	show : function() {
+		var self = this;
+		if (self.computedCss('display') === 'none') {
+			self.css('display', self._prevDisplay);
+		}
+		return self;
+	},
+	hide : function() {
+		var self = this;
+		if (self.computedCss('display') !== 'none') {
+			self._prevDisplay = self.css('display');
+			self.css('display', 'none');
+		}
+		return self;
+	},
+	outer : function() {
+		var self = this, div = self.doc.createElement('div'), html;
+		div.appendChild(self.node);
+		html = _formatHtml(div.innerHTML);
+		div = null;
+		return html;
+	},
+	hasVal : function() {
+		return !!_VALUE_TAG_MAP[this.name];
+	},
+	isSingle : function() {
+		return !!_SINGLE_TAG_MAP[this.name];
+	},
+	isInline : function() {
+		return !!_INLINE_TAG_MAP[this.name];
+	},
+	isBlock : function() {
+		return !!_BLOCK_TAG_MAP[this.name];
+	},
+	contains : function(otherNode) {
+		return _contains(this.node, _get(otherNode));
+	},
+	parent : function() {
+		return new KNode(this.node.parentNode);
+	},
+	children : function() {
+		var list = [], child = this.node.firstChild;
+		while (child) {
+			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
+				list.push(new KNode(child));
+			}
+			child = child.nextSibling;
+		}
+		return list;
+	},
+	first : function() {
+		var list = this.children();
+		return list.length > 0 ? list[0] : null;
+	},
+	last : function() {
+		var list = this.children();
+		return list.length > 0 ? list[list.length - 1] : null;
+	},
+	index : function() {
+		var i = -1, sibling = this.node;
+		while (sibling) {
+			i++;
+			sibling = sibling.previousSibling;
+		}
+		return i;
+	},
+	prev : function() {
+		return new KNode(this.node.previousSibling);
+	},
+	next : function() {
+		return new KNode(this.node.nextSibling);
+	},
+	each : function(fn, order) {
+		order = (order === undefined) ? true : order;
+		function walk(node) {
+			var n = order ? node.firstChild : node.lastChild;
+			while (n) {
+				var next = order ? n.nextSibling : n.previousSibling;
+				if (fn(new KNode(n)) === false) {
+					return false;
+				}
+				if (walk(n) === false) {
+					return;
+				}
+				n = next;
+			}
+		}
+		walk(this.node);
+	},
+	toString : function() {
+		var self = this;
+		return self.type == 3 ? self.node.nodeValue : self.outer();
+	}
+};
+
 function _node(expr, root) {
-	var node, divArea;
+	var node, doc;
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			var ownerDocument = root ? root.ownerDocument || root : document;
-			node = ownerDocument.createElement('textarea');
+			doc = root ? root.ownerDocument || root : document;
+			var div = doc.createElement('div');
+			div.innerHTML = expr;
+			node = div.firstChild;
 		} else {
 			node = _query(expr, root);
 		}
@@ -585,254 +843,7 @@ function _node(expr, root) {
 	if (!node) {
 		return null;
 	}
-	var doc = node.ownerDocument || node,
-		win = doc.parentWindow || doc.defaultView,
-		prevDisplay = '';
-	var obj = {
-
-		name : node.nodeName.toLowerCase(),
-
-		type : node.nodeType,
-
-		doc : doc,
-		
-		getDiv : function() {
-			return divArea;
-		},
-
-		bind : function(type, fn) {
-			_bind(node, type, fn);
-			return this;
-		},
-		unbind : function(type, fn) {
-			_unbind(node, type, fn);
-			return this;
-		},
-		fire : function(type) {
-			_fire(node, type);
-			return this;
-		},
-		hasAttr : function(key) {
-			return _getAttr(node, key);
-		},
-		attr : function(key, val) {
-			if (key === undefined) {
-				return _getAttrList(this.outer());
-			} else if (val === undefined) {
-				val = _getAttr(node, key);
-				return val === null ? '' : val;
-			} else {
-				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-					key = 'className';
-				}
-				node.setAttribute(key, '' + val);
-				return this;
-			}
-		},
-		removeAttr : function(key) {
-			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-				key = 'className';
-			}
-			this.attr(key, '');
-			node.removeAttribute(key);
-			return this;
-		},
-		get : function() {
-			return node;
-		},
-		hasClass : function(cls) {
-			return _inString(cls, node.className, ' ');
-
-		},
-		addClass : function(cls) {
-			if (!this.hasClass(cls)) {
-				node.className = _trim(node.className + ' ' + cls);
-			}
-			return this;
-		},
-		removeClass : function(cls) {
-			if (this.hasClass(cls)) {
-				node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
-			}
-			return this;
-		},
-		html : function(val) {
-			if (val === undefined) {
-				return _formatHtml(node.innerHTML);
-			} else {
-				node.innerHTML = _formatHtml(val);
-				return this;
-			}
-		},
-		val : function(val) {
-			if (val === undefined) {
-				return this.hasVal() ? node.value : this.attr('value');
-			} else {
-				if (this.hasVal()) {
-					node.value = val;
-				} else {
-					this.attr('value' , val);
-				}
-				return this;
-			}
-		},
-		css : function(key, val) {
-			var self = this;
-			if (key === undefined) {
-				return _getCssList(this.attr('style'));
-			}
-			if (typeof key === 'object') {
-				_each(key, function(k, v) {
-					self.css(k, v);
-				});
-				return this;
-			}
-			if (val === undefined) {
-				return node.style[key] || this.computedCss(key) || '';
-			}
-			node.style[_toCamel(key)] = val;
-			return this;
-		},
-		computedCss : function(key) {
-			var camelKey = _toCamel(key),
-				val = '';
-			if (win.getComputedStyle) {
-				var style = win.getComputedStyle(node, null);
-				val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
-			} else if (node.currentStyle) {
-				val = node.currentStyle[camelKey] || node.style[camelKey];
-			}
-			return val;
-		},
-		clone : function(bool) {
-			return _node(node.cloneNode(bool));
-		},
-		append : function(val) {
-			node.appendChild(_get(val));
-			return this;
-		},
-		before : function(val) {
-			node.parentNode.insertBefore(_get(val), node);
-			return this;
-		},
-		after : function(val) {
-			if (node.nextSibling) {
-				node.parentNode.insertBefore(_get(val), node.nextSibling);
-			} else {
-				this.append(val);
-			}
-			return this;
-		},
-		replaceWith : function(val) {
-			node.parentNode.replaceChild(_get(val), node);
-			this.unbind();
-			node = _get(val);
-			return this;
-		},
-		remove : function() {
-			this.unbind();
-			d = d || doc.createElement('div');  
-			d.appendChild(node);  
-			d.innerHTML = '';  
-			//d = null;
-			node = null;
-			//node.parentNode.removeChild(node);
-			return this;
-		},
-		show : function() {
-			if (this.computedCss('display') === 'none') {
-				this.css('display', prevDisplay);
-			}
-			return this;
-		},
-		hide : function() {
-			if (this.computedCss('display') !== 'none') {
-				prevDisplay = this.css('display');
-				this.css('display', 'none');
-			}
-			return this;
-		},
-		outer : function() {
-			var div = doc.createElement('div'),html;
-			div.appendChild(node);
-			html = _formatHtml(div.innerHTML);
-			div = null;
-			return html;
-		},
-		hasVal : function() {
-			return !!_VALUE_TAG_MAP[this.name];
-		},
-		isSingle : function() {
-			return !!_SINGLE_TAG_MAP[this.name];
-		},
-		isInline : function() {
-			return !!_INLINE_TAG_MAP[this.name];
-		},
-		isBlock : function() {
-			return !!_BLOCK_TAG_MAP[this.name];
-		},
-		contains : function(otherNode) {
-			return _contains(node, _get(otherNode));
-		},
-		parent : function() {
-			return _node(node.parentNode);
-		},
-		prev : function() {
-			return _node(node.previousSibling);
-		},
-		next : function() {
-			return _node(node.nextSibling);
-		},
-		each : function(fn, order) {
-			order = (order === undefined) ? true : order;
-			function walk(knode) {
-				var n = order ? knode.first : knode.last;
-				if (!n) {
-					return;
-				}
-				while (n) {
-					var next = order ? n.next() : n.prev();
-					if (fn(n)) {
-						return true;
-					}
-					if (walk(n)) {
-						return;
-					}
-					n = next;
-				}
-			}
-			walk(this);
-		},
-		toString : function() {
-			return this.type == 3 ? node.nodeValue : this.outer();
-		}
-	};
-	function _updateProp(node) {
-
-		var list = [], child = node.firstChild;
-		while (child) {
-			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
-				list.push(_node(child));
-			}
-			child = child.nextSibling;
-		}
-		if (list.length > 0) {
-			this.first = list[0];
-			this.last = list[list.length - 1];
-		} else {
-			this.first = this.last = null;
-		}
-		this.children = list;
-
-		var i = -1, sibling = node;
-		while (sibling) {
-			i++;
-			sibling = sibling.previousSibling;
-		}
-		this.index = i;
-	}
-	_updateProp.call(obj, node);
-	return obj;
+	return new KNode(node);
 }
 
 K.node = _node;
@@ -869,8 +880,8 @@ function _updateCommonAncestor(doc) {
 }
 
 function _compareAndUpdate(doc) {
-	var rangeA = _range(doc),
-		rangeB = _range(doc);
+	var rangeA = new KRange(doc),
+		rangeB = new KRange(doc);
 	rangeA.startContainer = rangeA.endContainer = this.startContainer;
 	rangeA.startOffset = rangeA.endOffset = this.startOffset;
 	rangeB.startContainer = rangeB.endContainer = this.endContainer;
@@ -881,8 +892,9 @@ function _compareAndUpdate(doc) {
 	}
 }
 
-function _copyAndDelete(doc, isCopy, isDelete) {
+function _copyAndDelete(isCopy, isDelete) {
 	var self = this,
+		doc = self.doc,
 		startContainer = self.startContainer,
 		startOffset = self.startOffset,
 		endContainer = self.endContainer,
@@ -930,7 +942,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 	function extractNodes(parent, frag) {
 		var node = parent.firstChild;
 		while (node) {
-			var range = _range(doc);
+			var range = new KRange(doc);
 			range.selectNode(node);
 			if (range.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
 				return false;
@@ -939,7 +951,7 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
 				var type = node.nodeType;
 				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0) {
+					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && range.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -985,15 +997,13 @@ function _copyAndDelete(doc, isCopy, isDelete) {
 }
 
 function _getStartEnd(rng, isStart) {
-	var doc = rng.parentElement().ownerDocument;
-	var range = _range(doc);
-	var pointRange = rng.duplicate();
+	var doc = rng.parentElement().ownerDocument,
+		pointRange = rng.duplicate();
 	pointRange.collapse(isStart);
-	var parent = pointRange.parentElement();
-	var children = parent.childNodes;
+	var parent = pointRange.parentElement(),
+		children = parent.childNodes;
 	if (children.length === 0) {
-		range.selectNode(parent);
-		return {node: range.startContainer, offset: range.startOffset};
+		return {node: parent.parentNode, offset: _node(parent).index()};
 	}
 	var startNode = doc, startPos = 0, isEnd = false;
 	var testRange = rng.duplicate();
@@ -1025,8 +1035,7 @@ function _getStartEnd(rng, isStart) {
 		}
 	}
 	if (!isEnd && startNode.nodeType == 1) {
-		range.setStartAfter(parent.lastChild);
-		return {node: range.startContainer, offset: range.startOffset};
+		return {node: parent, offset: _node(parent.lastChild).index() + 1};
 	}
 	testRange = rng.duplicate();
 	testRange.moveToElementText(parent);
@@ -1040,20 +1049,20 @@ function _toRange(rng) {
 	if (_IE) {
 		doc = rng.parentElement().ownerDocument;
 		if (rng.item) {
-			range = _range(doc);
+			range = new KRange(doc);
 			range.selectNode(rng.item(0));
 			return range;
 		}
 		var start = _getStartEnd(rng, true),
 			end = _getStartEnd(rng, false);
-		range = _range(doc);
+		range = new KRange(doc);
 		range.setStart(start.node, start.offset);
 		range.setEnd(end.node, end.offset);
 		return range;
 	} else {
 		var startContainer = rng.startContainer;
 		doc = startContainer.ownerDocument || startContainer;
-		range = _range(doc);
+		range = new KRange(doc);
 		range.setStart(startContainer, rng.startOffset);
 		range.setEnd(rng.endContainer, rng.endOffset);
 		return range;
@@ -1132,283 +1141,283 @@ function _getEndRange(node, offset) {
 	return range;
 }
 
+function KRange(doc) {
+	var self = this;
+
+	self.startContainer = doc;
+
+	self.startOffset = 0;
+
+	self.endContainer = doc;
+
+	self.endOffset = 0;
+
+	self.collapsed = true;
+
+	self.commonAncestorContainer = doc;
+	self.doc = doc;
+}
+
+KRange.prototype = {
+
+	setStart : function(node, offset) {
+		var self = this, doc = self.doc;
+		self.startContainer = node;
+		self.startOffset = offset;
+		if (self.endContainer === doc) {
+			self.endContainer = node;
+			self.endOffset = offset;
+		}
+		_compareAndUpdate.call(self, doc);
+		_updateCollapsed.call(self);
+		_updateCommonAncestor.call(self, doc);
+		return self;
+	},
+
+	setEnd : function(node, offset) {
+		var self = this, doc = self.doc;
+		self.endContainer = node;
+		self.endOffset = offset;
+		if (self.startContainer === doc) {
+			self.startContainer = node;
+			self.startOffset = offset;
+		}
+		_compareAndUpdate.call(self, doc);
+		_updateCollapsed.call(self);
+		_updateCommonAncestor.call(self, doc);
+		return self;
+	},
+
+	setStartBefore : function(node) {
+		return this.setStart(node.parentNode || this.doc, _node(node).index());
+	},
+
+	setStartAfter : function(node) {
+		return this.setStart(node.parentNode || this.doc, _node(node).index() + 1);
+	},
+
+	setEndBefore : function(node) {
+		return this.setEnd(node.parentNode || this.doc, _node(node).index());
+	},
+
+	setEndAfter : function(node) {
+		return this.setEnd(node.parentNode || this.doc, _node(node).index() + 1);
+	},
+
+	selectNode : function(node) {
+		this.setStartBefore(node);
+		this.setEndAfter(node);
+		return this;
+	},
+
+	selectNodeContents : function(node) {
+		var knode = _node(node);
+		if (knode.type == 3 || knode.isSingle()) {
+			this.selectNode(node);
+		} else {
+			var children = knode.children();
+			if (children.length > 0) {
+				this.setStartBefore(children[0].get());
+				this.setEndAfter(children[children.length - 1].get());
+			} else {
+				this.setStart(node, 0);
+				this.setEnd(node, 0);
+			}
+		}
+		return this;
+	},
+
+	collapse : function(toStart) {
+		if (toStart) {
+			this.setEnd(this.startContainer, this.startOffset);
+		} else {
+			this.setStart(this.endContainer, this.endOffset);
+		}
+		return this;
+	},
+
+	compareBoundaryPoints : function(how, range) {
+		var rangeA = this.get(),
+			rangeB = range.get();
+		if (!this.doc.createRange) {
+			var arr = {};
+			arr[_START_TO_START] = 'StartToStart';
+			arr[_START_TO_END] = 'EndToStart';
+			arr[_END_TO_END] = 'EndToEnd';
+			arr[_END_TO_START] = 'StartToEnd';
+			var cmp = rangeA.compareEndPoints(arr[how], rangeB);
+			if (cmp !== 0) {
+				return cmp;
+			}
+			var nodeA, nodeB, nodeC, posA, posB;
+			if (how === _START_TO_START || how === _END_TO_START) {
+				nodeA = this.startContainer;
+				posA = this.startOffset;
+			}
+			if (how === _START_TO_END || how === _END_TO_END) {
+				nodeA = this.endContainer;
+				posA = this.endOffset;
+			}
+			if (how === _START_TO_START || how === _START_TO_END) {
+				nodeB = range.startContainer;
+				posB = range.startOffset;
+			}
+			if (how === _END_TO_END || how === _END_TO_START) {
+				nodeB = range.endContainer;
+				posB = range.endOffset;
+			}
+
+			if (nodeA === nodeB) {
+				var diff = posA - posB;
+				return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
+			}
+
+			nodeC = nodeB;
+			while (nodeC && nodeC.parentNode !== nodeA) {
+				nodeC = nodeC.parentNode;
+			}
+			if (nodeC) {
+				return _node(nodeC).index() >= posA ? -1 : 1;
+			}
+
+			nodeC = nodeA;
+			while (nodeC && nodeC.parentNode !== nodeB) {
+				nodeC = nodeC.parentNode;
+			}
+			if (nodeC) {
+				return _node(nodeC).index() >= posB ? 1 : -1;
+			}
+
+		} else {
+			return rangeA.compareBoundaryPoints(how, rangeB);
+		}
+	},
+
+	cloneRange : function() {
+		var range = new KRange(this.doc);
+		range.setStart(this.startContainer, this.startOffset);
+		range.setEnd(this.endContainer, this.endOffset);
+		return range;
+	},
+
+	toString : function() {
+
+		var rng = this.get(),
+			str = this.doc.createRange ? rng.toString() : rng.text;
+		return str.replace(/\r\n|\n|\r/g, '');
+	},
+
+	cloneContents : function() {
+		return _copyAndDelete.call(this, true, false);
+	},
+
+	deleteContents : function() {
+		return _copyAndDelete.call(this, false, true);
+	},
+
+	extractContents : function() {
+		return _copyAndDelete.call(this, true, true);
+	},
+
+	insertNode : function(node) {
+		var self = this,
+			sc = self.startContainer, so = self.startOffset,
+			ec = self.endContainer, eo = self.endOffset,
+			insertNode, appendNode, endNode, endTextNode, endTextPos, eq = sc == ec,
+			isFrag = node.nodeName.toLowerCase() === '#document-fragment';
+		if (ec.nodeType == 1 && eo > 0) {
+			endNode = ec.childNodes[eo - 1];
+			if (endNode.nodeType == 3) {
+				eq = sc == endNode;
+				if (eq) {
+					endTextPos = endNode.nodeValue.length;
+				}
+			}
+		}
+		if (sc.nodeType == 1) {
+			insertNode = sc.childNodes[so];
+			if (!insertNode) {
+				appendNode = sc;
+			}
+		} else {
+			if (so === 0) {
+				insertNode = sc;
+			} else if (so < sc.length) {
+				insertNode = sc.splitText(so);
+				if (eq) {
+					endTextNode = insertNode;
+					endTextPos = endTextPos ? endTextPos - so : eo - so;
+					this.setEnd(endTextNode, endTextPos);
+				}
+			} else {
+				if (sc.nextSibling) {
+					insertNode = sc.nextSibling;
+				} else {
+					appendNode = sc.parentNode;
+				}
+			}
+		}
+		if (insertNode) {
+			insertNode.parentNode.insertBefore(node, insertNode);
+		}
+		if (appendNode) {
+			appendNode.appendChild(node);
+		}
+		if (isFrag) {
+			if (node.firstChild) {
+				this.setStartBefore(node.firstChild);
+			}
+			if (this.collapsed) {
+				if (insertNode) {
+					endNode = insertNode.previousSibling;
+				}
+				if (appendNode) {
+					endNode = appendNode.lastChild;
+				}
+			}
+		} else {
+			this.setStartBefore(node);
+			if (this.collapsed) {
+				endNode = node;
+			}
+		}
+		if (endNode) {
+			this.setEndAfter(endNode);
+		}
+		return this;
+	},
+
+	surroundContents : function(node) {
+		node.appendChild(this.extractContents());
+		return this.insertNode(node);
+	},
+
+	get : function() {
+		var self = this, doc = self.doc,
+			sc = self.startContainer, so = self.startOffset,
+			ec = self.endContainer, eo = self.endOffset, rng;
+		if (doc.createRange) {
+			rng = doc.createRange();
+			rng.setStart(sc, so);
+			rng.setEnd(ec, eo);
+		} else {
+			rng = doc.body.createTextRange();
+			rng.setEndPoint('StartToStart', _getEndRange(sc, so));
+			rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
+		}
+		return rng;
+	},
+
+	html : function() {
+		return _node(this.cloneContents()).outer();
+	}
+};
+
 function _range(mixed) {
 	if (!mixed.nodeName) {
 		return mixed.get ? mixed : _toRange(mixed);
 	}
-	var doc = mixed;
-	return {
-
-		startContainer : doc,
-
-		startOffset : 0,
-
-		endContainer : doc,
-
-		endOffset : 0,
-
-		collapsed : true,
-
-		commonAncestorContainer : doc,
-
-		setStart : function(node, offset) {
-			this.startContainer = node;
-			this.startOffset = offset;
-			if (this.endContainer === doc) {
-				this.endContainer = node;
-				this.endOffset = offset;
-			}
-			_compareAndUpdate.call(this, doc);
-			_updateCollapsed.call(this);
-			_updateCommonAncestor.call(this, doc);
-			return this;
-		},
-
-		setEnd : function(node, offset) {
-			this.endContainer = node;
-			this.endOffset = offset;
-			if (this.startContainer === doc) {
-				this.startContainer = node;
-				this.startOffset = offset;
-			}
-			_compareAndUpdate.call(this, doc);
-			_updateCollapsed.call(this);
-			_updateCommonAncestor.call(this, doc);
-			return this;
-		},
-
-		setStartBefore : function(node) {
-			return this.setStart(node.parentNode || doc, _node(node).index);
-		},
-
-		setStartAfter : function(node) {
-			return this.setStart(node.parentNode || doc, _node(node).index + 1);
-		},
-
-		setEndBefore : function(node) {
-			return this.setEnd(node.parentNode || doc, _node(node).index);
-		},
-
-		setEndAfter : function(node) {
-			return this.setEnd(node.parentNode || doc, _node(node).index + 1);
-		},
-
-		selectNode : function(node) {
-			this.setStartBefore(node);
-			this.setEndAfter(node);
-			return this;
-		},
-
-		selectNodeContents : function(node) {
-			var knode = _node(node);
-			if (knode.type == 3 || knode.isSingle()) {
-				this.selectNode(node);
-			} else {
-				if (knode.children.length > 0) {
-					this.setStartBefore(knode.first.get());
-					this.setEndAfter(knode.last.get());
-				} else {
-					this.setStart(node, 0);
-					this.setEnd(node, 0);
-				}
-			}
-			return this;
-		},
-
-		collapse : function(toStart) {
-			if (toStart) {
-				this.setEnd(this.startContainer, this.startOffset);
-			} else {
-				this.setStart(this.endContainer, this.endOffset);
-			}
-			return this;
-		},
-
-		compareBoundaryPoints : function(how, range) {
-			var rangeA = this.get(),
-				rangeB = range.get();
-			if (!doc.createRange) {
-				var arr = {};
-				arr[_START_TO_START] = 'StartToStart';
-				arr[_START_TO_END] = 'EndToStart';
-				arr[_END_TO_END] = 'EndToEnd';
-				arr[_END_TO_START] = 'StartToEnd';
-				var cmp = rangeA.compareEndPoints(arr[how], rangeB);
-				if (cmp !== 0) {
-					return cmp;
-				}
-				var nodeA, nodeB, nodeC, posA, posB;
-				if (how === _START_TO_START || how === _END_TO_START) {
-					nodeA = this.startContainer;
-					posA = this.startOffset;
-				}
-				if (how === _START_TO_END || how === _END_TO_END) {
-					nodeA = this.endContainer;
-					posA = this.endOffset;
-				}
-				if (how === _START_TO_START || how === _START_TO_END) {
-					nodeB = range.startContainer;
-					posB = range.startOffset;
-				}
-				if (how === _END_TO_END || how === _END_TO_START) {
-					nodeB = range.endContainer;
-					posB = range.endOffset;
-				}
-
-				if (nodeA === nodeB) {
-					var diff = posA - posB;
-					return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
-				}
-
-				nodeC = nodeB;
-				while (nodeC && nodeC.parentNode !== nodeA) {
-					nodeC = nodeC.parentNode;
-				}
-				if (nodeC) {
-					return _node(nodeC).index >= posA ? -1 : 1;
-				}
-
-				nodeC = nodeA;
-				while (nodeC && nodeC.parentNode !== nodeB) {
-					nodeC = nodeC.parentNode;
-				}
-				if (nodeC) {
-					return _node(nodeC).index >= posB ? 1 : -1;
-				}
-
-			} else {
-				return rangeA.compareBoundaryPoints(how, rangeB);
-			}
-		},
-
-		cloneRange : function() {
-			var range = _range(doc);
-			range.setStart(this.startContainer, this.startOffset);
-			range.setEnd(this.endContainer, this.endOffset);
-			return range;
-		},
-
-		toString : function() {
-
-			var rng = this.get(),
-				str = doc.createRange ? rng.toString() : rng.text;
-			return str.replace(/\r\n|\n|\r/g, '');
-		},
-
-		cloneContents : function() {
-			return _copyAndDelete.call(this, doc, true, false);
-		},
-
-		deleteContents : function() {
-			return _copyAndDelete.call(this, doc, false, true);
-		},
-
-		extractContents : function() {
-			return _copyAndDelete.call(this, doc, true, true);
-		},
-
-		insertNode : function(node) {
-			var startContainer = this.startContainer,
-				startOffset = this.startOffset,
-				endContainer = this.endContainer,
-				endOffset = this.endOffset,
-				afterNode,
-				parentNode,
-				endNode,
-				endTextNode,
-				endTextPos,
-				eq = startContainer == endContainer,
-				isFrag = node.nodeName.toLowerCase() === '#document-fragment';
-			if (endContainer.nodeType == 1 && endOffset > 0) {
-				endNode = endContainer.childNodes[endOffset - 1];
-				if (endNode.nodeType == 3) {
-					eq = startContainer == endNode;
-					if (eq) {
-						endTextPos = endNode.nodeValue.length;
-					}
-				}
-			}
-			if (startContainer.nodeType == 1) {
-				if (startContainer.childNodes.length > 0) {
-					afterNode = startContainer.childNodes[startOffset];
-				} else {
-					parentNode = startContainer;
-				}
-			} else {
-				if (startOffset === 0) {
-					afterNode = startContainer;
-				} else if (startOffset < startContainer.length) {
-					afterNode = startContainer.splitText(startOffset);
-					if (eq) {
-						endTextNode = afterNode;
-						endTextPos = endTextPos ? endTextPos - startOffset : this.endOffset - startOffset;
-						this.setEnd(endTextNode, endTextPos);
-					}
-				} else {
-					if (startContainer.nextSibling) {
-						afterNode = startContainer.nextSibling;
-					} else {
-						parentNode = startContainer.parentNode;
-					}
-				}
-			}
-			if (afterNode) {
-				afterNode.parentNode.insertBefore(node, afterNode);
-			}
-			if (parentNode) {
-				parentNode.appendChild(node);
-			}
-			if (isFrag) {
-				if (node.firstChild) {
-					this.setStartBefore(node.firstChild);
-				}
-				if (this.collapsed) {
-					if (afterNode) {
-						endNode = afterNode.previousSibling;
-					}
-					if (parentNode) {
-						endNode = parentNode.lastChild;
-					}
-				}
-			} else {
-				this.setStartBefore(node);
-				if (this.collapsed) {
-					endNode = node;
-				}
-			}
-			if (endNode) {
-				this.setEndAfter(endNode);
-			}
-			return this;
-		},
-
-		surroundContents : function(node) {
-			node.appendChild(this.extractContents());
-			return this.insertNode(node);
-		},
-
-		get : function() {
-			var startContainer = this.startContainer,
-				startOffset = this.startOffset,
-				endContainer = this.endContainer,
-				endOffset = this.endOffset,
-				range;
-			if (doc.createRange) {
-				range = doc.createRange();
-				range.setStart(startContainer, startOffset);
-				range.setEnd(endContainer, endOffset);
-			} else {
-				range = doc.body.createTextRange();
-				range.setEndPoint('StartToStart', _getEndRange(startContainer, startOffset));
-				range.setEndPoint('EndToStart', _getEndRange(endContainer, endOffset));
-			}
-			return range;
-		},
-
-		html : function() {
-			return _node(this.cloneContents()).outer();
-		}
-	};
+	return new KRange(mixed);
 }
 
 K.range = _range;
@@ -1437,10 +1446,14 @@ function _getSel(doc) {
 	return win.getSelection ? win.getSelection() : doc.selection;
 }
 
-function _select(sel, range) {
-	var sc = range.startContainer, so = range.startOffset,
+function _select() {
+	var self = this,
+		sel = self.sel,
+		range = self.range,
+		sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
+	this.range = range;
 
 	if (_IE && sc.nodeType == 1 && range.collapsed) {
 		var empty = doc.createTextNode(' ');
@@ -1451,7 +1464,7 @@ function _select(sel, range) {
 		rng.select();
 		ec.removeChild(empty);
 		win.focus();
-		return;
+		return this;
 	}
 
 	rng = range.get();
@@ -1462,23 +1475,46 @@ function _select(sel, range) {
 		sel.addRange(rng);
 	}
 	win.focus();
+	return this;
 }
 
-function _hasAttrOrCss(node, map, mapKey) {
-	var knode = _node(node), arr, newMap = {};
+function _singleKeyMap(map) {
+	var newMap = {}, arr, v;
+	_each(map, function(key, val) {
+		arr = key.split(',');
+		for (var i = 0, len = arr.length; i < len; i++) {
+			v = arr[i];
+			newMap[v] = val;
+		}
+	});
+	return newMap;
+}
+
+function _removeParent(parent) {
+	if (parent.firstChild) {
+		var node = parent.firstChild;
+		while (node) {
+			var nextNode = node.nextSibling;
+			parent.parentNode.insertBefore(node, parent);
+			node = nextNode;
+		}
+	}
+	parent.parentNode.removeChild(parent);
+}
+
+function _hasAttrOrCss(knode, map, mapKey) {
 	mapKey = mapKey || knode.name;
 	if (knode.type !== 1) {
 		return false;
 	}
-	_each(map, function(key, val) {
-		arr = key.split(',');
-		for (var i = 0, len = arr.length, v = arr[i]; i < len; i++) {
-			newMap[v] = val;
-		}
-	});
+	var newMap = _singleKeyMap(map), arr, val;
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
-		for (var i = 0, len = arr.length, val = arr[i]; i < len; i++) {
+		for (var i = 0, len = arr.length; i < len; i++) {
+			val = arr[i];
+			if (val === '*') {
+				return true;
+			}
 			if (val.charAt(0) === '.' && knode.css(val.substr(1)) !== '') {
 				return true;
 			}
@@ -1491,12 +1527,13 @@ function _hasAttrOrCss(node, map, mapKey) {
 }
 
 function _getCommonNode(range, map) {
-	var node = range.commonAncestorContainer, knode, arr;
+	var node = range.commonAncestorContainer;
 	while (node) {
-		if (_hasAttrOrCss(node, map, '*')) {
+		var knode = _node(node);
+		if (_hasAttrOrCss(knode, map, '*')) {
 			return node;
 		}
-		if (_hasAttrOrCss(node, map)) {
+		if (_hasAttrOrCss(knode, map)) {
 			return node;
 		}
 		node = node.parentNode;
@@ -1504,8 +1541,72 @@ function _getCommonNode(range, map) {
 	return null;
 }
 
-function _cmd(mixed) {
-	var sel, doc, rng;
+function _splitStartEnd(range, isStart, map) {
+	var rng = range.cloneRange(),
+		sc = rng.startContainer, so = rng.startOffset,
+		doc = sc.ownerDocument || sc;
+
+	var mark;
+	if (isStart) {
+		var cloneRange = rng.cloneRange();
+		mark = _node('<span id="__ke_temp_mark__"></span>', doc);
+		cloneRange.collapse(false);
+		cloneRange.insertNode(mark.get());
+	}
+
+	rng.collapse(isStart);
+	var node = rng.startContainer, pos = rng.startOffset,
+		parent = node.nodeType == 3 ? node.parentNode : node, needSplit = false;
+	while (parent && parent.parentNode) {
+		var knode = _node(parent);
+		if (!knode.isInline()) {
+			break;
+		}
+		if (!_hasAttrOrCss(knode, map, '*') && !_hasAttrOrCss(knode, map)) {
+			break;
+		}
+		needSplit = true;
+		parent = parent.parentNode;
+	}
+	var result;
+
+	if (needSplit) {
+
+		var newRange = _range(doc), frag;
+		if (isStart) {
+			newRange.setStartBefore(parent.firstChild);
+			newRange.setEnd(node, pos);
+			frag = newRange.extractContents();
+			newRange.insertNode(frag);
+		} else {
+			newRange.setStart(node, pos);
+			newRange.setEndAfter(parent.lastChild);
+			frag = newRange.extractContents();
+			parent.appendChild(frag);
+		}
+
+		if (isStart) {
+			mark = _node('#__ke_temp_mark__', doc);
+			rng = _range(doc);
+			rng.setStart(newRange.endContainer, newRange.endOffset);
+			rng.setEndBefore(mark.get());
+			mark.remove();
+		} else {
+			rng.setStart(sc, so);
+			rng.setEnd(newRange.startContainer, newRange.startOffset);
+		}
+		result = [newRange, rng];
+	} else {
+		mark = _node('#__ke_temp_mark__', doc);
+		if (mark) {
+			mark.remove();
+		}
+	}
+	return result;
+}
+
+function KCmd(mixed) {
+	var self = this, win, doc, sel, rng, range;
 	if (mixed.nodeName) {
 
 		doc = mixed.ownerDocument || mixed;
@@ -1528,176 +1629,231 @@ function _cmd(mixed) {
 		sel = _getSel(doc);
 		rng = mixed.get();
 	}
-	var win = _getWin(doc),
-		range = _range(mixed);
 
-	return {
-		wrap : function(val) {
-			var wrapper = _node(val, doc), clone;
+	self.win = _getWin(doc);
 
-			if (!wrapper.isInline()) {
+	self.doc = doc;
+
+	self.sel = sel;
+
+	self.rng = rng;
+
+	self.range = _range(mixed);
+}
+
+KCmd.prototype = {
+	wrap : function(val) {
+		var self = this, doc = self.doc, range = self.range;
+		var wrapper = _node(val, doc), clone;
+
+		if (!wrapper.isInline()) {
+			clone = wrapper.clone(false);
+			range.surroundContents(clone.get());
+			return _select.call(this);
+		}
+
+		if (range.collapsed) {
+			clone = wrapper.clone(false);
+			range.insertNode(clone.get());
+			range.selectNodeContents(clone.get());
+			return _select.call(this);
+		}
+
+		var frag = range.extractContents(),
+			name = wrapper.name;
+		_node(frag).each(function(knode) {
+			if (knode.type == 3 && knode.parent().name !== name) {
 				clone = wrapper.clone(false);
-				range.surroundContents(clone.get());
-				_select(sel, range);
-				return this;
-			}
-
-			if (range.collapsed) {
-				clone = wrapper.clone(false);
-				range.insertNode(clone.get());
-				range.selectNodeContents(clone.get());
-				_select(sel, range);
-				return this;
-			}
-
-			var frag = range.extractContents(),
-				name = wrapper.name;
-			_node(frag).each(function(node) {
-				if (node.type == 3 && node.parent().name !== name) {
-					clone = wrapper.clone(false);
-					clone.append(node.clone(true));
-					node.replaceWith(clone);
-				} else if (node.name === name) {
-					_each(wrapper.attr(), function(key, val) {
-						if (key !== 'style') {
-							node.attr(key, val);
-						}
-					});
-					_each(wrapper.css(), function(key, val) {
-						node.css(key, val);
-					});
-				}
-			});
-			range.insertNode(frag);
-			_select(sel, range);
-			return this;
-		},
-		remove : function(map) {
-
-			if (range.collapsed) {
-				return this;
-			}
-
-			var frag = range.extractContents(),
-				name = wrapper.name;
-			_node(frag).each(function(node) {
-				if (node.type == 3 && node.parent().name !== name) {
-					var clone = wrapper.clone(false);
-					clone.append(node.clone(true));
-					node.replaceWith(clone);
-				} else if (node.name === name) {
-					_each(wrapper.attr(), function(key, val) {
-						if (key !== 'style') {
-							node.attr(key, val);
-						}
-					});
-					_each(wrapper.css(), function(key, val) {
-						node.css(key, val);
-					});
-				}
-			});
-			range.insertNode(frag);
-			_select(sel, range);
-			return this;
-		},
-
-		exec : function(cmd, val) {
-			return this[cmd.toLowerCase()](val);
-		},
-
-		state : function(cmd) {
-			var bool = false;
-			try {
-				bool = doc.queryCommandState(cmd);
-			} catch (e) {}
-			return bool;
-		},
-
-		val : function(cmd) {
-			function lc(val) {
-				return val.toLowerCase();
-			}
-			cmd = lc(cmd);
-			var val = '', el;
-			if (cmd === 'fontfamily' || cmd === 'fontname') {
-				val = _nativeCommandValue(doc, 'fontname');
-				val = val.replace(/['"]/g, '');
-				return lc(val);
-			}
-			if (cmd === 'formatblock') {
-				val = _nativeCommandValue(doc, cmd);
-				if (val === '') {
-					el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
-					if (el) {
-						val = el.nodeName;
+				clone.append(knode.clone(true));
+				knode.replaceWith(clone);
+			} else if (knode.name === name) {
+				_each(wrapper.attr(), function(key, val) {
+					if (key !== 'style') {
+						knode.attr(key, val);
 					}
-				}
-				if (val === 'Normal') {
-					val = 'p';
-				}
-				return lc(val);
+				});
+				_each(wrapper.css(), function(key, val) {
+					knode.css(key, val);
+				});
 			}
-			if (cmd === 'fontsize') {
-				el = _getCommonNode(range, {'*' : '.font-size'});
-				if (el) {
-					val = _node(el).css('font-size');
-				}
-				return lc(val);
-			}
-			if (cmd === 'forecolor') {
-				el = _getCommonNode(range, {'*' : '.color'});
-				if (el) {
-					val = _node(el).css('color');
-				}
-				val = _toHex(val);
-				if (val === '') {
-					val = 'default';
-				}
-				return lc(val);
-			}
-			if (cmd === 'hilitecolor') {
-				el = _getCommonNode(range, {'*' : '.background-color'});
-				val = _toHex(val);
-				if (val === '') {
-					val = 'default';
-				}
-				return lc(val);
-			}
-			return val;
-		},
-		bold : function() {
-			return this.wrap('<strong></strong>');
-		},
-		italic : function() {
-			return this.wrap('<em></em>');
-		},
-		forecolor : function(val) {
-			return this.wrap('<span style="color:' + val + ';"></span>');
-		},
-		hilitecolor : function(val) {
-			return this.wrap('<span style="background-color:' + val + ';"></span>');
-		},
-		fontsize : function(val) {
-			return this.wrap('<span style="font-size:' + val + ';"></span>');
-		},
-		fontname : function(val) {
-			return this.fontfamily(val);
-		},
-		fontfamily : function(val) {
-			return this.wrap('<span style="font-family:' + val + ';"></span>');
-		},
-		removeformat : function() {
-			var options = {
-				'*' : 'class,style'
-			},
-			tags = _INLINE_TAGS.split(',');
-			_each(tags, function(key, val) {
-				options[val] = '*';
-			});
-			this.remove(options);
+		});
+		range.insertNode(frag);
+		return _select.call(this);
+	},
+	remove : function(map) {
+		var self = this, doc = self.doc, range = self.range;
+
+		if (range.collapsed) {
 			return this;
 		}
-	};
+
+		var rangeA = _splitStartEnd(range, true, map);
+		var rangeB = _splitStartEnd(rangeA ? rangeA[1] : range, false, map);
+		range = rangeB ? rangeB[1] : range;
+
+		function removeAttrOrCss(knode, map, mapKey) {
+			mapKey = mapKey || knode.name;
+			if (knode.type !== 1) {
+				return;
+			}
+			var newMap = _singleKeyMap(map), arr, val;
+			if (newMap[mapKey]) {
+				arr = newMap[mapKey].split(',');
+				allFlag = false;
+				for (var i = 0, len = arr.length; i < len; i++) {
+					val = arr[i];
+					if (val === '*') {
+						allFlag = true;
+						break;
+					}
+					if (val.charAt(0) === '.') {
+						knode.css(val.substr(1), '');
+					} else {
+						knode.removeAttr(val);
+					}
+				}
+				if (allFlag) {
+					var parent = knode.get(),
+						sc = range.startContainer, so = range.startOffset,
+						ec = range.endContainer, eo = range.endOffset;
+
+					var startMark = _node('<span id="__ke_temp_start__">', doc),
+						endMark = _node('<span id="__ke_temp_end__">', doc);
+					range.insertNode(startMark.get());
+					range.collapse(false);
+					range.insertNode(endMark.get());
+
+					_removeParent(parent);
+
+					startMark = _node('#__ke_temp_start__', doc);
+					endMark = _node('#__ke_temp_end__', doc);
+					range = _range(doc);
+					range.setStartAfter(startMark.get());
+					range.setEndBefore(endMark.get());
+					range.setStart(range.startContainer, range.startOffset - 1);
+					if (range.startContainer == range.endContainer) {
+						range.setEnd(range.endContainer, range.endOffset - 1);
+					}
+					startMark.remove();
+					endMark.remove();
+				}
+			}
+		}
+		_node(range.commonAncestorContainer).each(function(knode) {
+			var testRange = _range(doc);
+			testRange.selectNode(knode.get());
+			if (testRange.compareBoundaryPoints(_END_TO_START, range) >= 0) {
+				return false;
+			}
+			if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0) {
+				removeAttrOrCss(knode, map, '*');
+				removeAttrOrCss(knode, map);
+			}
+		});
+		self.range = range;
+		return _select.call(this);
+	},
+
+	exec : function(cmd, val) {
+		return this[cmd.toLowerCase()](val);
+	},
+
+	state : function(cmd) {
+		var bool = false;
+		try {
+			bool = this.doc.queryCommandState(cmd);
+		} catch (e) {}
+		return bool;
+	},
+
+	val : function(cmd) {
+		var self = this, doc = self.doc, range = self.range;
+		function lc(val) {
+			return val.toLowerCase();
+		}
+		cmd = lc(cmd);
+		var val = '', el;
+		if (cmd === 'fontfamily' || cmd === 'fontname') {
+			val = _nativeCommandValue(doc, 'fontname');
+			val = val.replace(/['"]/g, '');
+			return lc(val);
+		}
+		if (cmd === 'formatblock') {
+			val = _nativeCommandValue(doc, cmd);
+			if (val === '') {
+				el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
+				if (el) {
+					val = el.nodeName;
+				}
+			}
+			if (val === 'Normal') {
+				val = 'p';
+			}
+			return lc(val);
+		}
+		if (cmd === 'fontsize') {
+			el = _getCommonNode(range, {'*' : '.font-size'});
+			if (el) {
+				val = _node(el).css('font-size');
+			}
+			return lc(val);
+		}
+		if (cmd === 'forecolor') {
+			el = _getCommonNode(range, {'*' : '.color'});
+			if (el) {
+				val = _node(el).css('color');
+			}
+			val = _toHex(val);
+			if (val === '') {
+				val = 'default';
+			}
+			return lc(val);
+		}
+		if (cmd === 'hilitecolor') {
+			el = _getCommonNode(range, {'*' : '.background-color'});
+			val = _toHex(val);
+			if (val === '') {
+				val = 'default';
+			}
+			return lc(val);
+		}
+		return val;
+	},
+	bold : function() {
+		return this.wrap('<strong></strong>');
+	},
+	italic : function() {
+		return this.wrap('<em></em>');
+	},
+	forecolor : function(val) {
+		return this.wrap('<span style="color:' + val + ';"></span>');
+	},
+	hilitecolor : function(val) {
+		return this.wrap('<span style="background-color:' + val + ';"></span>');
+	},
+	fontsize : function(val) {
+		return this.wrap('<span style="font-size:' + val + ';"></span>');
+	},
+	fontname : function(val) {
+		return this.fontfamily(val);
+	},
+	fontfamily : function(val) {
+		return this.wrap('<span style="font-family:' + val + ';"></span>');
+	},
+	removeformat : function() {
+		var map = {
+			'*' : 'class,style'
+		},
+		tags = _INLINE_TAG_MAP;
+		_each(tags, function(key, val) {
+			map[key] = '*';
+		});
+		return this.remove(map);
+	}
+};
+
+function _cmd(mixed) {
+	return new KCmd(mixed);
 }
 
 K.cmd = _cmd;
@@ -1772,23 +1928,75 @@ function _edit(expr, options) {
 		},
 		create : function() {
 			var self = this;
+			if (self.iframe) {
+				return self;
+			}
+
+			var iframe = _node('<iframe class="ke-iframe" frameborder="0"></iframe>');
+			iframe.css({
+				display : 'block',
+				width : self.width,
+				height : self.height
+			});
 			var textarea = _node('<textarea class="ke-textarea"></textarea>');
 			textarea.css({
 				display : 'block',
 				width : self.width,
 				height : self.height
 			});
+			if (designMode) {
+				textarea.hide();
+			} else {
+				iframe.hide();
+			}
+			srcElement.before(iframe);
 			srcElement.before(textarea);
-			self.textarea = textarea;
 			srcElement.hide();
+			var doc = _getIframeDoc(iframe.get());
+			doc.open();
+			doc.write(_getInitHtml(bodyClass, css));
+			doc.close();
+			doc.body.contentEditable = 'true';
+			self.iframe = iframe;
+			self.textarea = textarea;
+			self.doc = doc;
+			if (designMode) {
+				_iframeVal.call(self, srcVal());
+			} else {
+				_textareaVal.call(self, srcVal());
+			}
+			self.cmd = _cmd(doc);
+
+			function selectionHandler(e) {
+				var cmd = _cmd(doc);
+				if (cmd) {
+					self.cmd = cmd;
+				}
+			}
+			self.oninput(selectionHandler);
+			_node(doc).bind('mouseup', selectionHandler);
+			_node(document).bind('mousedown', selectionHandler);
+
 			return self;
 		},
 		remove : function() {
 			var self = this,
-				textarea = self.textarea;
+				iframe = self.iframe,
+				textarea = self.textarea,
+				doc = self.doc;
+			if (!iframe) {
+				return self;
+			}
+
+			_node(doc).unbind();
+			_node(doc.body).unbind();
+			_node(document).unbind();
+
 			srcElement.show();
+			srcVal(self.val());
+			iframe.remove();
 			textarea.remove();
-			self.textarea = null;
+			self.iframe = self.textarea = null;
 			return self;
 		},
 		toggle : function(bool) {

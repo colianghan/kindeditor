@@ -56,7 +56,7 @@ function _updateCollapsed() {
 	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
 }
 //更新commonAncestorContainer
-function _updateCommonAncestor(doc) {
+function _updateCommonAncestor() {
 	function getParents(node) {
 		var parents = [];
 		while (node) {
@@ -77,17 +77,37 @@ function _updateCommonAncestor(doc) {
 	}
 	this.commonAncestorContainer = parentsA[lenA - i + 1];
 }
+//检查container和offset的合法性
+function _checkContainerOffset(c, o) {
+	if (!c) {
+		return false;
+	}
+	if (c.nodeType == 1 && c.childNodes.length < o) {
+		return false;
+	}
+	if (c.nodeType == 3 && c.nodeValue.length < o) {
+		return false;
+	}
+	return true;
+}
 //检查开始节点和结束节点的位置，校正错误设置
-function _compareAndUpdate(doc) {
-	var rangeA = new KRange(doc),
+function _compareAndUpdate() {
+	var self = this;
+		doc = self.doc,
+		sc = self.startContainer, so = self.startOffset,
+		ec = self.endContainer, eo = self.endOffset,
+		rangeA = new KRange(doc),
 		rangeB = new KRange(doc);
-	rangeA.startContainer = rangeA.endContainer = this.startContainer;
-	rangeA.startOffset = rangeA.endOffset = this.startOffset;
-	rangeB.startContainer = rangeB.endContainer = this.endContainer;
-	rangeB.startOffset = rangeB.endOffset = this.endOffset;
+	if (!_checkContainerOffset(sc, so) || !_checkContainerOffset(ec, eo)) {
+		return;
+	}
+	rangeA.startContainer = rangeA.endContainer = sc;
+	rangeA.startOffset = rangeA.endOffset = so;
+	rangeB.startContainer = rangeB.endContainer = ec;
+	rangeB.startOffset = rangeB.endOffset = eo;
 	if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
-		this.startContainer = this.endContainer;
-		this.startOffset = this.endOffset;
+		self.startContainer = self.endContainer;
+		self.startOffset = self.endOffset;
 	}
 }
 /**
@@ -155,8 +175,7 @@ function _copyAndDelete(isCopy, isDelete) {
 			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
 				var type = node.nodeType;
 				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0
-						&& range.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
+					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && range.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -435,9 +454,9 @@ KRange.prototype = {
 			self.endContainer = node;
 			self.endOffset = offset;
 		}
-		_compareAndUpdate.call(self, doc);
-		_updateCollapsed.call(self);
-		_updateCommonAncestor.call(self, doc);
+		_compareAndUpdate.call(this);
+		_updateCollapsed.call(this);
+		_updateCommonAncestor.call(this);
 		return self;
 	},
 	/**
@@ -458,9 +477,9 @@ KRange.prototype = {
 			self.startContainer = node;
 			self.startOffset = offset;
 		}
-		_compareAndUpdate.call(self, doc);
-		_updateCollapsed.call(self);
-		_updateCommonAncestor.call(self, doc);
+		_compareAndUpdate.call(this);
+		_updateCollapsed.call(this);
+		_updateCommonAncestor.call(this);
 		return self;
 	},
 	/**
@@ -803,8 +822,10 @@ KRange.prototype = {
 			ec = self.endContainer, eo = self.endOffset, rng;
 		if (doc.createRange) {
 			rng = doc.createRange();
-			rng.setStart(sc, so);
-			rng.setEnd(ec, eo);
+			try {
+				rng.setStart(sc, so);
+				rng.setEnd(ec, eo);
+			} catch (e) {}
 		} else {
 			rng = doc.body.createTextRange();
 			rng.setEndPoint('StartToStart', _getEndRange(sc, so));

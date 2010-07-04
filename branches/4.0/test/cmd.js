@@ -108,13 +108,12 @@ test('cmd.wrap', function() {
 	range.selectNodeContents(cloneP);
 	cmd = K.cmd(range);
 	cmd.wrap('<div></div>');
-	equals(K.node(cloneP).first.name, 'div');
-	same(K.node(cloneP).children.length, 1);
+	equals(K.node(cloneP).first().name, 'div');
+	same(K.node(cloneP).children().length, 1);
 	document.body.removeChild(cloneP);
 });
 
 test('cmd.remove', function() {
-return;
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, cmd;
 	//1
@@ -221,4 +220,17 @@ return;
 	});
 	equals(cmd.range.html().toLowerCase(), '<strong>f</strong>');
 	document.body.removeChild(cloneP);
+	//9
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(cloneP, 1);
+	range.setEnd(strong.firstChild, 3);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : '*'
+	});
+	equals(range.html(), 'efg');
+	//document.body.removeChild(cloneP);
 });

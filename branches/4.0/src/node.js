@@ -73,9 +73,8 @@ function KNode(node) {
 		节点类型。1: Element, 3: textNode
 	*/
 	self.type = self.node.nodeType;
-
+	self.win = self.doc.parentWindow || self.doc.defaultView;
 	//private properties
-	self._win = self.doc.parentWindow || self.doc.defaultView;
 	self._prevDisplay = '';
 }
 
@@ -109,16 +108,22 @@ KNode.prototype = {
 		var self = this, node = self.node;
 		if (key === undefined) {
 			return _getAttrList(self.outer());
-		} else if (val === undefined) {
-			val = _getAttr(node, key);
-			return val === null ? '' : val;
-		} else {
-			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-				key = 'className';
-			}
-			node.setAttribute(key, '' + val);
+		}
+		if (typeof key === 'object') {
+			_each(key, function(k, v) {
+				self.attr(k, v);
+			});
 			return self;
 		}
+		if (val === undefined) {
+			val = _getAttr(node, key);
+			return val === null ? '' : val;
+		}
+		if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+			key = 'className';
+		}
+		node.setAttribute(key, '' + val);
+		return self;
 	},
 	removeAttr : function(key) {
 		var self = this;
@@ -190,8 +195,8 @@ KNode.prototype = {
 	},
 	computedCss : function(key) {
 		var self = this, node = self.node, camelKey = _toCamel(key), val = '';
-		if (win.getComputedStyle) {
-			var style = win.getComputedStyle(node, null);
+		if (self.win.getComputedStyle) {
+			var style = self.win.getComputedStyle(node, null);
 			val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
 		} else if (node.currentStyle) {
 			val = node.currentStyle[camelKey] || node.style[camelKey];
@@ -314,7 +319,7 @@ KNode.prototype = {
 			var n = order ? node.firstChild : node.lastChild;
 			while (n) {
 				var next = order ? n.nextSibling : n.previousSibling;
-				if (fn(n) === false) {
+				if (fn(new KNode(n)) === false) {
 					return false;
 				}
 				if (walk(n) === false) {
