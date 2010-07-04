@@ -885,55 +885,17 @@ function _updateCommonAncestor() {
 	this.commonAncestorContainer = parentsA[lenA - i + 1];
 }
 
-function _checkContainerOffset(c, o) {
-	if (!c) {
-		return false;
-	}
-	if (c.nodeType == 1 && c.childNodes.length < o) {
-		return false;
-	}
-	if (c.nodeType == 3 && c.nodeValue.length < o) {
-		return false;
-	}
-	return true;
-}
-
-function _compareAndUpdate() {
-	var self = this,
-		doc = self.doc,
+function _copyAndDelete(isCopy, isDelete) {
+	var self = this, doc = self.doc,
 		sc = self.startContainer, so = self.startOffset,
 		ec = self.endContainer, eo = self.endOffset,
-		rangeA = new KRange(doc),
-		rangeB = new KRange(doc);
-	if (!_checkContainerOffset(sc, so) || !_checkContainerOffset(ec, eo)) {
-		return;
-	}
-	rangeA.startContainer = rangeA.endContainer = sc;
-	rangeA.startOffset = rangeA.endOffset = so;
-	rangeB.startContainer = rangeB.endContainer = ec;
-	rangeB.startOffset = rangeB.endOffset = eo;
-	if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
-		self.startContainer = self.endContainer;
-		self.startOffset = self.endOffset;
-	}
-}
-
-function _copyAndDelete(isCopy, isDelete) {
-	var self = this,
-		doc = self.doc,
-		startContainer = self.startContainer,
-		startOffset = self.startOffset,
-		endContainer = self.endContainer,
-		endOffset = self.endOffset,
-		nodeList = [],
-		selfRange = self;
+		nodeList = [], selfRange = self;
 	if (isDelete) {
 		selfRange = self.cloneRange();
-		self.collapse(true);
-		if (startContainer.nodeType == 3 && startOffset === 0) {
-			self.setStart(startContainer.parentNode, 0);
-			self.setEnd(startContainer.parentNode, 0);
+		if (sc.nodeType == 3 && so === 0) {
+			self.setStart(sc.parentNode, 0);
 		}
+		self.collapse(true);
 	}
 	function splitTextNode(node, startOffset, endOffset) {
 		var length = node.nodeValue.length, centerNode;
@@ -954,30 +916,26 @@ function _copyAndDelete(isCopy, isDelete) {
 		}
 		return centerNode;
 	}
-	function getTextNode(node) {
-		if (node == startContainer && node == endContainer) {
-			return splitTextNode(node, startOffset, endOffset);
-		} else if (node == startContainer) {
-			return splitTextNode(node, startOffset, node.nodeValue.length);
-		} else if (node == endContainer) {
-			return splitTextNode(node, 0, endOffset);
-		} else {
-			return splitTextNode(node, 0, node.nodeValue.length);
-		}
-	}
 	function extractNodes(parent, frag) {
-		var node = parent.firstChild;
+		var textNode;
+		if (parent.nodeType == 3) {
+			textNode = splitTextNode(parent, so, eo);
+			if (isCopy) {
+				frag.appendChild(textNode);
+			}
+			return false;
+		}
+		var node = parent.firstChild, testRange, nextNode;
 		while (node) {
-			var range = new KRange(doc);
-			range.selectNode(node);
-			if (range.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
+			testRange = new KRange(doc);
+			testRange.selectNode(node);
+			if (testRange.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
 				return false;
 			}
-			var nextNode = node.nextSibling;
-			if (range.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
-				var type = node.nodeType;
-				if (type == 1) {
-					if (range.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && range.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
+			nextNode = node.nextSibling;
+			if (testRange.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
+				if (node.nodeType == 1) {
+					if (testRange.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && testRange.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -990,34 +948,36 @@ function _copyAndDelete(isCopy, isDelete) {
 							childFlag = node.cloneNode(false);
 							frag.appendChild(childFlag);
 						}
-						if (!extractNodes(node, childFlag)) {
+						if (extractNodes(node, childFlag) === false) {
 							return false;
 						}
 					}
-				} else if (type == 3) {
-					var textNode = getTextNode(node);
-					if (textNode) {
+				} else if (node.nodeType == 3) {
+					if (node == sc && node == ec) {
+						textNode = splitTextNode(node, so, eo);
+					} else if (node == sc) {
+						textNode = splitTextNode(node, so, node.nodeValue.length);
+					} else if (node == ec) {
+						textNode = splitTextNode(node, 0, eo);
+					} else {
+						textNode = splitTextNode(node, 0, node.nodeValue.length);
+					}
+					if (isCopy) {
 						frag.appendChild(textNode);
 					}
 				}
 			}
 			node = nextNode;
 		}
-		return true;
 	}
-	var frag = doc.createDocumentFragment(),
-		ancestor = selfRange.commonAncestorContainer;
-	if (ancestor.nodeType == 3) {
-		var textNode = getTextNode(ancestor);
-		if (textNode) {
-			frag.appendChild(textNode);
-		}
-	} else {
-		extractNodes(ancestor, frag);
-	}
+	var frag = doc.createDocumentFragment();
+	extractNodes(selfRange.commonAncestorContainer, frag);
+
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
-		_node(node).remove();
+		if (node.parentNode) {
+			node.parentNode.removeChild(node);
+		}
 	}
 	return isCopy ? frag : self;
 }
@@ -1194,7 +1154,6 @@ KRange.prototype = {
 			self.endContainer = node;
 			self.endOffset = offset;
 		}
-
 		_updateCollapsed.call(this);
 		_updateCommonAncestor.call(this);
 		return self;
@@ -1208,7 +1167,6 @@ KRange.prototype = {
 			self.startContainer = node;
 			self.startOffset = offset;
 		}
-
 		_updateCollapsed.call(this);
 		_updateCommonAncestor.call(this);
 		return self;
@@ -1232,34 +1190,28 @@ KRange.prototype = {
 
 	selectNode : function(node) {
 		this.setStartBefore(node);
-		this.setEndAfter(node);
-		return this;
+		return this.setEndAfter(node);
 	},
 
 	selectNodeContents : function(node) {
 		var knode = _node(node);
 		if (knode.type == 3 || knode.isSingle()) {
-			this.selectNode(node);
-		} else {
-			var children = knode.children();
-			if (children.length > 0) {
-				this.setStartBefore(children[0].get());
-				this.setEndAfter(children[children.length - 1].get());
-			} else {
-				this.setStart(node, 0);
-				this.setEnd(node, 0);
-			}
+			return this.selectNode(node);
 		}
-		return this;
+		var children = knode.children();
+		if (children.length > 0) {
+			this.setStartBefore(children[0].get());
+			return this.setEndAfter(children[children.length - 1].get());
+		}
+		this.setStart(node, 0);
+		return this.setEnd(node, 0);
 	},
 
 	collapse : function(toStart) {
 		if (toStart) {
-			this.setEnd(this.startContainer, this.startOffset);
-		} else {
-			this.setStart(this.endContainer, this.endOffset);
+			return this.setEnd(this.startContainer, this.startOffset);
 		}
-		return this;
+		return this.setStart(this.endContainer, this.endOffset);
 	},
 
 	compareBoundaryPoints : function(how, range) {
@@ -1394,8 +1346,7 @@ KRange.prototype = {
 		} else {
 			self.selectNode(node);
 		}
-		self.setEnd(ec, eo);
-		return self;
+		return self.setEnd(ec, eo);
 	},
 
 	surroundContents : function(node) {
@@ -1467,7 +1418,6 @@ function _select() {
 		sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-	this.range = range;
 
 	if (_IE && sc.nodeType == 1 && range.collapsed) {
 		var empty = doc.createTextNode(' ');
@@ -1715,7 +1665,7 @@ KCmd.prototype = {
 				wrapTextNode(parent, so, eo);
 				return false;
 			}
-			var testRange, nextNode, knode, type;
+			var testRange, nextNode, knode;
 			while (node) {
 				testRange = _range(doc);
 				testRange.selectNode(node);
@@ -1724,8 +1674,7 @@ KCmd.prototype = {
 				}
 				nextNode = node.nextSibling;
 				if (testRange.compareBoundaryPoints(_START_TO_END, range) > 0) {
-					type = node.nodeType;
-					if (type == 1) {
+					if (node.nodeType == 1) {
 						knode = _node(node);
 						if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0 &&
 							testRange.compareBoundaryPoints(_END_TO_END, range) <= 0 &&
@@ -1736,7 +1685,7 @@ KCmd.prototype = {
 								return false;
 							}
 						}
-					} else if (type == 3) {
+					} else if (node.nodeType == 3) {
 						if (node == sc && node == ec) {
 							wrapTextNode(node, so, eo);
 						} else if (node == sc) {

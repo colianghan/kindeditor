@@ -77,39 +77,6 @@ function _updateCommonAncestor() {
 	}
 	this.commonAncestorContainer = parentsA[lenA - i + 1];
 }
-//检查container和offset的合法性
-function _checkContainerOffset(c, o) {
-	if (!c) {
-		return false;
-	}
-	if (c.nodeType == 1 && c.childNodes.length < o) {
-		return false;
-	}
-	if (c.nodeType == 3 && c.nodeValue.length < o) {
-		return false;
-	}
-	return true;
-}
-//检查开始节点和结束节点的位置，校正错误设置
-function _compareAndUpdate() {
-	var self = this,
-		doc = self.doc,
-		sc = self.startContainer, so = self.startOffset,
-		ec = self.endContainer, eo = self.endOffset,
-		rangeA = new KRange(doc),
-		rangeB = new KRange(doc);
-	if (!_checkContainerOffset(sc, so) || !_checkContainerOffset(ec, eo)) {
-		return;
-	}
-	rangeA.startContainer = rangeA.endContainer = sc;
-	rangeA.startOffset = rangeA.endOffset = so;
-	rangeB.startContainer = rangeB.endContainer = ec;
-	rangeB.startOffset = rangeB.endOffset = eo;
-	if (rangeA.compareBoundaryPoints(_START_TO_START, rangeB) == 1) {
-		self.startContainer = self.endContainer;
-		self.startOffset = self.endOffset;
-	}
-}
 /**
 	根据参数复制或删除KRange的内容。
 	cloneContents: copyAndDelete(true, false)
@@ -447,7 +414,6 @@ KRange.prototype = {
 			self.endContainer = node;
 			self.endOffset = offset;
 		}
-		//_compareAndUpdate.call(this);
 		_updateCollapsed.call(this);
 		_updateCommonAncestor.call(this);
 		return self;
@@ -470,7 +436,6 @@ KRange.prototype = {
 			self.startContainer = node;
 			self.startOffset = offset;
 		}
-		//_compareAndUpdate.call(this);
 		_updateCollapsed.call(this);
 		_updateCommonAncestor.call(this);
 		return self;
@@ -534,8 +499,7 @@ KRange.prototype = {
 	*/
 	selectNode : function(node) {
 		this.setStartBefore(node);
-		this.setEndAfter(node);
-		return this;
+		return this.setEndAfter(node);
 	},
 	/**
 		@name KindEditor.range#selectNodeContents
@@ -550,18 +514,15 @@ KRange.prototype = {
 	selectNodeContents : function(node) {
 		var knode = _node(node);
 		if (knode.type == 3 || knode.isSingle()) {
-			this.selectNode(node);
-		} else {
-			var children = knode.children();
-			if (children.length > 0) {
-				this.setStartBefore(children[0].get());
-				this.setEndAfter(children[children.length - 1].get());
-			} else {
-				this.setStart(node, 0);
-				this.setEnd(node, 0);
-			}
+			return this.selectNode(node);
 		}
-		return this;
+		var children = knode.children();
+		if (children.length > 0) {
+			this.setStartBefore(children[0].get());
+			return this.setEndAfter(children[children.length - 1].get());
+		}
+		this.setStart(node, 0);
+		return this.setEnd(node, 0);
 	},
 	/**
 		@name KindEditor.range#collapse
@@ -574,11 +535,9 @@ KRange.prototype = {
 	*/
 	collapse : function(toStart) {
 		if (toStart) {
-			this.setEnd(this.startContainer, this.startOffset);
-		} else {
-			this.setStart(this.endContainer, this.endOffset);
+			return this.setEnd(this.startContainer, this.startOffset);
 		}
-		return this;
+		return this.setStart(this.endContainer, this.endOffset);
 	},
 	/**
 		@name KindEditor.range#compareBoundaryPoints
@@ -770,8 +729,7 @@ KRange.prototype = {
 		} else {
 			self.selectNode(node);
 		}
-		self.setEnd(ec, eo);
-		return self;
+		return self.setEnd(ec, eo);
 	},
 	/**
 		@name KindEditor.range#surroundContents
