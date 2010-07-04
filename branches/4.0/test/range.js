@@ -96,7 +96,6 @@ test('range.setEndBefore', function() {
 	var strong = K.query('#test-data-01 strong');
 
 	var range = K.range(document);
-	range.setStartAfter(strong);
 	range.setEndBefore(strong);
 	ok(range.startContainer === p);
 	ok(range.startOffset === 1);

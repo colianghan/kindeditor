@@ -92,7 +92,7 @@ function _checkContainerOffset(c, o) {
 }
 //检查开始节点和结束节点的位置，校正错误设置
 function _compareAndUpdate() {
-	var self = this;
+	var self = this,
 		doc = self.doc,
 		sc = self.startContainer, so = self.startOffset,
 		ec = self.endContainer, eo = self.endOffset,
@@ -454,7 +454,7 @@ KRange.prototype = {
 			self.endContainer = node;
 			self.endOffset = offset;
 		}
-		_compareAndUpdate.call(this);
+		//_compareAndUpdate.call(this);
 		_updateCollapsed.call(this);
 		_updateCommonAncestor.call(this);
 		return self;
@@ -477,7 +477,7 @@ KRange.prototype = {
 			self.startContainer = node;
 			self.startOffset = offset;
 		}
-		_compareAndUpdate.call(this);
+		//_compareAndUpdate.call(this);
 		_updateCollapsed.call(this);
 		_updateCommonAncestor.call(this);
 		return self;
@@ -732,68 +732,53 @@ KRange.prototype = {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset,
-			insertNode, appendNode, endNode, endTextNode, endTextPos, eq = sc == ec,
-			isFrag = node.nodeName.toLowerCase() === '#document-fragment';
-		if (ec.nodeType == 1 && eo > 0) {
-			endNode = ec.childNodes[eo - 1];
-			if (endNode.nodeType == 3) {
-				eq = sc == endNode;
-				if (eq) {
-					endTextPos = endNode.nodeValue.length;
-				}
-			}
+			firstChild, lastChild, c, nodeCount = 1;
+		//node为文档碎片时
+		if (node.nodeName.toLowerCase() === '#document-fragment') {
+			firstChild = node.firstChild;
+			lastChild = node.lastChild;
+			nodeCount = node.childNodes.length;
 		}
+		//startContainer为element时
 		if (sc.nodeType == 1) {
-			insertNode = sc.childNodes[so];
-			if (!insertNode) {
-				appendNode = sc;
-			}
-		} else {
-			if (so === 0) {
-				insertNode = sc;
-			} else if (so < sc.length) {
-				insertNode = sc.splitText(so);
-				if (eq) {
-					endTextNode = insertNode;
-					endTextPos = endTextPos ? endTextPos - so : eo - so;
-					this.setEnd(endTextNode, endTextPos);
+			c = sc.childNodes[so];
+			if (c) {
+				sc.insertBefore(node, c);
+				//调整结束节点位置
+				if (sc === ec) {
+					eo += nodeCount;
 				}
 			} else {
-				if (sc.nextSibling) {
-					insertNode = sc.nextSibling;
-				} else {
-					appendNode = sc.parentNode;
+				sc.appendChild(node);
+			}
+		//startContainer为text时
+		} else if (sc.nodeType == 3) {
+			if (so === 0) {
+				sc.parentNode.insertBefore(node, sc);
+				//调整结束节点位置
+				if (sc.parentNode === ec) {
+					eo += nodeCount;
+				}
+			} else if (so >= sc.nodeValue.length) {
+				sc.parentNode.appendChild(node);
+			} else {
+				c = sc.splitText(so);
+				sc.parentNode.insertBefore(node, c);
+				//调整结束节点位置
+				if (sc === ec) {
+					ec = c;
+					eo -= so;
 				}
 			}
 		}
-		if (insertNode) {
-			insertNode.parentNode.insertBefore(node, insertNode);
-		}
-		if (appendNode) {
-			appendNode.appendChild(node);
-		}
-		if (isFrag) {
-			if (node.firstChild) {
-				this.setStartBefore(node.firstChild);
-			}
-			if (this.collapsed) {
-				if (insertNode) {
-					endNode = insertNode.previousSibling;
-				}
-				if (appendNode) {
-					endNode = appendNode.lastChild;
-				}
-			}
+		if (firstChild) {
+			self.setStartBefore(firstChild);
+			self.setEndAfter(lastChild);
 		} else {
-			this.setStartBefore(node);
-			if (this.collapsed) {
-				endNode = node;
-			}
+			self.selectNode(node);
 		}
-		if (endNode) {
-			this.setEndAfter(endNode);
-		}
-		return this;
+		self.setEnd(ec, eo);
+		return self;
 	},
 	/**
 		@name KindEditor.range#surroundContents
@@ -806,7 +791,8 @@ KRange.prototype = {
 	*/
 	surroundContents : function(node) {
 		node.appendChild(this.extractContents());
-		return this.insertNode(node);
+		this.insertNode(node);
+		return this.selectNode(node);
 	},
 	/**
 		@name KindEditor.range#get
