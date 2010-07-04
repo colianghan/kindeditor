@@ -148,7 +148,7 @@ function _splitStartEnd(range, isStart, map) {
 	var mark;
 	if (isStart) {
 		var cloneRange = rng.cloneRange();
-		mark = _node('<span id="__ke_temp_mark__"></span>');
+		mark = _node('<span id="__ke_temp_mark__"></span>', doc);
 		cloneRange.collapse(false);
 		cloneRange.insertNode(mark.get());
 	}
@@ -185,7 +185,7 @@ function _splitStartEnd(range, isStart, map) {
 		}
 		//根据标记重新设置range
 		if (isStart) {
-			mark = _node('#__ke_temp_mark__');
+			mark = _node('#__ke_temp_mark__', doc);
 			rng = _range(doc);
 			rng.setStart(newRange.endContainer, newRange.endOffset);
 			rng.setEndBefore(mark.get());
@@ -196,7 +196,7 @@ function _splitStartEnd(range, isStart, map) {
 		}
 		result = [newRange, rng];
 	} else {
-		mark = _node('#__ke_temp_mark__');
+		mark = _node('#__ke_temp_mark__', doc);
 		if (mark) mark.remove();
 	}
 	return result;
@@ -317,16 +317,16 @@ function _cmd(mixed) {
 							sc = range.startContainer, so = range.startOffset,
 							ec = range.endContainer, eo = range.endOffset;
 						//range的开始节点和结束节点是要删除的节点，所以要保存range的开始位置和结束位置
-						var startMark = _node('<span id="__ke_temp_start__">'),
-							endMark = _node('<span id="__ke_temp_end__">');
+						var startMark = _node('<span id="__ke_temp_start__">', doc),
+							endMark = _node('<span id="__ke_temp_end__">', doc);
 						range.insertNode(startMark.get());
 						range.collapse(false);
 						range.insertNode(endMark.get());
 						//删除节点
 						_removeParent(parent);
 						//重新设置range
-						startMark = _node('#__ke_temp_start__');
-						endMark = _node('#__ke_temp_end__');
+						startMark = _node('#__ke_temp_start__', doc);
+						endMark = _node('#__ke_temp_end__', doc);
 						range = _range(doc);
 						range.setStartAfter(startMark.get());
 						range.setEndBefore(endMark.get());

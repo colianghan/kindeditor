@@ -43,6 +43,294 @@ function _toCamel(str) {
 	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
 	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象
 */
+function KNode(node) {
+	var self = this;
+	self.node = node;
+	/**
+		@name KindEditor.node#doc
+		@property
+		@public
+		@type {document}
+		@description
+		包含Node的document对象。
+	*/
+	self.doc = self.node.ownerDocument || self.node;
+	/**
+		@name KindEditor.node#name
+		@property
+		@public
+		@type {String}
+		@description
+		节点名称。
+	*/
+	self.name = self.node.nodeName.toLowerCase();
+	/**
+		@name KindEditor.node#type
+		@property
+		@public
+		@type {String}
+		@description
+		节点类型。1: Element, 3: textNode
+	*/
+	self.type = self.node.nodeType;
+
+	//private properties
+	self._win = self.doc.parentWindow || self.doc.defaultView;
+	self._prevDisplay = '';
+}
+
+KNode.prototype = {
+	/**
+		@name KindEditor.node#bind
+		@function
+		@public
+		@param {String} type
+		@param {String} fn
+		@returns {KNode}
+		@description
+		绑定一个事件。
+	*/
+	bind : function(type, fn) {
+		_bind(this.node, type, fn);
+		return this;
+	},
+	unbind : function(type, fn) {
+		_unbind(this.node, type, fn);
+		return this;
+	},
+	fire : function(type) {
+		_fire(this.node, type);
+		return this;
+	},
+	hasAttr : function(key) {
+		return _getAttr(this.node, key);
+	},
+	attr : function(key, val) {
+		var self = this, node = self.node;
+		if (key === undefined) {
+			return _getAttrList(self.outer());
+		} else if (val === undefined) {
+			val = _getAttr(node, key);
+			return val === null ? '' : val;
+		} else {
+			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+				key = 'className';
+			}
+			node.setAttribute(key, '' + val);
+			return self;
+		}
+	},
+	removeAttr : function(key) {
+		var self = this;
+		if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+			key = 'className';
+		}
+		self.attr(key, '');
+		self.node.removeAttribute(key);
+		return self;
+	},
+	get : function() {
+		return this.node;
+	},
+	hasClass : function(cls) {
+		return _inString(cls, this.node.className, ' ');
+	},
+	addClass : function(cls) {
+		var self = this, node = self.node;
+		if (!self.hasClass(cls)) {
+			node.className = _trim(node.className + ' ' + cls);
+		}
+		return self;
+	},
+	removeClass : function(cls) {
+		var self = this, node = self.node;
+		if (self.hasClass(cls)) {
+			node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+		}
+		return self;
+	},
+	html : function(val) {
+		var self = this, node = self.node;
+		if (val === undefined) {
+			return _formatHtml(node.innerHTML);
+		} else {
+			node.innerHTML = _formatHtml(val);
+			return self;
+		}
+	},
+	val : function(val) {
+		var self = this, node = self.node;
+		if (val === undefined) {
+			return self.hasVal() ? node.value : self.attr('value');
+		} else {
+			if (self.hasVal()) {
+				node.value = val;
+			} else {
+				self.attr('value' , val);
+			}
+			return self;
+		}
+	},
+	css : function(key, val) {
+		var self = this, node = self.node;
+		if (key === undefined) {
+			return _getCssList(self.attr('style'));
+		}
+		if (typeof key === 'object') {
+			_each(key, function(k, v) {
+				self.css(k, v);
+			});
+			return self;
+		}
+		if (val === undefined) {
+			return node.style[key] || self.computedCss(key) || '';
+		}
+		node.style[_toCamel(key)] = val;
+		return self;
+	},
+	computedCss : function(key) {
+		var self = this, node = self.node, camelKey = _toCamel(key), val = '';
+		if (win.getComputedStyle) {
+			var style = win.getComputedStyle(node, null);
+			val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
+		} else if (node.currentStyle) {
+			val = node.currentStyle[camelKey] || node.style[camelKey];
+		}
+		return val;
+	},
+	clone : function(bool) {
+		return new KNode(this.node.cloneNode(bool));
+	},
+	append : function(val) {
+		this.node.appendChild(_get(val));
+		return this;
+	},
+	before : function(val) {
+		var self = this, node = self.node;
+		node.parentNode.insertBefore(_get(val), node);
+		return self;
+	},
+	after : function(val) {
+		var self = this, node = self.node;
+		if (node.nextSibling) {
+			node.parentNode.insertBefore(_get(val), node.nextSibling);
+		} else {
+			self.append(val);
+		}
+		return self;
+	},
+	replaceWith : function(val) {
+		val = _get(val);
+		var self = this, node = self.node;
+		node.parentNode.replaceChild(val, node);
+		self.unbind();
+		self.node = val;
+		return self;
+	},
+	remove : function() {
+		var self = this, node = self.node;
+		self.unbind();
+		if (node.parentNode) {
+			node.parentNode.removeChild(node);
+		}
+		self.node = null;
+		return self;
+	},
+	show : function() {
+		var self = this;
+		if (self.computedCss('display') === 'none') {
+			self.css('display', self._prevDisplay);
+		}
+		return self;
+	},
+	hide : function() {
+		var self = this;
+		if (self.computedCss('display') !== 'none') {
+			self._prevDisplay = self.css('display');
+			self.css('display', 'none');
+		}
+		return self;
+	},
+	outer : function() {
+		var self = this, div = self.doc.createElement('div'), html;
+		div.appendChild(self.node);
+		html = _formatHtml(div.innerHTML);
+		div = null;
+		return html;
+	},
+	hasVal : function() {
+		return !!_VALUE_TAG_MAP[this.name];
+	},
+	isSingle : function() {
+		return !!_SINGLE_TAG_MAP[this.name];
+	},
+	isInline : function() {
+		return !!_INLINE_TAG_MAP[this.name];
+	},
+	isBlock : function() {
+		return !!_BLOCK_TAG_MAP[this.name];
+	},
+	contains : function(otherNode) {
+		return _contains(this.node, _get(otherNode));
+	},
+	parent : function() {
+		return new KNode(this.node.parentNode);
+	},
+	children : function() {
+		var list = [], child = this.node.firstChild;
+		while (child) {
+			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
+				list.push(new KNode(child));
+			}
+			child = child.nextSibling;
+		}
+		return list;
+	},
+	first : function() {
+		var list = this.children();
+		return list.length > 0 ? list[0] : null;
+	},
+	last : function() {
+		var list = this.children();
+		return list.length > 0 ? list[list.length - 1] : null;
+	},
+	index : function() {
+		var i = -1, sibling = this.node;
+		while (sibling) {
+			i++;
+			sibling = sibling.previousSibling;
+		}
+		return i;
+	},
+	prev : function() {
+		return new KNode(this.node.previousSibling);
+	},
+	next : function() {
+		return new KNode(this.node.nextSibling);
+	},
+	each : function(fn, order) {
+		order = (order === undefined) ? true : order;
+		function walk(node) {
+			var n = order ? node.firstChild : node.lastChild;
+			while (n) {
+				var next = order ? n.nextSibling : n.previousSibling;
+				if (fn(n) === false) {
+					return false;
+				}
+				if (walk(n) === false) {
+					return;
+				}
+				n = next;
+			}
+		}
+		walk(this.node);
+	},
+	toString : function() {
+		var self = this;
+		return self.type == 3 ? self.node.nodeValue : self.outer();
+	}
+};
+
 function _node(expr, root) {
 	var node, doc;
 	if (typeof expr === 'string') {
@@ -60,278 +348,7 @@ function _node(expr, root) {
 	if (!node) {
 		return null;
 	}
-	var doc = node.ownerDocument || node,
-		win = doc.parentWindow || doc.defaultView,
-		prevDisplay = '';
-	var obj = {
-		/**
-			@name KindEditor.node#name
-			@property
-			@public
-			@type {String}
-			@description
-			节点名称。
-		*/
-		name : node.nodeName.toLowerCase(),
-		/**
-			@name KindEditor.node#type
-			@property
-			@public
-			@type {String}
-			@description
-			节点类型。1: Element, 3: textNode
-		*/
-		type : node.nodeType,
-		/**
-			@name KindEditor.node#doc
-			@property
-			@public
-			@type {document}
-			@description
-			包含Node的document对象。
-		*/
-		doc : doc,
-		/**
-			@name KindEditor.node#bind
-			@function
-			@public
-			@param {String} type
-			@param {String} fn
-			@returns {KNode}
-			@description
-			绑定一个事件。
-		*/
-		bind : function(type, fn) {
-			_bind(node, type, fn);
-			return this;
-		},
-		unbind : function(type, fn) {
-			_unbind(node, type, fn);
-			return this;
-		},
-		fire : function(type) {
-			_fire(node, type);
-			return this;
-		},
-		hasAttr : function(key) {
-			return _getAttr(node, key);
-		},
-		attr : function(key, val) {
-			if (key === undefined) {
-				return _getAttrList(this.outer());
-			} else if (val === undefined) {
-				val = _getAttr(node, key);
-				return val === null ? '' : val;
-			} else {
-				if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-					key = 'className';
-				}
-				node.setAttribute(key, '' + val);
-				return this;
-			}
-		},
-		removeAttr : function(key) {
-			if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-				key = 'className';
-			}
-			this.attr(key, '');
-			node.removeAttribute(key);
-			return this;
-		},
-		get : function() {
-			return node;
-		},
-		hasClass : function(cls) {
-			return _inString(cls, node.className, ' ');
-			
-		},
-		addClass : function(cls) {
-			if (!this.hasClass(cls)) {
-				node.className = _trim(node.className + ' ' + cls);
-			}
-			return this;
-		},
-		removeClass : function(cls) {
-			if (this.hasClass(cls)) {
-				node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
-			}
-			return this;
-		},
-		html : function(val) {
-			if (val === undefined) {
-				return _formatHtml(node.innerHTML);
-			} else {
-				node.innerHTML = _formatHtml(val);
-				return this;
-			}
-		},
-		val : function(val) {
-			if (val === undefined) {
-				return this.hasVal() ? node.value : this.attr('value');
-			} else {
-				if (this.hasVal()) {
-					node.value = val;
-				} else {
-					this.attr('value' , val);
-				}
-				return this;
-			}
-		},
-		css : function(key, val) {
-			var self = this;
-			if (key === undefined) {
-				return _getCssList(this.attr('style'));
-			}
-			if (typeof key === 'object') {
-				_each(key, function(k, v) {
-					self.css(k, v);
-				});
-				return this;
-			}
-			if (val === undefined) {
-				return node.style[key] || this.computedCss(key) || '';
-			}
-			node.style[_toCamel(key)] = val;
-			return this;
-		},
-		computedCss : function(key) {
-			var camelKey = _toCamel(key),
-				val = '';
-			if (win.getComputedStyle) {
-				var style = win.getComputedStyle(node, null);
-				val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
-			} else if (node.currentStyle) {
-				val = node.currentStyle[camelKey] || node.style[camelKey];
-			}
-			return val;
-		},
-		clone : function(bool) {
-			return _node(node.cloneNode(bool));
-		},
-		append : function(val) {
-			node.appendChild(_get(val));
-			return this;
-		},
-		before : function(val) {
-			node.parentNode.insertBefore(_get(val), node);
-			return this;
-		},
-		after : function(val) {
-			if (node.nextSibling) {
-				node.parentNode.insertBefore(_get(val), node.nextSibling);
-			} else {
-				this.append(val);
-			}
-			return this;
-		},
-		replaceWith : function(val) {
-			node.parentNode.replaceChild(_get(val), node);
-			this.unbind();
-			node = _get(val);
-			return this;
-		},
-		remove : function() {
-			this.unbind();
-			if (node.parentNode) {
-				node.parentNode.removeChild(node);
-			}
-			node = null;
-			return this;
-		},
-		show : function() {
-			if (this.computedCss('display') === 'none') {
-				this.css('display', prevDisplay);
-			}
-			return this;
-		},
-		hide : function() {
-			if (this.computedCss('display') !== 'none') {
-				prevDisplay = this.css('display');
-				this.css('display', 'none');
-			}
-			return this;
-		},
-		outer : function() {
-			var div = doc.createElement('div'),html;
-			div.appendChild(node);
-			html = _formatHtml(div.innerHTML);
-			div = null;
-			return html;
-		},
-		hasVal : function() {
-			return !!_VALUE_TAG_MAP[this.name];
-		},
-		isSingle : function() {
-			return !!_SINGLE_TAG_MAP[this.name];
-		},
-		isInline : function() {
-			return !!_INLINE_TAG_MAP[this.name];
-		},
-		isBlock : function() {
-			return !!_BLOCK_TAG_MAP[this.name];
-		},
-		contains : function(otherNode) {
-			return _contains(node, _get(otherNode));
-		},
-		parent : function() {
-			return _node(node.parentNode);
-		},
-		prev : function() {
-			return _node(node.previousSibling);
-		},
-		next : function() {
-			return _node(node.nextSibling);
-		},
-		each : function(fn, order) {
-			order = (order === undefined) ? true : order;
-			function walk(knode) {
-				var n = order ? knode.first : knode.last;
-				if (!n) {
-					return;
-				}
-				while (n) {
-					var next = order ? n.next() : n.prev();
-					if (fn(n) === false) {
-						return false;
-					}
-					if (walk(n) === false) {
-						return;
-					}
-					n = next;
-				}
-			}
-			walk(this);
-		},
-		toString : function() {
-			return this.type == 3 ? node.nodeValue : this.outer();
-		}
-	};
-	function _updateProp(node) {
-		//node.first, node.last, node.children
-		var list = [], child = node.firstChild;
-		while (child) {
-			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
-				list.push(_node(child));
-			}
-			child = child.nextSibling;
-		}
-		if (list.length > 0) {
-			this.first = list[0];
-			this.last = list[list.length - 1];
-		} else {
-			this.first = this.last = null;
-		}
-		this.children = list;
-		//node.index
-		var i = -1, sibling = node;
-		while (sibling) {
-			i++;
-			sibling = sibling.previousSibling;
-		}
-		this.index = i;
-	}
-	_updateProp.call(obj, node);
-	return obj;
+	return new KNode(node);
 }
 
 K.node = _node;

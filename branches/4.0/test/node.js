@@ -3,7 +3,7 @@ module('node');
 test('node(html)',function(){
 	var node = K.node('<div><span></span></div>');
 	equals(node.name, 'div');
-	equals(node.first.name, 'span');
+	equals(node.first().name, 'span');
 });
 
 test('node(selector)',function(){
@@ -58,10 +58,10 @@ test("node.hasClass/node.addClass/node.removeClass", function() {
 test("node.contains",function(){
 	ok(K.node('#test-data-01 p').contains(K.node('#test-data-01 p')) === false);
 	ok(K.node('#test-data-01').contains(K.node('#test-data-01 p')) === true);
-	ok(K.node('#test-data-01 strong').contains(K.node('#test-data-01 strong').first) === true);
+	ok(K.node('#test-data-01 strong').contains(K.node('#test-data-01 strong').first()) === true);
 	ok(K.node(document).contains(K.node('#test-data-01 strong')) === true);
 	ok(K.node(document).contains(document) === false);
-	ok(K.node('#test-data-01 strong').first.contains(K.node('#test-data-01 strong')) === false);
+	ok(K.node('#test-data-01 strong').first().contains(K.node('#test-data-01 strong')) === false);
 });
 
 test("node.val",function(){

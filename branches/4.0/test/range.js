@@ -462,7 +462,7 @@ test('range.cloneContents', function() {
 	range.setStart(p, 0);
 	range.setEnd(p, 4);
 	frag = range.cloneContents();
-	ok(K.node(frag).children.length === 4);
+	ok(K.node(frag).children().length === 4);
 	//7
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
@@ -474,8 +474,8 @@ test('range.cloneContents', function() {
 	range.setStart(strong.nextSibling, 4);
 	range.setEnd(p, 4);
 	frag = range.cloneContents();
-	ok(K.node(frag).children.length === 1);
-	same(K.node(frag).children[0].name, 'img');
+	ok(K.node(frag).children().length === 1);
+	same(K.node(frag).first().name, 'img');
 });
 
 test('range.extractContents', function() {
@@ -539,7 +539,7 @@ test('range.extractContents', function() {
 	range.setStart(cloneP, 0);
 	range.setEnd(cloneP, 4);
 	frag = range.extractContents();
-	ok(K.node(frag).children.length === 4);
+	ok(K.node(frag).children().length === 4);
 	document.body.removeChild(cloneP);
 	//7
 	cloneP = p.cloneNode(true);
@@ -559,8 +559,8 @@ test('range.extractContents', function() {
 	range.setStart(cloneP, 3);
 	range.setEnd(cloneP, 4);
 	frag = range.extractContents();
-	ok(K.node(frag).children.length === 1);
-	same(K.node(frag).children[0].name, 'img');
+	ok(K.node(frag).children().length === 1);
+	same(K.node(frag).first().name, 'img');
 	document.body.removeChild(cloneP);
 	//9
 	cloneP = p.cloneNode(true);
