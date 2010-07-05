@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-04)
+* @version 4.0 (2010-07-05)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -117,14 +117,15 @@ function _unbindEvent(el, type, fn) {
 	}
 }
 
-var _props = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
+var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
+
 function _event(el, e) {
 	if (!e) {
 		return;
 	}
 	var obj = {},
 		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
-	_each(_props, function(key, val) {
+	_each(_EVENT_PROPS, function(key, val) {
 		obj[val] = e[val];
 	});
 	if (!e.target) {
@@ -516,7 +517,7 @@ function _queryAll(expr, root) {
 	if (parts.length == 1) {
 		return select(parts[0], root);
 	}
-	var el, isChild = false;
+	var isChild = false;
 	for (var i = 0, lenth = parts.length; i < lenth; i++) {
 		var part = parts[i];
 		if (part === '>') {
@@ -775,7 +776,8 @@ KNode.prototype = {
 		return _contains(this.node, _get(otherNode));
 	},
 	parent : function() {
-		return new KNode(this.node.parentNode);
+		var node = this.node.parentNode;
+		return node ? new KNode(node) : null;
 	},
 	children : function() {
 		var list = [], child = this.node.firstChild;
@@ -804,10 +806,12 @@ KNode.prototype = {
 		return i;
 	},
 	prev : function() {
-		return new KNode(this.node.previousSibling);
+		var node = this.node.previousSibling;
+		return node ? new KNode(node) : null;
 	},
 	next : function() {
-		return new KNode(this.node.nextSibling);
+		var node = this.node.nextSibling;
+		return node ? new KNode(node) : null;
 	},
 	each : function(fn, order) {
 		order = (order === undefined) ? true : order;
@@ -819,7 +823,7 @@ KNode.prototype = {
 					return false;
 				}
 				if (walk(n) === false) {
-					return;
+					return false;
 				}
 				n = next;
 			}
@@ -1189,8 +1193,7 @@ KRange.prototype = {
 	},
 
 	selectNode : function(node) {
-		this.setStartBefore(node);
-		return this.setEndAfter(node);
+		return this.setStartBefore(node).setEndAfter(node);
 	},
 
 	selectNodeContents : function(node) {
@@ -1200,11 +1203,9 @@ KRange.prototype = {
 		}
 		var children = knode.children();
 		if (children.length > 0) {
-			this.setStartBefore(children[0].get());
-			return this.setEndAfter(children[children.length - 1].get());
+			return this.setStartBefore(children[0].get()).setEndAfter(children[children.length - 1].get());
 		}
-		this.setStart(node, 0);
-		return this.setEnd(node, 0);
+		return this.setStart(node, 0).setEnd(node, 0);
 	},
 
 	collapse : function(toStart) {
@@ -1215,8 +1216,7 @@ KRange.prototype = {
 	},
 
 	compareBoundaryPoints : function(how, range) {
-		var rangeA = this.get(),
-			rangeB = range.get();
+		var rangeA = this.get(), rangeB = range.get();
 		if (!this.doc.createRange) {
 			var arr = {};
 			arr[_START_TO_START] = 'StartToStart';
@@ -1272,10 +1272,7 @@ KRange.prototype = {
 	},
 
 	cloneRange : function() {
-		var range = new KRange(this.doc);
-		range.setStart(this.startContainer, this.startOffset);
-		range.setEnd(this.endContainer, this.endOffset);
-		return range;
+		return new KRange(this.doc).setStart(this.startContainer, this.startOffset).setEnd(this.endContainer, this.endOffset);
 	},
 
 	toString : function() {
@@ -1341,8 +1338,7 @@ KRange.prototype = {
 			}
 		}
 		if (firstChild) {
-			self.setStartBefore(firstChild);
-			self.setEndAfter(lastChild);
+			self.setStartBefore(firstChild).setEndAfter(lastChild);
 		} else {
 			self.selectNode(node);
 		}
@@ -1351,8 +1347,7 @@ KRange.prototype = {
 
 	surroundContents : function(node) {
 		node.appendChild(this.extractContents());
-		this.insertNode(node);
-		return this.selectNode(node);
+		return this.insertNode(node).selectNode(node);
 	},
 
 	get : function() {
@@ -1454,19 +1449,10 @@ function _singleKeyMap(map) {
 	return newMap;
 }
 
-function _removeParent(parent) {
-	if (parent.firstChild) {
-		var node = parent.firstChild;
-		while (node) {
-			var nextNode = node.nextSibling;
-			parent.parentNode.insertBefore(node, parent);
-			node = nextNode;
-		}
-	}
-	parent.parentNode.removeChild(parent);
+function _hasAttrOrCss(knode, map) {
+	return _hasAttrOrCssByKey(knode, map, '*') || _hasAttrOrCssByKey(knode, map);
 }
-
-function _hasAttrOrCss(knode, map, mapKey) {
+function _hasAttrOrCssByKey(knode, map, mapKey) {
 	mapKey = mapKey || knode.name;
 	if (knode.type !== 1) {
 		return false;
@@ -1490,14 +1476,49 @@ function _hasAttrOrCss(knode, map, mapKey) {
 	return false;
 }
 
+function _removeAttrOrCss(knode, map) {
+	_removeAttrOrCssByKey(knode, map, '*');
+	_removeAttrOrCssByKey(knode, map);
+}
+function _removeAttrOrCssByKey(knode, map, mapKey) {
+	mapKey = mapKey || knode.name;
+	if (knode.type !== 1) {
+		return;
+	}
+	var newMap = _singleKeyMap(map), arr, val;
+	if (newMap[mapKey]) {
+		arr = newMap[mapKey].split(',');
+		allFlag = false;
+		for (var i = 0, len = arr.length; i < len; i++) {
+			val = arr[i];
+			if (val === '*') {
+				allFlag = true;
+				break;
+			}
+			if (val.charAt(0) === '.') {
+				knode.css(val.substr(1), '');
+			} else {
+				knode.removeAttr(val);
+			}
+		}
+		if (allFlag) {
+			if (knode.first()) {
+				var kchild = knode.first();
+				while (kchild) {
+					var next = kchild.next();
+					knode.before(kchild);
+					kchild = next;
+				}
+			}
+			knode.remove();
+		}
+	}
+}
+
 function _getCommonNode(range, map) {
 	var node = range.commonAncestorContainer;
 	while (node) {
-		var knode = _node(node);
-		if (_hasAttrOrCss(knode, map, '*')) {
-			return node;
-		}
-		if (_hasAttrOrCss(knode, map)) {
+		if (_hasAttrOrCss(_node(node), map)) {
 			return node;
 		}
 		node = node.parentNode;
@@ -1506,21 +1527,14 @@ function _getCommonNode(range, map) {
 }
 
 function _splitStartEnd(range, isStart, map) {
-	var rng = range.cloneRange(),
-		sc = rng.startContainer, so = rng.startOffset,
-		doc = sc.ownerDocument || sc;
+	var doc = range.doc,
+		sc = range.startContainer, so = range.startOffset,
+		ec = range.endContainer, eo = range.endOffset;
 
-	var mark;
-	if (isStart) {
-		var cloneRange = rng.cloneRange();
-		mark = _node('<span id="__ke_temp_mark__"></span>', doc);
-		cloneRange.collapse(false);
-		cloneRange.insertNode(mark.get());
-	}
-
-	rng.collapse(isStart);
-	var node = rng.startContainer, pos = rng.startOffset,
-		parent = node.nodeType == 3 ? node.parentNode : node, needSplit = false;
+	var tempRange = range.cloneRange().collapse(isStart);
+	var node = tempRange.startContainer, pos = tempRange.startOffset,
+		parent = node.nodeType == 3 ? node.parentNode : node,
+		needSplit = false;
 	while (parent && parent.parentNode) {
 		var knode = _node(parent);
 		if (!knode.isInline()) {
@@ -1532,41 +1546,30 @@ function _splitStartEnd(range, isStart, map) {
 		needSplit = true;
 		parent = parent.parentNode;
 	}
-	var result;
 
 	if (needSplit) {
-
-		var newRange = _range(doc), frag;
+		var mark = doc.createElement('span');
+		range.cloneRange().collapse(!isStart).insertNode(mark);
 		if (isStart) {
-			newRange.setStartBefore(parent.firstChild);
-			newRange.setEnd(node, pos);
-			frag = newRange.extractContents();
-			newRange.insertNode(frag);
+			tempRange.setStartBefore(parent.firstChild).setEnd(node, pos);
 		} else {
-			newRange.setStart(node, pos);
-			newRange.setEndAfter(parent.lastChild);
-			frag = newRange.extractContents();
+			tempRange.setStart(node, pos).setEndAfter(parent.lastChild);
+		}
+		var frag = tempRange.extractContents(),
+			first = frag.firstChild, last = frag.lastChild;
+		if (isStart) {
+			tempRange.insertNode(frag);
+			range.setStartAfter(last).setEndBefore(mark);
+		} else {
 			parent.appendChild(frag);
+			range.setStartBefore(mark).setEndBefore(first);
 		}
-
-		if (isStart) {
-			mark = _node('#__ke_temp_mark__', doc);
-			rng = _range(doc);
-			rng.setStart(newRange.endContainer, newRange.endOffset);
-			rng.setEndBefore(mark.get());
-			mark.remove();
-		} else {
-			rng.setStart(sc, so);
-			rng.setEnd(newRange.startContainer, newRange.startOffset);
-		}
-		result = [newRange, rng];
-	} else {
-		mark = _node('#__ke_temp_mark__', doc);
-		if (mark) {
-			mark.remove();
+		var markParent = mark.parentNode;
+		markParent.removeChild(mark);
+		if (!isStart && markParent === range.endContainer) {
+			range.setEnd(range.endContainer, range.endOffset - 1);
 		}
 	}
-	return result;
 }
 
 function KCmd(mixed) {
@@ -1627,6 +1630,16 @@ KCmd.prototype = {
 		var name = wrapper.name,
 			attrs = wrapper.attr(),
 			styles = wrapper.css();
+		function mergeAttrs(knode) {
+			_each(attrs, function(key, val) {
+				if (key !== 'style') {
+					knode.attr(key, val);
+				}
+			});
+			_each(styles, function(key, val) {
+				knode.css(key, val);
+			});
+		}
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node, el = wrapper.clone(false).get();
 			if (startOffset > 0) {
@@ -1648,16 +1661,6 @@ KCmd.prototype = {
 					range.setEndAfter(el);
 				}
 			}
-		}
-		function mergeAttrs(knode) {
-			_each(attrs, function(key, val) {
-				if (key !== 'style') {
-					knode.attr(key, val);
-				}
-			});
-			_each(styles, function(key, val) {
-				knode.css(key, val);
-			});
 		}
 		function wrapRange(parent) {
 			var node = parent.firstChild;
@@ -1710,58 +1713,9 @@ KCmd.prototype = {
 			return this;
 		}
 
-		var rangeA = _splitStartEnd(range, true, map);
-		var rangeB = _splitStartEnd(rangeA ? rangeA[1] : range, false, map);
-		range = rangeB ? rangeB[1] : range;
-
-		function removeAttrOrCss(knode, map, mapKey) {
-			mapKey = mapKey || knode.name;
-			if (knode.type !== 1) {
-				return;
-			}
-			var newMap = _singleKeyMap(map), arr, val;
-			if (newMap[mapKey]) {
-				arr = newMap[mapKey].split(',');
-				allFlag = false;
-				for (var i = 0, len = arr.length; i < len; i++) {
-					val = arr[i];
-					if (val === '*') {
-						allFlag = true;
-						break;
-					}
-					if (val.charAt(0) === '.') {
-						knode.css(val.substr(1), '');
-					} else {
-						knode.removeAttr(val);
-					}
-				}
-				if (allFlag) {
-					var parent = knode.get(),
-						sc = range.startContainer, so = range.startOffset,
-						ec = range.endContainer, eo = range.endOffset;
-
-					var startMark = _node('<span id="__ke_temp_start__">', doc),
-						endMark = _node('<span id="__ke_temp_end__">', doc);
-					range.insertNode(startMark.get());
-					range.collapse(false);
-					range.insertNode(endMark.get());
-
-					_removeParent(parent);
-
-					startMark = _node('#__ke_temp_start__', doc);
-					endMark = _node('#__ke_temp_end__', doc);
-					range = _range(doc);
-					range.setStartAfter(startMark.get());
-					range.setEndBefore(endMark.get());
-					range.setStart(range.startContainer, range.startOffset - 1);
-					if (range.startContainer == range.endContainer) {
-						range.setEnd(range.endContainer, range.endOffset - 1);
-					}
-					startMark.remove();
-					endMark.remove();
-				}
-			}
-		}
+		_splitStartEnd(range, true, map);
+		_splitStartEnd(range, false, map);
+		var nodeList = [];
 		_node(range.commonAncestorContainer).each(function(knode) {
 			var testRange = _range(doc);
 			testRange.selectNode(knode.get());
@@ -1769,9 +1723,23 @@ KCmd.prototype = {
 				return false;
 			}
 			if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0) {
-				removeAttrOrCss(knode, map, '*');
-				removeAttrOrCss(knode, map);
+				nodeList.push(knode);
 			}
+		});
+		if (nodeList.length > 0) {
+			var before = _node(range.startContainer.childNodes[range.startOffset - 1]);
+			if (before && _hasAttrOrCss(before, map) && /<([^>]+)><\/\1>/.test(before.html())) {
+				before.remove();
+				range.setStart(range.startContainer, range.startOffset - 1);
+				range.setEnd(range.endContainer, range.endOffset - 1);
+			}
+			var after = _node(range.endContainer.childNodes[range.endOffset]);
+			if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
+				after.remove();
+			}
+		}
+		_each(nodeList, function() {
+			_removeAttrOrCss(this, map);
 		});
 		self.range = range;
 		return _select.call(this);

@@ -236,7 +236,7 @@ function _queryAll(expr, root) {
 	if (parts.length == 1) {
 		return select(parts[0], root);
 	}
-	var el, isChild = false;
+	var isChild = false;
 	for (var i = 0, lenth = parts.length; i < lenth; i++) {
 		var part = parts[i];
 		if (part === '>') {

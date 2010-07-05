@@ -498,8 +498,7 @@ KRange.prototype = {
 		将Node的开始位置和结束位置分别设为Range的开始位置和结束位置。
 	*/
 	selectNode : function(node) {
-		this.setStartBefore(node);
-		return this.setEndAfter(node);
+		return this.setStartBefore(node).setEndAfter(node);
 	},
 	/**
 		@name KindEditor.range#selectNodeContents
@@ -518,11 +517,9 @@ KRange.prototype = {
 		}
 		var children = knode.children();
 		if (children.length > 0) {
-			this.setStartBefore(children[0].get());
-			return this.setEndAfter(children[children.length - 1].get());
+			return this.setStartBefore(children[0].get()).setEndAfter(children[children.length - 1].get());
 		}
-		this.setStart(node, 0);
-		return this.setEnd(node, 0);
+		return this.setStart(node, 0).setEnd(node, 0);
 	},
 	/**
 		@name KindEditor.range#collapse
@@ -555,8 +552,7 @@ KRange.prototype = {
 		<p>K.END_TO_START：比较目标range的结束位置和this range的开始位置。</p>
 	*/
 	compareBoundaryPoints : function(how, range) {
-		var rangeA = this.get(),
-			rangeB = range.get();
+		var rangeA = this.get(), rangeB = range.get();
 		if (!this.doc.createRange) {
 			var arr = {};
 			arr[_START_TO_START] = 'StartToStart';
@@ -619,10 +615,7 @@ KRange.prototype = {
 		复制KRange。
 	*/
 	cloneRange : function() {
-		var range = new KRange(this.doc);
-		range.setStart(this.startContainer, this.startOffset);
-		range.setEnd(this.endContainer, this.endOffset);
-		return range;
+		return new KRange(this.doc).setStart(this.startContainer, this.startOffset).setEnd(this.endContainer, this.endOffset);
 	},
 	/**
 		@name KindEditor.range#toString
@@ -724,8 +717,7 @@ KRange.prototype = {
 			}
 		}
 		if (firstChild) {
-			self.setStartBefore(firstChild);
-			self.setEndAfter(lastChild);
+			self.setStartBefore(firstChild).setEndAfter(lastChild);
 		} else {
 			self.selectNode(node);
 		}
@@ -742,8 +734,7 @@ KRange.prototype = {
 	*/
 	surroundContents : function(node) {
 		node.appendChild(this.extractContents());
-		this.insertNode(node);
-		return this.selectNode(node);
+		return this.insertNode(node).selectNode(node);
 	},
 	/**
 		@name KindEditor.range#get

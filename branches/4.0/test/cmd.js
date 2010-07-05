@@ -117,7 +117,7 @@ test('cmd.remove', function() {
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, cmd;
 	//1
-	cloneP = p.cloneNode(true);
+	/*cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
@@ -232,5 +232,33 @@ test('cmd.remove', function() {
 		'strong' : '*'
 	});
 	equals(range.html(), 'efg');
+	document.body.removeChild(cloneP);
+	//10
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	strong.innerHTML = '<strong>efg</strong>';
+	range = K.range(document);
+	range.setStart(strong.firstChild.firstChild, 1);
+	range.setEnd(strong.firstChild.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : '*'
+	});
+	equals(range.html(), 'f');
+	document.body.removeChild(cloneP);*/
+	//11
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	strong.innerHTML = '<strong>efg</strong>';
+	range = K.range(document);
+	range.setStart(strong.firstChild.firstChild, 0);
+	range.setEnd(strong.firstChild.firstChild, 3);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : '*'
+	});
+	equals(K.node(cloneP).html().substr(0, 11), 'abcdefghijk');
 	//document.body.removeChild(cloneP);
 });

@@ -279,7 +279,8 @@ KNode.prototype = {
 		return _contains(this.node, _get(otherNode));
 	},
 	parent : function() {
-		return new KNode(this.node.parentNode);
+		var node = this.node.parentNode;
+		return node ? new KNode(node) : null;
 	},
 	children : function() {
 		var list = [], child = this.node.firstChild;
@@ -308,10 +309,12 @@ KNode.prototype = {
 		return i;
 	},
 	prev : function() {
-		return new KNode(this.node.previousSibling);
+		var node = this.node.previousSibling;
+		return node ? new KNode(node) : null;
 	},
 	next : function() {
-		return new KNode(this.node.nextSibling);
+		var node = this.node.nextSibling;
+		return node ? new KNode(node) : null;
 	},
 	each : function(fn, order) {
 		order = (order === undefined) ? true : order;
@@ -323,7 +326,7 @@ KNode.prototype = {
 					return false;
 				}
 				if (walk(n) === false) {
-					return;
+					return false;
 				}
 				n = next;
 			}
