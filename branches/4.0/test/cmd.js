@@ -117,7 +117,7 @@ test('cmd.remove', function() {
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, cmd;
 	//1
-	/*cloneP = p.cloneNode(true);
+	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
@@ -246,7 +246,7 @@ test('cmd.remove', function() {
 		'strong' : '*'
 	});
 	equals(range.html(), 'f');
-	document.body.removeChild(cloneP);*/
+	document.body.removeChild(cloneP);
 	//11
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -260,5 +260,19 @@ test('cmd.remove', function() {
 		'strong' : '*'
 	});
 	equals(K.node(cloneP).html().substr(0, 11), 'abcdefghijk');
-	//document.body.removeChild(cloneP);
+	document.body.removeChild(cloneP);
+	//12
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 1);
+	cmd = K.cmd(range);
+	cmd.remove({
+		'strong' : '*'
+	});
+	var str = 'abcd<strong>e</strong><strong>fg';
+	equals(K.node(cloneP).html().substr(0, str.length), str);
+	document.body.removeChild(cloneP);
 });

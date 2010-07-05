@@ -173,6 +173,7 @@ function _edit(expr, options) {
 				var cmd = _cmd(doc);
 				if (cmd) {
 					self.cmd = cmd;
+					console.log(cmd);
 				}
 			}
 			self.oninput(selectionHandler);

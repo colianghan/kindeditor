@@ -47,16 +47,15 @@ function _select() {
 		sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-	//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>，IE专用
-	//Webkit和Opera这个方法没有效果，需要研究
+	//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
 	if (_IE && sc.nodeType == 1 && range.collapsed) {
-		var empty = doc.createTextNode(' ');
-		ec.appendChild(empty);
+		var empty = _node('<span>&nbsp;</span>', doc);
+		range.insertNode(empty.get());
 		rng = doc.body.createTextRange();
-		rng.moveToElementText(ec);
+		rng.moveToElementText(empty.get());
 		rng.collapse(false);
 		rng.select();
-		ec.removeChild(empty);
+		empty.remove();
 		win.focus();
 		return this;
 	}
@@ -228,40 +227,16 @@ function _splitStartEnd(range, isStart, map) {
 		div : 'class,border'
 	});
 */
-function KCmd(mixed) {
-	var self = this, win, doc, sel, rng, range;
-	if (mixed.nodeName) {
-		//get selection and original range when mixed is a document or a node
-		doc = mixed.ownerDocument || mixed;
-		sel = _getSel(doc);
-		try {
-			if (sel.rangeCount > 0) {
-				rng = sel.getRangeAt(0);
-			} else {
-				rng = sel.createRange();
-			}
-		} catch(e) {}
-		mixed = rng || doc;
-		if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
-			return null;
-		}
-	} else {
-		//get selection and original range when mixed is KRange
-		var startContainer = mixed.startContainer;
-		doc = startContainer.ownerDocument || startContainer;
-		sel = _getSel(doc);
-		rng = mixed.get();
-	}
-	//window object
-	self.win = _getWin(doc);
+function KCmd(range) {
+	var self = this;
 	//document object
-	self.doc = doc;
+	self.doc = range.doc;
+	//window object
+	self.win = _getWin(self.doc);
 	//native selection
-	self.sel = sel;
-	//native range
-	self.rng = rng;
+	self.sel = _getSel(self.doc);
 	//KRange
-	self.range = _range(mixed);
+	self.range = range;
 }
 
 KCmd.prototype = {
@@ -363,12 +338,7 @@ KCmd.prototype = {
 		return _select.call(this);
 	},
 	remove : function(map) {
-		var self = this, doc = self.doc, range = self.range;
-		//collapsed = true
-		if (range.collapsed) {
-			return this;
-		}
-		//collapsed = false
+		var self = this, doc = self.doc, range = self.range, collapsed = range.collapsed;
 		_splitStartEnd(range, true, map);
 		_splitStartEnd(range, false, map);
 		var nodeList = [];
@@ -397,6 +367,9 @@ KCmd.prototype = {
 		_each(nodeList, function() {
 			_removeAttrOrCss(this, map);
 		});
+		if (collapsed) {
+			range.collapse(true);
+		}
 		self.range = range;
 		return _select.call(this);
 	},
@@ -500,6 +473,24 @@ KCmd.prototype = {
 };
 
 function _cmd(mixed) {
+	//get selection and original range when mixed is a document or a node
+	if (mixed.nodeName) {
+		var doc = mixed.ownerDocument || mixed,
+			sel = _getSel(doc), rng;
+		try {
+			if (sel.rangeCount > 0) {
+				rng = sel.getRangeAt(0);
+			} else {
+				rng = sel.createRange();
+			}
+		} catch(e) {}
+		rng = rng || doc;
+		if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
+			return null;
+		}
+		return new KCmd(_range(rng));
+	}
+	//get selection and original range when mixed is KRange
 	return new KCmd(mixed);
 }
 
