@@ -98,7 +98,7 @@ test('cmd.wrap', function() {
 	range.collapse(true);
 	cmd = K.cmd(range);
 	cmd.wrap('<strong></strong>');
-	equals(strong.innerHTML.toLowerCase(), '<strong></strong>efg');
+	equals(strong.innerHTML.toLowerCase(), 'efg');
 	document.body.removeChild(cloneP);
 	//10
 	cloneP = p.cloneNode(true);
@@ -121,6 +121,27 @@ test('cmd.wrap', function() {
 	cmd = K.cmd(range);
 	cmd.wrap('<strong></strong>');
 	equals(cmd.range.html(), '<strong></strong><strong>hij</strong>');
+	document.body.removeChild(cloneP);
+	//12
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNode(strong);
+	cmd = K.cmd(range);
+	cmd.wrap('<div><p></p></div>');
+	equals(range.html(), '<div><p><strong>efg</strong></p></div>');
+	document.body.removeChild(cloneP);
+	//13
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.wrap('<span class="aaa"><strong></strong></span>');
+	equals(range.html(), '<span class="aaa"><strong>f</strong></span>');
 	document.body.removeChild(cloneP);
 });
 
@@ -283,7 +304,7 @@ test('cmd.remove', function() {
 	cmd.remove({
 		'strong' : '*'
 	});
-	var str = 'abcd<strong>e</strong><strong>fg';
+	var str = 'abcd<strong>efg';
 	equals(K.node(cloneP).html().substr(0, str.length), str);
 	document.body.removeChild(cloneP);
 });

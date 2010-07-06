@@ -13,11 +13,50 @@
 
 /**
 #using "core.js"
+#using "event.js"
 #using "html.js"
 #using "selector.js"
 #using "node.js"
 #using "range.js"
 */
+
+/**
+DOM_VK_BACK_SPACE : 8
+DOM_VK_TAB : 9
+DOM_VK_RETURN : 13
+DOM_VK_SPACE : 32
+DOM_VK_PAGE_UP : 33
+DOM_VK_PAGE_DOWN : 34
+DOM_VK_END : 35
+DOM_VK_HOME : 36
+DOM_VK_LEFT : 37
+DOM_VK_UP : 38
+DOM_VK_RIGHT : 39
+DOM_VK_DOWN : 40
+DOM_VK_DELETE : 46
+DOM_VK_0 ~ DOM_VK_9 : 48 ~ 57
+DOM_VK_SEMICOLON : 59 (;:)
+DOM_VK_EQUALS : 61 (=+) (+)
+DOM_VK_A ~ DOM_VK_Z : 65 ~ 90
+DOM_VK_MULTIPLY : 106 (*)
+DOM_VK_SUBTRACT : 109 (-_) (-)
+DOM_VK_DECIMAL : 110 (.)
+DOM_VK_DIVIDE : 111 (/)
+DOM_VK_COMMA : 188 (,<)
+DOM_VK_PERIOD : 190 (.>)
+DOM_VK_SLASH : 191 (/?)
+DOM_VK_BACK_QUOTE : 192 (`~)
+DOM_VK_OPEN_BRACKET : 219 ([{)
+DOM_VK_BACK_SLASH : 220 (\|)
+DOM_VK_CLOSE_BRACKET : 221 (]})
+DOM_VK_QUOTE : 222 ('")
+
+详细请参考 event.js
+*/
+//输入文字的键值
+var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,109..111,188,190..192,219..222');
+//输入文字或移动光标的键值
+var _CHANGE_KEY_MAP = _toMap('8,9,13,32..40,46,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
 
 //original queryCommandValue
 function _nativeCommandValue(doc, cmd) {
@@ -38,6 +77,22 @@ function _getWin(doc) {
 function _getSel(doc) {
 	var win = _getWin(doc);
 	return win.getSelection ? win.getSelection() : doc.selection;
+}
+//get range of current selection
+function _getRng(doc) {
+	var sel = _getSel(doc), rng;
+	try {
+		if (sel.rangeCount > 0) {
+			rng = sel.getRangeAt(0);
+		} else {
+			rng = sel.createRange();
+		}
+	} catch(e) {}
+	rng = rng || doc;
+	if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
+		return null;
+	}
+	return rng;
 }
 //add KRange to the selection
 function _select() {
@@ -148,6 +203,63 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 		}
 	}
 }
+//wrap and merge a node
+function _wrapAndMergeNode(knode, wrapper) {
+	var w = wrapper.clone(true), c = w, parent = knode;
+	//node为唯一的子节点时重新设置node
+	while (knode.parent().children().length == 1) {
+		knode = knode.parent();
+	}
+	//node为text node时
+	if (knode.type == 3) {
+		while (c.first()) {
+			c = c.first();
+		}
+		knode.before(w);
+		c.append(knode);
+		return w;
+	}
+	//node为element时
+	var nodeList = []; //没有合并的node
+	while (c) {
+		if (c.name === knode.name) {
+			_mergeAttrs(knode, c.attr(), c.css());
+		} else {
+			nodeList.push(c);
+		}
+		c = c.first();
+	}
+	//node全部合并，没有剩下的node
+	if (nodeList.length === 0) {
+		return knode;
+	}
+	//有没有合并的node
+	//将node的子节点纳入在一个documentFragment里
+	var child, next, frag = knode.doc.createDocumentFragment();
+	while ((child = knode.first())) {
+		next = child.next();
+		frag.appendChild(child.get());
+		child = next;
+	}
+	var last;
+	_each(nodeList, function() {
+		knode.append(this);
+		last = this;
+	});
+	last.append(frag);
+	return knode;
+}
+//merge attributes and styles
+function _mergeAttrs(knode, attrs, styles) {
+	_each(attrs, function(key, val) {
+		if (key !== 'style') {
+			knode.attr(key, val);
+		}
+	});
+	_each(styles, function(key, val) {
+		knode.css(key, val);
+	});
+}
 /**
 	根据规则取得range的共通祖先
 	example:
@@ -229,50 +341,61 @@ function _splitStartEnd(range, isStart, map) {
 */
 function KCmd(range) {
 	var self = this;
-	//document object
+	//public
 	self.doc = range.doc;
-	//window object
 	self.win = _getWin(self.doc);
-	//native selection
 	self.sel = _getSel(self.doc);
-	//KRange
 	self.range = range;
+	//private
+	self._preformat = null;
+	self._onchangeHandlers = [];
 }
 
 KCmd.prototype = {
 	wrap : function(val) {
-		var self = this, doc = self.doc, range = self.range,
+		var self = this, doc = self.doc, range = self.range, wrapper,
 			sc = range.startContainer, so = range.startOffset,
-			ec = range.endContainer, eo = range.endOffset,
+			ec = range.endContainer, eo = range.endOffset;
+		//val为HTML
+		if (typeof val == 'string') {
 			wrapper = _node(val, doc);
-		//非inline标签
-		if (!wrapper.isInline()) {
-			range.surroundContents(wrapper.clone(false).get());
-			return _select.call(this);
+		//val为KNode
+		} else {
+			wrapper = val;
 		}
 		//inline标签，collapsed = true
 		if (range.collapsed) {
-			var el = wrapper.clone(false).get();
-			range.insertNode(el);
-			range.selectNodeContents(el);
-			return _select.call(this);
+			//以前格式存在时遍历合并
+			if (self._preformat) {
+				var prevWrapper = self._preformat.wrapper;
+				//prevWrapper.each(function(knode) {
+				
+				//});
+				//if (prevWrapper.name !== wrapper.name) {
+				//	prevWrapper.append(wrapper);
+				//}
+			}
+			self._preformat = {
+				wrapper : wrapper,
+				range : range.cloneRange()
+			};
+			return _select.call(self);
+		}
+		//非inline标签
+		if (!wrapper.isInline()) {
+			var w = wrapper.clone(true), child = w;
+			//查找最里面的element
+			while (child.first()) {
+				child = child.first();
+			}
+			child.append(range.extractContents());
+			range.insertNode(w.get()).selectNode(w.get());
+			return _select.call(self);
 		}
 		//inline标签，collapsed = false
-		var name = wrapper.name,
-			attrs = wrapper.attr(),
-			styles = wrapper.css();
-		function mergeAttrs(knode) {
-			_each(attrs, function(key, val) {
-				if (key !== 'style') {
-					knode.attr(key, val);
-				}
-			});
-			_each(styles, function(key, val) {
-				knode.css(key, val);
-			});
-		}
+		//split and wrap a test node
 		function wrapTextNode(node, startOffset, endOffset) {
-			var length = node.nodeValue.length, center = node, el = wrapper.clone(false).get();
+			var length = node.nodeValue.length, center = node;
 			if (endOffset <= startOffset) {
 				return;
 			}
@@ -282,20 +405,15 @@ KCmd.prototype = {
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var kparent = _node(node.parentNode);
-			if (center === node && kparent.name === name) {
-				mergeAttrs(kparent);
-			} else {
-				center.parentNode.insertBefore(el, center);
-				el.appendChild(center);
-				if (sc === node) {
-					range.setStartBefore(el);
-				}
-				if (ec === node) {
-					range.setEndAfter(el);
-				}
+			var el = _wrapAndMergeNode(_node(center), wrapper).get();
+			if (sc === node) {
+				range.setStartBefore(el);
+			}
+			if (ec === node) {
+				range.setEndAfter(el);
 			}
 		}
+		//main function
 		function wrapRange(parent) {
 			var node = parent.firstChild;
 			if (parent.nodeType == 3) {
@@ -312,15 +430,8 @@ KCmd.prototype = {
 				nextNode = node.nextSibling;
 				if (testRange.compareBoundaryPoints(_START_TO_END, range) > 0) {
 					if (node.nodeType == 1) {
-						knode = _node(node);
-						if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0 &&
-							testRange.compareBoundaryPoints(_END_TO_END, range) <= 0 &&
-							knode.name === name) {
-							mergeAttrs(knode);
-						} else {
-							if (wrapRange(node) === false) {
-								return false;
-							}
+						if (wrapRange(node) === false) {
+							return false;
 						}
 					} else if (node.nodeType == 3) {
 						if (node == sc && node == ec) {
@@ -338,12 +449,25 @@ KCmd.prototype = {
 			}
 		}
 		wrapRange(range.commonAncestorContainer);
-		return _select.call(this);
+		//select range
+		_select.call(self);
+		//fire events
+		_each(self._onchangeHandlers, function() {
+			this();
+		});
+		return self;
 	},
 	remove : function(map) {
-		var self = this, doc = self.doc, range = self.range, collapsed = range.collapsed;
+		var self = this, doc = self.doc, range = self.range;
+		//inline标签，collapsed = true
+		if (range.collapsed) {
+			return _select.call(self);
+		}
+		//inline标签，collapsed = false
+		//split parents
 		_splitStartEnd(range, true, map);
 		_splitStartEnd(range, false, map);
+		//grep nodes which format will be removed
 		var nodeList = [];
 		_node(range.commonAncestorContainer).each(function(knode) {
 			var testRange = _range(doc);
@@ -355,6 +479,7 @@ KCmd.prototype = {
 				nodeList.push(knode);
 			}
 		});
+		//remove empty elements
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
@@ -369,13 +494,31 @@ KCmd.prototype = {
 		if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
 			after.remove();
 		}
+		//remove attributes or styles
 		_each(nodeList, function() {
 			_removeAttrOrCss(this, map);
 		});
-		if (collapsed) {
-			range.collapse(true);
+		//select range
+		_select.call(self);
+		//fire events
+		_each(self._onchangeHandlers, function() {
+			this();
+		});
+		return self;
+	},
+	_applyPreformat : function() {
+		var self = this, range = self.range, pf = self._preformat;
+		if (pf) {
+			var pw = pf.wrapper, pr = pf.range;
+			//console.log(pf);
+			range.setStart(pr.startContainer, pr.startOffset);
+			self.wrap(pw);
+			//range.selectNodeContents(pw);
+			//console.log(range);
+			//self.range = range;
+			_select.call(self);
+			self._preformat = null;
 		}
-		return _select.call(this);
 	},
 	//Reference: document.execCommand
 	exec : function(cmd, val) {
@@ -473,28 +616,63 @@ KCmd.prototype = {
 			map[key] = '*';
 		});
 		return this.remove(map);
+	},
+	//只有用键盘添加文字时触发oninput事件
+	oninput : function(fn) {
+		var self = this, doc = self.doc;
+		_node(doc).bind('keyup', function(e) {
+			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
+				fn(e);
+				e.stop();
+			}
+		});
+		return self;
+	},
+	//输入文字、移动光标、执行命令都会触发onchange事件
+	onchange : function(fn) {
+		var self = this, doc = self.doc, body = doc.body;
+		_node(doc).bind('keyup', function(e) {
+			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
+				fn(e);
+				e.stop();
+			}
+		});
+		_node(doc).bind('mouseup', fn);
+		function timeoutHandler(e) {
+			setTimeout(function() {
+				fn(e);
+			}, 1);
+		}
+		_node(body).bind('paste', timeoutHandler);
+		_node(body).bind('cut', timeoutHandler);
+		self._onchangeHandlers.push(fn);
+		return self;
 	}
 };
 
 function _cmd(mixed) {
-	//get selection and original range when mixed is a document or a node
+	//mixed is a document
 	if (mixed.nodeName) {
 		var doc = mixed.ownerDocument || mixed,
-			sel = _getSel(doc), rng;
-		try {
-			if (sel.rangeCount > 0) {
-				rng = sel.getRangeAt(0);
-			} else {
-				rng = sel.createRange();
+			rng = _getRng(doc),
+			cmd = new KCmd(_range(rng || doc));
+		//add events
+		//光标位置发生变化时保存selection
+		function selectionHandler(e) {
+			rng = _getRng(doc);
+			if (rng) {
+				cmd.range = _range(rng);
 			}
-		} catch(e) {}
-		rng = rng || doc;
-		if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
-			return null;
 		}
-		return new KCmd(_range(rng));
+		cmd.onchange(selectionHandler);
+		_node(document).bind('mousedown', selectionHandler);
+		//输入文字后根据预先格式进行格式化
+		cmd.oninput(function(e) {
+			cmd._applyPreformat();
+		});
+		return cmd;
 	}
-	//get selection and original range when mixed is KRange
+	//mixed is a KRange
 	return new KCmd(mixed);
 }
 

@@ -19,7 +19,7 @@ var cmds = {
 K.each(cmds, function(key, val) {
 	var a = K.node('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
 		return function(e) {
-			edit.exec(key, val);
+			edit.cmd.exec(key, val);
 			e.stop();
 		};
 	})(key, val));

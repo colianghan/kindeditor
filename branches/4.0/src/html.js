@@ -61,7 +61,7 @@ function _formatHtml(html) {
 			endSlash = ' /';
 		}
 		if (endNewline) {
-			endNewline = ' ';
+			endNewline = '';
 		}
 		if (tagName !== 'script' && tagName !== 'style') {
 			startNewline = '';
