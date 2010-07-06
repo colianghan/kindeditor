@@ -17,8 +17,42 @@
 #using "cmd.js"
 */
 
-//输入字符或移动光标的键值集合
-var _ONCHANGE_KEY_MAP = _toMap('8,9,13,33..40,46,48..57,59,61,65..90,93,96..107,109..111,188,190..192,219..222');
+/**
+DOM_VK_BACK_SPACE : 8
+DOM_VK_TAB : 9
+DOM_VK_RETURN : 13
+DOM_VK_PAGE_UP : 33
+DOM_VK_PAGE_DOWN : 34
+DOM_VK_END : 35
+DOM_VK_HOME : 36
+DOM_VK_LEFT : 37
+DOM_VK_UP : 38
+DOM_VK_RIGHT : 39
+DOM_VK_DOWN : 40
+DOM_VK_DELETE : 46
+DOM_VK_0 ~ DOM_VK_9 : 48 ~ 57
+DOM_VK_SEMICOLON : 59 (;:)
+DOM_VK_EQUALS : 61 (=+) (+)
+DOM_VK_A ~ DOM_VK_Z : 65 ~ 90
+DOM_VK_MULTIPLY : 106 (*)
+DOM_VK_SUBTRACT : 109 (-_) (-)
+DOM_VK_DECIMAL : 110 (.)
+DOM_VK_DIVIDE : 111 (/)
+DOM_VK_COMMA : 188 (,<)
+DOM_VK_PERIOD : 190 (.>)
+DOM_VK_SLASH : 191 (/?)
+DOM_VK_BACK_QUOTE : 192 (`~)
+DOM_VK_OPEN_BRACKET : 219 ([{)
+DOM_VK_BACK_SLASH : 220 (\|)
+DOM_VK_CLOSE_BRACKET : 221 (]})
+DOM_VK_QUOTE : 222 ('")
+
+详细请参考 event.js
+*/
+//输入字符的键值
+var _INPUT_KEY_MAP = _toMap('9,48..57,59,61,65..90,109..111,188,190..192,219..222');
+//输入字符或移动光标的键值
+var _CHANGE_KEY_MAP = _toMap('8,9,13,33..40,46,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
 
 function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
@@ -266,7 +300,7 @@ function _edit(expr, options) {
 		onchange : function(fn) {
 			var self = this, doc = self.doc, body = doc.body;
 			_node(doc).bind('keyup', function(e) {
-				if (!e.ctrlKey && !e.altKey && _ONCHANGE_KEY_MAP[e.keyCode]) {
+				if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
 					fn(e);
 					e.stop();
 				}

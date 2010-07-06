@@ -36,14 +36,14 @@ var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCod
 
 //Inspired by jQuery
 //http://github.com/jquery/jquery/blob/master/src/event.js
-function _event(el, e) {
-	if (!e) {
+function _event(el, event) {
+	if (!event) {
 		return;
 	}
-	var obj = {},
+	var e = {},
 		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
 	_each(_EVENT_PROPS, function(key, val) {
-		obj[val] = e[val];
+		e[val] = event[val];
 	});
 	if (!e.target) {
 		e.target = e.srcElement || doc;
@@ -68,23 +68,81 @@ function _event(el, e) {
 	if (!e.which && e.button !== undefined) {
 		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
 	}
-	obj.preventDefault = function() {
-		if (e.preventDefault) {
-			e.preventDefault();
+	/**
+		DOM_VK_SEMICOLON : 59 (;:)
+			- IE,WEBKIT: 186
+			- GECKO,OPERA : 59
+		DOM_VK_EQUALS : 61 (=+)
+			- IE,WEBKIT : 187
+			- GECKO : 107
+			- OPERA : 61
+		DOM_VK_NUMPAD0 ~ DOM_VK_NUMPAD9 : 96 ~ 105
+			- IE、WEBKIT,GECKO : 96 ~ 105
+			- OPERA : 48 ~ 57
+		DOM_VK_MULTIPLY : 106 (*)
+			- IE、WEBKIT,GECKO : 106
+			- OPERA : 42
+		DOM_VK_ADD : 107 (+)
+			- IE、WEBKIT,GECKO : 107
+			- OPERA : 43
+		DOM_VK_SUBTRACT : 109 (-_) (-)
+			- IE,WEBKIT : 189, 109
+			- GECKO : 109, 109
+			- OPERA : 109, 45
+		DOM_VK_DECIMAL : 110 (.)
+			- IE、WEBKIT,GECKO : 110
+			- OPERA : 78
+		DOM_VK_DIVIDE : 111 (/)
+			- IE、WEBKIT,GECKO : 111
+			- OPERA : 47
+
+		Reference:
+		https://developer.mozilla.org/en/DOM/Event/UIEvent/KeyEvent
+		http://msdn.microsoft.com/en-us/library/ms536940(v=VS.85).aspx
+	*/
+	switch (e.which) {
+	case 186 :
+		e.which = 59;
+		break;
+	case 187 :
+	case 107 :
+	case 43 :
+		e.which = 61;
+		break;
+	case 189 :
+	case 45 :
+		e.which = 109;
+		break;
+	case 42 :
+		e.which = 106;
+		break;
+	case 47 :
+		e.which = 111;
+		break;
+	case 78 :
+		e.which = 110;
+		break;
+	}
+	if (e.which >= 96 && e.which <= 105) {
+		e.which -= 48;
+	}
+	e.preventDefault = function() {
+		if (event.preventDefault) {
+			event.preventDefault();
 		}
-		e.returnValue = false;
+		event.returnValue = false;
 	};
-	obj.stopPropagation = function() {
-		if (e.stopPropagation) {
-			e.stopPropagation();
+	e.stopPropagation = function() {
+		if (event.stopPropagation) {
+			event.stopPropagation();
 		}
-		e.cancelBubble = true;
+		event.cancelBubble = true;
 	};
-	obj.stop = function() {
+	e.stop = function() {
 		this.preventDefault();
 		this.stopPropagation();
 	};
-	return obj;
+	return e;
 }
 
 var _elList = [], _data = {};
