@@ -214,9 +214,15 @@ function _toHex(color) {
 */
 function _toMap(str, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
-	var map = {}, arr = str.split(delimiter);
+	var map = {}, arr = str.split(delimiter), match;
 	_each(arr, function(key, val) {
-		map[val] = true;
+		if ((match = /^(\d+)\.\.(\d+)$/.exec(val))) {
+			for (var i = parseInt(match[1], 10); i <= parseInt(match[2], 10); i++) {
+				map[i.toString()] = true;
+			}
+		} else {
+			map[val] = true;
+		}
 	});
 	return map;
 }

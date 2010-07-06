@@ -87,3 +87,8 @@ test('toHex', function() {
 	equals(K.toHex(' rgb(0, 0, 0) rgb (255, 255, 255) '), ' #000000 #FFFFFF ');
 });
 
+test('toMap', function() {
+	same(K.toMap('a,b'), {a : true, b : true});
+	same(K.toMap('a,1..3,b'), {a : true, '1' : true, '2' : true, '3' : true, b : true});
+});
+

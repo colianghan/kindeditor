@@ -273,6 +273,9 @@ KCmd.prototype = {
 		}
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node, el = wrapper.clone(false).get();
+			if (endOffset <= startOffset) {
+				return;
+			}
 			if (startOffset > 0) {
 				center = node.splitText(startOffset);
 			}
@@ -352,17 +355,19 @@ KCmd.prototype = {
 				nodeList.push(knode);
 			}
 		});
-		if (nodeList.length > 0) {
-			var before = _node(range.startContainer.childNodes[range.startOffset - 1]);
+		var sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset;
+		if (so > 0) {
+			var before = _node(sc.childNodes[so - 1]);
 			if (before && _hasAttrOrCss(before, map) && /<([^>]+)><\/\1>/.test(before.html())) {
 				before.remove();
-				range.setStart(range.startContainer, range.startOffset - 1);
-				range.setEnd(range.endContainer, range.endOffset - 1);
+				range.setStart(sc, so - 1);
+				range.setEnd(ec, eo - 1);
 			}
-			var after = _node(range.endContainer.childNodes[range.endOffset]);
-			if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
-				after.remove();
-			}
+		}
+		var after = _node(ec.childNodes[range.endOffset]);
+		if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
+			after.remove();
 		}
 		_each(nodeList, function() {
 			_removeAttrOrCss(this, map);
@@ -370,7 +375,6 @@ KCmd.prototype = {
 		if (collapsed) {
 			range.collapse(true);
 		}
-		self.range = range;
 		return _select.call(this);
 	},
 	//Reference: document.execCommand

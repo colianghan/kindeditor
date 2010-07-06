@@ -111,6 +111,17 @@ test('cmd.wrap', function() {
 	equals(K.node(cloneP).first().name, 'div');
 	same(K.node(cloneP).children().length, 1);
 	document.body.removeChild(cloneP);
+	//11
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 3);
+	range.setEnd(strong.nextSibling, 3);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	equals(cmd.range.html(), '<strong></strong><strong>hij</strong>');
+	document.body.removeChild(cloneP);
 });
 
 test('cmd.remove', function() {

@@ -17,6 +17,9 @@
 #using "cmd.js"
 */
 
+//输入字符或移动光标的键值集合
+var _ONCHANGE_KEY_MAP = _toMap('8,9,13,33..40,46,48..57,59,61,65..90,93,96..107,109..111,188,190..192,219..222');
+
 function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
@@ -78,11 +81,12 @@ function _edit(expr, options) {
 	var srcElement = _node(expr),
 		designMode = options.designMode === undefined ? true : options.designMode,
 		bodyClass = options.bodyClass,
-		css = options.css;
+		css = options.css,
+		onchangeHandlers = [];
 	function srcVal(val) {
 		return srcElement.hasVal() ? srcElement.val(val) : srcElement.html(val);
 	}
-	var obj = {
+	return {
 		/**
 			@name KindEditor.edit#cmd
 			@property
@@ -173,11 +177,9 @@ function _edit(expr, options) {
 				var cmd = _cmd(doc);
 				if (cmd) {
 					self.cmd = cmd;
-					console.log(cmd);
 				}
 			}
-			self.oninput(selectionHandler);
-			_node(doc).bind('mouseup', selectionHandler);
+			self.onchange(selectionHandler);
 			_node(document).bind('mousedown', selectionHandler);
 			//点击编辑区域或输入内容时取得commmand value
 			//function commandValueHandler(e) {
@@ -255,16 +257,21 @@ function _edit(expr, options) {
 			}
 			return self;
 		},
-		oninput : function(fn) {
-			var self = this,
-				doc = self.doc,
-				body = doc.body;
+		exec : function(cmd, val) {
+			this.cmd.exec(cmd, val);
+			_each(onchangeHandlers, function() {
+				this();
+			});
+		},
+		onchange : function(fn) {
+			var self = this, doc = self.doc, body = doc.body;
 			_node(doc).bind('keyup', function(e) {
-				if (!e.ctrlKey && !e.altKey && (e.keyCode < 16 || e.keyCode > 18) && e.keyCode != 116) {
+				if (!e.ctrlKey && !e.altKey && _ONCHANGE_KEY_MAP[e.keyCode]) {
 					fn(e);
 					e.stop();
 				}
 			});
+			_node(doc).bind('mouseup', fn);
 			function timeoutHandler(e) {
 				setTimeout(function() {
 					fn(e);
@@ -272,10 +279,10 @@ function _edit(expr, options) {
 			}
 			_node(body).bind('paste', timeoutHandler);
 			_node(body).bind('cut', timeoutHandler);
+			onchangeHandlers.push(fn);
 			return self;
 		}
 	};
-	return obj;
 }
 
 K.edit = _edit;
