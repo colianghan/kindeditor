@@ -104,9 +104,7 @@ function _getRng(doc) {
 }
 //add KRange to the selection
 function _select() {
-	var self = this,
-		sel = self.sel,
-		range = self.range,
+	var self = this, sel = self.sel, range = self.range.cloneRange(),
 		sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
@@ -542,14 +540,10 @@ KCmd.prototype = {
 				return;
 			}
 			var textNode = el.firstChild;
-			while (textNode && textNode.firtChild) {
-				textNode = textNode.firtChild;
+			while (textNode && textNode.firstChild) {
+				textNode = textNode.firstChild;
 			}
-			if (textNode.nodeValue) {
-				range.setEnd(textNode, textNode.nodeValue.length);
-			} else {
-				range.selectNodeContents(textNode);
-			}
+			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
 			self.range = range;
 			_select.call(self);

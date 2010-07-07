@@ -98,11 +98,7 @@ test('cmd.wrap', function() {
 	range.collapse(true);
 	cmd = K.cmd(range);
 	cmd.wrap('<strong></strong>');
-	range.selectNodeContents(strong);
-	range.collapse(true);
 	cmd.wrap('<em></em>');
-	range.selectNodeContents(strong);
-	range.collapse(true);
 	cmd.wrap('<span></span>');
 	range.setStart(strong.firstChild, 1).setEnd(strong.firstChild, 1);
 	cmd._applyPreformat();
