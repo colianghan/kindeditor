@@ -1,9 +1,10 @@
 module('node');
 
 test('node(html)',function(){
-	var node = K.node('<div><span></span></div>');
+	var node = K.node('<div class="abc" style="font-size:12px;"></div>');
 	equals(node.name, 'div');
-	equals(node.first().name, 'span');
+	equals(node.attr('class'), 'abc');
+	equals(node.css('font-size'), '12px');
 });
 
 test('node(selector)',function(){

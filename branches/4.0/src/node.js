@@ -340,23 +340,30 @@ KNode.prototype = {
 };
 
 function _node(expr, root) {
-	var node, doc;
-	if (typeof expr === 'string') {
-		if (/<.+>/.test(expr)) {
-			doc = root ? root.ownerDocument || root : document;
-			var div = doc.createElement('div');
-			div.innerHTML = expr;
-			node = div.firstChild;
-		} else {
-			node = _query(expr, root);
+	function newNode(node) {
+		if (!node) {
+			return null;
 		}
-	} else {
-		node = expr;
+		return new KNode(node);
 	}
-	if (!node) {
-		return null;
+	if (typeof expr === 'string') {
+		//TODO 需要加强，目前只能解析简单HTML，比如<tag key="value">text</tag>
+		if (/<.+>/.test(expr)) {
+			var doc = root ? root.ownerDocument || root : document,
+				match = /^<([^\s>]+)[^>]*>(?:([^<>]*)<\/\1>)?/.exec(expr),
+				node = doc.createElement(match[1]),
+				knode = newNode(node),
+				attrs = _getAttrList(match[0]),
+				styles = attrs['style'] && _getCssList(attrs['style']);
+			knode.attr(attrs).css(styles);
+			if (match[2] !== undefined && match[2] !== '') {
+				knode.append(doc.createTextNode(match[2]));
+			}
+			return knode;
+		}
+		return newNode(_query(expr, root));
 	}
-	return new KNode(node);
+	return newNode(expr);
 }
 
 K.node = _node;

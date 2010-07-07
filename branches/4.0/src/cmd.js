@@ -207,7 +207,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 function _wrapAndMergeNode(knode, wrapper) {
 	var w = wrapper.clone(true), c = w, parent = knode;
 	//node为唯一的子节点时重新设置node
-	while (knode.parent().children().length == 1) {
+	while (knode.parent() && knode.parent().isInline() && knode.parent().children().length == 1) {
 		knode = knode.parent();
 	}
 	//node为text node时
@@ -365,15 +365,10 @@ KCmd.prototype = {
 		}
 		//inline标签，collapsed = true
 		if (range.collapsed) {
-			//以前格式存在时遍历合并
+			//存在以前格式时合并两个wrapper
 			if (self._preformat) {
 				var prevWrapper = self._preformat.wrapper;
-				//prevWrapper.each(function(knode) {
-				
-				//});
-				//if (prevWrapper.name !== wrapper.name) {
-				//	prevWrapper.append(wrapper);
-				//}
+				wrapper = _wrapAndMergeNode(prevWrapper, wrapper);
 			}
 			self._preformat = {
 				wrapper : wrapper,
@@ -510,12 +505,25 @@ KCmd.prototype = {
 		var self = this, range = self.range, pf = self._preformat;
 		if (pf) {
 			var pw = pf.wrapper, pr = pf.range;
-			//console.log(pf);
 			range.setStart(pr.startContainer, pr.startOffset);
 			self.wrap(pw);
-			//range.selectNodeContents(pw);
-			//console.log(range);
-			//self.range = range;
+			//find text node
+			var el = range.startContainer.childNodes[range.startOffset];
+			if (!el) {
+				self._preformat = null;
+				return;
+			}
+			var textNode = el.firstChild;
+			while (textNode && textNode.firtChild) {
+				textNode = textNode.firtChild;
+			}
+			if (textNode.nodeValue) {
+				range.setEnd(textNode, textNode.nodeValue.length);
+			} else {
+				range.selectNodeContents(textNode);
+			}
+			range.collapse(false);
+			self.range = range;
 			_select.call(self);
 			self._preformat = null;
 		}
