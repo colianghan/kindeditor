@@ -98,7 +98,15 @@ test('cmd.wrap', function() {
 	range.collapse(true);
 	cmd = K.cmd(range);
 	cmd.wrap('<strong></strong>');
-	equals(strong.innerHTML.toLowerCase(), 'efg');
+	range.selectNodeContents(strong);
+	range.collapse(true);
+	cmd.wrap('<em></em>');
+	range.selectNodeContents(strong);
+	range.collapse(true);
+	cmd.wrap('<span></span>');
+	range.setStart(strong.firstChild, 1).setEnd(strong.firstChild, 1);
+	cmd._applyPreformat();
+	equals(strong.innerHTML.toLowerCase(), '<strong><em><span>e</span></em></strong>fg');
 	document.body.removeChild(cloneP);
 	//10
 	cloneP = p.cloneNode(true);
@@ -142,6 +150,29 @@ test('cmd.wrap', function() {
 	cmd = K.cmd(range);
 	cmd.wrap('<span class="aaa"><strong></strong></span>');
 	equals(range.html(), '<span class="aaa"><strong>f</strong></span>');
+	document.body.removeChild(cloneP);
+	//14
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.wrap('<span class="aaa"><strong><em></em></strong></span>');
+	equals(range.html(), '<span class="aaa"><strong><em>f</em></strong></span>');
+	document.body.removeChild(cloneP);
+	//15
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.wrap('<span class="aaa"><strong></strong></span>');
+	cmd.wrap('<strong><em></em></strong>');
+	equals(range.html(), '<span class="aaa"><strong><em>f</em></strong></span>');
 	document.body.removeChild(cloneP);
 });
 

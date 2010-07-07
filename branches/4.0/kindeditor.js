@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-05)
+* @version 4.0 (2010-07-07)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -72,9 +72,15 @@ function _toHex(color) {
 
 function _toMap(str, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
-	var map = {}, arr = str.split(delimiter);
+	var map = {}, arr = str.split(delimiter), match;
 	_each(arr, function(key, val) {
-		map[val] = true;
+		if ((match = /^(\d+)\.\.(\d+)$/.exec(val))) {
+			for (var i = parseInt(match[1], 10); i <= parseInt(match[2], 10); i++) {
+				map[i.toString()] = true;
+			}
+		} else {
+			map[val] = true;
+		}
 	});
 	return map;
 }
@@ -119,14 +125,14 @@ function _unbindEvent(el, type, fn) {
 
 var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
 
-function _event(el, e) {
-	if (!e) {
+function _event(el, event) {
+	if (!event) {
 		return;
 	}
-	var obj = {},
+	var e = {},
 		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
 	_each(_EVENT_PROPS, function(key, val) {
-		obj[val] = e[val];
+		e[val] = event[val];
 	});
 	if (!e.target) {
 		e.target = e.srcElement || doc;
@@ -151,23 +157,50 @@ function _event(el, e) {
 	if (!e.which && e.button !== undefined) {
 		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
 	}
-	obj.preventDefault = function() {
-		if (e.preventDefault) {
-			e.preventDefault();
+
+	switch (e.which) {
+	case 186 :
+		e.which = 59;
+		break;
+	case 187 :
+	case 107 :
+	case 43 :
+		e.which = 61;
+		break;
+	case 189 :
+	case 45 :
+		e.which = 109;
+		break;
+	case 42 :
+		e.which = 106;
+		break;
+	case 47 :
+		e.which = 111;
+		break;
+	case 78 :
+		e.which = 110;
+		break;
+	}
+	if (e.which >= 96 && e.which <= 105) {
+		e.which -= 48;
+	}
+	e.preventDefault = function() {
+		if (event.preventDefault) {
+			event.preventDefault();
 		}
-		e.returnValue = false;
+		event.returnValue = false;
 	};
-	obj.stopPropagation = function() {
-		if (e.stopPropagation) {
-			e.stopPropagation();
+	e.stopPropagation = function() {
+		if (event.stopPropagation) {
+			event.stopPropagation();
 		}
-		e.cancelBubble = true;
+		event.cancelBubble = true;
 	};
-	obj.stop = function() {
+	e.stop = function() {
 		this.preventDefault();
 		this.stopPropagation();
 	};
-	return obj;
+	return e;
 }
 
 var _elList = [], _data = {};
@@ -294,7 +327,7 @@ function _formatHtml(html) {
 			endSlash = ' /';
 		}
 		if (endNewline) {
-			endNewline = ' ';
+			endNewline = '';
 		}
 		if (tagName !== 'script' && tagName !== 'style') {
 			startNewline = '';
@@ -570,6 +603,13 @@ function _toCamel(str) {
 	return str;
 }
 
+function _setHtml(el, html) {
+	if (el.nodeType != 1) {
+		return;
+	}
+	el.innerHTML = '' + html;
+}
+
 function KNode(node) {
 	var self = this;
 	self.node = node;
@@ -656,7 +696,7 @@ KNode.prototype = {
 		if (val === undefined) {
 			return _formatHtml(node.innerHTML);
 		} else {
-			node.innerHTML = _formatHtml(val);
+			_setHtml(node, _formatHtml(val));
 			return self;
 		}
 	},
@@ -837,23 +877,22 @@ KNode.prototype = {
 };
 
 function _node(expr, root) {
-	var node, doc;
+	function newNode(node) {
+		if (!node) {
+			return null;
+		}
+		return new KNode(node);
+	}
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
-			doc = root ? root.ownerDocument || root : document;
-			var div = doc.createElement('div');
-			div.innerHTML = expr;
-			node = div.firstChild;
-		} else {
-			node = _query(expr, root);
+			var doc = root ? root.ownerDocument || root : document,
+				div = doc.createElement('div');
+			_setHtml(div, expr);
+			return newNode(div.firstChild);
 		}
-	} else {
-		node = expr;
+		return newNode(_query(expr, root));
 	}
-	if (!node) {
-		return null;
-	}
-	return new KNode(node);
+	return newNode(expr);
 }
 
 K.node = _node;
@@ -1386,6 +1425,18 @@ K.START_TO_END = _START_TO_END;
 K.END_TO_END = _END_TO_END;
 K.END_TO_START = _END_TO_START;
 
+var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
+
+var _CURSORMOVE_KEY_MAP = _toMap('8,13,33..40,46');
+
+var _CHANGE_KEY_MAP = {};
+_each(_INPUT_KEY_MAP, function(key, val) {
+	_CHANGE_KEY_MAP[key] = val;
+});
+_each(_CURSORMOVE_KEY_MAP, function(key, val) {
+	_CHANGE_KEY_MAP[key] = val;
+});
+
 function _nativeCommandValue(doc, cmd) {
 	var val = '';
 	try {
@@ -1406,6 +1457,22 @@ function _getSel(doc) {
 	return win.getSelection ? win.getSelection() : doc.selection;
 }
 
+function _getRng(doc) {
+	var sel = _getSel(doc), rng;
+	try {
+		if (sel.rangeCount > 0) {
+			rng = sel.getRangeAt(0);
+		} else {
+			rng = sel.createRange();
+		}
+	} catch(e) {}
+	rng = rng || doc;
+	if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
+		return null;
+	}
+	return rng;
+}
+
 function _select() {
 	var self = this,
 		sel = self.sel,
@@ -1415,13 +1482,13 @@ function _select() {
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
 
 	if (_IE && sc.nodeType == 1 && range.collapsed) {
-		var empty = doc.createTextNode(' ');
-		ec.appendChild(empty);
+		var empty = _node('<span>&nbsp;</span>', doc);
+		range.insertNode(empty.get());
 		rng = doc.body.createTextRange();
-		rng.moveToElementText(ec);
+		rng.moveToElementText(empty.get());
 		rng.collapse(false);
 		rng.select();
-		ec.removeChild(empty);
+		empty.remove();
 		win.focus();
 		return this;
 	}
@@ -1515,6 +1582,80 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 	}
 }
 
+function _getInnerNode(knode) {
+	var inner = knode;
+	while (inner.first()) {
+		inner = inner.first();
+	}
+	return inner;
+}
+
+function _mergeWrapper(a, b) {
+	a = a.clone(true);
+	var lastA = _getInnerNode(a), childA = a, merged = false;
+	while (b) {
+		while (childA) {
+			if (childA.name === b.name) {
+				_mergeAttrs(childA, b.attr(), b.css());
+				merged = true;
+			}
+			childA = childA.first();
+		}
+		if (!merged) {
+			lastA.append(b.clone(false));
+		}
+		merged = false;
+		b = b.first();
+	}
+	return a;
+}
+
+function _wrapNode(knode, wrapper) {
+	wrapper = wrapper.clone(true);
+	var parent;
+
+	while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
+		knode = parent;
+	}
+
+	if (knode.type == 3) {
+		_getInnerNode(wrapper).append(knode.clone(false));
+		knode.before(wrapper);
+		knode.remove();
+		return wrapper;
+	}
+
+	var nodeWrapper = knode, child;
+	while ((child = knode.first()) && child.children().length == 1) {
+		knode = child;
+	}
+
+	var next, frag = knode.doc.createDocumentFragment();
+	while ((child = knode.first())) {
+		next = child.next();
+		frag.appendChild(child.get());
+		child = next;
+	}
+	wrapper = _mergeWrapper(nodeWrapper, wrapper);
+	if (frag.firstChild) {
+		_getInnerNode(wrapper).append(frag);
+	}
+	nodeWrapper.before(wrapper);
+	nodeWrapper.remove();
+	return wrapper;
+}
+
+function _mergeAttrs(knode, attrs, styles) {
+	_each(attrs, function(key, val) {
+		if (key !== 'style') {
+			knode.attr(key, val);
+		}
+	});
+	_each(styles, function(key, val) {
+		knode.css(key, val);
+	});
+}
+
 function _getCommonNode(range, map) {
 	var node = range.commonAncestorContainer;
 	while (node) {
@@ -1572,96 +1713,74 @@ function _splitStartEnd(range, isStart, map) {
 	}
 }
 
-function KCmd(mixed) {
-	var self = this, win, doc, sel, rng, range;
-	if (mixed.nodeName) {
+function KCmd(range) {
+	var self = this;
 
-		doc = mixed.ownerDocument || mixed;
-		sel = _getSel(doc);
-		try {
-			if (sel.rangeCount > 0) {
-				rng = sel.getRangeAt(0);
-			} else {
-				rng = sel.createRange();
-			}
-		} catch(e) {}
-		mixed = rng || doc;
-		if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
-			return null;
-		}
-	} else {
+	self.doc = range.doc;
+	self.win = _getWin(self.doc);
+	self.sel = _getSel(self.doc);
+	self.range = range;
 
-		var startContainer = mixed.startContainer;
-		doc = startContainer.ownerDocument || startContainer;
-		sel = _getSel(doc);
-		rng = mixed.get();
-	}
-
-	self.win = _getWin(doc);
-
-	self.doc = doc;
-
-	self.sel = sel;
-
-	self.rng = rng;
-
-	self.range = _range(mixed);
+	self._preformat = null;
+	self._onchangeHandlers = [];
 }
 
 KCmd.prototype = {
 	wrap : function(val) {
-		var self = this, doc = self.doc, range = self.range,
+		var self = this, doc = self.doc, range = self.range, wrapper,
 			sc = range.startContainer, so = range.startOffset,
-			ec = range.endContainer, eo = range.endOffset,
+			ec = range.endContainer, eo = range.endOffset;
+
+		if (typeof val == 'string') {
 			wrapper = _node(val, doc);
 
-		if (!wrapper.isInline()) {
-			range.surroundContents(wrapper.clone(false).get());
-			return _select.call(this);
+		} else {
+			wrapper = val;
 		}
 
 		if (range.collapsed) {
-			var el = wrapper.clone(false).get();
-			range.insertNode(el);
-			range.selectNodeContents(el);
-			return _select.call(this);
+
+			if (self._preformat) {
+				wrapper = _mergeWrapper(self._preformat.wrapper, wrapper);
+			}
+			self._preformat = {
+				wrapper : wrapper,
+				range : range.cloneRange()
+			};
+			return _select.call(self);
 		}
 
-		var name = wrapper.name,
-			attrs = wrapper.attr(),
-			styles = wrapper.css();
-		function mergeAttrs(knode) {
-			_each(attrs, function(key, val) {
-				if (key !== 'style') {
-					knode.attr(key, val);
-				}
-			});
-			_each(styles, function(key, val) {
-				knode.css(key, val);
-			});
+		if (!wrapper.isInline()) {
+			var w = wrapper.clone(true), child = w;
+
+			while (child.first()) {
+				child = child.first();
+			}
+			child.append(range.extractContents());
+			range.insertNode(w.get()).selectNode(w.get());
+			return _select.call(self);
 		}
+
 		function wrapTextNode(node, startOffset, endOffset) {
-			var length = node.nodeValue.length, center = node, el = wrapper.clone(false).get();
+			var length = node.nodeValue.length, center = node;
+			if (endOffset <= startOffset) {
+				return;
+			}
 			if (startOffset > 0) {
 				center = node.splitText(startOffset);
 			}
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var kparent = _node(node.parentNode);
-			if (center === node && kparent.name === name) {
-				mergeAttrs(kparent);
-			} else {
-				center.parentNode.insertBefore(el, center);
-				el.appendChild(center);
-				if (sc === node) {
-					range.setStartBefore(el);
-				}
-				if (ec === node) {
-					range.setEndAfter(el);
-				}
+			var el = _wrapNode(_node(center), wrapper).get();
+			if (sc === node) {
+				range.setStartBefore(el);
+			}
+			if (ec === node) {
+				range.setEndAfter(el);
 			}
 		}
+
 		function wrapRange(parent) {
 			var node = parent.firstChild;
 			if (parent.nodeType == 3) {
@@ -1678,15 +1797,8 @@ KCmd.prototype = {
 				nextNode = node.nextSibling;
 				if (testRange.compareBoundaryPoints(_START_TO_END, range) > 0) {
 					if (node.nodeType == 1) {
-						knode = _node(node);
-						if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0 &&
-							testRange.compareBoundaryPoints(_END_TO_END, range) <= 0 &&
-							knode.name === name) {
-							mergeAttrs(knode);
-						} else {
-							if (wrapRange(node) === false) {
-								return false;
-							}
+						if (wrapRange(node) === false) {
+							return false;
 						}
 					} else if (node.nodeType == 3) {
 						if (node == sc && node == ec) {
@@ -1704,17 +1816,24 @@ KCmd.prototype = {
 			}
 		}
 		wrapRange(range.commonAncestorContainer);
-		return _select.call(this);
+
+		_select.call(self);
+
+		_each(self._onchangeHandlers, function() {
+			this();
+		});
+		return self;
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
 
 		if (range.collapsed) {
-			return this;
+			return _select.call(self);
 		}
 
 		_splitStartEnd(range, true, map);
 		_splitStartEnd(range, false, map);
+
 		var nodeList = [];
 		_node(range.commonAncestorContainer).each(function(knode) {
 			var testRange = _range(doc);
@@ -1726,23 +1845,59 @@ KCmd.prototype = {
 				nodeList.push(knode);
 			}
 		});
-		if (nodeList.length > 0) {
-			var before = _node(range.startContainer.childNodes[range.startOffset - 1]);
+
+		var sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset;
+		if (so > 0) {
+			var before = _node(sc.childNodes[so - 1]);
 			if (before && _hasAttrOrCss(before, map) && /<([^>]+)><\/\1>/.test(before.html())) {
 				before.remove();
-				range.setStart(range.startContainer, range.startOffset - 1);
-				range.setEnd(range.endContainer, range.endOffset - 1);
-			}
-			var after = _node(range.endContainer.childNodes[range.endOffset]);
-			if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
-				after.remove();
+				range.setStart(sc, so - 1);
+				range.setEnd(ec, eo - 1);
 			}
 		}
+		var after = _node(ec.childNodes[range.endOffset]);
+		if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
+			after.remove();
+		}
+
 		_each(nodeList, function() {
 			_removeAttrOrCss(this, map);
 		});
-		self.range = range;
-		return _select.call(this);
+
+		_select.call(self);
+
+		_each(self._onchangeHandlers, function() {
+			this();
+		});
+		return self;
+	},
+	_applyPreformat : function() {
+		var self = this, range = self.range, pf = self._preformat;
+		if (pf) {
+			var pw = pf.wrapper, pr = pf.range;
+			range.setStart(pr.startContainer, pr.startOffset);
+			self.wrap(pw);
+
+			var el = range.startContainer.childNodes[range.startOffset];
+			if (!el) {
+				self._preformat = null;
+				return;
+			}
+			var textNode = el.firstChild;
+			while (textNode && textNode.firtChild) {
+				textNode = textNode.firtChild;
+			}
+			if (textNode.nodeValue) {
+				range.setEnd(textNode, textNode.nodeValue.length);
+			} else {
+				range.selectNodeContents(textNode);
+			}
+			range.collapse(false);
+			self.range = range;
+			_select.call(self);
+			self._preformat = null;
+		}
 	},
 
 	exec : function(cmd, val) {
@@ -1840,10 +1995,80 @@ KCmd.prototype = {
 			map[key] = '*';
 		});
 		return this.remove(map);
+	},
+
+	oninput : function(fn) {
+		var self = this, doc = self.doc;
+		_node(doc).bind('keyup', function(e) {
+			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
+				fn(e);
+				e.stop();
+			}
+		});
+		return self;
+	},
+
+	oncursormove : function(fn) {
+		var self = this, doc = self.doc;
+		_node(doc).bind('keyup', function(e) {
+			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
+				fn(e);
+				e.stop();
+			}
+		});
+		_node(doc).bind('mouseup', fn);
+		return self;
+	},
+
+	onchange : function(fn) {
+		var self = this, doc = self.doc, body = doc.body;
+		_node(doc).bind('keyup', function(e) {
+			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
+				fn(e);
+				e.stop();
+			}
+		});
+		_node(doc).bind('mouseup', fn);
+		if (doc !== document) {
+			_node(document).bind('mousedown', fn);
+		}
+		function timeoutHandler(e) {
+			setTimeout(function() {
+				fn(e);
+			}, 1);
+		}
+		_node(body).bind('paste', timeoutHandler);
+		_node(body).bind('cut', timeoutHandler);
+		self._onchangeHandlers.push(fn);
+		return self;
 	}
 };
 
 function _cmd(mixed) {
+
+	if (mixed.nodeName) {
+		var doc = mixed.ownerDocument || mixed,
+			rng = _getRng(doc),
+			cmd = new KCmd(_range(rng || doc));
+
+		cmd.onchange(function(e) {
+			rng = _getRng(doc);
+			if (rng) {
+				cmd.range = _range(rng);
+			}
+		});
+
+		cmd.oninput(function(e) {
+			cmd._applyPreformat();
+		});
+
+		cmd.oncursormove(function(e) {
+			console.log('move');
+			cmd._preformat = null;
+		});
+		return cmd;
+	}
+
 	return new KCmd(mixed);
 }
 
@@ -1903,7 +2128,7 @@ function _edit(expr, options) {
 	function srcVal(val) {
 		return srcElement.hasVal() ? srcElement.val(val) : srcElement.html(val);
 	}
-	var obj = {
+	return {
 
 		width : options.width || 0,
 		height : options.height || 0,
@@ -1957,16 +2182,6 @@ function _edit(expr, options) {
 				_textareaVal.call(self, srcVal());
 			}
 			self.cmd = _cmd(doc);
-
-			function selectionHandler(e) {
-				var cmd = _cmd(doc);
-				if (cmd) {
-					self.cmd = cmd;
-				}
-			}
-			self.oninput(selectionHandler);
-			_node(doc).bind('mouseup', selectionHandler);
-			_node(document).bind('mousedown', selectionHandler);
 
 			return self;
 		},
@@ -2026,28 +2241,8 @@ function _edit(expr, options) {
 				self.iframe.contentWindow.focus();
 			}
 			return self;
-		},
-		oninput : function(fn) {
-			var self = this,
-				doc = self.doc,
-				body = doc.body;
-			_node(doc).bind('keyup', function(e) {
-				if (!e.ctrlKey && !e.altKey && (e.keyCode < 16 || e.keyCode > 18) && e.keyCode != 116) {
-					fn(e);
-					e.stop();
-				}
-			});
-			function timeoutHandler(e) {
-				setTimeout(function() {
-					fn(e);
-				}, 1);
-			}
-			_node(body).bind('paste', timeoutHandler);
-			_node(body).bind('cut', timeoutHandler);
-			return self;
 		}
 	};
-	return obj;
 }
 
 K.edit = _edit;

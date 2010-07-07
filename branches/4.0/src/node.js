@@ -31,6 +31,13 @@ function _toCamel(str) {
 	return str;
 }
 
+function _setHtml(el, html) {
+	if (el.nodeType != 1) {
+		return;
+	}
+	el.innerHTML = '' + html;
+}
+
 /**
 	@name KindEditor.node
 	@class KNode类
@@ -159,7 +166,7 @@ KNode.prototype = {
 		if (val === undefined) {
 			return _formatHtml(node.innerHTML);
 		} else {
-			node.innerHTML = _formatHtml(val);
+			_setHtml(node, _formatHtml(val));
 			return self;
 		}
 	},
@@ -347,19 +354,11 @@ function _node(expr, root) {
 		return new KNode(node);
 	}
 	if (typeof expr === 'string') {
-		//TODO 需要加强，目前只能解析简单HTML，比如<tag key="value">text</tag>
 		if (/<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
-				match = /^<([^\s>]+)[^>]*>(?:([^<>]*)<\/\1>)?/.exec(expr),
-				node = doc.createElement(match[1]),
-				knode = newNode(node),
-				attrs = _getAttrList(match[0]),
-				styles = attrs['style'] && _getCssList(attrs['style']);
-			knode.attr(attrs).css(styles);
-			if (match[2] !== undefined && match[2] !== '') {
-				knode.append(doc.createTextNode(match[2]));
-			}
-			return knode;
+				div = doc.createElement('div');
+			_setHtml(div, expr);
+			return newNode(div.firstChild);
 		}
 		return newNode(_query(expr, root));
 	}

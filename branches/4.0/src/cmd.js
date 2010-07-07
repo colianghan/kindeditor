@@ -54,9 +54,17 @@ DOM_VK_QUOTE : 222 ('")
 详细请参考 event.js
 */
 //输入文字的键值
-var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,109..111,188,190..192,219..222');
+var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
+//移动光标的键值
+var _CURSORMOVE_KEY_MAP = _toMap('8,13,33..40,46');
 //输入文字或移动光标的键值
-var _CHANGE_KEY_MAP = _toMap('8,9,13,32..40,46,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
+var _CHANGE_KEY_MAP = {};
+_each(_INPUT_KEY_MAP, function(key, val) {
+	_CHANGE_KEY_MAP[key] = val;
+});
+_each(_CURSORMOVE_KEY_MAP, function(key, val) {
+	_CHANGE_KEY_MAP[key] = val;
+});
 
 //original queryCommandValue
 function _nativeCommandValue(doc, cmd) {
@@ -203,51 +211,72 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 		}
 	}
 }
+//取得最里面的element
+function _getInnerNode(knode) {
+	var inner = knode;
+	while (inner.first()) {
+		inner = inner.first();
+	}
+	return inner;
+}
+//merge two wrapper
+//a : <span><strong></strong></span>
+//b : <strong><em></em></strong>
+//result : <span><strong><em></em></strong></span>
+function _mergeWrapper(a, b) {
+	a = a.clone(true);
+	var lastA = _getInnerNode(a), childA = a, merged = false;
+	while (b) {
+		while (childA) {
+			if (childA.name === b.name) {
+				_mergeAttrs(childA, b.attr(), b.css());
+				merged = true;
+			}
+			childA = childA.first();
+		}
+		if (!merged) {
+			lastA.append(b.clone(false));
+		}
+		merged = false;
+		b = b.first();
+	}
+	return a;
+}
 //wrap and merge a node
-function _wrapAndMergeNode(knode, wrapper) {
-	var w = wrapper.clone(true), c = w, parent = knode;
+function _wrapNode(knode, wrapper) {
+	wrapper = wrapper.clone(true);
+	var parent;
 	//node为唯一的子节点时重新设置node
-	while (knode.parent() && knode.parent().isInline() && knode.parent().children().length == 1) {
-		knode = knode.parent();
+	while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
+		knode = parent;
 	}
 	//node为text node时
 	if (knode.type == 3) {
-		while (c.first()) {
-			c = c.first();
-		}
-		knode.before(w);
-		c.append(knode);
-		return w;
+		_getInnerNode(wrapper).append(knode.clone(false));
+		knode.before(wrapper);
+		knode.remove();
+		return wrapper;
 	}
 	//node为element时
-	var nodeList = []; //没有合并的node
-	while (c) {
-		if (c.name === knode.name) {
-			_mergeAttrs(knode, c.attr(), c.css());
-		} else {
-			nodeList.push(c);
-		}
-		c = c.first();
+	//取得node的wrapper
+	var nodeWrapper = knode, child;
+	while ((child = knode.first()) && child.children().length == 1) {
+		knode = child;
 	}
-	//node全部合并，没有剩下的node
-	if (nodeList.length === 0) {
-		return knode;
-	}
-	//有没有合并的node
 	//将node的子节点纳入在一个documentFragment里
-	var child, next, frag = knode.doc.createDocumentFragment();
+	var next, frag = knode.doc.createDocumentFragment();
 	while ((child = knode.first())) {
 		next = child.next();
 		frag.appendChild(child.get());
 		child = next;
 	}
-	var last;
-	_each(nodeList, function() {
-		knode.append(this);
-		last = this;
-	});
-	last.append(frag);
-	return knode;
+	wrapper = _mergeWrapper(nodeWrapper, wrapper);
+	if (frag.firstChild) {
+		_getInnerNode(wrapper).append(frag);
+	}
+	nodeWrapper.before(wrapper);
+	nodeWrapper.remove();
+	return wrapper;
 }
 //merge attributes and styles
 function _mergeAttrs(knode, attrs, styles) {
@@ -367,8 +396,7 @@ KCmd.prototype = {
 		if (range.collapsed) {
 			//存在以前格式时合并两个wrapper
 			if (self._preformat) {
-				var prevWrapper = self._preformat.wrapper;
-				wrapper = _wrapAndMergeNode(prevWrapper, wrapper);
+				wrapper = _mergeWrapper(self._preformat.wrapper, wrapper);
 			}
 			self._preformat = {
 				wrapper : wrapper,
@@ -400,7 +428,7 @@ KCmd.prototype = {
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var el = _wrapAndMergeNode(_node(center), wrapper).get();
+			var el = _wrapNode(_node(center), wrapper).get();
 			if (sc === node) {
 				range.setStartBefore(el);
 			}
@@ -625,7 +653,7 @@ KCmd.prototype = {
 		});
 		return this.remove(map);
 	},
-	//只有用键盘添加文字时触发oninput事件
+	//用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
 		_node(doc).bind('keyup', function(e) {
@@ -634,6 +662,18 @@ KCmd.prototype = {
 				e.stop();
 			}
 		});
+		return self;
+	},
+	//移动光标时触发oncursormove事件
+	oncursormove : function(fn) {
+		var self = this, doc = self.doc;
+		_node(doc).bind('keyup', function(e) {
+			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
+				fn(e);
+				e.stop();
+			}
+		});
+		_node(doc).bind('mouseup', fn);
 		return self;
 	},
 	//输入文字、移动光标、执行命令都会触发onchange事件
@@ -646,6 +686,9 @@ KCmd.prototype = {
 			}
 		});
 		_node(doc).bind('mouseup', fn);
+		if (doc !== document) {
+			_node(document).bind('mousedown', fn);
+		}
 		function timeoutHandler(e) {
 			setTimeout(function() {
 				fn(e);
@@ -665,18 +708,21 @@ function _cmd(mixed) {
 			rng = _getRng(doc),
 			cmd = new KCmd(_range(rng || doc));
 		//add events
-		//光标位置发生变化时保存selection
-		function selectionHandler(e) {
+		//重新设置selection
+		cmd.onchange(function(e) {
 			rng = _getRng(doc);
 			if (rng) {
 				cmd.range = _range(rng);
 			}
-		}
-		cmd.onchange(selectionHandler);
-		_node(document).bind('mousedown', selectionHandler);
+		});
 		//输入文字后根据预先格式进行格式化
 		cmd.oninput(function(e) {
 			cmd._applyPreformat();
+		});
+		//光标移动时移除预先格式
+		cmd.oncursormove(function(e) {
+			console.log('move');
+			cmd._preformat = null;
 		});
 		return cmd;
 	}
