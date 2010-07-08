@@ -159,16 +159,14 @@ test('cmd.wrap', function() {
 	equals(range.html(), '<span class="aaa"><strong><em>f</em></strong></span>');
 	document.body.removeChild(cloneP);
 	//15
-	cloneP = p.cloneNode(true);
+	cloneP = K.node('<p>abc</p>').get();
 	document.body.appendChild(cloneP);
-	strong = K.query('strong', cloneP);
 	range = K.range(document);
-	range.setStart(strong.firstChild, 1);
-	range.setEnd(strong.firstChild, 2);
+	range.selectNodeContents(cloneP);
 	cmd = K.cmd(range);
-	cmd.wrap('<span class="aaa"><strong></strong></span>');
-	cmd.wrap('<strong><em></em></strong>');
-	equals(range.html(), '<span class="aaa"><strong><em>f</em></strong></span>');
+	cmd.wrap('<strong></strong>');
+	cmd.wrap('<em></em>');
+	equals(range.html(), '<strong><em>abc</em></strong>');
 	document.body.removeChild(cloneP);
 });
 

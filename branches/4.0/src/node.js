@@ -265,7 +265,7 @@ KNode.prototype = {
 	},
 	outer : function() {
 		var self = this, div = self.doc.createElement('div'), html;
-		div.appendChild(self.node);
+		div.appendChild(self.node.cloneNode(true));
 		html = _formatHtml(div.innerHTML);
 		div = null;
 		return html;

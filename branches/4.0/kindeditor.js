@@ -795,7 +795,7 @@ KNode.prototype = {
 	},
 	outer : function() {
 		var self = this, div = self.doc.createElement('div'), html;
-		div.appendChild(self.node);
+		div.appendChild(self.node.cloneNode(true));
 		html = _formatHtml(div.innerHTML);
 		div = null;
 		return html;
@@ -1614,11 +1614,6 @@ function _mergeWrapper(a, b) {
 
 function _wrapNode(knode, wrapper) {
 	wrapper = wrapper.clone(true);
-	var parent;
-
-	while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
-		knode = parent;
-	}
 
 	if (knode.type == 3) {
 		_getInnerNode(wrapper).append(knode.clone(false));
@@ -1774,11 +1769,23 @@ KCmd.prototype = {
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var el = _wrapNode(_node(center), wrapper).get();
-			if (sc === node) {
+			var parent, knode = _node(center),
+				isStart = sc == node, isEnd = ec == node;
+
+			while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
+				if (!isStart) {
+					isStart = sc == parent.get();
+				}
+				if (!isEnd) {
+					isEnd = ec == parent.get();
+				}
+				knode = parent;
+			}
+			var el = _wrapNode(knode, wrapper).get();
+			if (isStart) {
 				range.setStartBefore(el);
 			}
-			if (ec === node) {
+			if (isEnd) {
 				range.setEndAfter(el);
 			}
 		}
@@ -1851,14 +1858,16 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
 			var before = _node(sc.childNodes[so - 1]);
-			if (before && _hasAttrOrCss(before, map) && _isEmptyNode(before)) {
+			if (before && _isEmptyNode(before)) {
 				before.remove();
 				range.setStart(sc, so - 1);
-				range.setEnd(ec, eo - 1);
+				if (sc == ec) {
+					range.setEnd(ec, eo - 1);
+				}
 			}
 		}
 		var after = _node(ec.childNodes[range.endOffset]);
-		if (after && _hasAttrOrCss(after, map) && _isEmptyNode(after)) {
+		if (after && _isEmptyNode(after)) {
 			after.remove();
 		}
 
