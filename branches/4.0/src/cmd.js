@@ -295,12 +295,18 @@ function _mergeAttrs(knode, attrs, styles) {
 	});
 */
 function _getCommonNode(range, map) {
-	var node = range.commonAncestorContainer;
-	while (node) {
-		if (_hasAttrOrCss(_node(node), map)) {
-			return node;
+	var ec = range.endContainer, eo = range.endOffset,
+		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]), child;
+	while ((child = knode.first()) && child.children().length == 1) {
+		if (_hasAttrOrCss(child, map)) {
+			return child;
 		}
-		node = node.parentNode;
+	}
+	while (knode) {
+		if (_hasAttrOrCss(knode, map)) {
+			return knode;
+		}
+		knode = knode.parent();
 	}
 	return null;
 }
@@ -565,10 +571,28 @@ KCmd.prototype = {
 	},
 	//Reference: document.queryCommandState
 	state : function(cmd) {
-		var bool = false;
+		var self = this, doc = self.doc, range = self.range,
+			bool = false, knode;
 		try {
-			bool = this.doc.queryCommandState(cmd);
+			bool = doc.queryCommandState(cmd);
 		} catch (e) {}
+		if (cmd === 'bold') {
+			knode = _getCommonNode(range, {
+				span : '.font-weight',
+				strong : '*',
+				b : '*'
+			});
+			if (knode) {
+				if (knode.name === 'span') {
+					if (knode.css('font-weight') === 'bold') {
+						return true;
+					}
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
 		return bool;
 	},
 	//Reference: document.queryCommandValue
@@ -578,7 +602,7 @@ KCmd.prototype = {
 			return val.toLowerCase();
 		}
 		cmd = lc(cmd);
-		var val = '', el;
+		var val = '', knode;
 		if (cmd === 'fontfamily' || cmd === 'fontname') {
 			val = _nativeCommandValue(doc, 'fontname');
 			val = val.replace(/['"]/g, '');
@@ -587,9 +611,9 @@ KCmd.prototype = {
 		if (cmd === 'formatblock') {
 			val = _nativeCommandValue(doc, cmd);
 			if (val === '') {
-				el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
-				if (el) {
-					val = el.nodeName;
+				knode = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
+				if (knode) {
+					val = knode.name;
 				}
 			}
 			if (val === 'Normal') {
@@ -598,16 +622,16 @@ KCmd.prototype = {
 			return lc(val);
 		}
 		if (cmd === 'fontsize') {
-			el = _getCommonNode(range, {'*' : '.font-size'});
-			if (el) {
-				val = _node(el).css('font-size');
+			knode = _getCommonNode(range, {'*' : '.font-size'});
+			if (knode) {
+				val = knode.css('font-size');
 			}
 			return lc(val);
 		}
 		if (cmd === 'forecolor') {
-			el = _getCommonNode(range, {'*' : '.color'});
-			if (el) {
-				val = _node(el).css('color');
+			knode = _getCommonNode(range, {'*' : '.color'});
+			if (knode) {
+				val = knode.css('color');
 			}
 			val = _toHex(val);
 			if (val === '') {
@@ -616,7 +640,10 @@ KCmd.prototype = {
 			return lc(val);
 		}
 		if (cmd === 'hilitecolor') {
-			el = _getCommonNode(range, {'*' : '.background-color'});
+			knode = _getCommonNode(range, {'*' : '.background-color'});
+			if (knode) {
+				val = knode.css('background-color');
+			}
 			val = _toHex(val);
 			if (val === '') {
 				val = 'default';
@@ -626,6 +653,13 @@ KCmd.prototype = {
 		return val;
 	},
 	bold : function() {
+		if (this.state('bold')) {
+			return this.remove({
+				span : '.font-weight',
+				strong : '*',
+				b : '*'
+			});
+		}
 		return this.wrap('<strong></strong>');
 	},
 	italic : function() {
