@@ -102,35 +102,6 @@ function _getRng(doc) {
 	}
 	return rng;
 }
-//add KRange to the selection
-function _select() {
-	var self = this, sel = self.sel, range = self.range.cloneRange(),
-		sc = range.startContainer, so = range.startOffset,
-		ec = range.endContainer, eo = range.endOffset,
-		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-	//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
-	if (_IE && sc.nodeType == 1 && range.collapsed) {
-		var empty = _node('<span>&nbsp;</span>', doc);
-		range.insertNode(empty.get());
-		rng = doc.body.createTextRange();
-		rng.moveToElementText(empty.get());
-		rng.collapse(false);
-		rng.select();
-		empty.remove();
-		win.focus();
-		return this;
-	}
-	//case 2: 一般情况
-	rng = range.get();
-	if (_IE) {
-		rng.select();
-	} else {
-		sel.removeAllRanges();
-		sel.addRange(rng);
-	}
-	win.focus();
-	return this;
-}
 //将map的复合key转换成单一key
 function _singleKeyMap(map) {
 	var newMap = {}, arr, v;
@@ -152,18 +123,22 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return false;
 	}
-	var newMap = _singleKeyMap(map), arr, val;
+	var newMap = _singleKeyMap(map), arr, key, val, method;
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
 		for (var i = 0, len = arr.length; i < len; i++) {
-			val = arr[i];
-			if (val === '*') {
+			key = arr[i];
+			if (key === '*') {
 				return true;
 			}
-			if (val.charAt(0) === '.' && knode.css(val.substr(1)) !== '') {
+			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+			method = match[1] ? 'css' : 'attr';
+			key = match[2];
+			val = match[3];
+			if (val === undefined && knode[method](key) !== '') {
 				return true;
 			}
-			if (val.charAt(0) !== '.' && knode.attr(val) !== '') {
+			if (val !== undefined && knode[method](key) === val) {
 				return true;
 			}
 		}
@@ -180,21 +155,20 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return;
 	}
-	var newMap = _singleKeyMap(map), arr, val;
+	var newMap = _singleKeyMap(map), arr, key, method;
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
 		allFlag = false;
 		for (var i = 0, len = arr.length; i < len; i++) {
-			val = arr[i];
-			if (val === '*') {
+			key = arr[i];
+			if (key === '*') {
 				allFlag = true;
 				break;
 			}
-			if (val.charAt(0) === '.') {
-				knode.css(val.substr(1), '');
-			} else {
-				knode.removeAttr(val);
-			}
+			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+			method = match[1] ? 'css' : 'removeAttr';
+			key = match[2];
+			knode[method](key, '');
 		}
 		if (allFlag) {
 			if (knode.first()) {
@@ -310,53 +284,6 @@ function _getCommonNode(range, map) {
 	}
 	return null;
 }
-// 根据规则分割range的开始节点或结束节点
-function _splitStartEnd(range, isStart, map) {
-	var doc = range.doc,
-		sc = range.startContainer, so = range.startOffset,
-		ec = range.endContainer, eo = range.endOffset;
-	//get parent node
-	var tempRange = range.cloneRange().collapse(isStart);
-	var node = tempRange.startContainer, pos = tempRange.startOffset,
-		parent = node.nodeType == 3 ? node.parentNode : node,
-		needSplit = false;
-	while (parent && parent.parentNode) {
-		var knode = _node(parent);
-		if (!knode.isInline()) {
-			break;
-		}
-		if (!_hasAttrOrCss(knode, map, '*') && !_hasAttrOrCss(knode, map)) {
-			break;
-		}
-		needSplit = true;
-		parent = parent.parentNode;
-	}
-	//split parent node
-	if (needSplit) {
-		var mark = doc.createElement('span');
-		range.cloneRange().collapse(!isStart).insertNode(mark);
-		if (isStart) {
-			tempRange.setStartBefore(parent.firstChild).setEnd(node, pos);
-		} else {
-			tempRange.setStart(node, pos).setEndAfter(parent.lastChild);
-		}
-		var frag = tempRange.extractContents(),
-			first = frag.firstChild, last = frag.lastChild;
-		if (isStart) {
-			tempRange.insertNode(frag);
-			range.setStartAfter(last).setEndBefore(mark);
-		} else {
-			parent.appendChild(frag);
-			range.setStartBefore(mark).setEndBefore(first);
-		}
-		var markParent = mark.parentNode;
-		markParent.removeChild(mark);
-		if (!isStart && markParent === range.endContainer) {
-			range.setEnd(range.endContainer, range.endOffset - 1);
-		}
-	}
-}
-
 /**
 	@name KindEditor.cmd
 	@class KCmd类
@@ -384,6 +311,35 @@ function KCmd(range) {
 }
 
 KCmd.prototype = {
+	select : function() {
+		var self = this, sel = self.sel, range = self.range.cloneRange(),
+			sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset,
+			doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
+		//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
+		if (_IE && sc.nodeType == 1 && range.collapsed) {
+			var empty = _node('<span>&nbsp;</span>', doc);
+			range.insertNode(empty.get());
+			rng = doc.body.createTextRange();
+			rng.moveToElementText(empty.get());
+			rng.collapse(false);
+			rng.select();
+			empty.remove();
+			win.focus();
+			return self;
+		}
+		console.log(1);
+		//case 2: 一般情况
+		rng = range.get();
+		if (_IE) {
+			rng.select();
+		} else {
+			sel.removeAllRanges();
+			sel.addRange(rng);
+		}
+		win.focus();
+		return self;
+	},
 	wrap : function(val) {
 		var self = this, doc = self.doc, range = self.range, wrapper,
 			sc = range.startContainer, so = range.startOffset,
@@ -405,7 +361,7 @@ KCmd.prototype = {
 				wrapper : wrapper,
 				range : range.cloneRange()
 			};
-			return _select.call(self);
+			return self;
 		}
 		//非inline标签
 		if (!wrapper.isInline()) {
@@ -416,7 +372,7 @@ KCmd.prototype = {
 			}
 			child.append(range.extractContents());
 			range.insertNode(w.get()).selectNode(w.get());
-			return _select.call(self);
+			return self;
 		}
 		//inline标签，collapsed = false
 		//split and wrap a test node
@@ -488,7 +444,53 @@ KCmd.prototype = {
 		}
 		wrapRange(range.commonAncestorContainer);
 		//select range
-		return _select.call(self);
+		return self;
+	},
+	split : function(isStart, map) {
+		var range = this.range, doc = range.doc, 
+			sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset;
+		//get parent node
+		var tempRange = range.cloneRange().collapse(isStart);
+		var node = tempRange.startContainer, pos = tempRange.startOffset,
+			parent = node.nodeType == 3 ? node.parentNode : node,
+			needSplit = false;
+		while (parent && parent.parentNode) {
+			var knode = _node(parent);
+			if (!knode.isInline()) {
+				break;
+			}
+			if (!_hasAttrOrCss(knode, map, '*') && !_hasAttrOrCss(knode, map)) {
+				break;
+			}
+			needSplit = true;
+			parent = parent.parentNode;
+		}
+		//split parent node
+		if (needSplit) {
+			var mark = doc.createElement('span');
+			range.cloneRange().collapse(!isStart).insertNode(mark);
+			if (isStart) {
+				tempRange.setStartBefore(parent.firstChild).setEnd(node, pos);
+			} else {
+				tempRange.setStart(node, pos).setEndAfter(parent.lastChild);
+			}
+			var frag = tempRange.extractContents(),
+				first = frag.firstChild, last = frag.lastChild;
+			if (isStart) {
+				tempRange.insertNode(frag);
+				range.setStartAfter(last).setEndBefore(mark);
+			} else {
+				parent.appendChild(frag);
+				range.setStartBefore(mark).setEndBefore(first);
+			}
+			var markParent = mark.parentNode;
+			markParent.removeChild(mark);
+			if (!isStart && markParent === range.endContainer) {
+				range.setEnd(range.endContainer, range.endOffset - 1);
+			}
+		}
+		return this;
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
@@ -498,12 +500,12 @@ KCmd.prototype = {
 				map : map,
 				range : range.cloneRange()
 			};
-			return _select.call(self);
+			return self;
 		}
 		//inline标签，collapsed = false
 		//split parents
-		_splitStartEnd(range, true, map);
-		_splitStartEnd(range, false, map);
+		self.split(true, map);
+		self.split(false, map);
 		//grep nodes which format will be removed
 		var nodeList = [];
 		_node(range.commonAncestorContainer).each(function(knode) {
@@ -538,7 +540,7 @@ KCmd.prototype = {
 			_removeAttrOrCss(this, map);
 		});
 		//select range
-		return _select.call(self);
+		return self;
 	},
 	_applyPreformat : function() {
 		var self = this, range = self.range,
@@ -560,7 +562,7 @@ KCmd.prototype = {
 				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
-			_select.call(self);
+			self.select();
 			self._preformat = null;
 			self._preremove = null;
 		}
@@ -578,20 +580,11 @@ KCmd.prototype = {
 		} catch (e) {}
 		if (cmd === 'bold') {
 			knode = _getCommonNode(range, {
-				span : '.font-weight',
+				span : '.font-weight=bold',
 				strong : '*',
 				b : '*'
 			});
-			if (knode) {
-				if (knode.name === 'span') {
-					if (knode.css('font-weight') === 'bold') {
-						return true;
-					}
-					return false;
-				}
-				return true;
-			}
-			return false;
+			return !!knode;
 		}
 		return bool;
 	},
@@ -654,31 +647,39 @@ KCmd.prototype = {
 	},
 	bold : function() {
 		if (this.state('bold')) {
-			return this.remove({
+			this.remove({
 				span : '.font-weight',
 				strong : '*',
 				b : '*'
 			});
+		} else {
+			this.wrap('<strong></strong>');
 		}
-		return this.wrap('<strong></strong>');
+		return this.select();
 	},
 	italic : function() {
-		return this.wrap('<em></em>');
+		this.wrap('<em></em>');
+		return this.select();
 	},
 	forecolor : function(val) {
-		return this.wrap('<span style="color:' + val + ';"></span>');
+		this.wrap('<span style="color:' + val + ';"></span>');
+		return this.select();
 	},
 	hilitecolor : function(val) {
-		return this.wrap('<span style="background-color:' + val + ';"></span>');
+		this.wrap('<span style="background-color:' + val + ';"></span>');
+		return this.select();
 	},
 	fontsize : function(val) {
-		return this.wrap('<span style="font-size:' + val + ';"></span>');
+		this.wrap('<span style="font-size:' + val + ';"></span>');
+		return this.select();
 	},
 	fontname : function(val) {
-		return this.fontfamily(val);
+		this.fontfamily(val);
+		return this.select();
 	},
 	fontfamily : function(val) {
-		return this.wrap('<span style="font-family:' + val + ';"></span>');
+		this.wrap('<span style="font-family:' + val + ';"></span>');
+		return this.select();
 	},
 	removeformat : function() {
 		var map = {
@@ -688,7 +689,8 @@ KCmd.prototype = {
 		_each(tags, function(key, val) {
 			map[key] = '*';
 		});
-		return this.remove(map);
+		this.remove(map);
+		return this.select();
 	},
 	//用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
