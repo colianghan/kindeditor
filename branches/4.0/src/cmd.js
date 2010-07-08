@@ -217,6 +217,10 @@ function _getInnerNode(knode) {
 	}
 	return inner;
 }
+//最里面的element为inline element时返回true
+function _isEmptyNode(knode) {
+	return _getInnerNode(knode).isInline();
+}
 //merge two wrapper
 //a : <span><strong></strong></span>
 //b : <strong><em></em></strong>
@@ -367,15 +371,15 @@ function _splitStartEnd(range, isStart, map) {
 	});
 */
 function KCmd(range) {
-	var self = this;
+	var self = this, doc = range.doc;
 	//public
-	self.doc = range.doc;
-	self.win = _getWin(self.doc);
-	self.sel = _getSel(self.doc);
+	self.doc = doc;
+	self.win = _getWin(doc);
+	self.sel = _getSel(doc);
 	self.range = range;
 	//private
 	self._preformat = null;
-	self._onchangeHandlers = [];
+	self._preremove = null;
 }
 
 KCmd.prototype = {
@@ -392,7 +396,7 @@ KCmd.prototype = {
 		}
 		//inline标签，collapsed = true
 		if (range.collapsed) {
-			//存在以前格式时合并两个wrapper
+			//预先格式存在时，合并两个wrapper
 			if (self._preformat) {
 				wrapper = _mergeWrapper(self._preformat.wrapper, wrapper);
 			}
@@ -471,17 +475,16 @@ KCmd.prototype = {
 		}
 		wrapRange(range.commonAncestorContainer);
 		//select range
-		_select.call(self);
-		//fire events
-		_each(self._onchangeHandlers, function() {
-			this();
-		});
-		return self;
+		return _select.call(self);
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
 		//inline标签，collapsed = true
 		if (range.collapsed) {
+			self._preremove = {
+				map : map,
+				range : range.cloneRange()
+			};
 			return _select.call(self);
 		}
 		//inline标签，collapsed = false
@@ -505,14 +508,14 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
 			var before = _node(sc.childNodes[so - 1]);
-			if (before && _hasAttrOrCss(before, map) && /<([^>]+)><\/\1>/.test(before.html())) {
+			if (before && _hasAttrOrCss(before, map) && _isEmptyNode(before)) {
 				before.remove();
 				range.setStart(sc, so - 1);
 				range.setEnd(ec, eo - 1);
 			}
 		}
 		var after = _node(ec.childNodes[range.endOffset]);
-		if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
+		if (after && _hasAttrOrCss(after, map) && _isEmptyNode(after)) {
 			after.remove();
 		}
 		//remove attributes or styles
@@ -520,34 +523,31 @@ KCmd.prototype = {
 			_removeAttrOrCss(this, map);
 		});
 		//select range
-		_select.call(self);
-		//fire events
-		_each(self._onchangeHandlers, function() {
-			this();
-		});
-		return self;
+		return _select.call(self);
 	},
 	_applyPreformat : function() {
-		var self = this, range = self.range, pf = self._preformat;
-		if (pf) {
-			var pw = pf.wrapper, pr = pf.range;
-			range.setStart(pr.startContainer, pr.startOffset);
-			self.wrap(pw);
+		var self = this, range = self.range,
+			format = self._preformat, remove = self._preremove;
+		if (format || remove) {
+			if (format) {
+				range.setStart(format.range.startContainer, format.range.startOffset);
+			} else {
+				range.setStart(remove.range.startContainer, remove.range.startOffset);
+			}
+			if (format) {
+				self.wrap(format.wrapper);
+			}
+			if (remove) {
+				self.remove(remove.map);
+			}
 			//find text node
-			var el = range.startContainer.childNodes[range.startOffset];
-			if (!el) {
-				self._preformat = null;
-				return;
-			}
-			var textNode = el.firstChild;
-			while (textNode && textNode.firstChild) {
-				textNode = textNode.firstChild;
-			}
+			var sc = range.startContainer, so = range.startOffset,
+				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
-			self.range = range;
 			_select.call(self);
 			self._preformat = null;
+			self._preremove = null;
 		}
 	},
 	//Reference: document.execCommand
@@ -690,7 +690,6 @@ KCmd.prototype = {
 		}
 		_node(body).bind('paste', timeoutHandler);
 		_node(body).bind('cut', timeoutHandler);
-		self._onchangeHandlers.push(fn);
 		return self;
 	}
 };
@@ -715,8 +714,8 @@ function _cmd(mixed) {
 		});
 		//光标移动时移除预先格式
 		cmd.oncursormove(function(e) {
-			console.log('move');
 			cmd._preformat = null;
+			cmd._preremove = null;
 		});
 		return cmd;
 	}

@@ -334,4 +334,32 @@ test('cmd.remove', function() {
 	var str = 'abcd<strong>efg';
 	equals(K.node(cloneP).html().substr(0, str.length), str);
 	document.body.removeChild(cloneP);
+	//13
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	strong.innerHTML = '<strong>efg</strong>';
+	range = K.range(document);
+	range.setStart(strong.firstChild.firstChild, 1);
+	range.setEnd(strong.firstChild.firstChild, 2);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	cmd.remove({
+		'strong' : '*'
+	});
+	cmd.wrap('<strong></strong>');
+	equals(range.html(), '<strong>f</strong>');
+	document.body.removeChild(cloneP);
+	//14
+	cloneP = p.cloneNode(true);
+	document.body.appendChild(cloneP);
+	strong = K.query('strong', cloneP);
+	range = K.range(document);
+	range.selectNodeContents(strong);
+	cmd = K.cmd(range);
+	cmd.remove({
+		strong : '*'
+	});
+	equals(cmd.range.html(), 'efg');
+	document.body.removeChild(cloneP);
 });

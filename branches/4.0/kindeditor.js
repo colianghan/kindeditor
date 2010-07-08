@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-07)
+* @version 4.0 (2010-07-08)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -1474,9 +1474,7 @@ function _getRng(doc) {
 }
 
 function _select() {
-	var self = this,
-		sel = self.sel,
-		range = self.range,
+	var self = this, sel = self.sel, range = self.range.cloneRange(),
 		sc = range.startContainer, so = range.startOffset,
 		ec = range.endContainer, eo = range.endOffset,
 		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
@@ -1588,6 +1586,10 @@ function _getInnerNode(knode) {
 		inner = inner.first();
 	}
 	return inner;
+}
+
+function _isEmptyNode(knode) {
+	return _getInnerNode(knode).isInline();
 }
 
 function _mergeWrapper(a, b) {
@@ -1714,15 +1716,15 @@ function _splitStartEnd(range, isStart, map) {
 }
 
 function KCmd(range) {
-	var self = this;
+	var self = this, doc = range.doc;
 
-	self.doc = range.doc;
-	self.win = _getWin(self.doc);
-	self.sel = _getSel(self.doc);
+	self.doc = doc;
+	self.win = _getWin(doc);
+	self.sel = _getSel(doc);
 	self.range = range;
 
 	self._preformat = null;
-	self._onchangeHandlers = [];
+	self._preremove = null;
 }
 
 KCmd.prototype = {
@@ -1817,17 +1819,16 @@ KCmd.prototype = {
 		}
 		wrapRange(range.commonAncestorContainer);
 
-		_select.call(self);
-
-		_each(self._onchangeHandlers, function() {
-			this();
-		});
-		return self;
+		return _select.call(self);
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
 
 		if (range.collapsed) {
+			self._preremove = {
+				map : map,
+				range : range.cloneRange()
+			};
 			return _select.call(self);
 		}
 
@@ -1850,14 +1851,14 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
 			var before = _node(sc.childNodes[so - 1]);
-			if (before && _hasAttrOrCss(before, map) && /<([^>]+)><\/\1>/.test(before.html())) {
+			if (before && _hasAttrOrCss(before, map) && _isEmptyNode(before)) {
 				before.remove();
 				range.setStart(sc, so - 1);
 				range.setEnd(ec, eo - 1);
 			}
 		}
 		var after = _node(ec.childNodes[range.endOffset]);
-		if (after && _hasAttrOrCss(after, map) && /<([^>]+)><\/\1>/.test(after.html())) {
+		if (after && _hasAttrOrCss(after, map) && _isEmptyNode(after)) {
 			after.remove();
 		}
 
@@ -1865,38 +1866,31 @@ KCmd.prototype = {
 			_removeAttrOrCss(this, map);
 		});
 
-		_select.call(self);
-
-		_each(self._onchangeHandlers, function() {
-			this();
-		});
-		return self;
+		return _select.call(self);
 	},
 	_applyPreformat : function() {
-		var self = this, range = self.range, pf = self._preformat;
-		if (pf) {
-			var pw = pf.wrapper, pr = pf.range;
-			range.setStart(pr.startContainer, pr.startOffset);
-			self.wrap(pw);
-
-			var el = range.startContainer.childNodes[range.startOffset];
-			if (!el) {
-				self._preformat = null;
-				return;
-			}
-			var textNode = el.firstChild;
-			while (textNode && textNode.firtChild) {
-				textNode = textNode.firtChild;
-			}
-			if (textNode.nodeValue) {
-				range.setEnd(textNode, textNode.nodeValue.length);
+		var self = this, range = self.range,
+			format = self._preformat, remove = self._preremove;
+		if (format || remove) {
+			if (format) {
+				range.setStart(format.range.startContainer, format.range.startOffset);
 			} else {
-				range.selectNodeContents(textNode);
+				range.setStart(remove.range.startContainer, remove.range.startOffset);
 			}
+			if (format) {
+				self.wrap(format.wrapper);
+			}
+			if (remove) {
+				self.remove(remove.map);
+			}
+
+			var sc = range.startContainer, so = range.startOffset,
+				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
+			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
-			self.range = range;
 			_select.call(self);
 			self._preformat = null;
+			self._preremove = null;
 		}
 	},
 
@@ -2039,7 +2033,6 @@ KCmd.prototype = {
 		}
 		_node(body).bind('paste', timeoutHandler);
 		_node(body).bind('cut', timeoutHandler);
-		self._onchangeHandlers.push(fn);
 		return self;
 	}
 };
@@ -2063,8 +2056,8 @@ function _cmd(mixed) {
 		});
 
 		cmd.oncursormove(function(e) {
-			console.log('move');
 			cmd._preformat = null;
+			cmd._preremove = null;
 		});
 		return cmd;
 	}
