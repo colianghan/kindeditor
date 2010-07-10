@@ -361,3 +361,19 @@ test('cmd.remove', function() {
 	equals(cmd.range.html(), 'efg');
 	document.body.removeChild(cloneP);
 });
+
+test('cmd.bold', function() {
+	var div = K.node('<div></div>'), node, range;
+	document.body.appendChild(div.get());
+	//1
+	node = K.node('<strong>abcd</strong>').get();
+	div.append(node);
+	range = K.range(document);
+	range.selectNode(node);
+	cmd = K.cmd(range);
+	cmd.bold();
+	equals(range.html(), 'abcd');
+	cmd.bold();
+	equals(range.html(), '<strong>abcd</strong>');
+	div.html('');
+});

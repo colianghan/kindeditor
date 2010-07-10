@@ -273,8 +273,9 @@ function _mergeAttrs(knode, attrs, styles) {
 */
 function _getCommonNode(range, map) {
 	var ec = range.endContainer, eo = range.endOffset,
-		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]), child;
-	while ((child = knode.first()) && child.children().length == 1) {
+		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
+		child = knode;
+	while (child && (child = child.firstChild) && child.childNodes.length == 1) {
 		if (_hasAttrOrCss(child, map)) {
 			return child;
 		}
@@ -575,19 +576,10 @@ KCmd.prototype = {
 	},
 	//Reference: document.queryCommandState
 	state : function(cmd) {
-		var self = this, doc = self.doc, range = self.range,
-			bool = false, knode;
+		var self = this, doc = self.doc, range = self.range, bool = false;
 		try {
 			bool = doc.queryCommandState(cmd);
 		} catch (e) {}
-		if (cmd === 'bold') {
-			knode = _getCommonNode(range, {
-				span : '.font-weight=bold',
-				strong : '*',
-				b : '*'
-			});
-			return !!knode;
-		}
 		return bool;
 	},
 	//Reference: document.queryCommandValue
@@ -647,41 +639,66 @@ KCmd.prototype = {
 		}
 		return val;
 	},
-	bold : function() {
-		if (this.state('bold')) {
-			this.remove({
-				span : '.font-weight',
-				strong : '*',
-				b : '*'
-			});
+	toggle : function(wrapper, map) {
+		var self = this;
+		if (_getCommonNode(self.range, map)) {
+			self.remove(map);
 		} else {
-			this.wrap('<strong></strong>');
+			self.wrap(wrapper);
 		}
-		return this.select();
+		return self.select();
+	},
+	bold : function() {
+		return this.toggle('<strong></strong>', {
+			span : '.font-weight=bold',
+			strong : '*',
+			b : '*'
+		});
 	},
 	italic : function() {
-		this.wrap('<em></em>');
-		return this.select();
+		return this.toggle('<em></em>', {
+			span : '.font-style=italic',
+			em : '*',
+			i : '*'
+		});
+	},
+	underline : function() {
+		return this.toggle('<u></u>', {
+			span : '.text-decoration=underline',
+			u : '*'
+		});
+	},
+	strikethrough : function() {
+		return this.toggle('<s></s>', {
+			span : '.text-decoration=line-through',
+			s : '*'
+		});
 	},
 	forecolor : function(val) {
-		this.wrap('<span style="color:' + val + ';"></span>');
-		return this.select();
+		return this.toggle('<span style="color:' + val + ';"></span>', {
+			span : '.color=' + val,
+			font : 'color'
+		});
 	},
 	hilitecolor : function(val) {
-		this.wrap('<span style="background-color:' + val + ';"></span>');
-		return this.select();
+		return this.toggle('<span style="background-color:' + val + ';"></span>', {
+			span : '.background-color=' + val
+		});
 	},
 	fontsize : function(val) {
-		this.wrap('<span style="font-size:' + val + ';"></span>');
-		return this.select();
+		return this.toggle('<span style="font-size:' + val + ';"></span>', {
+			span : '.font-size=' + val,
+			font : 'size'
+		});
 	},
 	fontname : function(val) {
-		this.fontfamily(val);
-		return this.select();
+		return this.fontfamily(val);
 	},
 	fontfamily : function(val) {
-		this.wrap('<span style="font-family:' + val + ';"></span>');
-		return this.select();
+		return this.toggle('<span style="font-family:' + val + ';"></span>', {
+			span : '.font-family=' + val,
+			font : 'face'
+		});
 	},
 	removeformat : function() {
 		var map = {

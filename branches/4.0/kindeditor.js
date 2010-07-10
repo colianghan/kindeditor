@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-08)
+* @version 4.0 (2010-07-10)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -1473,35 +1473,6 @@ function _getRng(doc) {
 	return rng;
 }
 
-function _select() {
-	var self = this, sel = self.sel, range = self.range.cloneRange(),
-		sc = range.startContainer, so = range.startOffset,
-		ec = range.endContainer, eo = range.endOffset,
-		doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-
-	if (_IE && sc.nodeType == 1 && range.collapsed) {
-		var empty = _node('<span>&nbsp;</span>', doc);
-		range.insertNode(empty.get());
-		rng = doc.body.createTextRange();
-		rng.moveToElementText(empty.get());
-		rng.collapse(false);
-		rng.select();
-		empty.remove();
-		win.focus();
-		return this;
-	}
-
-	rng = range.get();
-	if (_IE) {
-		rng.select();
-	} else {
-		sel.removeAllRanges();
-		sel.addRange(rng);
-	}
-	win.focus();
-	return this;
-}
-
 function _singleKeyMap(map) {
 	var newMap = {}, arr, v;
 	_each(map, function(key, val) {
@@ -1522,18 +1493,22 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return false;
 	}
-	var newMap = _singleKeyMap(map), arr, val;
+	var newMap = _singleKeyMap(map), arr, key, val, method;
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
 		for (var i = 0, len = arr.length; i < len; i++) {
-			val = arr[i];
-			if (val === '*') {
+			key = arr[i];
+			if (key === '*') {
 				return true;
 			}
-			if (val.charAt(0) === '.' && knode.css(val.substr(1)) !== '') {
+			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+			method = match[1] ? 'css' : 'attr';
+			key = match[2];
+			val = match[3] || '';
+			if (val === '' && knode[method](key) !== '') {
 				return true;
 			}
-			if (val.charAt(0) !== '.' && knode.attr(val) !== '') {
+			if (val !== '' && knode[method](key) === val) {
 				return true;
 			}
 		}
@@ -1550,20 +1525,22 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return;
 	}
-	var newMap = _singleKeyMap(map), arr, val;
+	var newMap = _singleKeyMap(map), arr, key;
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
 		allFlag = false;
 		for (var i = 0, len = arr.length; i < len; i++) {
-			val = arr[i];
-			if (val === '*') {
+			key = arr[i];
+			if (key === '*') {
 				allFlag = true;
 				break;
 			}
-			if (val.charAt(0) === '.') {
-				knode.css(val.substr(1), '');
+			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+			key = match[2];
+			if (match[1]) {
+				knode.css(key, '');
 			} else {
-				knode.removeAttr(val);
+				knode.removeAttr(key);
 			}
 		}
 		if (allFlag) {
@@ -1654,60 +1631,20 @@ function _mergeAttrs(knode, attrs, styles) {
 }
 
 function _getCommonNode(range, map) {
-	var node = range.commonAncestorContainer;
-	while (node) {
-		if (_hasAttrOrCss(_node(node), map)) {
-			return node;
+	var ec = range.endContainer, eo = range.endOffset,
+		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]), child;
+	while ((child = knode.first()) && child.children().length == 1) {
+		if (_hasAttrOrCss(child, map)) {
+			return child;
 		}
-		node = node.parentNode;
+	}
+	while (knode) {
+		if (_hasAttrOrCss(knode, map)) {
+			return knode;
+		}
+		knode = knode.parent();
 	}
 	return null;
-}
-
-function _splitStartEnd(range, isStart, map) {
-	var doc = range.doc,
-		sc = range.startContainer, so = range.startOffset,
-		ec = range.endContainer, eo = range.endOffset;
-
-	var tempRange = range.cloneRange().collapse(isStart);
-	var node = tempRange.startContainer, pos = tempRange.startOffset,
-		parent = node.nodeType == 3 ? node.parentNode : node,
-		needSplit = false;
-	while (parent && parent.parentNode) {
-		var knode = _node(parent);
-		if (!knode.isInline()) {
-			break;
-		}
-		if (!_hasAttrOrCss(knode, map, '*') && !_hasAttrOrCss(knode, map)) {
-			break;
-		}
-		needSplit = true;
-		parent = parent.parentNode;
-	}
-
-	if (needSplit) {
-		var mark = doc.createElement('span');
-		range.cloneRange().collapse(!isStart).insertNode(mark);
-		if (isStart) {
-			tempRange.setStartBefore(parent.firstChild).setEnd(node, pos);
-		} else {
-			tempRange.setStart(node, pos).setEndAfter(parent.lastChild);
-		}
-		var frag = tempRange.extractContents(),
-			first = frag.firstChild, last = frag.lastChild;
-		if (isStart) {
-			tempRange.insertNode(frag);
-			range.setStartAfter(last).setEndBefore(mark);
-		} else {
-			parent.appendChild(frag);
-			range.setStartBefore(mark).setEndBefore(first);
-		}
-		var markParent = mark.parentNode;
-		markParent.removeChild(mark);
-		if (!isStart && markParent === range.endContainer) {
-			range.setEnd(range.endContainer, range.endOffset - 1);
-		}
-	}
 }
 
 function KCmd(range) {
@@ -1723,6 +1660,34 @@ function KCmd(range) {
 }
 
 KCmd.prototype = {
+	select : function() {
+		var self = this, sel = self.sel, range = self.range.cloneRange(),
+			sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset,
+			doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
+
+		if (_IE && sc.nodeType == 1 && range.collapsed) {
+			var empty = _node('<span>&nbsp;</span>', doc);
+			range.insertNode(empty.get());
+			rng = doc.body.createTextRange();
+			rng.moveToElementText(empty.get());
+			rng.collapse(false);
+			rng.select();
+			empty.remove();
+			win.focus();
+			return self;
+		}
+
+		rng = range.get();
+		if (_IE) {
+			rng.select();
+		} else {
+			sel.removeAllRanges();
+			sel.addRange(rng);
+		}
+		win.focus();
+		return self;
+	},
 	wrap : function(val) {
 		var self = this, doc = self.doc, range = self.range, wrapper,
 			sc = range.startContainer, so = range.startOffset,
@@ -1744,7 +1709,7 @@ KCmd.prototype = {
 				wrapper : wrapper,
 				range : range.cloneRange()
 			};
-			return _select.call(self);
+			return self;
 		}
 
 		if (!wrapper.isInline()) {
@@ -1755,7 +1720,7 @@ KCmd.prototype = {
 			}
 			child.append(range.extractContents());
 			range.insertNode(w.get()).selectNode(w.get());
-			return _select.call(self);
+			return self;
 		}
 
 		function wrapTextNode(node, startOffset, endOffset) {
@@ -1826,7 +1791,53 @@ KCmd.prototype = {
 		}
 		wrapRange(range.commonAncestorContainer);
 
-		return _select.call(self);
+		return self;
+	},
+	split : function(isStart, map) {
+		var range = this.range, doc = range.doc,
+			sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset;
+
+		var tempRange = range.cloneRange().collapse(isStart);
+		var node = tempRange.startContainer, pos = tempRange.startOffset,
+			parent = node.nodeType == 3 ? node.parentNode : node,
+			needSplit = false;
+		while (parent && parent.parentNode) {
+			var knode = _node(parent);
+			if (!knode.isInline()) {
+				break;
+			}
+			if (!_hasAttrOrCss(knode, map)) {
+				break;
+			}
+			needSplit = true;
+			parent = parent.parentNode;
+		}
+
+		if (needSplit) {
+			var mark = doc.createElement('span');
+			range.cloneRange().collapse(!isStart).insertNode(mark);
+			if (isStart) {
+				tempRange.setStartBefore(parent.firstChild).setEnd(node, pos);
+			} else {
+				tempRange.setStart(node, pos).setEndAfter(parent.lastChild);
+			}
+			var frag = tempRange.extractContents(),
+				first = frag.firstChild, last = frag.lastChild;
+			if (isStart) {
+				tempRange.insertNode(frag);
+				range.setStartAfter(last).setEndBefore(mark);
+			} else {
+				parent.appendChild(frag);
+				range.setStartBefore(mark).setEndBefore(first);
+			}
+			var markParent = mark.parentNode;
+			markParent.removeChild(mark);
+			if (!isStart && markParent === range.endContainer) {
+				range.setEnd(range.endContainer, range.endOffset - 1);
+			}
+		}
+		return this;
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
@@ -1836,11 +1847,11 @@ KCmd.prototype = {
 				map : map,
 				range : range.cloneRange()
 			};
-			return _select.call(self);
+			return self;
 		}
 
-		_splitStartEnd(range, true, map);
-		_splitStartEnd(range, false, map);
+		self.split(true, map);
+		self.split(false, map);
 
 		var nodeList = [];
 		_node(range.commonAncestorContainer).each(function(knode) {
@@ -1875,7 +1886,7 @@ KCmd.prototype = {
 			_removeAttrOrCss(this, map);
 		});
 
-		return _select.call(self);
+		return self;
 	},
 	_applyPreformat : function() {
 		var self = this, range = self.range,
@@ -1897,7 +1908,7 @@ KCmd.prototype = {
 				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
-			_select.call(self);
+			self.select();
 			self._preformat = null;
 			self._preremove = null;
 		}
@@ -1908,9 +1919,9 @@ KCmd.prototype = {
 	},
 
 	state : function(cmd) {
-		var bool = false;
+		var self = this, doc = self.doc, range = self.range, bool = false;
 		try {
-			bool = this.doc.queryCommandState(cmd);
+			bool = doc.queryCommandState(cmd);
 		} catch (e) {}
 		return bool;
 	},
@@ -1921,7 +1932,7 @@ KCmd.prototype = {
 			return val.toLowerCase();
 		}
 		cmd = lc(cmd);
-		var val = '', el;
+		var val = '', knode;
 		if (cmd === 'fontfamily' || cmd === 'fontname') {
 			val = _nativeCommandValue(doc, 'fontname');
 			val = val.replace(/['"]/g, '');
@@ -1930,9 +1941,9 @@ KCmd.prototype = {
 		if (cmd === 'formatblock') {
 			val = _nativeCommandValue(doc, cmd);
 			if (val === '') {
-				el = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
-				if (el) {
-					val = el.nodeName;
+				knode = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
+				if (knode) {
+					val = knode.name;
 				}
 			}
 			if (val === 'Normal') {
@@ -1941,16 +1952,16 @@ KCmd.prototype = {
 			return lc(val);
 		}
 		if (cmd === 'fontsize') {
-			el = _getCommonNode(range, {'*' : '.font-size'});
-			if (el) {
-				val = _node(el).css('font-size');
+			knode = _getCommonNode(range, {'*' : '.font-size'});
+			if (knode) {
+				val = knode.css('font-size');
 			}
 			return lc(val);
 		}
 		if (cmd === 'forecolor') {
-			el = _getCommonNode(range, {'*' : '.color'});
-			if (el) {
-				val = _node(el).css('color');
+			knode = _getCommonNode(range, {'*' : '.color'});
+			if (knode) {
+				val = knode.css('color');
 			}
 			val = _toHex(val);
 			if (val === '') {
@@ -1959,7 +1970,10 @@ KCmd.prototype = {
 			return lc(val);
 		}
 		if (cmd === 'hilitecolor') {
-			el = _getCommonNode(range, {'*' : '.background-color'});
+			knode = _getCommonNode(range, {'*' : '.background-color'});
+			if (knode) {
+				val = knode.css('background-color');
+			}
 			val = _toHex(val);
 			if (val === '') {
 				val = 'default';
@@ -1968,26 +1982,66 @@ KCmd.prototype = {
 		}
 		return val;
 	},
+	toggle : function(wrapper, map) {
+		var self = this;
+		if (_getCommonNode(self.range, map)) {
+			self.remove(map);
+		} else {
+			self.wrap(wrapper);
+		}
+		return self.select();
+	},
 	bold : function() {
-		return this.wrap('<strong></strong>');
+		return this.toggle('<strong></strong>', {
+			span : '.font-weight=bold',
+			strong : '*',
+			b : '*'
+		});
 	},
 	italic : function() {
-		return this.wrap('<em></em>');
+		return this.toggle('<em></em>', {
+			span : '.font-style=italic',
+			em : '*',
+			i : '*'
+		});
+	},
+	underline : function() {
+		return this.toggle('<u></u>', {
+			span : '.text-decoration=underline',
+			u : '*'
+		});
+	},
+	strikethrough : function() {
+		return this.toggle('<s></s>', {
+			span : '.text-decoration=line-through',
+			s : '*'
+		});
 	},
 	forecolor : function(val) {
-		return this.wrap('<span style="color:' + val + ';"></span>');
+		return this.toggle('<span style="color:' + val + ';"></span>', {
+			span : '.color=' + val,
+			font : 'color'
+		});
 	},
 	hilitecolor : function(val) {
-		return this.wrap('<span style="background-color:' + val + ';"></span>');
+		return this.toggle('<span style="background-color:' + val + ';"></span>', {
+			span : '.background-color=' + val
+		});
 	},
 	fontsize : function(val) {
-		return this.wrap('<span style="font-size:' + val + ';"></span>');
+		return this.toggle('<span style="font-size:' + val + ';"></span>', {
+			span : '.font-size=' + val,
+			font : 'size'
+		});
 	},
 	fontname : function(val) {
 		return this.fontfamily(val);
 	},
 	fontfamily : function(val) {
-		return this.wrap('<span style="font-family:' + val + ';"></span>');
+		return this.toggle('<span style="font-family:' + val + ';"></span>', {
+			span : '.font-family=' + val,
+			font : 'face'
+		});
 	},
 	removeformat : function() {
 		var map = {
@@ -1997,7 +2051,8 @@ KCmd.prototype = {
 		_each(tags, function(key, val) {
 			map[key] = '*';
 		});
-		return this.remove(map);
+		this.remove(map);
+		return this.select();
 	},
 
 	oninput : function(fn) {

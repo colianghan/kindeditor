@@ -10,6 +10,8 @@ var edit = K.edit('body textarea', {
 var cmds = {
 	bold : '',
 	italic : '',
+	underline : '',
+	strikeThrough : '',
 	foreColor : '#FF0000',
 	hiliteColor : '#DDDDDD',
 	fontSize : '32px',

@@ -302,10 +302,14 @@ KNode.prototype = {
 	first : function() {
 		var list = this.children();
 		return list.length > 0 ? list[0] : null;
+		//var node = this.node.firstChild;
+		//return node ? new KNode(node) : null;
 	},
 	last : function() {
-		var list = this.children();
-		return list.length > 0 ? list[list.length - 1] : null;
+		//var list = this.children();
+		//return list.length > 0 ? list[list.length - 1] : null;
+		var node = this.node.lastChild;
+		return node ? new KNode(node) : null;
 	},
 	index : function() {
 		var i = -1, sibling = this.node;
