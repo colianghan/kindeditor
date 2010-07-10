@@ -134,11 +134,11 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
 			method = match[1] ? 'css' : 'attr';
 			key = match[2];
-			val = match[3];
-			if (val === undefined && knode[method](key) !== '') {
+			val = match[3] || '';
+			if (val === '' && knode[method](key) !== '') {
 				return true;
 			}
-			if (val !== undefined && knode[method](key) === val) {
+			if (val !== '' && knode[method](key) === val) {
 				return true;
 			}
 		}
@@ -155,7 +155,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return;
 	}
-	var newMap = _singleKeyMap(map), arr, key, method;
+	var newMap = _singleKeyMap(map), arr, key;
 	if (newMap[mapKey]) {
 		arr = newMap[mapKey].split(',');
 		allFlag = false;
@@ -166,9 +166,12 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 				break;
 			}
 			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
-			method = match[1] ? 'css' : 'removeAttr';
 			key = match[2];
-			knode[method](key, '');
+			if (match[1]) {
+				knode.css(key, '');
+			} else {
+				knode.removeAttr(key);
+			}
 		}
 		if (allFlag) {
 			if (knode.first()) {
@@ -328,7 +331,6 @@ KCmd.prototype = {
 			win.focus();
 			return self;
 		}
-		console.log(1);
 		//case 2: 一般情况
 		rng = range.get();
 		if (_IE) {
@@ -460,7 +462,7 @@ KCmd.prototype = {
 			if (!knode.isInline()) {
 				break;
 			}
-			if (!_hasAttrOrCss(knode, map, '*') && !_hasAttrOrCss(knode, map)) {
+			if (!_hasAttrOrCss(knode, map)) {
 				break;
 			}
 			needSplit = true;

@@ -247,7 +247,7 @@ test('cmd.remove', function() {
 	cmd.remove({
 		'strong' : 'class'
 	});
-	equals(cmd.range.html().toLowerCase(), '<strong style="color:#ff0000;">f</strong>');
+	equals(range.html().toLowerCase(), '<strong style="color:#ff0000;">f</strong>');
 	document.body.removeChild(cloneP);
 	//7
 	cloneP = p.cloneNode(true);
