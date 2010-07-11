@@ -362,7 +362,7 @@ test('cmd.remove', function() {
 	document.body.removeChild(cloneP);
 });
 
-test('cmd.bold', function() {
+test('cmd.bold/cmd.italic', function() {
 	var div = K.node('<div></div>'), node, range;
 	document.body.appendChild(div.get());
 	//1
@@ -372,8 +372,37 @@ test('cmd.bold', function() {
 	range.selectNode(node);
 	cmd = K.cmd(range);
 	cmd.bold();
-	equals(range.html(), 'abcd');
 	cmd.bold();
 	equals(range.html(), '<strong>abcd</strong>');
+	div.html('');
+	//2
+	div.html('abcd');
+	range = K.range(document);
+	range.setStart(div.first().get(), 0);
+	range.setEnd(div.first().get(), 4);
+	cmd = K.cmd(range);
+	cmd.bold();
+	cmd.italic();
+	equals(range.html(), '<strong><em>abcd</em></strong>');
+	div.html('');
+	//3
+	div.html('abcd');
+	range = K.range(document);
+	range.setStart(div.first().get(), 0);
+	range.setEnd(div.first().get(), 4);
+	cmd = K.cmd(range);
+	cmd.bold();
+	cmd.italic();
+	cmd.bold();
+	equals(range.html(), '<em>abcd</em>');
+	div.html('');
+	//4
+	div.html('<strong>abc</strong><strong>def</strong><strong>ghi</strong>');
+	range = K.range(document);
+	range.setStart(div.first().first().get(), 3);
+	range.setEnd(div.first().next().first().get(), 3);
+	cmd = K.cmd(range);
+	cmd.bold();
+	equals(range.html(), 'def');
 	div.html('');
 });

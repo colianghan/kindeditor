@@ -533,6 +533,15 @@ KCmd.prototype = {
 					range.setEnd(ec, eo - 1);
 				}
 			}
+			//<b>abc[</b><b>def]</b><b>ghi</b>时，分割后HTML变成
+			//<b>abc</b>[<b></b><b>def</b>]<b>ghi</b> 
+			before = _node(sc.childNodes[so]);
+			if (before && _isEmptyNode(before)) {
+				before.remove();
+				if (sc == ec) {
+					range.setEnd(ec, eo - 1);
+				}
+			}
 		}
 		var after = _node(ec.childNodes[range.endOffset]);
 		if (after && _isEmptyNode(after)) {

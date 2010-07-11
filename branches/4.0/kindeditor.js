@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-10)
+* @version 4.0 (2010-07-12)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -1632,8 +1632,9 @@ function _mergeAttrs(knode, attrs, styles) {
 
 function _getCommonNode(range, map) {
 	var ec = range.endContainer, eo = range.endOffset,
-		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]), child;
-	while ((child = knode.first()) && child.children().length == 1) {
+		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
+		child = knode;
+	while (child && (child = child.firstChild) && child.childNodes.length == 1) {
 		if (_hasAttrOrCss(child, map)) {
 			return child;
 		}
@@ -1872,6 +1873,14 @@ KCmd.prototype = {
 			if (before && _isEmptyNode(before)) {
 				before.remove();
 				range.setStart(sc, so - 1);
+				if (sc == ec) {
+					range.setEnd(ec, eo - 1);
+				}
+			}
+
+			before = _node(sc.childNodes[so]);
+			if (before && _isEmptyNode(before)) {
+				before.remove();
 				if (sc == ec) {
 					range.setEnd(ec, eo - 1);
 				}
