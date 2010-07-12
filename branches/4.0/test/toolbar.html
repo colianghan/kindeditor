@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<title>KindEditor Edit Test</title>
+		<title>KindEditor Toolbar Test</title>
 		<link rel="stylesheet" href="../lib/firebug/firebug-lite.css" />
 		<link rel="stylesheet" href="../lib/qunit/qunit.css" />
 		<style>
@@ -32,35 +32,20 @@
 		<script src="../src/range.js"></script>
 		<script src="../src/cmd.js"></script>
 		<script src="../src/edit.js"></script>
+		<script src="../src/toolbar.js"></script>
 	</head>
 	<body>
-		<h1>KindEditor Edit Test</h1>
+		<h1>KindEditor Toolbar Test</h1>
+		<div id="toolbar"></div>
 		<div id="edit"></div>
-		<textarea name="content" cols="100" rows="20">
-<p>测试</p>
-<p><span style="font-size:32px;"><strong><strong>测试abc</strong>e</strong>fg</span></p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-<p><span style="font-weight:bold;">测试</span></p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-<p>测试</p>
-</textarea>
-		<br />
-		<div id="cmdArea"></div>
+		<textarea name="edit" cols="100" rows="20"></textarea>
 		<br />
 		<br />
 		<input type="button" id="create" value="Create" />
 		<input type="button" id="remove" value="Remove" />
-		<input type="button" id="design" value="Design Mode" />
-		<input type="button" id="source" value="Source Mode" />
-		<input type="button" id="toggle" value="Toggle Mode" />
-		<script src="edit.js"></script>
+		<input type="button" id="enable" value="Enable" />
+		<input type="button" id="disable" value="Disable" />
+		<input type="button" id="toggle" value="Toggle enable/disable" />
+		<script src="toolbar.js"></script>
 	</body>
 </html>

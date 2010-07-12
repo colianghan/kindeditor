@@ -1,10 +1,328 @@
-.ke-iframe {
+/* common */
+.ke-inline-block {
+	display: -moz-inline-stack;
+	display: inline-block;
+	vertical-align: middle;
+	zoom: 1;
+	*display: inline;
+}
+
+/* icons */
+.ke-icon-source {
+	background-position: 0px 0px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-print {
+	background-position: 0px -32px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-undo {
+	background-position: 0px -48px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-redo {
+	background-position: 0px -64px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-cut {
+	background-position: 0px -80px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-copy {
+	background-position: 0px -96px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-paste {
+	background-position: 0px -112px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-selectall {
+	background-position: 0px -128px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-justifyleft {
+	background-position: 0px -144px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-justifycenter {
+	background-position: 0px -160px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-justifyright {
+	background-position: 0px -176px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-justifyfull {
+	background-position: 0px -192px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-insertorderedlist {
+	background-position: 0px -208px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-insertunorderedlist {
+	background-position: 0px -224px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-indent {
+	background-position: 0px -240px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-outdent {
+	background-position: 0px -256px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-subscript {
+	background-position: 0px -272px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-superscript {
+	background-position: 0px -288px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-formatblock {
+	background-position: 0px -336px;
+	width: 25px;
+	height: 16px;
+}
+.ke-icon-fontname {
+	background-position: 0px -352px;
+	width: 21px;
+	height: 16px;
+}
+.ke-icon-fontsize {
+	background-position: 0px -368px;
+	width: 23px;
+	height: 16px;
+}
+.ke-icon-forecolor {
+	background-position: 0px -384px;
+	width: 20px;
+	height: 16px;
+}
+.ke-icon-hilitecolor {
+	background-position: 0px -400px;
+	width: 20px;
+	height: 16px;
+}
+.ke-icon-bold {
+	background-position: 0px -416px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-italic {
+	background-position: 0px -432px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-underline {
+	background-position: 0px -448px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-strikethrough {
+	background-position: 0px -464px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-removeformat {
+	background-position: 0px -480px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-image {
+	background-position: 0px -496px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-flash {
+	background-position: 0px -512px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-media {
+	background-position: 0px -528px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-hr {
+	background-position: 0px -592px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-emoticons {
+	background-position: 0px -608px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-link {
+	background-position: 0px -624px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-unlink {
+	background-position: 0px -640px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-fullscreen {
+	background-position: 0px -656px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-about {
+	background-position: 0px -672px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-plainpaste {
+	background-position: 0px -704px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-wordpaste {
+	background-position: 0px -720px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-advtable {
+	background-position: 0px -784px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablemenu {
+	background-position: 0px -768px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tableinsert {
+	background-position: 0px -784px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tabledelete {
+	background-position: 0px -800px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecolinsertleft {
+	background-position: 0px -816px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecolinsertright {
+	background-position: 0px -832px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablerowinsertabove {
+	background-position: 0px -848px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablerowinsertbelow {
+	background-position: 0px -864px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecoldelete {
+	background-position: 0px -880px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablerowdelete {
+	background-position: 0px -896px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecellprop {
+	background-position: 0px -912px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tableprop {
+	background-position: 0px -928px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-checked {
+	background-position: 0px -944px;
+	width: 16px;
+	height: 16px;
+}
+/* toolbar */
+.ke-toolbar {
+	display: block;
+	background-color: #F0F0EE;
+	margin: 0;
+	padding: 5px;
+}
+.ke-toolbar-icon {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background-repeat: no-repeat;
+	overflow: hidden;
+}
+.ke-toolbar-icon-url {
+	background-image: url(default.gif);
+}
+.ke-toolbar-icon-outline {
+	border: 1px solid #F0F0EE;
+	background-color: transparent;
+	margin: 1px;
+	padding: 1px 2px;
+	cursor: pointer;
+}
+.ke-toolbar-icon-outline-on {
+	border: 1px solid #5690D2;
+}
+.ke-toolbar-icon-outline-selected {
+	border: 1px solid #5690D2;
+	background-color: #E9EFF6;
+}
+.ke-toolbar-icon-outline-disabled {
+	border: 1px solid #F0F0EE;
+	cursor: default;
+}
+.ke-toolbar-separator {
+	margin: 2px 3px;
+	border-left: 1px solid #A0A0A0;
+	border-right: 1px solid #FFFFFF;
+	border-top:0;
+	border-bottom:0;
+	width: 0;
+	height: 16px;
+}
+/* edit */
+.ke-edit {
+	display: block;
+}
+.ke-edit-iframe {
 	margin: 0;
 	padding: 0;
 	border: 1px solid #A0A0A0;
 	background-color: #FFFFFF;
 }
-.ke-textarea {
+.ke-edit-textarea {
 	font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
 	margin: 0;
 	padding: 0;
@@ -14,6 +332,6 @@
 	overflow: auto;
 	resize: none;
 }
-.ke-textarea:focus {
+.ke-edit-textarea:focus {
 	outline: none;
 }

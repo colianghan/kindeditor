@@ -1,11 +1,12 @@
 
-var edit = K.edit('body textarea', {
+var edit = K.edit({
+	srcElement : 'body textarea',
 	width : '700px',
 	height : '200px',
 	designMode : true,
 	bodyClass : 'ke-content',
 	css : 'body {font-size:12px;margin:0;}'
-}).create();
+}).create('div#edit');
 
 var cmds = {
 	bold : '',
@@ -29,7 +30,7 @@ K.each(cmds, function(key, val) {
 	K.node('#cmdArea').append(document.createTextNode(' '));
 });
 K.node('#create').bind('click', function(e) {
-	edit.create();
+	edit.create('div#edit');
 });
 K.node('#remove').bind('click', function(e) {
 	edit.remove();

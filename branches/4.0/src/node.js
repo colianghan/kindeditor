@@ -97,16 +97,23 @@ KNode.prototype = {
 		绑定一个事件。
 	*/
 	bind : function(type, fn) {
-		_bind(this.node, type, fn);
-		return this;
+		var self = this;
+		_bind(self.node, type, function(e) {
+			fn.call(self, e);
+		});
+		return self;
 	},
 	unbind : function(type, fn) {
-		_unbind(this.node, type, fn);
-		return this;
+		var self = this;
+		_unbind(self.node, type, function(e) {
+			fn.call(self, e);
+		});
+		return self;
 	},
 	fire : function(type) {
-		_fire(this.node, type);
-		return this;
+		var self = this;
+		_fire(self.node, type);
+		return self;
 	},
 	hasAttr : function(key) {
 		return _getAttr(this.node, key);
