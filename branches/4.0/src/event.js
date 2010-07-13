@@ -41,7 +41,7 @@ function _event(el, event) {
 		return;
 	}
 	var e = {},
-		doc = el.nodeName.toLowerCase() === '#document' ? el : el.ownerDocument;
+		doc = el.ownerDocument || el.document || el;
 	_each(_EVENT_PROPS, function(key, val) {
 		e[val] = event[val];
 	});
@@ -158,6 +158,12 @@ function _getId(el) {
 }
 
 function _bind(el, type, fn) {
+	if (type.indexOf(',') >= 0) {
+		_each(type.split(','), function() {
+			_bind(el, this, fn);
+		});
+		return;
+	}
 	var id = _getId(el);
 	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
@@ -185,6 +191,12 @@ function _bind(el, type, fn) {
 }
 
 function _unbind(el, type, fn) {
+	if (type && type.indexOf(',') >= 0) {
+		_each(type.split(','), function() {
+			_unbind(el, this, fn);
+		});
+		return;
+	}
 	var id = _getId(el);
 	if (type === undefined) {
 		if (id in _data) {
@@ -214,6 +226,12 @@ function _unbind(el, type, fn) {
 }
 
 function _fire(el, type) {
+	if (type.indexOf(',') >= 0) {
+		_each(type.split(','), function() {
+			_fire(el, this);
+		});
+		return;
+	}
 	var id = _getId(el);
 	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_data[id][type][0]();

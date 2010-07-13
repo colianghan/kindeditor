@@ -6,22 +6,11 @@
 		<link rel="stylesheet" href="../themes/default/default.css" />
 		<script src="../kindeditor.js"></script>
 		<script>
-			K({
-				srcElement : 'textarea',
-				width : '700px',
-				height : '200px',
-				designMode : true,
-				bodyClass : 'ke-content',
-				cssData : 'body {font-size:12px;margin:0;}'
-			});
+			K('editor1');
 		</script>
 	</head>
 	<body>
 		<h1>KindEditor Test</h1>
-		<div id="container">
-			<div id="toolbar"></div>
-			<div id="edit"></div>
-		</div>
-		<textarea name="edit" cols="100" rows="20"></textarea>
+		<textarea id="editor1" name="editor1" cols="100" rows="20" style="width:700px;height:300px;"></textarea>
 	</body>
 </html>

@@ -33,19 +33,12 @@
 		<script src="../src/edit.js"></script>
 		<script src="../src/toolbar.js"></script>
 		<script src="../src/main.js"></script>
+		<script>
+			K('editor1');
+		</script>
 	</head>
 	<body>
 		<h1>KindEditor Main Test</h1>
-		<textarea name="edit" cols="100" rows="20"></textarea>
-		<script>
-			K({
-				srcElement : 'textarea[name=edit]',
-				width : '700px',
-				height : '200px',
-				designMode : true,
-				bodyClass : 'ke-content',
-				cssData : 'body {font-size:12px;margin:0;}'
-			});
-		</script>
+		<textarea id="editor1" name="editor1" cols="100" rows="20">测试内容</textarea>
 	</body>
 </html>

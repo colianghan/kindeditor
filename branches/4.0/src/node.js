@@ -124,10 +124,10 @@ KNode.prototype = {
 			if (!loaded) {
 				loaded = true;
 				fn.call(self);
-				_unbind(doc, 'DOMContentLoaded');
-				_unbind(doc, 'readystatechange');
-				_unbind(doc, 'load');
 			}
+			_unbind(doc, 'DOMContentLoaded');
+			_unbind(doc, 'readystatechange');
+			_unbind(win, 'load');
 		}
 		function ieReadyFunc() {
 			if (!loaded) {

@@ -127,10 +127,10 @@ KEdit.prototype = {
 		div.append(textarea);
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
+		doc.designMode = 'on';
 		doc.open();
 		doc.write(_getInitHtml(self.bodyClass, self.cssData));
 		doc.close();
-		doc.body.contentEditable = 'true';
 		self.div = div;
 		self.iframe = iframe;
 		self.textarea = textarea;

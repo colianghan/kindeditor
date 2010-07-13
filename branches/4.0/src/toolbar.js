@@ -34,6 +34,9 @@ KToolbar.prototype = {
 		}
 		var div = _node(expr).addClass('ke-toolbar').css({ width : self.width }), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
+		div.bind('contextmenu,dbclick', function(e) {
+			e.stop();
+		});
 		_each(self.items, function(i, item) {
 			if (item.name == '|') {
 				itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
@@ -67,10 +70,10 @@ KToolbar.prototype = {
 			return self;
 		}
 		_each(self.itemNodes, function() {
-			this.unbind();
+			this.remove();
 		});
 		self.itemNodes = [];
-		self.div.removeClass('ke-toolbar').css('width', '');
+		self.div.removeClass('ke-toolbar').css('width', '').unbind();
 		self.div.html('');
 		self.div = null;
 		return self;

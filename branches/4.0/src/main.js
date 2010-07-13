@@ -33,6 +33,7 @@ var _options = {
 	fullscreenMode : false,
 	filterMode : false,
 	shadowMode : true,
+	scriptPath : _scriptPath,
 	urlType : '', //"",relative,absolute,domain
 	newlineType : 'p', //p,br
 	resizeType : 2, //0,1,2
@@ -92,30 +93,37 @@ var _options = {
 	}
 };
 
-function _create(options) {
+var _editorList = [];
+
+function _create(id, options) {
+	if (options === undefined) {
+		options = {};
+	}
 	_each(_options, function(key, val) {
 		options[key] = (options[key] === undefined) ? val : options[key];
 	});
-
-	var containerDiv = _node('<div></div>').css({
-		width : options.width
-	}),
-	toolbarDiv = _node('<div></div>'),
-	editDiv = _node('<div></div>'),
-	statusbarDiv = _node('<div></div>');
+	var srcElement = _node(options.srcElement) || _node('#' + id) || _node('[name=' + id + ']'),
+		width = options.width || srcElement.css('width') || (srcElement.offsetWidth || options.minWidth) + 'px',
+		height = options.height || srcElement.css('height') || (srcElement.offsetHeight || options.minHeight) + 'px',
+		containerDiv = _node('<div></div>').css({
+			width : width
+		}),
+		toolbarDiv = _node('<div></div>'),
+		editDiv = _node('<div></div>'),
+		statusbarDiv = _node('<div></div>');
 	containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
 	if (options.fullscreenMode) {
 		_node(document.body).append(containerDiv);
 	} else {
-		_node(options.srcElement).before(containerDiv);
+		srcElement.before(containerDiv);
 	}
 	var toolbar = _toolbar({
 			width : '100%'
 		}),
 		edit = _edit({
-			srcElement : options.srcElement,
+			srcElement : srcElement,
 			width : '100%',
-			height : options.height,
+			height : height,
 			designMode : options.designMode,
 			bodyClass : options.bodyClass,
 			cssData : options.cssData
@@ -129,20 +137,36 @@ function _create(options) {
 		});
 	});
 	toolbar.create(toolbarDiv);
+	_editorList.push({
+		options : options,
+		toolbar : toolbar,
+		edit : edit
+	});
 }
 
-var _K = K;
+function _plugin(name, fn) {
 
-K = function(options) {
+}
+
+//解决IE6浏览器重复下载背景图片的问题
+if (_IE && _VERSION < 7) {
+	try {
+		document.execCommand('BackgroundImageCache', false, true);
+	} catch (e) {}
+}
+
+K.create = _create;
+K.plugin = _plugin;
+
+var _K = K;
+K = function(id, options) {
 	_node(document).ready(function() {
-		_create(options);
+		_create(id, options);
 	});
 };
-
 _each(_K, function(key, val) {
 	K[key] = val;
 });
-
 if (window.K === undefined) {
 	window.K = K;
 }
