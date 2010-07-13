@@ -32,7 +32,8 @@ KToolbar.prototype = {
 		if (self.div) {
 			return self;
 		}
-		var div = _node(expr).addClass('ke-toolbar'), itemNode;
+		var div = _node(expr).addClass('ke-toolbar').css({ width : self.width }), itemNode,
+			inner = _node('<div class="ke-toolbar-inner"></div>');
 		_each(self.items, function(i, item) {
 			if (item.name == '|') {
 				itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
@@ -55,9 +56,9 @@ KToolbar.prototype = {
 				});
 			}
 			self.itemNodes.push(itemNode);
-			div.append(itemNode);
+			inner.append(itemNode);
 		});
-		self.div = div;
+		self.div = div.append(inner);
 		return self;
 	},
 	remove : function() {
@@ -69,7 +70,7 @@ KToolbar.prototype = {
 			this.unbind();
 		});
 		self.itemNodes = [];
-		self.div.removeClass('ke-toolbar');
+		self.div.removeClass('ke-toolbar').css('width', '');
 		self.div.html('');
 		self.div = null;
 		return self;

@@ -27,6 +27,7 @@
 			<fileset file="${src}/range.js"/>
 			<fileset file="${src}/cmd.js"/>
 			<fileset file="${src}/edit.js"/>
+			<fileset file="${src}/toolbar.js"/>
 			<fileset file="${src}/main.js"/>
 			<fileset file="${src}/footer.js"/>
 		</concat>

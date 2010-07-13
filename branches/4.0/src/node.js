@@ -115,6 +115,45 @@ KNode.prototype = {
 		_fire(self.node, type);
 		return self;
 	},
+	ready : function(fn) {
+		var self = this,
+			doc = self.node.ownerDocument || self.node,
+			win = doc.parentWindow || doc.defaultView,
+			loaded = false;
+		function readyFunc() {
+			if (!loaded) {
+				loaded = true;
+				fn.call(self);
+				_unbind(doc, 'DOMContentLoaded');
+				_unbind(doc, 'readystatechange');
+				_unbind(doc, 'load');
+			}
+		}
+		function ieReadyFunc() {
+			if (!loaded) {
+				try {
+					doc.documentElement.doScroll('left');
+				} catch(e) {
+					win.setTimeout(ieReadyFunc, 0);
+					return;
+				}
+				readyFunc();
+			}
+		}
+		if (doc.addEventListener) {
+			_bind(doc, 'DOMContentLoaded', readyFunc);
+		} else if (doc.attachEvent) {
+			_bind(doc, 'readystatechange', function() {
+				if (doc.readyState === 'complete') {
+					readyFunc();
+				}
+			});
+			if (doc.documentElement.doScroll && win.frameElement === undefined) {
+				ieReadyFunc();
+			}
+		}
+		_bind(win, 'load', readyFunc);
+	},
 	hasAttr : function(key) {
 		return _getAttr(this.node, key);
 	},
@@ -368,6 +407,9 @@ function _node(expr, root) {
 			return newNode(div.firstChild);
 		}
 		return newNode(_query(expr, root));
+	}
+	if (expr && expr.get) {
+		return expr;
 	}
 	return newNode(expr);
 }

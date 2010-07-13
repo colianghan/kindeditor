@@ -5,7 +5,7 @@ var edit = K.edit({
 	height : '200px',
 	designMode : true,
 	bodyClass : 'ke-content',
-	css : 'body {font-size:12px;margin:0;}'
+	cssData : 'body {font-size:12px;margin:0;}'
 }).create('div#edit');
 
 var cmds = {

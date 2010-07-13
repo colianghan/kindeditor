@@ -21,20 +21,20 @@ function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-function _getInitHtml(bodyClass, css) {
+function _getInitHtml(bodyClass, cssData) {
 	var arr = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
-	if (css) {
-		if (typeof css == 'string' && !/\{[\s\S]*\}/g.test(css)) {
-			css = [css];
+	if (cssData) {
+		if (typeof cssData == 'string' && !/\{[\s\S]*\}/g.test(cssData)) {
+			cssData = [cssData];
 		}
-		if (_isArray(css)) {
-			_each(css, function(i, path) {
+		if (_isArray(cssData)) {
+			_each(cssData, function(i, path) {
 				if (path !== '') {
 					arr.push('<link href="' + path + '" rel="stylesheet" />');
 				}
 			});
 		} else {
-			arr.push('<style>' + css + '</style>');
+			arr.push('<style>' + cssData + '</style>');
 		}
 	}
 	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
@@ -85,7 +85,7 @@ function KEdit(options) {
 	self.height = options.height || 0;
 	self.designMode = options.designMode === undefined ? true : options.designMode;
 	self.bodyClass = options.bodyClass;
-	self.css = options.css;
+	self.cssData = options.cssData;
 }
 
 KEdit.prototype = {
@@ -115,6 +115,7 @@ KEdit.prototype = {
 			width : self.width,
 			height : self.height
 		};
+		div.css(commonCss);
 		iframe.css(commonCss);
 		textarea.css(commonCss);
 		if (self.designMode) {
@@ -127,7 +128,7 @@ KEdit.prototype = {
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
 		doc.open();
-		doc.write(_getInitHtml(self.bodyClass, self.css));
+		doc.write(_getInitHtml(self.bodyClass, self.cssData));
 		doc.close();
 		doc.body.contentEditable = 'true';
 		self.div = div;
@@ -161,7 +162,11 @@ KEdit.prototype = {
 		srcElement.show();
 		iframe.remove();
 		textarea.remove();
-		div.removeClass('ke-edit');
+		div.removeClass('ke-edit').css({
+			display : '',
+			width : '',
+			height : ''
+		});
 		self.div = self.iframe = self.textarea = null;
 		return self;
 	},

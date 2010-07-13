@@ -1,16 +1,6 @@
 
-var edit = K.edit({
-	srcElement : 'body textarea',
-	width : '700px',
-	height : '200px',
-	designMode : true,
-	bodyClass : 'ke-content',
-	css : 'body {font-size:12px;margin:0;}'
-}).create('div#edit');
-
 var toolbar = K.toolbar({
-	width : '700px',
-	height : '200px'
+	width : '100%'
 });
 
 var items = [
@@ -30,7 +20,6 @@ K.each(items, function(i, name) {
 		}
 	});
 });
-
 toolbar.create('div#toolbar');
 
 K.node('#create').bind('click', function(e) {
