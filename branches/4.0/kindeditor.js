@@ -302,7 +302,7 @@ function _ready(fn, doc) {
 	function readyFunc() {
 		if (!loaded) {
 			loaded = true;
-			fn.call(doc);
+			fn(window.KindEditor);
 		}
 		_unbind(doc, 'DOMContentLoaded');
 		_unbind(doc, 'readystatechange');
@@ -678,6 +678,7 @@ function KNode(node) {
 	self.type = self.node.nodeType;
 	self.win = self.doc.parentWindow || self.doc.defaultView;
 
+	self._data = {};
 	self._prevDisplay = '';
 }
 
@@ -803,6 +804,23 @@ KNode.prototype = {
 			val = node.currentStyle[camelKey] || node.style[camelKey];
 		}
 		return val;
+	},
+	opacity : function(val) {
+		var self = this, node = self.node;
+		if (node.style.opacity === undefined) {
+			node.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
+			return self;
+		}
+		node.style.opacity = val == 1 ? '' : val;
+		return self;
+	},
+	data : function(key, val) {
+		var self = this;
+		if (val === undefined) {
+			return self._data[key];
+		}
+		self._data[key] = val;
+		return self;
 	},
 	clone : function(bool) {
 		return new KNode(this.node.cloneNode(bool));
@@ -2349,7 +2367,7 @@ KEdit.prototype = {
 		self.div = self.iframe = self.textarea = null;
 		return self;
 	},
-	toggle : function(bool) {
+	design : function(bool) {
 		var self = this,
 			iframe = self.iframe,
 			textarea = self.textarea;
@@ -2373,12 +2391,6 @@ KEdit.prototype = {
 		}
 		return self;
 	},
-	toDesign : function() {
-		return this.toggle(true);
-	},
-	toSource : function() {
-		return this.toggle(false);
-	},
 	focus : function() {
 		var self = this;
 		if (self.iframe && self.designMode) {
@@ -2394,11 +2406,29 @@ function _edit(options) {
 
 K.edit = _edit;
 
+function _bindToolbarEvent(itemNode, item) {
+	itemNode.bind('mouseover', function(e) {
+		this.addClass('ke-toolbar-icon-outline-on');
+		e.stop();
+	});
+	itemNode.bind('mouseout', function(e) {
+		this.removeClass('ke-toolbar-icon-outline-on');
+		e.stop();
+	});
+	itemNode.bind('click', function(e) {
+		item.click.call(this);
+		e.stop();
+	});
+}
+
 function KToolbar(options) {
-	this.width = options.width || 0;
-	this.height = options.height || 0;
-	this.items = [];
-	this.itemNodes = [];
+	var self = this;
+	self.width = options.width || 0;
+	self.height = options.height || 0;
+	self.items = [];
+	self.itemNodes = [];
+	self.disableMode = options.disableMode === undefined ? false : options.disableMode;
+	self.noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems;
 }
 
 KToolbar.prototype = {
@@ -2410,9 +2440,9 @@ KToolbar.prototype = {
 		if (self.div) {
 			return self;
 		}
-		var div = _node(expr).addClass('ke-toolbar').css({ width : self.width }), itemNode,
+		var div = _node(expr).addClass('ke-toolbar').css('width', self.width), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
-		div.bind('contextmenu,dbclick', function(e) {
+		div.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
 			e.stop();
 		});
 		_each(self.items, function(i, item) {
@@ -2423,19 +2453,9 @@ KToolbar.prototype = {
 			} else {
 				itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#"></a>');
 				itemNode.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
-				itemNode.bind('mouseover', function(e) {
-					this.addClass('ke-toolbar-icon-outline-on');
-					e.stop();
-				});
-				itemNode.bind('mouseout', function(e) {
-					this.removeClass('ke-toolbar-icon-outline-on');
-					e.stop();
-				});
-				itemNode.bind('click', function(e) {
-					item.click.call(this);
-					e.stop();
-				});
+				_bindToolbarEvent(itemNode, item);
 			}
+			itemNode.data('item', item);
 			self.itemNodes.push(itemNode);
 			inner.append(itemNode);
 		});
@@ -2456,11 +2476,36 @@ KToolbar.prototype = {
 		self.div = null;
 		return self;
 	},
-	disable : function() {
+	disable : function(bool) {
+		var self = this, arr = self.noDisableItems, item;
 
-	},
-	enable : function() {
+		if (bool === undefined ? !self.disableMode : bool) {
+			_each(self.itemNodes, function() {
+				item = this.data('item');
+				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
+					this.addClass('ke-toolbar-icon-outline-disabled');
+					this.opacity(0.5);
+					if (item.name !== '|') {
+						this.unbind();
+					}
+				}
+			});
+			self.disableMode = true;
 
+		} else {
+			_each(self.itemNodes, function() {
+				item = this.data('item');
+				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
+					this.removeClass('ke-toolbar-icon-outline-disabled');
+					this.opacity(1);
+					if (item.name !== '|') {
+						_bindToolbarEvent(this, item);
+					}
+				}
+			});
+			self.disableMode = false;
+		}
+		return self;
 	}
 };
 
@@ -2578,7 +2623,7 @@ function KEditor(options) {
 KEditor.prototype = {
 	create : function() {
 		var self = this,
-			containerDiv = _node('<div></div>').css({ width : self.width }),
+			containerDiv = _node('<div></div>').css('width', self.width),
 			toolbarDiv = _node('<div></div>'),
 			editDiv = _node('<div></div>'),
 			statusbarDiv = _node('<div></div>');
@@ -2589,7 +2634,8 @@ KEditor.prototype = {
 			self.srcElement.before(containerDiv);
 		}
 		var toolbar = _toolbar({
-				width : '100%'
+				width : '100%',
+				noDisableItems : 'source,fullscreen'.split(',')
 			}),
 			edit = _edit({
 				srcElement : self.srcElement,
@@ -2608,13 +2654,21 @@ KEditor.prototype = {
 			});
 		});
 		toolbar.create(toolbarDiv);
+		self.containerDiv = containerDiv;
 		self.toolbar = toolbar;
 		self.edit = edit;
 		return self;
+	},
+	remove : function() {
+		var self = this;
+		self.toolbar.remove();
+		self.edit.remove();
+		self.containerDiv.remove();
+		self.containerDiv = self.toolbar = self.edit = null;
 	}
 };
 
-var _editors = [];
+var _editors = {};
 
 function _create(id, options) {
 	if (!options) {
@@ -2624,8 +2678,12 @@ function _create(id, options) {
 		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
 	}
 	var editor = new KEditor(options).create();
-	_editors.push(editor);
+	_editors[id] = editor;
 	return editor;
+}
+
+function _remove(id) {
+	_editors[id].remove();
 }
 
 if (_IE && _VERSION < 7) {
@@ -2636,7 +2694,8 @@ if (_IE && _VERSION < 7) {
 
 _plugin('source', {
 	click : function(editor) {
-		editor.edit.toggle();
+		editor.toolbar.disable();
+		editor.edit.design();
 	}
 });
 
@@ -2649,6 +2708,7 @@ _each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i,
 });
 
 K.create = _create;
+K.remove = _remove;
 K.plugin = _plugin;
 
 var _K = K;

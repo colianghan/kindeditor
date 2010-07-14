@@ -244,7 +244,7 @@ function _ready(fn, doc) {
 	function readyFunc() {
 		if (!loaded) {
 			loaded = true;
-			fn.call(doc);
+			fn(window.KindEditor);
 		}
 		_unbind(doc, 'DOMContentLoaded');
 		_unbind(doc, 'readystatechange');

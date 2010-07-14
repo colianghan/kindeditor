@@ -34,11 +34,22 @@
 		<script src="../src/toolbar.js"></script>
 		<script src="../src/main.js"></script>
 		<script>
-			K('editor1');
+			KindEditor.ready(function(K) {
+				K.create('editor1');
+				K.node('#create').bind('click', function() {
+					K.create('editor1');
+				});
+				K.node('#remove').bind('click', function() {
+					K.remove('editor1');
+				});
+			});
 		</script>
 	</head>
 	<body>
 		<h1>KindEditor Main Test</h1>
 		<textarea id="editor1" name="editor1" cols="100" rows="20">测试内容</textarea>
+		<br />
+		<input type="button" id="create" value="Create" />
+		<input type="button" id="remove" value="Remove" />
 	</body>
 </html>

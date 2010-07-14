@@ -50,7 +50,7 @@ KToolbar.prototype = {
 		if (self.div) {
 			return self;
 		}
-		var div = _node(expr).addClass('ke-toolbar').css({ width : self.width }), itemNode,
+		var div = _node(expr).addClass('ke-toolbar').css('width', self.width), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
 		div.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
 			e.stop();

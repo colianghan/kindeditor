@@ -125,7 +125,7 @@ function KEditor(options) {
 KEditor.prototype = {
 	create : function() {
 		var self = this,
-			containerDiv = _node('<div></div>').css({ width : self.width }),
+			containerDiv = _node('<div></div>').css('width', self.width),
 			toolbarDiv = _node('<div></div>'),
 			editDiv = _node('<div></div>'),
 			statusbarDiv = _node('<div></div>');
@@ -156,13 +156,21 @@ KEditor.prototype = {
 			});
 		});
 		toolbar.create(toolbarDiv);
+		self.containerDiv = containerDiv;
 		self.toolbar = toolbar;
 		self.edit = edit;
 		return self;
+	},
+	remove : function() {
+		var self = this;
+		self.toolbar.remove();
+		self.edit.remove();
+		self.containerDiv.remove();
+		self.containerDiv = self.toolbar = self.edit = null;
 	}
 };
 
-var _editors = [];
+var _editors = {};
 
 function _create(id, options) {
 	if (!options) {
@@ -172,8 +180,12 @@ function _create(id, options) {
 		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
 	}
 	var editor = new KEditor(options).create();
-	_editors.push(editor);
+	_editors[id] = editor;
 	return editor;
+}
+
+function _remove(id) {
+	_editors[id].remove();
 }
 
 //解决IE6浏览器重复下载背景图片的问题
@@ -200,6 +212,7 @@ _each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i,
 });
 
 K.create = _create;
+K.remove = _remove;
 K.plugin = _plugin;
 
 var _K = K;
