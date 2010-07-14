@@ -16,7 +16,7 @@ K.each(items, function(i, name) {
 	toolbar.addItem({
 		name : name,
 		click : function() {
-			edit.cmd[name]();
+			alert(name);
 		}
 	});
 });
@@ -29,11 +29,11 @@ K.node('#remove').bind('click', function(e) {
 	toolbar.remove();
 });
 K.node('#enable').bind('click', function(e) {
-	toolbar.enable();
+	toolbar.disable(false);
 });
 K.node('#disable').bind('click', function(e) {
-	toolbar.disable();
+	toolbar.disable(true);
 });
 K.node('#toggle').bind('click', function(e) {
-	toolbar.toggle();
+	toolbar.disable();
 });

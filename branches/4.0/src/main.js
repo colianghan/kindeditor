@@ -17,6 +17,15 @@
 #using "main.js"
 */
 
+var _plugins = {};
+
+function _plugin(name, obj) {
+	if (obj === undefined) {
+		return _plugins[name];
+	}
+	_plugins[name] = obj;
+}
+
 var _scriptPath = (function() {
 	var els = document.getElementsByTagName('script'), src;
 	for (var i = 0, len = els.length; i < len; i++) {
@@ -93,59 +102,78 @@ var _options = {
 	}
 };
 
-var _editorList = [];
-
-function _create(id, options) {
-	if (options === undefined) {
-		options = {};
-	}
+function KEditor(options) {
+	var self = this;
+	_each(options, function(key, val) {
+		self[key] = options[key];
+	});
 	_each(_options, function(key, val) {
-		options[key] = (options[key] === undefined) ? val : options[key];
+		if (self[key] === undefined) {
+			self[key] = val;
+		}
 	});
-	var srcElement = _node(options.srcElement) || _node('#' + id) || _node('[name=' + id + ']'),
-		width = options.width || srcElement.css('width') || (srcElement.offsetWidth || options.minWidth) + 'px',
-		height = options.height || srcElement.css('height') || (srcElement.offsetHeight || options.minHeight) + 'px',
-		containerDiv = _node('<div></div>').css({
-			width : width
-		}),
-		toolbarDiv = _node('<div></div>'),
-		editDiv = _node('<div></div>'),
-		statusbarDiv = _node('<div></div>');
-	containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
-	if (options.fullscreenMode) {
-		_node(document.body).append(containerDiv);
-	} else {
-		srcElement.before(containerDiv);
+	var se = _node(self.srcElement);
+	if (!self.width) {
+		self.width = se.css('width') || (se.offsetWidth || self.minWidth) + 'px';
 	}
-	var toolbar = _toolbar({
-			width : '100%'
-		}),
-		edit = _edit({
-			srcElement : srcElement,
-			width : '100%',
-			height : height,
-			designMode : options.designMode,
-			bodyClass : options.bodyClass,
-			cssData : options.cssData
-		}).create(editDiv);
-	_each(options.items, function(i, name) {
-		toolbar.addItem({
-			name : name,
-			click : function() {
-				edit.cmd[name]();
-			}
-		});
-	});
-	toolbar.create(toolbarDiv);
-	_editorList.push({
-		options : options,
-		toolbar : toolbar,
-		edit : edit
-	});
+	if (!self.height) {
+		self.height = se.css('height') || (se.offsetHeight || self.minHeight) + 'px';
+	}
+	self.srcElement = se;
 }
 
-function _plugin(name, fn) {
+KEditor.prototype = {
+	create : function() {
+		var self = this,
+			containerDiv = _node('<div></div>').css({ width : self.width }),
+			toolbarDiv = _node('<div></div>'),
+			editDiv = _node('<div></div>'),
+			statusbarDiv = _node('<div></div>');
+		containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
+		if (self.fullscreenMode) {
+			_node(document.body).append(containerDiv);
+		} else {
+			self.srcElement.before(containerDiv);
+		}
+		var toolbar = _toolbar({
+				width : '100%',
+				noDisableItems : 'source,fullscreen'.split(',')
+			}),
+			edit = _edit({
+				srcElement : self.srcElement,
+				width : '100%',
+				height : self.height,
+				designMode : self.designMode,
+				bodyClass : self.bodyClass,
+				cssData : self.cssData
+			}).create(editDiv);
+		_each(self.items, function(i, name) {
+			toolbar.addItem({
+				name : name,
+				click : function() {
+					_plugin(name).click(self);
+				}
+			});
+		});
+		toolbar.create(toolbarDiv);
+		self.toolbar = toolbar;
+		self.edit = edit;
+		return self;
+	}
+};
 
+var _editors = [];
+
+function _create(id, options) {
+	if (!options) {
+		options = {};
+	}
+	if (!options.srcElement) {
+		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
+	}
+	var editor = new KEditor(options).create();
+	_editors.push(editor);
+	return editor;
 }
 
 //解决IE6浏览器重复下载背景图片的问题
@@ -155,12 +183,28 @@ if (_IE && _VERSION < 7) {
 	} catch (e) {}
 }
 
+//define core plugins
+_plugin('source', {
+	click : function(editor) {
+		editor.toolbar.disable();
+		editor.edit.design();
+	}
+});
+
+_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
+	_plugin(name, {
+		click : function(editor) {
+			editor.edit.cmd[name]();
+		}
+	});
+});
+
 K.create = _create;
 K.plugin = _plugin;
 
 var _K = K;
 K = function(id, options) {
-	_node(document).ready(function() {
+	_ready(function() {
 		_create(id, options);
 	});
 };

@@ -238,6 +238,45 @@ function _fire(el, type) {
 	}
 }
 
+function _ready(fn, doc) {
+	doc = doc || document;
+	var win = doc.parentWindow || doc.defaultView, loaded = false;
+	function readyFunc() {
+		if (!loaded) {
+			loaded = true;
+			fn.call(doc);
+		}
+		_unbind(doc, 'DOMContentLoaded');
+		_unbind(doc, 'readystatechange');
+		_unbind(win, 'load');
+	}
+	function ieReadyFunc() {
+		if (!loaded) {
+			try {
+				doc.documentElement.doScroll('left');
+			} catch(e) {
+				win.setTimeout(ieReadyFunc, 0);
+				return;
+			}
+			readyFunc();
+		}
+	}
+	if (doc.addEventListener) {
+		_bind(doc, 'DOMContentLoaded', readyFunc);
+	} else if (doc.attachEvent) {
+		_bind(doc, 'readystatechange', function() {
+			if (doc.readyState === 'complete') {
+				readyFunc();
+			}
+		});
+		if (doc.documentElement.doScroll && win.frameElement === undefined) {
+			ieReadyFunc();
+		}
+	}
+	_bind(win, 'load', readyFunc);
+}
+
 K.bind = _bind;
 K.unbind = _unbind;
 K.fire = _fire;
+K.ready = _ready;

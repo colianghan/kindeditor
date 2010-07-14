@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-13)
+* @version 4.0 (2010-07-14)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -216,6 +216,12 @@ function _getId(el) {
 }
 
 function _bind(el, type, fn) {
+	if (type.indexOf(',') >= 0) {
+		_each(type.split(','), function() {
+			_bind(el, this, fn);
+		});
+		return;
+	}
 	var id = _getId(el);
 	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
@@ -243,6 +249,12 @@ function _bind(el, type, fn) {
 }
 
 function _unbind(el, type, fn) {
+	if (type && type.indexOf(',') >= 0) {
+		_each(type.split(','), function() {
+			_unbind(el, this, fn);
+		});
+		return;
+	}
 	var id = _getId(el);
 	if (type === undefined) {
 		if (id in _data) {
@@ -272,15 +284,60 @@ function _unbind(el, type, fn) {
 }
 
 function _fire(el, type) {
+	if (type.indexOf(',') >= 0) {
+		_each(type.split(','), function() {
+			_fire(el, this);
+		});
+		return;
+	}
 	var id = _getId(el);
 	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
 
+function _ready(fn, doc) {
+	doc = doc || document;
+	var win = doc.parentWindow || doc.defaultView, loaded = false;
+	function readyFunc() {
+		if (!loaded) {
+			loaded = true;
+			fn.call(doc);
+		}
+		_unbind(doc, 'DOMContentLoaded');
+		_unbind(doc, 'readystatechange');
+		_unbind(win, 'load');
+	}
+	function ieReadyFunc() {
+		if (!loaded) {
+			try {
+				doc.documentElement.doScroll('left');
+			} catch(e) {
+				win.setTimeout(ieReadyFunc, 0);
+				return;
+			}
+			readyFunc();
+		}
+	}
+	if (doc.addEventListener) {
+		_bind(doc, 'DOMContentLoaded', readyFunc);
+	} else if (doc.attachEvent) {
+		_bind(doc, 'readystatechange', function() {
+			if (doc.readyState === 'complete') {
+				readyFunc();
+			}
+		});
+		if (doc.documentElement.doScroll && win.frameElement === undefined) {
+			ieReadyFunc();
+		}
+	}
+	_bind(win, 'load', readyFunc);
+}
+
 K.bind = _bind;
 K.unbind = _unbind;
 K.fire = _fire;
+K.ready = _ready;
 
 function _getCssList(css) {
 	var list = {},
@@ -644,45 +701,6 @@ KNode.prototype = {
 		var self = this;
 		_fire(self.node, type);
 		return self;
-	},
-	ready : function(fn) {
-		var self = this,
-			doc = self.node.ownerDocument || self.node,
-			win = doc.parentWindow || doc.defaultView,
-			loaded = false;
-		function readyFunc() {
-			if (!loaded) {
-				loaded = true;
-				fn.call(self);
-			}
-			_unbind(doc, 'DOMContentLoaded');
-			_unbind(doc, 'readystatechange');
-			_unbind(win, 'load');
-		}
-		function ieReadyFunc() {
-			if (!loaded) {
-				try {
-					doc.documentElement.doScroll('left');
-				} catch(e) {
-					win.setTimeout(ieReadyFunc, 0);
-					return;
-				}
-				readyFunc();
-			}
-		}
-		if (doc.addEventListener) {
-			_bind(doc, 'DOMContentLoaded', readyFunc);
-		} else if (doc.attachEvent) {
-			_bind(doc, 'readystatechange', function() {
-				if (doc.readyState === 'complete') {
-					readyFunc();
-				}
-			});
-			if (doc.documentElement.doScroll && win.frameElement === undefined) {
-				ieReadyFunc();
-			}
-		}
-		_bind(win, 'load', readyFunc);
 	},
 	hasAttr : function(key) {
 		return _getAttr(this.node, key);
@@ -2288,9 +2306,7 @@ KEdit.prototype = {
 		div.append(textarea);
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
-		if (!_IE) {
-			doc.designMode = 'on';
-		}
+		doc.designMode = 'on';
 		doc.open();
 		doc.write(_getInitHtml(self.bodyClass, self.cssData));
 		doc.close();
@@ -2302,9 +2318,6 @@ KEdit.prototype = {
 			_iframeVal.call(self, _elementVal(srcElement));
 		} else {
 			_textareaVal.call(self, _elementVal(srcElement));
-		}
-		if (_IE) {
-			doc.body.contentEditable = 'true';
 		}
 		self.cmd = _cmd(doc);
 		return self;
@@ -2399,6 +2412,9 @@ KToolbar.prototype = {
 		}
 		var div = _node(expr).addClass('ke-toolbar').css({ width : self.width }), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
+		div.bind('contextmenu,dbclick', function(e) {
+			e.stop();
+		});
 		_each(self.items, function(i, item) {
 			if (item.name == '|') {
 				itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
@@ -2432,10 +2448,10 @@ KToolbar.prototype = {
 			return self;
 		}
 		_each(self.itemNodes, function() {
-			this.unbind();
+			this.remove();
 		});
 		self.itemNodes = [];
-		self.div.removeClass('ke-toolbar').css('width', '');
+		self.div.removeClass('ke-toolbar').css('width', '').unbind();
 		self.div.html('');
 		self.div = null;
 		return self;
@@ -2453,6 +2469,15 @@ function _toolbar(options) {
 }
 
 K.toolbar = _toolbar;
+
+var _plugins = {};
+
+function _plugin(name, obj) {
+	if (obj === undefined) {
+		return _plugins[name];
+	}
+	_plugins[name] = obj;
+}
 
 var _scriptPath = (function() {
 	var els = document.getElementsByTagName('script'), src;
@@ -2530,59 +2555,77 @@ var _options = {
 	}
 };
 
-var _editorList = [];
-
-function _create(id, options) {
-	if (options === undefined) {
-		options = {};
-	}
+function KEditor(options) {
+	var self = this;
+	_each(options, function(key, val) {
+		self[key] = options[key];
+	});
 	_each(_options, function(key, val) {
-		options[key] = (options[key] === undefined) ? val : options[key];
+		if (self[key] === undefined) {
+			self[key] = val;
+		}
 	});
-	var srcElement = _node(options.srcElement) || _node('#' + id) || _node('[name=' + id + ']'),
-		width = options.width || srcElement.css('width') || (srcElement.offsetWidth || options.minWidth) + 'px',
-		height = options.height || srcElement.css('height') || (srcElement.offsetHeight || options.minHeight) + 'px',
-		containerDiv = _node('<div></div>').css({
-			width : width
-		}),
-		toolbarDiv = _node('<div></div>'),
-		editDiv = _node('<div></div>'),
-		statusbarDiv = _node('<div></div>');
-	containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
-	if (options.fullscreenMode) {
-		_node(document.body).append(containerDiv);
-	} else {
-		srcElement.before(containerDiv);
+	var se = _node(self.srcElement);
+	if (!self.width) {
+		self.width = se.css('width') || (se.offsetWidth || self.minWidth) + 'px';
 	}
-	var toolbar = _toolbar({
-			width : '100%'
-		}),
-		edit = _edit({
-			srcElement : srcElement,
-			width : '100%',
-			height : height,
-			designMode : options.designMode,
-			bodyClass : options.bodyClass,
-			cssData : options.cssData
-		}).create(editDiv);
-	_each(options.items, function(i, name) {
-		toolbar.addItem({
-			name : name,
-			click : function() {
-				edit.cmd[name]();
-			}
-		});
-	});
-	toolbar.create(toolbarDiv);
-	_editorList.push({
-		options : options,
-		toolbar : toolbar,
-		edit : edit
-	});
+	if (!self.height) {
+		self.height = se.css('height') || (se.offsetHeight || self.minHeight) + 'px';
+	}
+	self.srcElement = se;
 }
 
-function _plugin(name, fn) {
+KEditor.prototype = {
+	create : function() {
+		var self = this,
+			containerDiv = _node('<div></div>').css({ width : self.width }),
+			toolbarDiv = _node('<div></div>'),
+			editDiv = _node('<div></div>'),
+			statusbarDiv = _node('<div></div>');
+		containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
+		if (self.fullscreenMode) {
+			_node(document.body).append(containerDiv);
+		} else {
+			self.srcElement.before(containerDiv);
+		}
+		var toolbar = _toolbar({
+				width : '100%'
+			}),
+			edit = _edit({
+				srcElement : self.srcElement,
+				width : '100%',
+				height : self.height,
+				designMode : self.designMode,
+				bodyClass : self.bodyClass,
+				cssData : self.cssData
+			}).create(editDiv);
+		_each(self.items, function(i, name) {
+			toolbar.addItem({
+				name : name,
+				click : function() {
+					_plugin(name).click(self);
+				}
+			});
+		});
+		toolbar.create(toolbarDiv);
+		self.toolbar = toolbar;
+		self.edit = edit;
+		return self;
+	}
+};
 
+var _editors = [];
+
+function _create(id, options) {
+	if (!options) {
+		options = {};
+	}
+	if (!options.srcElement) {
+		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
+	}
+	var editor = new KEditor(options).create();
+	_editors.push(editor);
+	return editor;
 }
 
 if (_IE && _VERSION < 7) {
@@ -2591,12 +2634,26 @@ if (_IE && _VERSION < 7) {
 	} catch (e) {}
 }
 
+_plugin('source', {
+	click : function(editor) {
+		editor.edit.toggle();
+	}
+});
+
+_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
+	_plugin(name, {
+		click : function(editor) {
+			editor.edit.cmd[name]();
+		}
+	});
+});
+
 K.create = _create;
 K.plugin = _plugin;
 
 var _K = K;
 K = function(id, options) {
-	_node(document).ready(function() {
+	_ready(function() {
 		_create(id, options);
 	});
 };

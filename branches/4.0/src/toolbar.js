@@ -16,11 +16,29 @@
 #using "node.js"
 */
 
+function _bindToolbarEvent(itemNode, item) {
+	itemNode.bind('mouseover', function(e) {
+		this.addClass('ke-toolbar-icon-outline-on');
+		e.stop();
+	});
+	itemNode.bind('mouseout', function(e) {
+		this.removeClass('ke-toolbar-icon-outline-on');
+		e.stop();
+	});
+	itemNode.bind('click', function(e) {
+		item.click.call(this);
+		e.stop();
+	});
+}
+
 function KToolbar(options) {
-	this.width = options.width || 0;
-	this.height = options.height || 0;
-	this.items = [];
-	this.itemNodes = [];
+	var self = this;
+	self.width = options.width || 0;
+	self.height = options.height || 0;
+	self.items = [];
+	self.itemNodes = [];
+	self.disableMode = options.disableMode === undefined ? false : options.disableMode;
+	self.noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems;
 }
 
 KToolbar.prototype = {
@@ -34,7 +52,7 @@ KToolbar.prototype = {
 		}
 		var div = _node(expr).addClass('ke-toolbar').css({ width : self.width }), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
-		div.bind('contextmenu,dbclick', function(e) {
+		div.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
 			e.stop();
 		});
 		_each(self.items, function(i, item) {
@@ -45,19 +63,9 @@ KToolbar.prototype = {
 			} else {
 				itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#"></a>');
 				itemNode.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
-				itemNode.bind('mouseover', function(e) {
-					this.addClass('ke-toolbar-icon-outline-on');
-					e.stop();
-				});
-				itemNode.bind('mouseout', function(e) {
-					this.removeClass('ke-toolbar-icon-outline-on');
-					e.stop();
-				});
-				itemNode.bind('click', function(e) {
-					item.click.call(this);
-					e.stop();
-				});
+				_bindToolbarEvent(itemNode, item);
 			}
+			itemNode.data('item', item);
 			self.itemNodes.push(itemNode);
 			inner.append(itemNode);
 		});
@@ -78,11 +86,36 @@ KToolbar.prototype = {
 		self.div = null;
 		return self;
 	},
-	disable : function() {
-	
-	},
-	enable : function() {
-	
+	disable : function(bool) {
+		var self = this, arr = self.noDisableItems, item;
+		//disable toolbar
+		if (bool === undefined ? !self.disableMode : bool) {
+			_each(self.itemNodes, function() {
+				item = this.data('item');
+				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
+					this.addClass('ke-toolbar-icon-outline-disabled');
+					this.opacity(0.5);
+					if (item.name !== '|') {
+						this.unbind();
+					}
+				}
+			});
+			self.disableMode = true;
+		//enable toolbar
+		} else {
+			_each(self.itemNodes, function() {
+				item = this.data('item');
+				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
+					this.removeClass('ke-toolbar-icon-outline-disabled');
+					this.opacity(1);
+					if (item.name !== '|') {
+						_bindToolbarEvent(this, item);
+					}
+				}
+			});
+			self.disableMode = false;
+		}
+		return self;
 	}
 };
 

@@ -82,6 +82,7 @@ function KNode(node) {
 	self.type = self.node.nodeType;
 	self.win = self.doc.parentWindow || self.doc.defaultView;
 	//private properties
+	self._data = {};
 	self._prevDisplay = '';
 }
 
@@ -114,45 +115,6 @@ KNode.prototype = {
 		var self = this;
 		_fire(self.node, type);
 		return self;
-	},
-	ready : function(fn) {
-		var self = this,
-			doc = self.node.ownerDocument || self.node,
-			win = doc.parentWindow || doc.defaultView,
-			loaded = false;
-		function readyFunc() {
-			if (!loaded) {
-				loaded = true;
-				fn.call(self);
-			}
-			_unbind(doc, 'DOMContentLoaded');
-			_unbind(doc, 'readystatechange');
-			_unbind(win, 'load');
-		}
-		function ieReadyFunc() {
-			if (!loaded) {
-				try {
-					doc.documentElement.doScroll('left');
-				} catch(e) {
-					win.setTimeout(ieReadyFunc, 0);
-					return;
-				}
-				readyFunc();
-			}
-		}
-		if (doc.addEventListener) {
-			_bind(doc, 'DOMContentLoaded', readyFunc);
-		} else if (doc.attachEvent) {
-			_bind(doc, 'readystatechange', function() {
-				if (doc.readyState === 'complete') {
-					readyFunc();
-				}
-			});
-			if (doc.documentElement.doScroll && win.frameElement === undefined) {
-				ieReadyFunc();
-			}
-		}
-		_bind(win, 'load', readyFunc);
 	},
 	hasAttr : function(key) {
 		return _getAttr(this.node, key);
@@ -255,6 +217,23 @@ KNode.prototype = {
 			val = node.currentStyle[camelKey] || node.style[camelKey];
 		}
 		return val;
+	},
+	opacity : function(val) {
+		var self = this, node = self.node;
+		if (node.style.opacity === undefined) {
+			node.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
+			return self;
+		}
+		node.style.opacity = val == 1 ? '' : val;
+		return self;
+	},
+	data : function(key, val) {
+		var self = this;
+		if (val === undefined) {
+			return self._data[key];
+		}
+		self._data[key] = val;
+		return self;
 	},
 	clone : function(bool) {
 		return new KNode(this.node.cloneNode(bool));

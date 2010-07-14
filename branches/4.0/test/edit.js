@@ -36,11 +36,11 @@ K.node('#remove').bind('click', function(e) {
 	edit.remove();
 });
 K.node('#design').bind('click', function(e) {
-	edit.toDesign();
+	edit.design(true);
 });
 K.node('#source').bind('click', function(e) {
-	edit.toSource();
+	edit.design(false);
 });
 K.node('#toggle').bind('click', function(e) {
-	edit.toggle();
+	edit.design();
 });

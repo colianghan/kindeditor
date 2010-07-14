@@ -170,7 +170,7 @@ KEdit.prototype = {
 		self.div = self.iframe = self.textarea = null;
 		return self;
 	},
-	toggle : function(bool) {
+	design : function(bool) {
 		var self = this,
 			iframe = self.iframe,
 			textarea = self.textarea;
@@ -193,12 +193,6 @@ KEdit.prototype = {
 			}
 		}
 		return self;
-	},
-	toDesign : function() {
-		return this.toggle(true);
-	},
-	toSource : function() {
-		return this.toggle(false);
 	},
 	focus : function() {
 		var self = this;
