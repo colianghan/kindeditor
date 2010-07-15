@@ -18,6 +18,7 @@
 
 function _widget(options) {
 	return {
+		name : options.name || '',
 		x : options.x || 0,
 		y : options.y || 0,
 		z : options.z || 0,
@@ -42,7 +43,7 @@ function _widget(options) {
 					left : self.x + 'px',
 					top : self.y + 'px',
 					'z-index' : self.z
-				})
+				});
 			}
 			if (expr === undefined) {
 				self.doc.body.appendChild(div.get());

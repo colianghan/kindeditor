@@ -21,7 +21,9 @@ function _menu(options) {
 		create = self.create,
 		remove = self.remove,
 		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
+	self.z = options.z || 19811212;
 	self.items = [];
+	self.itemNodes = [];
 	self.addItem = function(item) {
 		self.items.push(item);
 	};
@@ -79,7 +81,17 @@ function _menu(options) {
 			leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
 			rightDiv.html(this.title);
 			div.append(itemDiv);
+			self.itemNodes.push(itemDiv);
 		});
+		self.remove = function() {
+			_each(self.itemNodes, function() {
+				this.unbind();
+			});
+			self.itemNodes = [];
+			remove.call(self);
+			return self;
+		};
+		return self;
 	};
 	return self;
 }

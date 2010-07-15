@@ -153,6 +153,14 @@ KEditor.prototype = {
 			toolbar.addItem({
 				name : name,
 				click : function(e) {
+					if (self.menu) {
+						var menuName = self.menu.name;
+						self.menu.remove();
+						self.menu = null;
+						if (menuName === name) {
+							return;
+						}
+					}
 					_plugin(name).call(this, self);
 				}
 			});
@@ -167,11 +175,13 @@ KEditor.prototype = {
 			bodyClass : self.bodyClass,
 			cssData : self.cssData
 		}).create(container);
-		_node(edit.doc).bind('click', function(e) {
-			if (self.menu) {
-				self.menu.remove();
-				self.menu = null;
-			}
+		_each([edit.doc, document], function() {
+			_node(this).bind('click', function(e) {
+				if (self.menu) {
+					self.menu.remove();
+					self.menu = null;
+				}
+			});
 		});
 		//properties
 		self.container = container;
@@ -219,24 +229,14 @@ _plugin('source', function(editor) {
 	editor.edit.design();
 });
 
-_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
-	_plugin(name, function(editor) {
-		editor.edit.cmd[name]();
-	});
-});
-
 _plugin('fontname', function(editor) {
-	if (editor.menu) {
-		editor.menu.remove();
-		editor.menu = null;
-		return;
-	}
 	var pos = this.pos();
 	editor.menu = _menu({
+		name : 'fontname',
 		width : 150,
 		x : pos.x,
-		y : pos.y + this.height() + 5,
-		z : 19811212
+		y : pos.y + this.height(),
+		centerLineMode : false
 	});
 	_each(_pluginLang('fontname').fontName, function(key, val) {
 		editor.menu.addItem({
@@ -250,6 +250,55 @@ _plugin('fontname', function(editor) {
 		});
 	});
 	editor.menu.create();
+});
+
+_plugin('fontsize', function(editor) {
+	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
+		pos = this.pos();
+	editor.menu = _menu({
+		name : 'fontsize',
+		width : 150,
+		x : pos.x,
+		y : pos.y + this.height(),
+		centerLineMode : false
+	});
+	_each(fontSize, function(i, val) {
+		editor.menu.addItem({
+			title : '<span style="font-size:' + val + ';">' + val + '</span>',
+			height : _removeUnit(val) + 12,
+			click : function(e) {
+				editor.edit.cmd.fontsize(val);
+				editor.menu.remove();
+				editor.menu = null;
+				e.stop();
+			}
+		});
+	});
+	editor.menu.create();
+});
+
+_each('forecolor,hilitecolor'.split(','), function(i, name) {
+	_plugin(name, function(editor) {
+		var pos = this.pos();
+		editor.menu = _colorpicker({
+			name : name,
+			x : pos.x,
+			y : pos.y + this.height(),
+			selectedColor : 'default',
+			click : function(color) {
+				editor.edit.cmd[name](color);
+				editor.menu.remove();
+				editor.menu = null;
+			}
+		});
+		editor.menu.create();
+	});
+});
+
+_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
+	_plugin(name, function(editor) {
+		editor.edit.cmd[name]();
+	});
 });
 
 K.create = _create;

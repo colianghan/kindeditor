@@ -201,7 +201,9 @@ function _unbind(el, type, fn) {
 	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
-				_unbindEvent(el, key, val[0]);
+				if (val.length > 0) {
+					_unbindEvent(el, key, val[0]);
+				}
 			});
 			_data[id] = {};
 		}

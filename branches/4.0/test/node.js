@@ -81,6 +81,11 @@ test("node.css",function(){
 	equals(node.css('width'), '300px');
 });
 
+test("node.width/node.height",function(){
+	equals(K.node('#test-data-01').width(), 300);
+	ok(K.node('#test-data-01').height() > 120);
+});
+
 test("node.html",function(){
 	var node = K.node('<div>xxx</div>');
 	equals(node.html(), 'xxx');

@@ -37,6 +37,18 @@ K.each('image,flash,media,-,bold,cut,copy,paste,-,selectall'.split(','), functio
 	});
 });
 
+var colorpickerPos = K.node('#colorpicker').pos();
+
+var colorpicker = K.colorpicker({
+	x : colorpickerPos.x,
+	y : colorpickerPos.y + K.node('#colorpicker').height(),
+	z : 19811214,
+	selectedColor : 'default',
+	click : function(color) {
+		alert(color);
+	}
+});
+
 K.node('#menu').bind('click', function(e) {
 	if (menu.div) {
 		menu.remove();
@@ -53,3 +65,10 @@ K.node('#contextmenu').bind('click', function(e) {
 	}
 });
 
+K.node('#colorpicker').bind('click', function(e) {
+	if (colorpicker.div) {
+		colorpicker.remove();
+	} else {
+		colorpicker.create();
+	}
+});

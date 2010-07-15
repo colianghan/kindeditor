@@ -165,14 +165,14 @@ KNode.prototype = {
 	width : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return parseInt(self.css('width') || self.attr('width') || self.node.offsetWidth, 10);
+			return self.node.offsetWidth;
 		}
 		return self.css('width', _addUnit(val));
 	},
 	height : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return parseInt(self.css('height') || self.attr('height') || self.node.offsetHeight, 10);
+			return self.node.offsetHeight;
 		}
 		return self.css('height', _addUnit(val));
 	},

@@ -182,12 +182,12 @@ function _inString(val, str, delimiter) {
 /**
 	@name KindEditor.addUnit
 	@function
-	@param {String} val 长度
+	@param {String|Int} val 长度
 	@returns {String} 带单位的完整长度
 	@description
-	将一个数字后面加px，如果已经有单位则不做处理。
+	一个数字后面加px，如果已经有单位则返回原值。
 	@example
-	var color = K.addUnit(100); //返回"100px"
+	var width = K.addUnit(100); //返回"100px"
 */
 function _addUnit(val) {
 	return val && /^\d+$/.test(val) ? val + 'px' : val;
@@ -197,14 +197,15 @@ function _addUnit(val) {
 	@name KindEditor.removeUnit
 	@function
 	@param {String} val 长度
-	@returns {String} 带单位的完整长度
+	@returns {Int} 带单位的完整长度
 	@description
-	将一个数字后面加px，如果已经有单位则不做处理。
+	从一个字符串中提取数字，如果没有数字则返回0。
 	@example
-	var color = K.removeUnit('100px'); //返回"100"
+	var width = K.removeUnit('100px'); //返回100
 */
 function _removeUnit(val) {
-	return val && /^\d+$/.test(val) ? val + 'px' : val;
+	var match;
+	return val && (match = /(\d+)/.exec(val)) ? parseInt(match[1], 10) : 0;
 }
 
 /**

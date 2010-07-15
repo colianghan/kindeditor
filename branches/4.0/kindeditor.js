@@ -62,6 +62,11 @@ function _addUnit(val) {
 	return val && /^\d+$/.test(val) ? val + 'px' : val;
 }
 
+function _removeUnit(val) {
+	var match;
+	return val && (match = /(\d+)/.exec(val)) ? parseInt(match[1], 10) : 0;
+}
+
 function _toHex(color) {
 	function hex(d) {
 		var s = parseInt(d, 10).toString(16).toUpperCase();
@@ -265,7 +270,9 @@ function _unbind(el, type, fn) {
 	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
-				_unbindEvent(el, key, val[0]);
+				if (val.length > 0) {
+					_unbindEvent(el, key, val[0]);
+				}
 			});
 			_data[id] = {};
 		}
@@ -673,6 +680,19 @@ function _setHtml(el, html) {
 	el.innerHTML = '' + html;
 }
 
+function _getScrollPos() {
+	var x, y;
+	if (_IE || _OPERA) {
+		var docEl = document.documentElement;
+		x = docEl.scrollLeft;
+		y = docEl.scrollTop;
+	} else {
+		x = window.scrollX;
+		y = window.scrollY;
+	}
+	return {x : x, y : y};
+}
+
 function KNode(node) {
 	var self = this;
 	self.node = node;
@@ -741,6 +761,20 @@ KNode.prototype = {
 		self.attr(key, '');
 		self.node.removeAttribute(key);
 		return self;
+	},
+	width : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return self.node.offsetWidth;
+		}
+		return self.css('width', _addUnit(val));
+	},
+	height : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return self.node.offsetHeight;
+		}
+		return self.css('height', _addUnit(val));
 	},
 	get : function() {
 		return this.node;
@@ -827,6 +861,22 @@ KNode.prototype = {
 		}
 		self._data[key] = val;
 		return self;
+	},
+	pos : function() {
+		var self = this, node = self.node, x = 0, y = 0;
+		if (node.getBoundingClientRect) {
+			var box = node.getBoundingClientRect(),
+				pos = _getScrollPos();
+			x = box.left + pos.x;
+			y = box.top + pos.y;
+		} else {
+			while (node) {
+				x += node.offsetLeft;
+				y += node.offsetTop;
+				node = node.offsetParent;
+			}
+		}
+		return {x : x, y : y};
 	},
 	clone : function(bool) {
 		return new KNode(this.node.cloneNode(bool));
@@ -2233,6 +2283,57 @@ function _cmd(mixed) {
 
 K.cmd = _cmd;
 
+function _widget(options) {
+	return {
+		name : options.name || '',
+		x : options.x || 0,
+		y : options.y || 0,
+		z : options.z || 0,
+		width : _addUnit(options.width) || 0,
+		height : _addUnit(options.height) || 0,
+		doc : options.doc || document,
+		create : function(expr) {
+			var self = this;
+			if (self.div) {
+				return self;
+			}
+			var div = _node('<div></div>').css('display', 'block');
+			if (self.width) {
+				div.css('width', self.width);
+			}
+			if (self.height) {
+				div.css('height', self.height);
+			}
+			if (self.z) {
+				div.css({
+					position : 'absolute',
+					left : self.x + 'px',
+					top : self.y + 'px',
+					'z-index' : self.z
+				});
+			}
+			if (expr === undefined) {
+				self.doc.body.appendChild(div.get());
+			} else {
+				_node(expr, self.doc).append(div);
+			}
+			self.div = div;
+			return self;
+		},
+		remove : function() {
+			var self = this;
+			if (!self.div) {
+				return self;
+			}
+			self.div.remove();
+			self.div = null;
+			return self;
+		}
+	};
+}
+
+K.widget = _widget;
+
 function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
@@ -2311,7 +2412,7 @@ KEdit.prototype = {
 			return self;
 		}
 
-		var div = _node(expr).addClass('ke-edit'),
+		var div = _node('<div></div>').addClass('ke-edit'),
 		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
 		textarea = _node('<textarea class="ke-edit-textarea"></textarea>'),
 		srcElement = self.srcElement,
@@ -2330,6 +2431,7 @@ KEdit.prototype = {
 		}
 		div.append(iframe);
 		div.append(textarea);
+		_node(expr).append(div);
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
 		doc.designMode = 'on';
@@ -2367,11 +2469,7 @@ KEdit.prototype = {
 		srcElement.show();
 		iframe.remove();
 		textarea.remove();
-		div.removeClass('ke-edit').css({
-			display : '',
-			width : '',
-			height : ''
-		});
+		div.remove();
 		self.div = self.iframe = self.textarea = null;
 		return self;
 	},
@@ -2430,7 +2528,7 @@ function _bindToolbarEvent(itemNode, item) {
 		e.stop();
 	});
 	itemNode.bind('click', function(e) {
-		item.click.call(this);
+		item.click.call(this, e);
 		e.stop();
 	});
 }
@@ -2525,7 +2623,9 @@ function _menu(options) {
 		create = self.create,
 		remove = self.remove,
 		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
+	self.z = options.z || 19811212;
 	self.items = [];
+	self.itemNodes = [];
 	self.addItem = function(item) {
 		self.items.push(item);
 	};
@@ -2583,12 +2683,96 @@ function _menu(options) {
 			leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
 			rightDiv.html(this.title);
 			div.append(itemDiv);
+			self.itemNodes.push(itemDiv);
 		});
+		self.remove = function() {
+			_each(self.itemNodes, function() {
+				this.unbind();
+			});
+			self.itemNodes = [];
+			remove.call(self);
+			return self;
+		};
+		return self;
 	};
 	return self;
 }
 
 K.menu = _menu;
+
+function _colorpicker(options) {
+	var self = _widget(options),
+		colors = options.colors || [
+			['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
+			['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
+			['#337FE5', '#003399', '#4C33E5', '#9933E5', '#CC33E5', '#EE33EE'],
+			['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#333333', '#000000']
+		],
+		selectedColor = (options.selectedColor || '').toLowerCase(),
+		create = self.create,
+		remove = self.remove;
+	self.z = options.z || 19811212;
+	self.cells = [];
+	self.create = function() {
+		if (self.div) {
+			return self;
+		}
+		create.call(self);
+		var div = self.div;
+		div.addClass('ke-colorpicker');
+		function addAttr(cell, color, cls) {
+			cell = _node(cell).addClass(cls);
+			if (selectedColor === color.toLowerCase()) {
+				cell.addClass('ke-colorpicker-cell-selected');
+			}
+			cell.attr('title', color || _lang('noColor'));
+			cell.bind('mouseover', function(e) {
+				this.addClass('ke-colorpicker-cell-on');
+			});
+			cell.bind('mouseout', function(e) {
+				this.removeClass('ke-colorpicker-cell-on');
+			});
+			cell.bind('click', function(e) {
+				options.click.call(this, color);
+				e.stop();
+			});
+			if (color) {
+				cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
+			} else {
+				cell.html(_lang('noColor'));
+			}
+			self.cells.push(cell);
+		}
+		var table = self.doc.createElement('table');
+		table.className = 'ke-colorpicker-table';
+		table.cellPadding = 0;
+		table.cellSpacing = 0;
+		table.border = 0;
+		var row = table.insertRow(0), cell = row.insertCell(0);
+		cell.colSpan = colors[0].length;
+		addAttr(cell, '', 'ke-colorpicker-cell-top');
+		for (var i = 0; i < colors.length; i++) {
+			row = table.insertRow(i + 1);
+			for (var j = 0; j < colors[i].length; j++) {
+				cell = row.insertCell(j);
+				addAttr(cell, colors[i][j], 'ke-colorpicker-cell');
+			}
+		}
+		div.append(table);
+		return self;
+	};
+	self.remove = function() {
+		_each(self.cells, function() {
+			this.unbind();
+		});
+		self.cells = [];
+		remove.call(self);
+		return self;
+	};
+	return self;
+}
+
+K.colorpicker = _colorpicker;
 
 var _plugins = {};
 
@@ -2698,10 +2882,10 @@ function KEditor(options) {
 	});
 	var se = _node(self.srcElement);
 	if (!self.width) {
-		self.width = se.css('width') || (se.offsetWidth || self.minWidth);
+		self.width = se.width() || self.minWidth;
 	}
 	if (!self.height) {
-		self.height = se.css('height') || (se.offsetHeight || self.minHeight);
+		self.height = se.height() || self.minHeight;
 	}
 	self.width = _addUnit(self.width);
 	self.height = _addUnit(self.height);
@@ -2711,38 +2895,53 @@ function KEditor(options) {
 KEditor.prototype = {
 	create : function() {
 		var self = this,
-			containerDiv = _node('<div></div>').css('width', self.width),
-			toolbarDiv = _node('<div></div>'),
-			editDiv = _node('<div></div>'),
-			statusbarDiv = _node('<div></div>');
-		containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
+			container = _node('<div></div>').css('width', self.width);
 		if (self.fullscreenMode) {
-			_node(document.body).append(containerDiv);
+			_node(document.body).append(container);
 		} else {
-			self.srcElement.before(containerDiv);
+			self.srcElement.before(container);
 		}
+
 		var toolbar = _toolbar({
 				width : '100%',
 				noDisableItems : 'source,fullscreen'.split(',')
-			}),
-			edit = _edit({
-				srcElement : self.srcElement,
-				width : '100%',
-				height : self.height,
-				designMode : self.designMode,
-				bodyClass : self.bodyClass,
-				cssData : self.cssData
-			}).create(editDiv);
+			});
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
 				name : name,
-				click : function() {
-					_plugin(name)(self);
+				click : function(e) {
+					if (self.menu) {
+						var menuName = self.menu.name;
+						self.menu.remove();
+						self.menu = null;
+						if (menuName === name) {
+							return;
+						}
+					}
+					_plugin(name).call(this, self);
 				}
 			});
 		});
-		toolbar.create(toolbarDiv);
-		self.containerDiv = containerDiv;
+		toolbar.create(container);
+
+		var edit = _edit({
+			srcElement : self.srcElement,
+			width : '100%',
+			height : self.height,
+			designMode : self.designMode,
+			bodyClass : self.bodyClass,
+			cssData : self.cssData
+		}).create(container);
+		_each([edit.doc, document], function() {
+			_node(this).bind('click', function(e) {
+				if (self.menu) {
+					self.menu.remove();
+					self.menu = null;
+				}
+			});
+		});
+
+		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
 		return self;
@@ -2751,8 +2950,8 @@ KEditor.prototype = {
 		var self = this;
 		self.toolbar.remove();
 		self.edit.remove();
-		self.containerDiv.remove();
-		self.containerDiv = self.toolbar = self.edit = null;
+		self.container.remove();
+		self.container = self.toolbar = self.edit = null;
 	}
 };
 
@@ -2785,30 +2984,76 @@ _plugin('source', function(editor) {
 	editor.edit.design();
 });
 
-_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
-	_plugin(name, function(editor) {
-		editor.edit.cmd[name]();
-	});
-});
-
 _plugin('fontname', function(editor) {
-	var menu = _menu({
+	var pos = this.pos();
+	editor.menu = _menu({
+		name : 'fontname',
 		width : 150,
-		x : 100,
-		y : 100,
-		z : 19811212
+		x : pos.x,
+		y : pos.y + this.height(),
+		centerLineMode : false
 	});
 	_each(_pluginLang('fontname').fontName, function(key, val) {
-		menu.addItem({
+		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			click : function(e) {
 				editor.edit.cmd.fontname(val);
-				menu.remove();
+				editor.menu.remove();
+				editor.menu = null;
 				e.stop();
 			}
 		});
 	});
-	menu.create();
+	editor.menu.create();
+});
+
+_plugin('fontsize', function(editor) {
+	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
+		pos = this.pos();
+	editor.menu = _menu({
+		name : 'fontsize',
+		width : 150,
+		x : pos.x,
+		y : pos.y + this.height(),
+		centerLineMode : false
+	});
+	_each(fontSize, function(i, val) {
+		editor.menu.addItem({
+			title : '<span style="font-size:' + val + ';">' + val + '</span>',
+			height : _removeUnit(val) + 12,
+			click : function(e) {
+				editor.edit.cmd.fontsize(val);
+				editor.menu.remove();
+				editor.menu = null;
+				e.stop();
+			}
+		});
+	});
+	editor.menu.create();
+});
+
+_each('forecolor,hilitecolor'.split(','), function(i, name) {
+	_plugin(name, function(editor) {
+		var pos = this.pos();
+		editor.menu = _colorpicker({
+			name : name,
+			x : pos.x,
+			y : pos.y + this.height(),
+			selectedColor : 'default',
+			click : function(color) {
+				editor.edit.cmd[name](color);
+				editor.menu.remove();
+				editor.menu = null;
+			}
+		});
+		editor.menu.create();
+	});
+});
+
+_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
+	_plugin(name, function(editor) {
+		editor.edit.cmd[name]();
+	});
 });
 
 K.create = _create;
@@ -2829,7 +3074,7 @@ if (window.K === undefined) {
 }
 window.KindEditor = K;
 
-_language['zh_CN'] = {
+_language.zh_CN = {
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',
 	redo : '前进(Ctrl+Y)',

@@ -5,7 +5,7 @@
  * Released under LGPL License.
  */
 
-_language['zh_CN'] = {
+_language.zh_CN = {
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',
 	redo : '前进(Ctrl+Y)',
