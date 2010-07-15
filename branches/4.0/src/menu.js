@@ -80,7 +80,7 @@ function _menu(options) {
 			rightDiv.html(this.title);
 			div.append(itemDiv);
 		});
-	}
+	};
 	return self;
 }
 

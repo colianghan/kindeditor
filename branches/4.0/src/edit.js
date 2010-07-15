@@ -106,7 +106,7 @@ KEdit.prototype = {
 			return self;
 		}
 		//create elements
-		var div = _node(expr).addClass('ke-edit'),
+		var div = _node('<div></div>').addClass('ke-edit'),
 		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
 		textarea = _node('<textarea class="ke-edit-textarea"></textarea>'),
 		srcElement = self.srcElement,
@@ -125,6 +125,7 @@ KEdit.prototype = {
 		}
 		div.append(iframe);
 		div.append(textarea);
+		_node(expr).append(div);
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
 		doc.designMode = 'on';
@@ -162,11 +163,7 @@ KEdit.prototype = {
 		srcElement.show();
 		iframe.remove();
 		textarea.remove();
-		div.removeClass('ke-edit').css({
-			display : '',
-			width : '',
-			height : ''
-		});
+		div.remove();
 		self.div = self.iframe = self.textarea = null;
 		return self;
 	},

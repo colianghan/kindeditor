@@ -26,31 +26,28 @@ function _bindToolbarEvent(itemNode, item) {
 		e.stop();
 	});
 	itemNode.bind('click', function(e) {
-		item.click.call(this);
+		item.click.call(this, e);
 		e.stop();
 	});
 }
 
-function KToolbar(options) {
-	var self = this;
-	self.width = _addUnit(options.width) || 0;
-	self.height = _addUnit(options.height) || 0;
+function _toolbar(options) {
+	var self = _widget(options),
+		create = self.create,
+		remove = self.remove;
 	self.items = [];
 	self.itemNodes = [];
 	self.disableMode = options.disableMode === undefined ? false : options.disableMode;
 	self.noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems;
-}
-
-KToolbar.prototype = {
-	addItem : function(item) {
-		this.items.push(item);
-	},
-	create : function(expr) {
-		var self = this;
+	self.addItem = function(item) {
+		self.items.push(item);
+	};
+	self.create = function(expr) {
 		if (self.div) {
 			return self;
 		}
-		var div = _node(expr).addClass('ke-toolbar').css('width', self.width), itemNode,
+		create.call(self, expr);
+		var div = self.div.addClass('ke-toolbar').css('width', self.width), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
 		div.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
 			e.stop();
@@ -71,9 +68,8 @@ KToolbar.prototype = {
 		});
 		self.div = div.append(inner);
 		return self;
-	},
-	remove : function() {
-		var self = this;
+	};
+	self.remove = function() {
 		if (!self.div) {
 			return self;
 		}
@@ -81,13 +77,11 @@ KToolbar.prototype = {
 			this.remove();
 		});
 		self.itemNodes = [];
-		self.div.removeClass('ke-toolbar').css('width', '').unbind();
-		self.div.html('');
-		self.div = null;
+		remove.call(self);
 		return self;
-	},
-	disable : function(bool) {
-		var self = this, arr = self.noDisableItems, item;
+	};
+	self.disable = function(bool) {
+		var arr = self.noDisableItems, item;
 		//disable toolbar
 		if (bool === undefined ? !self.disableMode : bool) {
 			_each(self.itemNodes, function() {
@@ -116,11 +110,8 @@ KToolbar.prototype = {
 			self.disableMode = false;
 		}
 		return self;
-	}
-};
-
-function _toolbar(options) {
-	return new KToolbar(options);
+	};
+	return self;
 }
 
 K.toolbar = _toolbar;

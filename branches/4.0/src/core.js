@@ -194,6 +194,20 @@ function _addUnit(val) {
 }
 
 /**
+	@name KindEditor.removeUnit
+	@function
+	@param {String} val 长度
+	@returns {String} 带单位的完整长度
+	@description
+	将一个数字后面加px，如果已经有单位则不做处理。
+	@example
+	var color = K.removeUnit('100px'); //返回"100"
+*/
+function _removeUnit(val) {
+	return val && /^\d+$/.test(val) ? val + 'px' : val;
+}
+
+/**
 	@name KindEditor.toHex
 	@function
 	@param {String} color RGB颜色

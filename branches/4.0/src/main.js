@@ -26,11 +26,11 @@ function _plugin(name, obj) {
 	_plugins[name] = obj;
 }
 
-var _languege = {};
+var _language = {};
 
 function _lang(key, langType) {
 	langType = langType === undefined ? _LANG_TYPE : langType;
-	return _language[key];
+	return _language[langType][key];
 }
 
 function _pluginLang(key, langType) {
@@ -125,10 +125,10 @@ function KEditor(options) {
 	});
 	var se = _node(self.srcElement);
 	if (!self.width) {
-		self.width = se.css('width') || (se.offsetWidth || self.minWidth);
+		self.width = se.width() || self.minWidth;
 	}
 	if (!self.height) {
-		self.height = se.css('height') || (se.offsetHeight || self.minHeight);
+		self.height = se.height() || self.minHeight;
 	}
 	self.width = _addUnit(self.width);
 	self.height = _addUnit(self.height);
@@ -138,38 +138,43 @@ function KEditor(options) {
 KEditor.prototype = {
 	create : function() {
 		var self = this,
-			containerDiv = _node('<div></div>').css('width', self.width),
-			toolbarDiv = _node('<div></div>'),
-			editDiv = _node('<div></div>'),
-			statusbarDiv = _node('<div></div>');
-		containerDiv.append(toolbarDiv).append(editDiv).append(statusbarDiv);
+			container = _node('<div></div>').css('width', self.width);
 		if (self.fullscreenMode) {
-			_node(document.body).append(containerDiv);
+			_node(document.body).append(container);
 		} else {
-			self.srcElement.before(containerDiv);
+			self.srcElement.before(container);
 		}
+		//create toolbar
 		var toolbar = _toolbar({
 				width : '100%',
 				noDisableItems : 'source,fullscreen'.split(',')
-			}),
-			edit = _edit({
-				srcElement : self.srcElement,
-				width : '100%',
-				height : self.height,
-				designMode : self.designMode,
-				bodyClass : self.bodyClass,
-				cssData : self.cssData
-			}).create(editDiv);
+			});
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
 				name : name,
-				click : function() {
-					_plugin(name)(self);
+				click : function(e) {
+					_plugin(name).call(this, self);
 				}
 			});
 		});
-		toolbar.create(toolbarDiv);
-		self.containerDiv = containerDiv;
+		toolbar.create(container);
+		//create edit
+		var edit = _edit({
+			srcElement : self.srcElement,
+			width : '100%',
+			height : self.height,
+			designMode : self.designMode,
+			bodyClass : self.bodyClass,
+			cssData : self.cssData
+		}).create(container);
+		_node(edit.doc).bind('click', function(e) {
+			if (self.menu) {
+				self.menu.remove();
+				self.menu = null;
+			}
+		});
+		//properties
+		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
 		return self;
@@ -178,8 +183,8 @@ KEditor.prototype = {
 		var self = this;
 		self.toolbar.remove();
 		self.edit.remove();
-		self.containerDiv.remove();
-		self.containerDiv = self.toolbar = self.edit = null;
+		self.container.remove();
+		self.container = self.toolbar = self.edit = null;
 	}
 };
 
@@ -221,20 +226,30 @@ _each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i,
 });
 
 _plugin('fontname', function(editor) {
-	var menu = _menu({
-		width : 150
+	if (editor.menu) {
+		editor.menu.remove();
+		editor.menu = null;
+		return;
+	}
+	var pos = this.pos();
+	editor.menu = _menu({
+		width : 150,
+		x : pos.x,
+		y : pos.y + this.height() + 5,
+		z : 19811212
 	});
-	_each(_pluginLang('fontname'), function(key, val) {
-		menu.addItem({
+	_each(_pluginLang('fontname').fontName, function(key, val) {
+		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			click : function(e) {
 				editor.edit.cmd.fontname(val);
-				menu.remove();
+				editor.menu.remove();
+				editor.menu = null;
 				e.stop();
 			}
 		});
 	});
-	menu.create();
+	editor.menu.create();
 });
 
 K.create = _create;

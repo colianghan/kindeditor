@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-14)
+* @version 4.0 (2010-07-15)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -58,6 +58,10 @@ function _inString(val, str, delimiter) {
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
 
+function _addUnit(val) {
+	return val && /^\d+$/.test(val) ? val + 'px' : val;
+}
+
 function _toHex(color) {
 	function hex(d) {
 		var s = parseInt(d, 10).toString(16).toUpperCase();
@@ -90,7 +94,8 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
-	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
+	_VALUE_TAG_MAP = _toMap('input,button,textarea,select'),
+	_LANG_TYPE = 'zh_CN';
 
 var K = {
 	IE : _IE,
@@ -103,6 +108,7 @@ var K = {
 	inArray : _inArray,
 	inString : _inString,
 	trim : _trim,
+	addUnit : _addUnit,
 	toHex : _toHex,
 	toMap : _toMap
 };
@@ -1764,7 +1770,9 @@ KCmd.prototype = {
 			return self;
 		}
 
+		console.log(range);
 		rng = range.get();
+		console.log(rng);
 		if (_IE) {
 			rng.select();
 		} else {
@@ -2278,8 +2286,8 @@ function _elementVal(knode, val) {
 function KEdit(options) {
 	var self = this;
 	self.srcElement = _node(options.srcElement);
-	self.width = options.width || 0;
-	self.height = options.height || 0;
+	self.width = _addUnit(options.width) || 0;
+	self.height = _addUnit(options.height) || 0;
 	self.designMode = options.designMode === undefined ? true : options.designMode;
 	self.bodyClass = options.bodyClass;
 	self.cssData = options.cssData;
@@ -2389,12 +2397,18 @@ KEdit.prototype = {
 				self.designMode = false;
 			}
 		}
+		self.focus();
 		return self;
 	},
 	focus : function() {
-		var self = this;
-		if (self.iframe && self.designMode) {
-			self.iframe.contentWindow.focus();
+		var self = this, iframe = self.iframe;
+		if (!iframe) {
+			return self;
+		}
+		if (self.designMode) {
+			iframe.get().contentWindow.focus();
+		} else {
+			self.textarea.get().focus();
 		}
 		return self;
 	}
@@ -2421,26 +2435,23 @@ function _bindToolbarEvent(itemNode, item) {
 	});
 }
 
-function KToolbar(options) {
-	var self = this;
-	self.width = options.width || 0;
-	self.height = options.height || 0;
+function _toolbar(options) {
+	var self = _widget(options),
+		create = self.create,
+		remove = self.remove;
 	self.items = [];
 	self.itemNodes = [];
 	self.disableMode = options.disableMode === undefined ? false : options.disableMode;
 	self.noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems;
-}
-
-KToolbar.prototype = {
-	addItem : function(item) {
-		this.items.push(item);
-	},
-	create : function(expr) {
-		var self = this;
+	self.addItem = function(item) {
+		self.items.push(item);
+	};
+	self.create = function(expr) {
 		if (self.div) {
 			return self;
 		}
-		var div = _node(expr).addClass('ke-toolbar').css('width', self.width), itemNode,
+		create.call(self, expr);
+		var div = self.div.addClass('ke-toolbar').css('width', self.width), itemNode,
 			inner = _node('<div class="ke-toolbar-inner"></div>');
 		div.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
 			e.stop();
@@ -2461,9 +2472,8 @@ KToolbar.prototype = {
 		});
 		self.div = div.append(inner);
 		return self;
-	},
-	remove : function() {
-		var self = this;
+	};
+	self.remove = function() {
 		if (!self.div) {
 			return self;
 		}
@@ -2471,13 +2481,11 @@ KToolbar.prototype = {
 			this.remove();
 		});
 		self.itemNodes = [];
-		self.div.removeClass('ke-toolbar').css('width', '').unbind();
-		self.div.html('');
-		self.div = null;
+		remove.call(self);
 		return self;
-	},
-	disable : function(bool) {
-		var self = this, arr = self.noDisableItems, item;
+	};
+	self.disable = function(bool) {
+		var arr = self.noDisableItems, item;
 
 		if (bool === undefined ? !self.disableMode : bool) {
 			_each(self.itemNodes, function() {
@@ -2506,14 +2514,81 @@ KToolbar.prototype = {
 			self.disableMode = false;
 		}
 		return self;
-	}
-};
-
-function _toolbar(options) {
-	return new KToolbar(options);
+	};
+	return self;
 }
 
 K.toolbar = _toolbar;
+
+function _menu(options) {
+	var self = _widget(options),
+		create = self.create,
+		remove = self.remove,
+		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
+	self.items = [];
+	self.addItem = function(item) {
+		self.items.push(item);
+	};
+	self.create = function() {
+		if (self.div) {
+			return self;
+		}
+		create.call(self);
+		var div = self.div;
+		div.addClass('ke-menu');
+		_each(self.items, function() {
+			if (this.title === '-') {
+				div.append(_node('<div class="ke-menu-separator"></div>'));
+				return;
+			}
+			var itemDiv = _node('<div></div>').addClass('ke-menu-item'),
+				leftDiv = _node('<div></div>').addClass('ke-menu-item-left'),
+				rightDiv = _node('<div></div>').addClass('ke-menu-item-right'),
+				height = _addUnit(this.height),
+				iconClass = this.iconClass;
+			if (height) {
+				itemDiv.css('height', height);
+				rightDiv.css('line-height', height);
+			}
+			var centerDiv;
+			if (centerLineMode) {
+				centerDiv = _node('<div></div>').addClass('ke-menu-item-center');
+				if (height) {
+					centerDiv.css('height', height);
+				}
+			}
+			itemDiv.bind('mouseover', function(e) {
+				this.addClass('ke-menu-item-on');
+				if (centerDiv) {
+					centerDiv.addClass('ke-menu-item-center-on');
+				}
+				e.stop();
+			});
+			itemDiv.bind('mouseout', function(e) {
+				this.removeClass('ke-menu-item-on');
+				if (centerDiv) {
+					centerDiv.removeClass('ke-menu-item-center-on');
+				}
+				e.stop();
+			});
+			itemDiv.bind('click', this.click);
+			itemDiv.append(leftDiv);
+			if (centerDiv) {
+				itemDiv.append(centerDiv);
+			}
+			itemDiv.append(rightDiv);
+			if (this.checked) {
+				iconClass = 'ke-icon-checked';
+			}
+			leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
+			rightDiv.html(this.title);
+			div.append(itemDiv);
+		});
+	};
+	return self;
+}
+
+K.menu = _menu;
 
 var _plugins = {};
 
@@ -2522,6 +2597,17 @@ function _plugin(name, obj) {
 		return _plugins[name];
 	}
 	_plugins[name] = obj;
+}
+
+var _language = {};
+
+function _lang(key, langType) {
+	langType = langType === undefined ? _LANG_TYPE : langType;
+	return _language[langType][key];
+}
+
+function _pluginLang(key, langType) {
+	return _lang('plugins', langType)[key];
 }
 
 var _scriptPath = (function() {
@@ -2612,11 +2698,13 @@ function KEditor(options) {
 	});
 	var se = _node(self.srcElement);
 	if (!self.width) {
-		self.width = se.css('width') || (se.offsetWidth || self.minWidth) + 'px';
+		self.width = se.css('width') || (se.offsetWidth || self.minWidth);
 	}
 	if (!self.height) {
-		self.height = se.css('height') || (se.offsetHeight || self.minHeight) + 'px';
+		self.height = se.css('height') || (se.offsetHeight || self.minHeight);
 	}
+	self.width = _addUnit(self.width);
+	self.height = _addUnit(self.height);
 	self.srcElement = se;
 }
 
@@ -2649,7 +2737,7 @@ KEditor.prototype = {
 			toolbar.addItem({
 				name : name,
 				click : function() {
-					_plugin(name).click(self);
+					_plugin(name)(self);
 				}
 			});
 		});
@@ -2692,19 +2780,35 @@ if (_IE && _VERSION < 7) {
 	} catch (e) {}
 }
 
-_plugin('source', {
-	click : function(editor) {
-		editor.toolbar.disable();
-		editor.edit.design();
-	}
+_plugin('source', function(editor) {
+	editor.toolbar.disable();
+	editor.edit.design();
 });
 
 _each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
-	_plugin(name, {
-		click : function(editor) {
-			editor.edit.cmd[name]();
-		}
+	_plugin(name, function(editor) {
+		editor.edit.cmd[name]();
 	});
+});
+
+_plugin('fontname', function(editor) {
+	var menu = _menu({
+		width : 150,
+		x : 100,
+		y : 100,
+		z : 19811212
+	});
+	_each(_pluginLang('fontname').fontName, function(key, val) {
+		menu.addItem({
+			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
+			click : function(e) {
+				editor.edit.cmd.fontname(val);
+				menu.remove();
+				e.stop();
+			}
+		});
+	});
+	menu.create();
 });
 
 K.create = _create;
@@ -2724,5 +2828,185 @@ if (window.K === undefined) {
 	window.K = K;
 }
 window.KindEditor = K;
+
+_language['zh_CN'] = {
+	source : 'HTML代码',
+	undo : '后退(Ctrl+Z)',
+	redo : '前进(Ctrl+Y)',
+	cut : '剪切(Ctrl+X)',
+	copy : '复制(Ctrl+C)',
+	paste : '粘贴(Ctrl+V)',
+	plainpaste : '粘贴为无格式文本',
+	wordpaste : '从Word粘贴',
+	selectall : '全选',
+	justifyleft : '左对齐',
+	justifycenter : '居中',
+	justifyright : '右对齐',
+	justifyfull : '两端对齐',
+	insertorderedlist : '编号',
+	insertunorderedlist : '项目符号',
+	indent : '增加缩进',
+	outdent : '减少缩进',
+	subscript : '下标',
+	superscript : '上标',
+	title : '标题',
+	fontname : '字体',
+	fontsize : '文字大小',
+	textcolor : '文字颜色',
+	bgcolor : '文字背景',
+	bold : '粗体(Ctrl+B)',
+	italic : '斜体(Ctrl+I)',
+	underline : '下划线(Ctrl+U)',
+	strikethrough : '删除线',
+	removeformat : '删除格式',
+	image : '图片',
+	flash : '插入Flash',
+	media : '插入多媒体',
+	table : '插入表格',
+	hr : '插入横线',
+	emoticons : '插入表情',
+	link : '超级链接',
+	unlink : '取消超级链接',
+	fullscreen : '全屏显示',
+	about : '关于',
+	print : '打印',
+	fileManager : '浏览服务器',
+	advtable : '表格',
+	yes : '确定',
+	no : '取消',
+	close : '关闭',
+	editImage : '图片属性',
+	deleteImage : '删除图片',
+	editLink : '超级链接属性',
+	deleteLink : '取消超级链接',
+	tableprop : '表格属性',
+	tableinsert : '插入表格',
+	tabledelete : '删除表格',
+	tablecolinsertleft : '左侧插入列',
+	tablecolinsertright : '右侧插入列',
+	tablerowinsertabove : '上方插入行',
+	tablerowinsertbelow : '下方插入行',
+	tablecoldelete : '删除列',
+	tablerowdelete : '删除行',
+	noColor : '无颜色',
+	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
+	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
+	invalidWidth : "宽度必须为数字。",
+	invalidHeight : "高度必须为数字。",
+	invalidBorder : "边框必须为数字。",
+	invalidUrl : "请输入有效的URL地址。",
+	invalidRows : '行数为必选项，只允许输入大于0的数字。',
+	invalidCols : '列数为必选项，只允许输入大于0的数字。',
+	invalidPadding : '边距必须为数字。',
+	invalidSpacing : '间距必须为数字。',
+	invalidBorder : '边框必须为数字。',
+	invalidJson : '服务器发生故障。',
+	cutError : '您的浏览器安全设置不允许使用剪切操作，请使用快捷键(Ctrl+X)来完成。',
+	copyError : '您的浏览器安全设置不允许使用复制操作，请使用快捷键(Ctrl+C)来完成。',
+	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
+	plugins : {
+		about : {
+			version : '4.0 (2010-07-15)',
+			title : 'HTML可视化编辑器'
+		},
+		plainpaste : {
+			comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
+		},
+		wordpaste : {
+			comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
+		},
+		link : {
+			url : 'URL地址',
+			linkType : '打开类型',
+			newWindow : '新窗口',
+			selfWindow : '当前窗口'
+		},
+		flash : {
+			url : 'Flash地址',
+			width : '宽度',
+			height : '高度'
+		},
+		media : {
+			url : '媒体文件地址',
+			width : '宽度',
+			height : '高度',
+			autostart : '自动播放'
+		},
+		image : {
+			remoteImage : '远程图片',
+			localImage : '本地上传',
+			remoteUrl : '图片地址',
+			localUrl : '图片地址',
+			size : '图片大小',
+			width : '宽',
+			height : '高',
+			resetSize : '重置大小',
+			align : '对齐方式',
+			defaultAlign : '默认方式',
+			leftAlign : '左对齐',
+			rightAlign : '右对齐',
+			imgTitle : '图片说明',
+			viewServer : '浏览...'
+		},
+		filemanager : {
+			emptyFolder : '空文件夹',
+			moveup : '移到上一级文件夹',
+			viewType : '显示方式：',
+			viewImage : '缩略图',
+			listImage : '详细信息',
+			orderType : '排序方式：',
+			fileName : '名称',
+			fileSize : '大小',
+			fileType : '类型'
+		},
+		advtable : {
+			cells : '单元格数',
+			rows : '行数',
+			cols : '列数',
+			size : '表格大小',
+			width : '宽度',
+			height : '高度',
+			percent : '%',
+			px : 'px',
+			space : '边距间距',
+			padding : '边距',
+			spacing : '间距',
+			align : '对齐方式',
+			alignDefault : '默认',
+			alignLeft : '左对齐',
+			alignCenter : '居中',
+			alignRight : '右对齐',
+			border : '表格边框',
+			borderWidth : '边框',
+			borderColor : '颜色',
+			backgroundColor : '背景颜色'
+		},
+		formatblock : {
+			formatblock : {
+				h1 : '标题 1',
+				h2 : '标题 2',
+				h3 : '标题 3',
+				h4 : '标题 4',
+				p : '正 文'
+			}
+		},
+		fontname : {
+			fontName : {
+				'SimSun' : '宋体',
+				'NSimSun' : '新宋体',
+				'FangSong_GB2312' : '仿宋_GB2312',
+				'KaiTi_GB2312' : '楷体_GB2312',
+				'SimHei' : '黑体',
+				'Microsoft YaHei' : '微软雅黑',
+				'Arial' : 'Arial',
+				'Arial Black' : 'Arial Black',
+				'Times New Roman' : 'Times New Roman',
+				'Courier New' : 'Courier New',
+				'Tahoma' : 'Tahoma',
+				'Verdana' : 'Verdana'
+			}
+		}
+	}
+};
 
 })(window);

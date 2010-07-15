@@ -24,25 +24,31 @@ function _widget(options) {
 		width : _addUnit(options.width) || 0,
 		height : _addUnit(options.height) || 0,
 		doc : options.doc || document,
-		create : function() {
+		create : function(expr) {
 			var self = this;
 			if (self.div) {
 				return self;
 			}
-			var div = _node('<div></div>').css({
-					display : 'block',
-					position : 'absolute',
-					left : self.x + 'px',
-					top : self.y + 'px',
-					'z-index' : self.z
-				});
+			var div = _node('<div></div>').css('display', 'block');
 			if (self.width) {
 				div.css('width', self.width);
 			}
 			if (self.height) {
 				div.css('height', self.height);
 			}
-			self.doc.body.appendChild(div.get());
+			if (self.z) {
+				div.css({
+					position : 'absolute',
+					left : self.x + 'px',
+					top : self.y + 'px',
+					'z-index' : self.z
+				})
+			}
+			if (expr === undefined) {
+				self.doc.body.appendChild(div.get());
+			} else {
+				_node(expr, self.doc).append(div);
+			}
 			self.div = div;
 			return self;
 		},

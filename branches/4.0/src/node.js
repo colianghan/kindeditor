@@ -38,6 +38,19 @@ function _setHtml(el, html) {
 	el.innerHTML = '' + html;
 }
 
+function _getScrollPos() {
+	var x, y;
+	if (_IE || _OPERA) {
+		var docEl = document.documentElement;
+		x = docEl.scrollLeft;
+		y = docEl.scrollTop;
+	} else {
+		x = window.scrollX;
+		y = window.scrollY;
+	}
+	return {x : x, y : y};
+}
+
 /**
 	@name KindEditor.node
 	@class KNode类
@@ -149,6 +162,20 @@ KNode.prototype = {
 		self.node.removeAttribute(key);
 		return self;
 	},
+	width : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return parseInt(self.css('width') || self.attr('width') || self.node.offsetWidth, 10);
+		}
+		return self.css('width', _addUnit(val));
+	},
+	height : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return parseInt(self.css('height') || self.attr('height') || self.node.offsetHeight, 10);
+		}
+		return self.css('height', _addUnit(val));
+	},
 	get : function() {
 		return this.node;
 	},
@@ -234,6 +261,22 @@ KNode.prototype = {
 		}
 		self._data[key] = val;
 		return self;
+	},
+	pos : function() {
+		var self = this, node = self.node, x = 0, y = 0;
+		if (node.getBoundingClientRect) {
+			var box = node.getBoundingClientRect(),
+				pos = _getScrollPos();
+			x = box.left + pos.x;
+			y = box.top + pos.y;
+		} else {
+			while (node) {
+				x += node.offsetLeft;
+				y += node.offsetTop;
+				node = node.offsetParent;
+			}
+		}
+		return {x : x, y : y};
 	},
 	clone : function(bool) {
 		return new KNode(this.node.cloneNode(bool));
