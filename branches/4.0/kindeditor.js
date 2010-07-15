@@ -1820,9 +1820,7 @@ KCmd.prototype = {
 			return self;
 		}
 
-		console.log(range);
 		rng = range.get();
-		console.log(rng);
 		if (_IE) {
 			rng.select();
 		} else {

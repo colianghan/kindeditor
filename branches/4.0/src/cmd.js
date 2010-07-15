@@ -333,9 +333,7 @@ KCmd.prototype = {
 			return self;
 		}
 		//case 2: 一般情况
-		console.log(range);
 		rng = range.get();
-		console.log(rng);
 		if (_IE) {
 			rng.select();
 		} else {
