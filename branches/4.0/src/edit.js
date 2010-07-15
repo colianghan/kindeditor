@@ -81,8 +81,8 @@ function _elementVal(knode, val) {
 function KEdit(options) {
 	var self = this;
 	self.srcElement = _node(options.srcElement);
-	self.width = options.width || 0;
-	self.height = options.height || 0;
+	self.width = _addUnit(options.width) || 0;
+	self.height = _addUnit(options.height) || 0;
 	self.designMode = options.designMode === undefined ? true : options.designMode;
 	self.bodyClass = options.bodyClass;
 	self.cssData = options.cssData;
@@ -192,12 +192,18 @@ KEdit.prototype = {
 				self.designMode = false;
 			}
 		}
+		self.focus();
 		return self;
 	},
 	focus : function() {
-		var self = this;
-		if (self.iframe && self.designMode) {
-			self.iframe.contentWindow.focus();
+		var self = this, iframe = self.iframe;
+		if (!iframe) {
+			return self;
+		}
+		if (self.designMode) {
+			iframe.get().contentWindow.focus();
+		} else {
+			self.textarea.get().focus();
 		}
 		return self;
 	}

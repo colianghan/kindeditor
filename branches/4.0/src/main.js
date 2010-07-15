@@ -26,6 +26,17 @@ function _plugin(name, obj) {
 	_plugins[name] = obj;
 }
 
+var _languege = {};
+
+function _lang(key, langType) {
+	langType = langType === undefined ? _LANG_TYPE : langType;
+	return _language[key];
+}
+
+function _pluginLang(key, langType) {
+	return _lang('plugins', langType)[key];
+}
+
 var _scriptPath = (function() {
 	var els = document.getElementsByTagName('script'), src;
 	for (var i = 0, len = els.length; i < len; i++) {
@@ -114,11 +125,13 @@ function KEditor(options) {
 	});
 	var se = _node(self.srcElement);
 	if (!self.width) {
-		self.width = se.css('width') || (se.offsetWidth || self.minWidth) + 'px';
+		self.width = se.css('width') || (se.offsetWidth || self.minWidth);
 	}
 	if (!self.height) {
-		self.height = se.css('height') || (se.offsetHeight || self.minHeight) + 'px';
+		self.height = se.css('height') || (se.offsetHeight || self.minHeight);
 	}
+	self.width = _addUnit(self.width);
+	self.height = _addUnit(self.height);
 	self.srcElement = se;
 }
 
@@ -151,7 +164,7 @@ KEditor.prototype = {
 			toolbar.addItem({
 				name : name,
 				click : function() {
-					_plugin(name).click(self);
+					_plugin(name)(self);
 				}
 			});
 		});
@@ -196,19 +209,32 @@ if (_IE && _VERSION < 7) {
 }
 
 //define core plugins
-_plugin('source', {
-	click : function(editor) {
-		editor.toolbar.disable();
-		editor.edit.design();
-	}
+_plugin('source', function(editor) {
+	editor.toolbar.disable();
+	editor.edit.design();
 });
 
 _each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
-	_plugin(name, {
-		click : function(editor) {
-			editor.edit.cmd[name]();
-		}
+	_plugin(name, function(editor) {
+		editor.edit.cmd[name]();
 	});
+});
+
+_plugin('fontname', function(editor) {
+	var menu = _menu({
+		width : 150
+	});
+	_each(_pluginLang('fontname'), function(key, val) {
+		menu.addItem({
+			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
+			click : function(e) {
+				editor.edit.cmd.fontname(val);
+				menu.remove();
+				e.stop();
+			}
+		});
+	});
+	menu.create();
 });
 
 K.create = _create;

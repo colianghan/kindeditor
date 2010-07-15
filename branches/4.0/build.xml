@@ -5,6 +5,7 @@
 	</description>
 
 	<property name="src" location="src"/>
+	<property name="lang" location="lang"/>
 	<property name="dist" location="dist"/>
 	<property name="version" value="4.0"/>
 	<property name="charset" value="utf-8"/>
@@ -28,7 +29,9 @@
 			<fileset file="${src}/cmd.js"/>
 			<fileset file="${src}/edit.js"/>
 			<fileset file="${src}/toolbar.js"/>
+			<fileset file="${src}/menu.js"/>
 			<fileset file="${src}/main.js"/>
+			<fileset file="${lang}/zh_CN.js"/>
 			<fileset file="${src}/footer.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"

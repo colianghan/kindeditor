@@ -180,6 +180,20 @@ function _inString(val, str, delimiter) {
 }
 
 /**
+	@name KindEditor.addUnit
+	@function
+	@param {String} val 长度
+	@returns {String} 带单位的完整长度
+	@description
+	将一个数字后面加px，如果已经有单位则不做处理。
+	@example
+	var color = K.addUnit(100); //返回"100px"
+*/
+function _addUnit(val) {
+	return val && /^\d+$/.test(val) ? val + 'px' : val;
+}
+
+/**
 	@name KindEditor.toHex
 	@function
 	@param {String} color RGB颜色
@@ -232,7 +246,8 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
-	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
+	_VALUE_TAG_MAP = _toMap('input,button,textarea,select'),
+	_LANG_TYPE = 'zh_CN';
 
 var K = {
 	IE : _IE,
@@ -245,6 +260,7 @@ var K = {
 	inArray : _inArray,
 	inString : _inString,
 	trim : _trim,
+	addUnit : _addUnit,
 	toHex : _toHex,
 	toMap : _toMap
 };

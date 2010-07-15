@@ -33,8 +33,8 @@ function _bindToolbarEvent(itemNode, item) {
 
 function KToolbar(options) {
 	var self = this;
-	self.width = options.width || 0;
-	self.height = options.height || 0;
+	self.width = _addUnit(options.width) || 0;
+	self.height = _addUnit(options.height) || 0;
 	self.items = [];
 	self.itemNodes = [];
 	self.disableMode = options.disableMode === undefined ? false : options.disableMode;
