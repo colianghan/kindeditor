@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-15)
+* @version 4.0 (2010-07-16)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -219,8 +219,19 @@ var _elList = [], _data = {};
 function _getId(el) {
 	var id = _inArray(el, _elList);
 	if (id < 0) {
-		id = _elList.length;
-		_elList.push(el);
+		_each(_elList, function(i, val) {
+			if (val === undefined) {
+				id = i;
+				_elList[id] = el;
+				return false;
+			}
+		});
+		if (id < 0) {
+			id = _elList.length;
+			_elList.push(el);
+		}
+	}
+	if (!(id in _data)) {
 		_data[id] = {};
 	}
 	return id;
@@ -234,7 +245,7 @@ function _bind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
 			if (val === undefined) {
 				_data[id][type].splice(key, 1);
@@ -274,14 +285,15 @@ function _unbind(el, type, fn) {
 					_unbindEvent(el, key, val[0]);
 				}
 			});
-			_data[id] = {};
+			delete _data[id];
+			delete _elList[id];
 		}
 		return;
 	}
 	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		if (fn === undefined) {
 			_unbindEvent(el, type, _data[id][type][0]);
-			_data[id][type] = [];
+			delete _data[id][type];
 		} else {
 			for (var i = 0, len = _data[id][type].length; i < len; i++) {
 				if (_data[id][type][i] === fn) {
@@ -290,7 +302,7 @@ function _unbind(el, type, fn) {
 			}
 			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
 				_unbindEvent(el, type, _data[id][type][0]);
-				_data[id][type] = [];
+				delete _data[id][type];
 			}
 		}
 	}
@@ -304,7 +316,7 @@ function _fire(el, type) {
 		return;
 	}
 	var id = _getId(el);
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
@@ -2282,50 +2294,44 @@ function _cmd(mixed) {
 K.cmd = _cmd;
 
 function _widget(options) {
+	var name = options.name || '',
+		x = options.x || 0,
+		y = options.y || 0,
+		z = options.z || 0,
+		width = _addUnit(options.width) || 0,
+		height = _addUnit(options.height) || 0,
+		doc = options.doc || document,
+		parent = options.parent || doc.body,
+		div = _node('<div></div>').css('display', 'block');
+	if (width) {
+		div.css('width', width);
+	}
+	if (height) {
+		div.css('height', height);
+	}
+	if (z) {
+		div.css({
+			position : 'absolute',
+			left : x + 'px',
+			top : y + 'px',
+			'z-index' : z
+		});
+	}
+	_node(parent).append(div);
 	return {
-		name : options.name || '',
-		x : options.x || 0,
-		y : options.y || 0,
-		z : options.z || 0,
-		width : _addUnit(options.width) || 0,
-		height : _addUnit(options.height) || 0,
-		doc : options.doc || document,
-		create : function(expr) {
-			var self = this;
-			if (self.div) {
-				return self;
-			}
-			var div = _node('<div></div>').css('display', 'block');
-			if (self.width) {
-				div.css('width', self.width);
-			}
-			if (self.height) {
-				div.css('height', self.height);
-			}
-			if (self.z) {
-				div.css({
-					position : 'absolute',
-					left : self.x + 'px',
-					top : self.y + 'px',
-					'z-index' : self.z
-				});
-			}
-			if (expr === undefined) {
-				self.doc.body.appendChild(div.get());
-			} else {
-				_node(expr, self.doc).append(div);
-			}
-			self.div = div;
-			return self;
+		name : name,
+		x : x,
+		y : y,
+		z : z,
+		width : width,
+		height : height,
+		doc : doc,
+		div : function() {
+			return div;
 		},
 		remove : function() {
-			var self = this;
-			if (!self.div) {
-				return self;
-			}
-			self.div.remove();
-			self.div = null;
-			return self;
+			div.remove();
+			return this;
 		}
 	};
 }
@@ -2427,15 +2433,20 @@ KEdit.prototype = {
 		} else {
 			iframe.hide();
 		}
+		_node(expr).append(div);
 		div.append(iframe);
 		div.append(textarea);
-		_node(expr).append(div);
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
-		doc.designMode = 'on';
+		if (!_IE) {
+			doc.designMode = 'on';
+		}
 		doc.open();
 		doc.write(_getInitHtml(self.bodyClass, self.cssData));
 		doc.close();
+		if (_IE) {
+			doc.body.contentEditable = 'true';
+		}
 		self.div = div;
 		self.iframe = iframe;
 		self.textarea = textarea;
@@ -2465,10 +2476,13 @@ KEdit.prototype = {
 
 		_elementVal(srcElement, self.val());
 		srcElement.show();
+		self.doc.write('');
+		self.doc.clear();
 		iframe.remove();
 		textarea.remove();
 		div.remove();
-		self.div = self.iframe = self.textarea = null;
+		CollectGarbage();
+		self.div = self.iframe = self.textarea = self.doc = null;
 		return self;
 	},
 	design : function(bool) {
@@ -2533,58 +2547,47 @@ function _bindToolbarEvent(itemNode, item) {
 
 function _toolbar(options) {
 	var self = _widget(options),
-		create = self.create,
-		remove = self.remove;
-	self.items = [];
-	self.itemNodes = [];
-	self.disableMode = options.disableMode === undefined ? false : options.disableMode;
-	self.noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems;
-	self.addItem = function(item) {
-		self.items.push(item);
-	};
-	self.create = function(expr) {
-		if (self.div) {
-			return self;
-		}
-		create.call(self, expr);
-		var div = self.div.addClass('ke-toolbar').css('width', self.width), itemNode,
-			inner = _node('<div class="ke-toolbar-inner"></div>');
-		div.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
+		remove = self.remove,
+		disableMode = options.disableMode === undefined ? false : options.disableMode,
+		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
+		itemNodes = [];
+
+	var inner = _node('<div class="ke-toolbar-inner"></div>');
+	self.div().addClass('ke-toolbar')
+		.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
 			e.stop();
-		});
-		_each(self.items, function(i, item) {
-			if (item.name == '|') {
-				itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
-			} else if (item.name == '/') {
-				itemNode = _node('<br />');
-			} else {
-				itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#"></a>');
-				itemNode.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
-				_bindToolbarEvent(itemNode, item);
-			}
-			itemNode.data('item', item);
-			self.itemNodes.push(itemNode);
-			inner.append(itemNode);
-		});
-		self.div = div.append(inner);
-		return self;
-	};
-	self.remove = function() {
-		if (!self.div) {
-			return self;
+		})
+		.append(inner);
+
+	self.addItem = function(item) {
+		var itemNode;
+		if (item.name == '|') {
+			itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
+		} else if (item.name == '/') {
+			itemNode = _node('<br />');
+		} else {
+			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#"></a>');
+			itemNode.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
+			_bindToolbarEvent(itemNode, item);
 		}
-		_each(self.itemNodes, function() {
+		itemNode.data('item', item);
+		itemNodes.push(itemNode);
+		inner.append(itemNode);
+	};
+
+	self.remove = function() {
+		_each(itemNodes, function() {
 			this.remove();
 		});
-		self.itemNodes = [];
+		inner.remove();
 		remove.call(self);
-		return self;
 	};
-	self.disable = function(bool) {
-		var arr = self.noDisableItems, item;
 
-		if (bool === undefined ? !self.disableMode : bool) {
-			_each(self.itemNodes, function() {
+	self.disable = function(bool) {
+		var arr = noDisableItems, item;
+
+		if (bool === undefined ? !disableMode : bool) {
+			_each(itemNodes, function() {
 				item = this.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
 					this.addClass('ke-toolbar-icon-outline-disabled');
@@ -2594,10 +2597,10 @@ function _toolbar(options) {
 					}
 				}
 			});
-			self.disableMode = true;
+			disableMode = true;
 
 		} else {
-			_each(self.itemNodes, function() {
+			_each(itemNodes, function() {
 				item = this.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
 					this.removeClass('ke-toolbar-icon-outline-disabled');
@@ -2607,9 +2610,8 @@ function _toolbar(options) {
 					}
 				}
 			});
-			self.disableMode = false;
+			disableMode = false;
 		}
-		return self;
 	};
 	return self;
 }
@@ -2617,81 +2619,68 @@ function _toolbar(options) {
 K.toolbar = _toolbar;
 
 function _menu(options) {
+	options.z = options.z || 19811212;
 	var self = _widget(options),
-		create = self.create,
 		remove = self.remove,
-		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
-	self.z = options.z || 19811212;
-	self.items = [];
-	self.itemNodes = [];
+		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode,
+		itemNodes = [];
+	self.div().addClass('ke-menu');
+
 	self.addItem = function(item) {
-		self.items.push(item);
-	};
-	self.create = function() {
-		if (self.div) {
-			return self;
+		if (item.title === '-') {
+			self.div().append(_node('<div class="ke-menu-separator"></div>'));
+			return;
 		}
-		create.call(self);
-		var div = self.div;
-		div.addClass('ke-menu');
-		_each(self.items, function() {
-			if (this.title === '-') {
-				div.append(_node('<div class="ke-menu-separator"></div>'));
-				return;
-			}
-			var itemDiv = _node('<div></div>').addClass('ke-menu-item'),
-				leftDiv = _node('<div></div>').addClass('ke-menu-item-left'),
-				rightDiv = _node('<div></div>').addClass('ke-menu-item-right'),
-				height = _addUnit(this.height),
-				iconClass = this.iconClass;
+		var itemDiv = _node('<div></div>').addClass('ke-menu-item'),
+			leftDiv = _node('<div></div>').addClass('ke-menu-item-left'),
+			rightDiv = _node('<div></div>').addClass('ke-menu-item-right'),
+			height = _addUnit(item.height),
+			iconClass = item.iconClass;
+		self.div().append(itemDiv);
+		if (height) {
+			itemDiv.css('height', height);
+			rightDiv.css('line-height', height);
+		}
+		var centerDiv;
+		if (centerLineMode) {
+			centerDiv = _node('<div></div>').addClass('ke-menu-item-center');
 			if (height) {
-				itemDiv.css('height', height);
-				rightDiv.css('line-height', height);
+				centerDiv.css('height', height);
 			}
-			var centerDiv;
-			if (centerLineMode) {
-				centerDiv = _node('<div></div>').addClass('ke-menu-item-center');
-				if (height) {
-					centerDiv.css('height', height);
-				}
-			}
-			itemDiv.bind('mouseover', function(e) {
-				this.addClass('ke-menu-item-on');
-				if (centerDiv) {
-					centerDiv.addClass('ke-menu-item-center-on');
-				}
-				e.stop();
-			});
-			itemDiv.bind('mouseout', function(e) {
-				this.removeClass('ke-menu-item-on');
-				if (centerDiv) {
-					centerDiv.removeClass('ke-menu-item-center-on');
-				}
-				e.stop();
-			});
-			itemDiv.bind('click', this.click);
-			itemDiv.append(leftDiv);
+		}
+		itemDiv.bind('mouseover', function(e) {
+			this.addClass('ke-menu-item-on');
 			if (centerDiv) {
-				itemDiv.append(centerDiv);
+				centerDiv.addClass('ke-menu-item-center-on');
 			}
-			itemDiv.append(rightDiv);
-			if (this.checked) {
-				iconClass = 'ke-icon-checked';
-			}
-			leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
-			rightDiv.html(this.title);
-			div.append(itemDiv);
-			self.itemNodes.push(itemDiv);
+			e.stop();
 		});
-		self.remove = function() {
-			_each(self.itemNodes, function() {
-				this.unbind();
-			});
-			self.itemNodes = [];
-			remove.call(self);
-			return self;
-		};
-		return self;
+		itemDiv.bind('mouseout', function(e) {
+			this.removeClass('ke-menu-item-on');
+			if (centerDiv) {
+				centerDiv.removeClass('ke-menu-item-center-on');
+			}
+			e.stop();
+		});
+		itemDiv.bind('click', item.click);
+		itemDiv.append(leftDiv);
+		if (centerDiv) {
+			itemDiv.append(centerDiv);
+		}
+		itemDiv.append(rightDiv);
+		if (item.checked) {
+			iconClass = 'ke-icon-checked';
+		}
+		leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
+		rightDiv.html(item.title);
+		itemNodes.push(itemDiv);
+	};
+
+	self.remove = function() {
+		_each(itemNodes, function() {
+			this.remove();
+		});
+		remove.call(self);
 	};
 	return self;
 }
@@ -2699,6 +2688,7 @@ function _menu(options) {
 K.menu = _menu;
 
 function _colorpicker(options) {
+	options.z = options.z || 19811212;
 	var self = _widget(options),
 		colors = options.colors || [
 			['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
@@ -2707,65 +2697,55 @@ function _colorpicker(options) {
 			['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#333333', '#000000']
 		],
 		selectedColor = (options.selectedColor || '').toLowerCase(),
-		create = self.create,
-		remove = self.remove;
-	self.z = options.z || 19811212;
-	self.cells = [];
-	self.create = function() {
-		if (self.div) {
-			return self;
+		remove = self.remove,
+		cells = [];
+
+	self.div().addClass('ke-colorpicker');
+	function addAttr(cell, color, cls) {
+		cell = _node(cell).addClass(cls);
+		if (selectedColor === color.toLowerCase()) {
+			cell.addClass('ke-colorpicker-cell-selected');
 		}
-		create.call(self);
-		var div = self.div;
-		div.addClass('ke-colorpicker');
-		function addAttr(cell, color, cls) {
-			cell = _node(cell).addClass(cls);
-			if (selectedColor === color.toLowerCase()) {
-				cell.addClass('ke-colorpicker-cell-selected');
-			}
-			cell.attr('title', color || _lang('noColor'));
-			cell.bind('mouseover', function(e) {
-				this.addClass('ke-colorpicker-cell-on');
-			});
-			cell.bind('mouseout', function(e) {
-				this.removeClass('ke-colorpicker-cell-on');
-			});
-			cell.bind('click', function(e) {
-				options.click.call(this, color);
-				e.stop();
-			});
-			if (color) {
-				cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
-			} else {
-				cell.html(_lang('noColor'));
-			}
-			self.cells.push(cell);
-		}
-		var table = self.doc.createElement('table');
-		table.className = 'ke-colorpicker-table';
-		table.cellPadding = 0;
-		table.cellSpacing = 0;
-		table.border = 0;
-		var row = table.insertRow(0), cell = row.insertCell(0);
-		cell.colSpan = colors[0].length;
-		addAttr(cell, '', 'ke-colorpicker-cell-top');
-		for (var i = 0; i < colors.length; i++) {
-			row = table.insertRow(i + 1);
-			for (var j = 0; j < colors[i].length; j++) {
-				cell = row.insertCell(j);
-				addAttr(cell, colors[i][j], 'ke-colorpicker-cell');
-			}
-		}
-		div.append(table);
-		return self;
-	};
-	self.remove = function() {
-		_each(self.cells, function() {
-			this.unbind();
+		cell.attr('title', color || _lang('noColor'));
+		cell.bind('mouseover', function(e) {
+			this.addClass('ke-colorpicker-cell-on');
 		});
-		self.cells = [];
+		cell.bind('mouseout', function(e) {
+			this.removeClass('ke-colorpicker-cell-on');
+		});
+		cell.bind('click', function(e) {
+			options.click.call(this, color);
+			e.stop();
+		});
+		if (color) {
+			cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
+		} else {
+			cell.html(_lang('noColor'));
+		}
+		cells.push(cell);
+	}
+	var table = self.doc.createElement('table');
+	self.div().append(table);
+	table.className = 'ke-colorpicker-table';
+	table.cellPadding = 0;
+	table.cellSpacing = 0;
+	table.border = 0;
+	var row = table.insertRow(0), cell = row.insertCell(0);
+	cell.colSpan = colors[0].length;
+	addAttr(cell, '', 'ke-colorpicker-cell-top');
+	for (var i = 0; i < colors.length; i++) {
+		row = table.insertRow(i + 1);
+		for (var j = 0; j < colors[i].length; j++) {
+			cell = row.insertCell(j);
+			addAttr(cell, colors[i][j], 'ke-colorpicker-cell');
+		}
+	}
+
+	self.remove = function() {
+		_each(cells, function() {
+			this.remove();
+		});
 		remove.call(self);
-		return self;
 	};
 	return self;
 }
@@ -2901,6 +2881,7 @@ KEditor.prototype = {
 		}
 
 		var toolbar = _toolbar({
+				parent : container,
 				width : '100%',
 				noDisableItems : 'source,fullscreen'.split(',')
 			});
@@ -2920,7 +2901,6 @@ KEditor.prototype = {
 				}
 			});
 		});
-		toolbar.create(container);
 
 		var edit = _edit({
 			srcElement : self.srcElement,
@@ -2950,6 +2930,7 @@ KEditor.prototype = {
 		self.edit.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = null;
+		return self;
 	}
 };
 
@@ -2962,13 +2943,14 @@ function _create(id, options) {
 	if (!options.srcElement) {
 		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
 	}
-	var editor = new KEditor(options).create();
-	_editors[id] = editor;
-	return editor;
+	return (_editors[id] = new KEditor(options).create());
 }
 
 function _remove(id) {
-	_editors[id].remove();
+	if (_editors[id]) {
+		_editors[id].remove();
+		delete _editors[id];
+	}
 }
 
 if (_IE && _VERSION < 7) {
@@ -3149,7 +3131,7 @@ _language.zh_CN = {
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
 	plugins : {
 		about : {
-			version : '4.0 (2010-07-15)',
+			version : '4.0 (2010-07-16)',
 			title : 'HTML可视化编辑器'
 		},
 		plainpaste : {

@@ -150,8 +150,19 @@ var _elList = [], _data = {};
 function _getId(el) {
 	var id = _inArray(el, _elList);
 	if (id < 0) {
-		id = _elList.length;
-		_elList.push(el);
+		_each(_elList, function(i, val) {
+			if (val === undefined) {
+				id = i;
+				_elList[id] = el;
+				return false;
+			}
+		});
+		if (id < 0) {
+			id = _elList.length;
+			_elList.push(el);
+		}
+	}
+	if (!(id in _data)) {
 		_data[id] = {};
 	}
 	return id;
@@ -165,7 +176,7 @@ function _bind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
 			if (val === undefined) {
 				_data[id][type].splice(key, 1);
@@ -205,14 +216,15 @@ function _unbind(el, type, fn) {
 					_unbindEvent(el, key, val[0]);
 				}
 			});
-			_data[id] = {};
+			delete _data[id];
+			delete _elList[id];
 		}
 		return;
 	}
 	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
 		if (fn === undefined) {
 			_unbindEvent(el, type, _data[id][type][0]);
-			_data[id][type] = [];
+			delete _data[id][type];
 		} else {
 			for (var i = 0, len = _data[id][type].length; i < len; i++) {
 				if (_data[id][type][i] === fn) {
@@ -221,7 +233,7 @@ function _unbind(el, type, fn) {
 			}
 			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
 				_unbindEvent(el, type, _data[id][type][0]);
-				_data[id][type] = [];
+				delete _data[id][type];
 			}
 		}
 	}
@@ -235,7 +247,7 @@ function _fire(el, type) {
 		return;
 	}
 	var id = _getId(el);
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
@@ -276,6 +288,17 @@ function _ready(fn, doc) {
 		}
 	}
 	_bind(win, 'load', readyFunc);
+}
+
+if (_IE) {
+	window.attachEvent('onunload', function() {
+		var id, target;
+		_each(_elList, function(i, el) {
+			try {
+				_unbind(el);
+			} catch(ex) {}
+		});
+	});
 }
 
 K.bind = _bind;

@@ -123,15 +123,20 @@ KEdit.prototype = {
 		} else {
 			iframe.hide();
 		}
+		_node(expr).append(div);
 		div.append(iframe);
 		div.append(textarea);
-		_node(expr).append(div);
 		srcElement.hide();
 		var doc = _getIframeDoc(iframe.get());
-		doc.designMode = 'on';
+		if (!_IE) {
+			doc.designMode = 'on';
+		}
 		doc.open();
 		doc.write(_getInitHtml(self.bodyClass, self.cssData));
 		doc.close();
+		if (_IE) {
+			doc.body.contentEditable = 'true';
+		}
 		self.div = div;
 		self.iframe = iframe;
 		self.textarea = textarea;
@@ -161,10 +166,13 @@ KEdit.prototype = {
 		//remove elements
 		_elementVal(srcElement, self.val());
 		srcElement.show();
+		self.doc.write('');
+		self.doc.clear();
 		iframe.remove();
 		textarea.remove();
 		div.remove();
-		self.div = self.iframe = self.textarea = null;
+		CollectGarbage();
+		self.div = self.iframe = self.textarea = self.doc = null;
 		return self;
 	},
 	design : function(bool) {

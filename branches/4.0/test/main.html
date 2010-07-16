@@ -37,20 +37,6 @@
 		<script src="../src/colorpicker.js"></script>
 		<script src="../src/main.js"></script>
 		<script src="../lang/zh_CN.js"></script>
-		<script>
-			KindEditor.ready(function(K) {
-				K.create('editor1', {
-					width : 700,
-					height : 100
-				});
-				K.node('#create').bind('click', function() {
-					K.create('editor1');
-				});
-				K.node('#remove').bind('click', function() {
-					K.remove('editor1');
-				});
-			});
-		</script>
 	</head>
 	<body>
 		<h1>KindEditor Main Test</h1>
@@ -58,5 +44,20 @@
 		<br />
 		<input type="button" id="create" value="Create" />
 		<input type="button" id="remove" value="Remove" />
+		<script>
+			K.create('editor1', {
+				width : 700,
+				height : 100
+			});
+			K.node('#create').bind('click', function() {
+				K.create('editor1', {
+					width : 700,
+					height : 100
+				});
+			});
+			K.node('#remove').bind('click', function() {
+				K.remove('editor1');
+			});
+		</script>
 	</body>
 </html>

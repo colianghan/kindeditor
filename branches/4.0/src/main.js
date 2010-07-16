@@ -146,6 +146,7 @@ KEditor.prototype = {
 		}
 		//create toolbar
 		var toolbar = _toolbar({
+				parent : container,
 				width : '100%',
 				noDisableItems : 'source,fullscreen'.split(',')
 			});
@@ -165,7 +166,6 @@ KEditor.prototype = {
 				}
 			});
 		});
-		toolbar.create(container);
 		//create edit
 		var edit = _edit({
 			srcElement : self.srcElement,
@@ -195,6 +195,7 @@ KEditor.prototype = {
 		self.edit.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = null;
+		return self;
 	}
 };
 
@@ -207,13 +208,14 @@ function _create(id, options) {
 	if (!options.srcElement) {
 		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
 	}
-	var editor = new KEditor(options).create();
-	_editors[id] = editor;
-	return editor;
+	return (_editors[id] = new KEditor(options).create());
 }
 
 function _remove(id) {
-	_editors[id].remove();
+	if (_editors[id]) {
+		_editors[id].remove();
+		delete _editors[id];
+	}
 }
 
 //解决IE6浏览器重复下载背景图片的问题
@@ -249,7 +251,6 @@ _plugin('fontname', function(editor) {
 			}
 		});
 	});
-	editor.menu.create();
 });
 
 _plugin('fontsize', function(editor) {
@@ -274,7 +275,6 @@ _plugin('fontsize', function(editor) {
 			}
 		});
 	});
-	editor.menu.create();
 });
 
 _each('forecolor,hilitecolor'.split(','), function(i, name) {
@@ -291,7 +291,6 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 				editor.menu = null;
 			}
 		});
-		editor.menu.create();
 	});
 });
 
