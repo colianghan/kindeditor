@@ -40,7 +40,7 @@ function _widget(options) {
 			'z-index' : z
 		});
 	}
-	_node(parent).append(div);
+	_node(parent, doc).append(div);
 	return {
 		name : name,
 		x : x,
