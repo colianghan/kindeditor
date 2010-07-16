@@ -290,6 +290,13 @@ function _ready(fn, doc) {
 	_bind(win, 'load', readyFunc);
 }
 
+/**
+	Note:
+	发现绑定dbclick事件后移除element会有内存泄漏，以下代码也不起作用。
+	Reference:
+	http://isaacschlueter.com/2006/10/msie-memory-leaks/
+	http://msdn.microsoft.com/en-us/library/bb250448.aspx
+*/
 if (_IE) {
 	window.attachEvent('onunload', function() {
 		var id, target;
