@@ -37,13 +37,13 @@ function _colorpicker(options) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
 		cell.attr('title', color || _lang('noColor'));
-		cell.bind('mouseover', function(e) {
+		cell.mouseover(function(e) {
 			this.addClass('ke-colorpicker-cell-on');
 		});
-		cell.bind('mouseout', function(e) {
+		cell.mouseout(function(e) {
 			this.removeClass('ke-colorpicker-cell-on');
 		});
-		cell.bind('click', function(e) {
+		cell.click(function(e) {
 			options.click.call(this, color);
 			e.stop();
 		});

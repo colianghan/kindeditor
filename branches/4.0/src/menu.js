@@ -46,21 +46,21 @@ function _menu(options) {
 				centerDiv.css('height', height);
 			}
 		}
-		itemDiv.bind('mouseover', function(e) {
+		itemDiv.mouseover(function(e) {
 			this.addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
 			e.stop();
 		});
-		itemDiv.bind('mouseout', function(e) {
+		itemDiv.mouseout(function(e) {
 			this.removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
 			e.stop();
 		});
-		itemDiv.bind('click', item.click);
+		itemDiv.click(item.click);
 		itemDiv.append(leftDiv);
 		if (centerDiv) {
 			itemDiv.append(centerDiv);

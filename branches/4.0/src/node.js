@@ -414,6 +414,15 @@ KNode.prototype = {
 	}
 };
 
+//Inspired by jQuery
+_each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
+	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +
+	'change,select,submit,keydown,keypress,keyup,error').split(','), function(i, type) {
+	KNode.prototype[type] = function(fn) {
+		return fn ? this.bind(type, fn) : this.fire(type);
+	};
+});
+
 function _node(expr, root) {
 	function newNode(node) {
 		if (!node) {

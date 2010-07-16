@@ -220,7 +220,7 @@ function _getId(el) {
 	var id = _inArray(el, _elList);
 	if (id < 0) {
 		_each(_elList, function(i, val) {
-			if (val === undefined) {
+			if (!val) {
 				id = i;
 				_elList[id] = el;
 				return false;
@@ -357,6 +357,17 @@ function _ready(fn, doc) {
 		}
 	}
 	_bind(win, 'load', readyFunc);
+}
+
+if (_IE) {
+	window.attachEvent('onunload', function() {
+		var id, target;
+		_each(_elList, function(i, el) {
+			if (el) {
+				_unbind(el);
+			}
+		});
+	});
 }
 
 K.bind = _bind;
@@ -1025,6 +1036,14 @@ KNode.prototype = {
 		return self.type == 3 ? self.node.nodeValue : self.outer();
 	}
 };
+
+_each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
+	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +
+	'change,select,submit,keydown,keypress,keyup,error').split(','), function(i, type) {
+	KNode.prototype[type] = function(fn) {
+		return fn ? this.bind(type, fn) : this.fire(type);
+	};
+});
 
 function _node(expr, root) {
 	function newNode(node) {
@@ -2219,7 +2238,7 @@ KCmd.prototype = {
 
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).bind('keyup', function(e) {
+		_node(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
@@ -2230,27 +2249,27 @@ KCmd.prototype = {
 
 	oncursormove : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).bind('keyup', function(e) {
+		_node(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).bind('mouseup', fn);
+		_node(doc).mouseup(fn);
 		return self;
 	},
 
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
-		_node(doc).bind('keyup', function(e) {
+		_node(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).bind('mouseup', fn);
+		_node(doc).mouseup(fn);
 		if (doc !== document) {
-			_node(document).bind('mousedown', fn);
+			_node(document).mousedown(fn);
 		}
 		function timeoutHandler(e) {
 			setTimeout(function() {
@@ -2531,15 +2550,15 @@ function _edit(options) {
 K.edit = _edit;
 
 function _bindToolbarEvent(itemNode, item) {
-	itemNode.bind('mouseover', function(e) {
+	itemNode.mouseover(function(e) {
 		this.addClass('ke-toolbar-icon-outline-on');
 		e.stop();
 	});
-	itemNode.bind('mouseout', function(e) {
+	itemNode.mouseout(function(e) {
 		this.removeClass('ke-toolbar-icon-outline-on');
 		e.stop();
 	});
-	itemNode.bind('click', function(e) {
+	itemNode.click(function(e) {
 		item.click.call(this, e);
 		e.stop();
 	});
@@ -2554,7 +2573,7 @@ function _toolbar(options) {
 
 	var inner = _node('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
-		.bind('contextmenu,dbclick,mousedown,mousemove', function(e) {
+		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.stop();
 		})
 		.append(inner);
@@ -2648,21 +2667,21 @@ function _menu(options) {
 				centerDiv.css('height', height);
 			}
 		}
-		itemDiv.bind('mouseover', function(e) {
+		itemDiv.mouseover(function(e) {
 			this.addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
 			e.stop();
 		});
-		itemDiv.bind('mouseout', function(e) {
+		itemDiv.mouseout(function(e) {
 			this.removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
 			e.stop();
 		});
-		itemDiv.bind('click', item.click);
+		itemDiv.click(item.click);
 		itemDiv.append(leftDiv);
 		if (centerDiv) {
 			itemDiv.append(centerDiv);
@@ -2707,13 +2726,13 @@ function _colorpicker(options) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
 		cell.attr('title', color || _lang('noColor'));
-		cell.bind('mouseover', function(e) {
+		cell.mouseover(function(e) {
 			this.addClass('ke-colorpicker-cell-on');
 		});
-		cell.bind('mouseout', function(e) {
+		cell.mouseout(function(e) {
 			this.removeClass('ke-colorpicker-cell-on');
 		});
-		cell.bind('click', function(e) {
+		cell.click(function(e) {
 			options.click.call(this, color);
 			e.stop();
 		});
@@ -2911,7 +2930,7 @@ KEditor.prototype = {
 			cssData : self.cssData
 		}).create(container);
 		_each([edit.doc, document], function() {
-			_node(this).bind('click', function(e) {
+			_node(this).click(function(e) {
 				if (self.menu) {
 					self.menu.remove();
 					self.menu = null;
@@ -2926,10 +2945,13 @@ KEditor.prototype = {
 	},
 	remove : function() {
 		var self = this;
+		if (self.menu) {
+			self.menu.remove();
+		}
 		self.toolbar.remove();
 		self.edit.remove();
 		self.container.remove();
-		self.container = self.toolbar = self.edit = null;
+		self.container = self.toolbar = self.edit = self.menu = null;
 		return self;
 	}
 };
@@ -2984,7 +3006,6 @@ _plugin('fontname', function(editor) {
 			}
 		});
 	});
-	editor.menu.create();
 });
 
 _plugin('fontsize', function(editor) {
@@ -3009,7 +3030,6 @@ _plugin('fontsize', function(editor) {
 			}
 		});
 	});
-	editor.menu.create();
 });
 
 _each('forecolor,hilitecolor'.split(','), function(i, name) {
@@ -3026,7 +3046,6 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 				editor.menu = null;
 			}
 		});
-		editor.menu.create();
 	});
 });
 

@@ -176,7 +176,7 @@ KEditor.prototype = {
 			cssData : self.cssData
 		}).create(container);
 		_each([edit.doc, document], function() {
-			_node(this).bind('click', function(e) {
+			_node(this).click(function(e) {
 				if (self.menu) {
 					self.menu.remove();
 					self.menu = null;
@@ -191,10 +191,13 @@ KEditor.prototype = {
 	},
 	remove : function() {
 		var self = this;
+		if (self.menu) {
+			self.menu.remove();
+		}
 		self.toolbar.remove();
 		self.edit.remove();
 		self.container.remove();
-		self.container = self.toolbar = self.edit = null;
+		self.container = self.toolbar = self.edit = self.menu = null;
 		return self;
 	}
 };

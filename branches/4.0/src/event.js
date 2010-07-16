@@ -151,7 +151,7 @@ function _getId(el) {
 	var id = _inArray(el, _elList);
 	if (id < 0) {
 		_each(_elList, function(i, val) {
-			if (val === undefined) {
+			if (!val) {
 				id = i;
 				_elList[id] = el;
 				return false;
@@ -294,9 +294,9 @@ if (_IE) {
 	window.attachEvent('onunload', function() {
 		var id, target;
 		_each(_elList, function(i, el) {
-			try {
+			if (el) {
 				_unbind(el);
-			} catch(ex) {}
+			}
 		});
 	});
 }

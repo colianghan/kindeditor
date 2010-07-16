@@ -17,15 +17,15 @@
 */
 
 function _bindToolbarEvent(itemNode, item) {
-	itemNode.bind('mouseover', function(e) {
+	itemNode.mouseover(function(e) {
 		this.addClass('ke-toolbar-icon-outline-on');
 		e.stop();
 	});
-	itemNode.bind('mouseout', function(e) {
+	itemNode.mouseout(function(e) {
 		this.removeClass('ke-toolbar-icon-outline-on');
 		e.stop();
 	});
-	itemNode.bind('click', function(e) {
+	itemNode.click(function(e) {
 		item.click.call(this, e);
 		e.stop();
 	});

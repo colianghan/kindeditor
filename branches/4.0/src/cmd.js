@@ -723,7 +723,7 @@ KCmd.prototype = {
 	//用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).bind('keyup', function(e) {
+		_node(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
@@ -734,27 +734,27 @@ KCmd.prototype = {
 	//移动光标时触发oncursormove事件
 	oncursormove : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).bind('keyup', function(e) {
+		_node(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).bind('mouseup', fn);
+		_node(doc).mouseup(fn);
 		return self;
 	},
 	//输入文字、移动光标、执行命令都会触发onchange事件
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
-		_node(doc).bind('keyup', function(e) {
+		_node(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).bind('mouseup', fn);
+		_node(doc).mouseup(fn);
 		if (doc !== document) {
-			_node(document).bind('mousedown', fn);
+			_node(document).mousedown(fn);
 		}
 		function timeoutHandler(e) {
 			setTimeout(function() {
