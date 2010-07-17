@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-16)
+* @version 4.0 (2010-07-17)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -1537,7 +1537,11 @@ KRange.prototype = {
 					eo += nodeCount;
 				}
 			} else if (so >= sc.nodeValue.length) {
-				sc.parentNode.appendChild(node);
+				if (sc.nextSibling) {
+					sc.parentNode.insertBefore(node, sc.nextSibling);
+				} else {
+					sc.parentNode.appendChild(node);
+				}
 			} else {
 				c = sc.splitText(so);
 				sc.parentNode.insertBefore(node, c);
@@ -1553,6 +1557,9 @@ KRange.prototype = {
 		} else {
 			self.selectNode(node);
 		}
+		if (self.compareBoundaryPoints(_END_TO_END, self.cloneRange().setEnd(ec, eo)) >= 1) {
+			return self;
+		}
 		return self.setEnd(ec, eo);
 	},
 
@@ -1562,7 +1569,7 @@ KRange.prototype = {
 	},
 
 	get : function() {
-		var self = this, doc = self.doc,
+		var self = this, doc = self.doc, node,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
 		if (doc.createRange) {
@@ -1609,10 +1616,16 @@ _each(_CURSORMOVE_KEY_MAP, function(key, val) {
 	_CHANGE_KEY_MAP[key] = val;
 });
 
-function _nativeCommandValue(doc, cmd) {
+function _nativeCommand(doc, key, val) {
+	try {
+		doc.execCommand(key, false, val);
+	} catch(e) {}
+}
+
+function _nativeCommandValue(doc, key) {
 	var val = '';
 	try {
-		val = doc.queryCommandValue(cmd);
+		val = doc.queryCommandValue(key);
 	} catch (e) {}
 	if (typeof val !== 'string') {
 		val = '';
@@ -1638,7 +1651,6 @@ function _getRng(doc) {
 			rng = sel.createRange();
 		}
 	} catch(e) {}
-	rng = rng || doc;
 	if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
 		return null;
 	}
@@ -2095,32 +2107,32 @@ KCmd.prototype = {
 		}
 	},
 
-	exec : function(cmd, val) {
-		return this[cmd.toLowerCase()](val);
+	exec : function(key, val) {
+		return this[key.toLowerCase()](val);
 	},
 
-	state : function(cmd) {
+	state : function(key) {
 		var self = this, doc = self.doc, range = self.range, bool = false;
 		try {
-			bool = doc.queryCommandState(cmd);
+			bool = doc.queryCommandState(key);
 		} catch (e) {}
 		return bool;
 	},
 
-	val : function(cmd) {
+	val : function(key) {
 		var self = this, doc = self.doc, range = self.range;
 		function lc(val) {
 			return val.toLowerCase();
 		}
-		cmd = lc(cmd);
+		key = lc(key);
 		var val = '', knode;
-		if (cmd === 'fontfamily' || cmd === 'fontname') {
+		if (key === 'fontfamily' || key === 'fontname') {
 			val = _nativeCommandValue(doc, 'fontname');
 			val = val.replace(/['"]/g, '');
 			return lc(val);
 		}
-		if (cmd === 'formatblock') {
-			val = _nativeCommandValue(doc, cmd);
+		if (key === 'formatblock') {
+			val = _nativeCommandValue(doc, key);
 			if (val === '') {
 				knode = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
 				if (knode) {
@@ -2132,14 +2144,14 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
-		if (cmd === 'fontsize') {
+		if (key === 'fontsize') {
 			knode = _getCommonNode(range, {'*' : '.font-size'});
 			if (knode) {
 				val = knode.css('font-size');
 			}
 			return lc(val);
 		}
-		if (cmd === 'forecolor') {
+		if (key === 'forecolor') {
 			knode = _getCommonNode(range, {'*' : '.color'});
 			if (knode) {
 				val = knode.css('color');
@@ -2150,7 +2162,7 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
-		if (cmd === 'hilitecolor') {
+		if (key === 'hilitecolor') {
 			knode = _getCommonNode(range, {'*' : '.background-color'});
 			if (knode) {
 				val = knode.css('background-color');
@@ -2235,6 +2247,29 @@ KCmd.prototype = {
 		this.remove(map);
 		return this.select();
 	},
+	inserthtml : function(val) {
+		var self = this, doc = self.doc, range = self.range;
+		var div = doc.createElement('div'),
+			frag = doc.createDocumentFragment();
+		div.innerHTML = val;
+		var node = div.firstChild;
+		while (node) {
+			frag.appendChild(node.cloneNode(true));
+			node = node.nextSibling;
+		}
+		div = null;
+		range.deleteContents();
+		range.insertNode(frag);
+		range.collapse(false);
+		return self.select();
+	},
+	hr : function() {
+		return this.inserthtml('<hr />');
+	},
+	print : function() {
+		this.win.print();
+		return this;
+	},
 
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
@@ -2282,15 +2317,25 @@ KCmd.prototype = {
 	}
 };
 
+_each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
+	KCmd.prototype[name] = function(val) {
+		var self = this;
+		this.select();
+		_nativeCommand(self.doc, name, val);
+		return self;
+	};
+});
+
 function _cmd(mixed) {
 
 	if (mixed.nodeName) {
 		var doc = mixed.ownerDocument || mixed,
-			rng = _getRng(doc),
-			cmd = new KCmd(_range(rng || doc));
+			range = _range(doc).selectNodeContents(doc.body).collapse(false),
+			cmd = new KCmd(range);
 
 		cmd.onchange(function(e) {
-			rng = _getRng(doc);
+			var rng = _getRng(doc);
 			if (rng) {
 				cmd.range = _range(rng);
 			}
@@ -2336,7 +2381,7 @@ function _widget(options) {
 			'z-index' : z
 		});
 	}
-	_node(parent).append(div);
+	_node(parent, doc).append(div);
 	return {
 		name : name,
 		x : x,
@@ -2552,11 +2597,9 @@ K.edit = _edit;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
 		this.addClass('ke-toolbar-icon-outline-on');
-		e.stop();
 	});
 	itemNode.mouseout(function(e) {
 		this.removeClass('ke-toolbar-icon-outline-on');
-		e.stop();
 	});
 	itemNode.click(function(e) {
 		item.click.call(this, e);
@@ -2672,14 +2715,12 @@ function _menu(options) {
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
-			e.stop();
 		});
 		itemDiv.mouseout(function(e) {
 			this.removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
-			e.stop();
 		});
 		itemDiv.click(item.click);
 		itemDiv.append(leftDiv);
@@ -2986,8 +3027,48 @@ _plugin('source', function(editor) {
 	editor.edit.design();
 });
 
+_plugin('formatblock', function(editor) {
+	var pos = this.pos(),
+		blocks = _pluginLang('formatblock').formatblock,
+		heights = {
+			h1 : 28,
+			h2 : 24,
+			h3 : 18,
+			H4 : 14,
+			p : 12
+		},
+		cmd = editor.edit.cmd,
+		curVal = cmd.val('formatblock');
+	editor.menu = _menu({
+		name : 'formatblock',
+		width : _LANG_TYPE == 'en' ? 200 : 150,
+		x : pos.x,
+		y : pos.y + this.height(),
+		centerLineMode : false
+	});
+	_each(blocks, function(key, val) {
+		var style = 'font-size:' + heights[key] + 'px;';
+		if (key.charAt(0) === 'h') {
+			style += 'font-weight:bold;';
+		}
+		editor.menu.addItem({
+			title : '<span style="' + style + '">' + val + '</span>',
+			height : heights[key] + 12,
+			checked : (curVal === key || curVal === val),
+			click : function(e) {
+				cmd.formatblock('<' + key.toUpperCase() + '>');
+				editor.menu.remove();
+				editor.menu = null;
+				e.stop();
+			}
+		});
+	});
+});
+
 _plugin('fontname', function(editor) {
-	var pos = this.pos();
+	var pos = this.pos(),
+		cmd = editor.edit.cmd,
+		curVal = cmd.val('fontname');
 	editor.menu = _menu({
 		name : 'fontname',
 		width : 150,
@@ -2998,8 +3079,9 @@ _plugin('fontname', function(editor) {
 	_each(_pluginLang('fontname').fontName, function(key, val) {
 		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
+			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
 			click : function(e) {
-				editor.edit.cmd.fontname(val);
+				cmd.fontname(val);
 				editor.menu.remove();
 				editor.menu = null;
 				e.stop();
@@ -3010,7 +3092,9 @@ _plugin('fontname', function(editor) {
 
 _plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-		pos = this.pos();
+		pos = this.pos(),
+		cmd = editor.edit.cmd,
+		curVal = cmd.val('fontsize');
 	editor.menu = _menu({
 		name : 'fontsize',
 		width : 150,
@@ -3022,8 +3106,9 @@ _plugin('fontsize', function(editor) {
 		editor.menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
 			height : _removeUnit(val) + 12,
+			checked : curVal === val,
 			click : function(e) {
-				editor.edit.cmd.fontsize(val);
+				cmd.fontsize(val);
 				editor.menu.remove();
 				editor.menu = null;
 				e.stop();
@@ -3034,14 +3119,16 @@ _plugin('fontsize', function(editor) {
 
 _each('forecolor,hilitecolor'.split(','), function(i, name) {
 	_plugin(name, function(editor) {
-		var pos = this.pos();
+		var pos = this.pos(),
+			cmd = editor.edit.cmd,
+			curVal = cmd.val(name);
 		editor.menu = _colorpicker({
 			name : name,
 			x : pos.x,
 			y : pos.y + this.height(),
-			selectedColor : 'default',
+			selectedColor : curVal || 'default',
 			click : function(color) {
-				editor.edit.cmd[name](color);
+				cmd[name](color);
 				editor.menu.remove();
 				editor.menu = null;
 			}
@@ -3049,9 +3136,11 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 	});
 });
 
-_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
+_each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
+	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
 	_plugin(name, function(editor) {
-		editor.edit.cmd[name]();
+		editor.edit.cmd[name](null);
 	});
 });
 
@@ -3150,7 +3239,7 @@ _language.zh_CN = {
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
 	plugins : {
 		about : {
-			version : '4.0 (2010-07-16)',
+			version : '4.0 (2010-07-17)',
 			title : 'HTML可视化编辑器'
 		},
 		plainpaste : {

@@ -705,7 +705,11 @@ KRange.prototype = {
 					eo += nodeCount;
 				}
 			} else if (so >= sc.nodeValue.length) {
-				sc.parentNode.appendChild(node);
+				if (sc.nextSibling) {
+					sc.parentNode.insertBefore(node, sc.nextSibling);
+				} else {
+					sc.parentNode.appendChild(node);
+				}
 			} else {
 				c = sc.splitText(so);
 				sc.parentNode.insertBefore(node, c);
@@ -720,6 +724,9 @@ KRange.prototype = {
 			self.setStartBefore(firstChild).setEndAfter(lastChild);
 		} else {
 			self.selectNode(node);
+		}
+		if (self.compareBoundaryPoints(_END_TO_END, self.cloneRange().setEnd(ec, eo)) >= 1) {
+			return self;
 		}
 		return self.setEnd(ec, eo);
 	},
@@ -745,7 +752,7 @@ KRange.prototype = {
 		将KRange转换成原生Range并返回。
 	*/
 	get : function() {
-		var self = this, doc = self.doc,
+		var self = this, doc = self.doc, node,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
 		if (doc.createRange) {

@@ -51,14 +51,12 @@ function _menu(options) {
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
-			e.stop();
 		});
 		itemDiv.mouseout(function(e) {
 			this.removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
-			e.stop();
 		});
 		itemDiv.click(item.click);
 		itemDiv.append(leftDiv);

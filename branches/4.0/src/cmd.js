@@ -66,11 +66,17 @@ _each(_CURSORMOVE_KEY_MAP, function(key, val) {
 	_CHANGE_KEY_MAP[key] = val;
 });
 
+//original execCommand
+function _nativeCommand(doc, key, val) {
+	try {
+		doc.execCommand(key, false, val);
+	} catch(e) {}
+}
 //original queryCommandValue
-function _nativeCommandValue(doc, cmd) {
+function _nativeCommandValue(doc, key) {
 	var val = '';
 	try {
-		val = doc.queryCommandValue(cmd);
+		val = doc.queryCommandValue(key);
 	} catch (e) {}
 	if (typeof val !== 'string') {
 		val = '';
@@ -96,7 +102,6 @@ function _getRng(doc) {
 			rng = sel.createRange();
 		}
 	} catch(e) {}
-	rng = rng || doc;
 	if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
 		return null;
 	}
@@ -580,32 +585,32 @@ KCmd.prototype = {
 		}
 	},
 	//Reference: document.execCommand
-	exec : function(cmd, val) {
-		return this[cmd.toLowerCase()](val);
+	exec : function(key, val) {
+		return this[key.toLowerCase()](val);
 	},
 	//Reference: document.queryCommandState
-	state : function(cmd) {
+	state : function(key) {
 		var self = this, doc = self.doc, range = self.range, bool = false;
 		try {
-			bool = doc.queryCommandState(cmd);
+			bool = doc.queryCommandState(key);
 		} catch (e) {}
 		return bool;
 	},
 	//Reference: document.queryCommandValue
-	val : function(cmd) {
+	val : function(key) {
 		var self = this, doc = self.doc, range = self.range;
 		function lc(val) {
 			return val.toLowerCase();
 		}
-		cmd = lc(cmd);
+		key = lc(key);
 		var val = '', knode;
-		if (cmd === 'fontfamily' || cmd === 'fontname') {
+		if (key === 'fontfamily' || key === 'fontname') {
 			val = _nativeCommandValue(doc, 'fontname');
 			val = val.replace(/['"]/g, '');
 			return lc(val);
 		}
-		if (cmd === 'formatblock') {
-			val = _nativeCommandValue(doc, cmd);
+		if (key === 'formatblock') {
+			val = _nativeCommandValue(doc, key);
 			if (val === '') {
 				knode = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
 				if (knode) {
@@ -617,14 +622,14 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
-		if (cmd === 'fontsize') {
+		if (key === 'fontsize') {
 			knode = _getCommonNode(range, {'*' : '.font-size'});
 			if (knode) {
 				val = knode.css('font-size');
 			}
 			return lc(val);
 		}
-		if (cmd === 'forecolor') {
+		if (key === 'forecolor') {
 			knode = _getCommonNode(range, {'*' : '.color'});
 			if (knode) {
 				val = knode.css('color');
@@ -635,7 +640,7 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
-		if (cmd === 'hilitecolor') {
+		if (key === 'hilitecolor') {
 			knode = _getCommonNode(range, {'*' : '.background-color'});
 			if (knode) {
 				val = knode.css('background-color');
@@ -720,6 +725,29 @@ KCmd.prototype = {
 		this.remove(map);
 		return this.select();
 	},
+	inserthtml : function(val) {
+		var self = this, doc = self.doc, range = self.range;
+		var div = doc.createElement('div'),
+			frag = doc.createDocumentFragment();
+		div.innerHTML = val;
+		var node = div.firstChild;
+		while (node) {
+			frag.appendChild(node.cloneNode(true));
+			node = node.nextSibling;
+		}
+		div = null;
+		range.deleteContents();
+		range.insertNode(frag);
+		range.collapse(false);
+		return self.select();
+	},
+	hr : function() {
+		return this.inserthtml('<hr />');
+	},
+	print : function() {
+		this.win.print();
+		return this;
+	},
 	//用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
@@ -767,16 +795,26 @@ KCmd.prototype = {
 	}
 };
 
+_each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
+	KCmd.prototype[name] = function(val) {
+		var self = this;
+		this.select();
+		_nativeCommand(self.doc, name, val);
+		return self;
+	};
+});
+
 function _cmd(mixed) {
 	//mixed is a document
 	if (mixed.nodeName) {
 		var doc = mixed.ownerDocument || mixed,
-			rng = _getRng(doc),
-			cmd = new KCmd(_range(rng || doc));
+			range = _range(doc).selectNodeContents(doc.body).collapse(false),
+			cmd = new KCmd(range);
 		//add events
 		//重新设置selection
 		cmd.onchange(function(e) {
-			rng = _getRng(doc);
+			var rng = _getRng(doc);
 			if (rng) {
 				cmd.range = _range(rng);
 			}

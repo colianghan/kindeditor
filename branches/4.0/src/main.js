@@ -234,8 +234,48 @@ _plugin('source', function(editor) {
 	editor.edit.design();
 });
 
+_plugin('formatblock', function(editor) {
+	var pos = this.pos(),
+		blocks = _pluginLang('formatblock').formatblock,
+		heights = {
+			h1 : 28,
+			h2 : 24,
+			h3 : 18,
+			H4 : 14,
+			p : 12
+		},
+		cmd = editor.edit.cmd,
+		curVal = cmd.val('formatblock');
+	editor.menu = _menu({
+		name : 'formatblock',
+		width : _LANG_TYPE == 'en' ? 200 : 150,
+		x : pos.x,
+		y : pos.y + this.height(),
+		centerLineMode : false
+	});
+	_each(blocks, function(key, val) {
+		var style = 'font-size:' + heights[key] + 'px;';
+		if (key.charAt(0) === 'h') {
+			style += 'font-weight:bold;';
+		}
+		editor.menu.addItem({
+			title : '<span style="' + style + '">' + val + '</span>',
+			height : heights[key] + 12,
+			checked : (curVal === key || curVal === val),
+			click : function(e) {
+				cmd.formatblock('<' + key.toUpperCase() + '>');
+				editor.menu.remove();
+				editor.menu = null;
+				e.stop();
+			}
+		});
+	});
+});
+
 _plugin('fontname', function(editor) {
-	var pos = this.pos();
+	var pos = this.pos(),
+		cmd = editor.edit.cmd,
+		curVal = cmd.val('fontname');
 	editor.menu = _menu({
 		name : 'fontname',
 		width : 150,
@@ -246,8 +286,9 @@ _plugin('fontname', function(editor) {
 	_each(_pluginLang('fontname').fontName, function(key, val) {
 		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
+			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
 			click : function(e) {
-				editor.edit.cmd.fontname(val);
+				cmd.fontname(val);
 				editor.menu.remove();
 				editor.menu = null;
 				e.stop();
@@ -258,7 +299,9 @@ _plugin('fontname', function(editor) {
 
 _plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-		pos = this.pos();
+		pos = this.pos(),
+		cmd = editor.edit.cmd,
+		curVal = cmd.val('fontsize');
 	editor.menu = _menu({
 		name : 'fontsize',
 		width : 150,
@@ -270,8 +313,9 @@ _plugin('fontsize', function(editor) {
 		editor.menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
 			height : _removeUnit(val) + 12,
+			checked : curVal === val,
 			click : function(e) {
-				editor.edit.cmd.fontsize(val);
+				cmd.fontsize(val);
 				editor.menu.remove();
 				editor.menu = null;
 				e.stop();
@@ -282,14 +326,16 @@ _plugin('fontsize', function(editor) {
 
 _each('forecolor,hilitecolor'.split(','), function(i, name) {
 	_plugin(name, function(editor) {
-		var pos = this.pos();
+		var pos = this.pos(),
+			cmd = editor.edit.cmd,
+			curVal = cmd.val(name);
 		editor.menu = _colorpicker({
 			name : name,
 			x : pos.x,
 			y : pos.y + this.height(),
-			selectedColor : 'default',
+			selectedColor : curVal || 'default',
 			click : function(color) {
-				editor.edit.cmd[name](color);
+				cmd[name](color);
 				editor.menu.remove();
 				editor.menu = null;
 			}
@@ -297,9 +343,11 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 	});
 });
 
-_each('bold,italic,underline,strikethrough,removeformat'.split(','), function(i, name) {
+_each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
+	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
 	_plugin(name, function(editor) {
-		editor.edit.cmd[name]();
+		editor.edit.cmd[name](null);
 	});
 });
 

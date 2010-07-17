@@ -19,11 +19,9 @@
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
 		this.addClass('ke-toolbar-icon-outline-on');
-		e.stop();
 	});
 	itemNode.mouseout(function(e) {
 		this.removeClass('ke-toolbar-icon-outline-on');
-		e.stop();
 	});
 	itemNode.click(function(e) {
 		item.click.call(this, e);
