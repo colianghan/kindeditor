@@ -799,8 +799,23 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
 	KCmd.prototype[name] = function(val) {
 		var self = this;
-		this.select();
 		_nativeCommand(self.doc, name, val);
+		return self;
+	};
+});
+
+_each('cut,copy,paste'.split(','), function(i, name) {
+	KCmd.prototype[name] = function() {
+		var self = this;
+		try {
+			if (!self.doc.queryCommandSupported(name)) {
+				throw 'e';
+			}
+		} catch(e) {
+			alert(_lang(name + 'Error'));
+			return;
+		}
+		_nativeCommand(self.doc, name, null);
 		return self;
 	};
 });

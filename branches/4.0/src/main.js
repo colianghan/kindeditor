@@ -344,9 +344,10 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 });
 
 _each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
-	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,cut,copy,paste,' +
 	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
 	_plugin(name, function(editor) {
+		editor.edit.focus();
 		editor.edit.cmd[name](null);
 	});
 });
