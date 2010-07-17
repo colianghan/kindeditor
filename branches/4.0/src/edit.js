@@ -171,7 +171,6 @@ KEdit.prototype = {
 		iframe.remove();
 		textarea.remove();
 		div.remove();
-		CollectGarbage();
 		self.div = self.iframe = self.textarea = self.doc = null;
 		return self;
 	},

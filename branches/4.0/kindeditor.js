@@ -317,8 +317,19 @@ function _fire(el, type) {
 	}
 	var id = _getId(el);
 	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
-		_data[id][type][0]();
+		_data[id][type][0].call(el);
 	}
+}
+
+function _ctrl(el, key, fn) {
+	var self = this;
+	key = /^\d{2,}$/.test(key) ? key : key.toUpperCase().charCodeAt(0);
+	_bind(el, 'keydown', function(e) {
+		if (e.ctrlKey && e.which == key && !e.shiftKey && !e.altKey) {
+			fn.call(el);
+			e.stop();
+		}
+	});
 }
 
 function _ready(fn, doc) {
@@ -373,6 +384,7 @@ if (_IE) {
 K.bind = _bind;
 K.unbind = _unbind;
 K.fire = _fire;
+K.ctrl = _ctrl;
 K.ready = _ready;
 
 function _getCssList(css) {
@@ -899,7 +911,7 @@ KNode.prototype = {
 				node = node.offsetParent;
 			}
 		}
-		return {x : x, y : y};
+		return {x : Math.round(x), y : Math.round(y)};
 	},
 	clone : function(bool) {
 		return new KNode(this.node.cloneNode(bool));
@@ -2321,8 +2333,23 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
 	KCmd.prototype[name] = function(val) {
 		var self = this;
-		this.select();
 		_nativeCommand(self.doc, name, val);
+		return self;
+	};
+});
+
+_each('cut,copy,paste'.split(','), function(i, name) {
+	KCmd.prototype[name] = function() {
+		var self = this;
+		try {
+			if (!self.doc.queryCommandSupported(name)) {
+				throw 'e';
+			}
+		} catch(e) {
+			alert(_lang(name + 'Error'));
+			return;
+		}
+		_nativeCommand(self.doc, name, null);
 		return self;
 	};
 });
@@ -2359,8 +2386,8 @@ K.cmd = _cmd;
 
 function _widget(options) {
 	var name = options.name || '',
-		x = options.x || 0,
-		y = options.y || 0,
+		x = _addUnit(options.x) || 0,
+		y = _addUnit(options.y) || 0,
 		z = options.z || 0,
 		width = _addUnit(options.width) || 0,
 		height = _addUnit(options.height) || 0,
@@ -2376,8 +2403,8 @@ function _widget(options) {
 	if (z) {
 		div.css({
 			position : 'absolute',
-			left : x + 'px',
-			top : y + 'px',
+			left : x,
+			top : y,
 			'z-index' : z
 		});
 	}
@@ -2545,7 +2572,6 @@ KEdit.prototype = {
 		iframe.remove();
 		textarea.remove();
 		div.remove();
-		CollectGarbage();
 		self.div = self.iframe = self.textarea = self.doc = null;
 		return self;
 	},
@@ -2617,7 +2643,7 @@ function _toolbar(options) {
 	var inner = _node('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
-			e.stop();
+			e.preventDefault();
 		})
 		.append(inner);
 
@@ -2628,8 +2654,8 @@ function _toolbar(options) {
 		} else if (item.name == '/') {
 			itemNode = _node('<br />');
 		} else {
-			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#"></a>');
-			itemNode.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
+			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '"></a>')
+				.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
@@ -2865,7 +2891,7 @@ var _options = {
 		'superscript', '|', 'selectall', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'advtable', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
@@ -2933,8 +2959,18 @@ function KEditor(options) {
 KEditor.prototype = {
 	create : function() {
 		var self = this,
-			container = _node('<div></div>').css('width', self.width);
-		if (self.fullscreenMode) {
+			fullscreenMode = self.fullscreenMode,
+			width = fullscreenMode ? document.documentElement.clientWidth + 'px' : self.width,
+			height = fullscreenMode ? document.documentElement.clientHeight + 'px' : self.height,
+			container = _node('<div></div>').css('width', width);
+		if (fullscreenMode) {
+			var pos = _getScrollPos();
+			container.css({
+				position : 'absolute',
+				left : _addUnit(pos.x),
+				top : _addUnit(pos.y),
+				'z-index' : 19811211
+			});
 			_node(document.body).append(container);
 		} else {
 			self.srcElement.before(container);
@@ -2948,6 +2984,7 @@ KEditor.prototype = {
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
 				name : name,
+				title : _lang(name),
 				click : function(e) {
 					if (self.menu) {
 						var menuName = self.menu.name;
@@ -2961,22 +2998,40 @@ KEditor.prototype = {
 				}
 			});
 		});
+		if (fullscreenMode) {
+			height = _removeUnit(height) - toolbar.div().height();
+		}
 
 		var edit = _edit({
-			srcElement : self.srcElement,
-			width : '100%',
-			height : self.height,
-			designMode : self.designMode,
-			bodyClass : self.bodyClass,
-			cssData : self.cssData
-		}).create(container);
-		_each([edit.doc, document], function() {
+				srcElement : self.srcElement,
+				width : '100%',
+				height : height,
+				designMode : self.designMode,
+				bodyClass : self.bodyClass,
+				cssData : self.cssData
+			}).create(container),
+			doc = edit.doc, textarea = edit.textarea;
+
+		_each([doc, document], function() {
 			_node(this).click(function(e) {
 				if (self.menu) {
 					self.menu.remove();
 					self.menu = null;
 				}
 			});
+		});
+		_each({
+			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U',
+			selectall : 'A', print : 'P'
+		}, function(name, key) {
+			_ctrl(doc, key, function() {
+				_plugin(name).call(doc, self);
+			});
+			if (key == 'Z' || key == 'Y') {
+				_ctrl(textarea.get(), key, function() {
+					_plugin(name).call(textarea, self);
+				});
+			}
 		});
 
 		self.container = container;
@@ -2994,6 +3049,12 @@ KEditor.prototype = {
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = null;
 		return self;
+	},
+	fullscreen : function(bool) {
+		var self = this;
+		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
+		self.remove();
+		return self.create();
 	}
 };
 
@@ -3022,9 +3083,31 @@ if (_IE && _VERSION < 7) {
 	} catch (e) {}
 }
 
+K.create = _create;
+K.remove = _remove;
+K.plugin = _plugin;
+
+var _K = K;
+K = function(id, options) {
+	_ready(function() {
+		_create(id, options);
+	});
+};
+_each(_K, function(key, val) {
+	K[key] = val;
+});
+if (window.K === undefined) {
+	window.K = K;
+}
+window.KindEditor = K;
+
 _plugin('source', function(editor) {
 	editor.toolbar.disable();
 	editor.edit.design();
+});
+
+_plugin('fullscreen', function(editor) {
+	editor.fullscreen();
 });
 
 _plugin('formatblock', function(editor) {
@@ -3137,30 +3220,13 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 });
 
 _each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
-	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,cut,copy,paste,' +
 	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
 	_plugin(name, function(editor) {
+		editor.edit.focus();
 		editor.edit.cmd[name](null);
 	});
 });
-
-K.create = _create;
-K.remove = _remove;
-K.plugin = _plugin;
-
-var _K = K;
-K = function(id, options) {
-	_ready(function() {
-		_create(id, options);
-	});
-};
-_each(_K, function(key, val) {
-	K[key] = val;
-});
-if (window.K === undefined) {
-	window.K = K;
-}
-window.KindEditor = K;
 
 _language.zh_CN = {
 	source : 'HTML代码',
@@ -3171,7 +3237,7 @@ _language.zh_CN = {
 	paste : '粘贴(Ctrl+V)',
 	plainpaste : '粘贴为无格式文本',
 	wordpaste : '从Word粘贴',
-	selectall : '全选',
+	selectall : '全选(Ctrl+A)',
 	justifyleft : '左对齐',
 	justifycenter : '居中',
 	justifyright : '右对齐',
@@ -3182,11 +3248,11 @@ _language.zh_CN = {
 	outdent : '减少缩进',
 	subscript : '下标',
 	superscript : '上标',
-	title : '标题',
+	formatblock : '段落',
 	fontname : '字体',
 	fontsize : '文字大小',
-	textcolor : '文字颜色',
-	bgcolor : '文字背景',
+	forecolor : '文字颜色',
+	hilitecolor : '文字背景',
 	bold : '粗体(Ctrl+B)',
 	italic : '斜体(Ctrl+I)',
 	underline : '下划线(Ctrl+U)',
@@ -3195,16 +3261,15 @@ _language.zh_CN = {
 	image : '图片',
 	flash : '插入Flash',
 	media : '插入多媒体',
-	table : '插入表格',
+	table : '表格',
 	hr : '插入横线',
 	emoticons : '插入表情',
 	link : '超级链接',
 	unlink : '取消超级链接',
 	fullscreen : '全屏显示',
 	about : '关于',
-	print : '打印',
+	print : '打印(Ctrl+P)',
 	fileManager : '浏览服务器',
-	advtable : '表格',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',

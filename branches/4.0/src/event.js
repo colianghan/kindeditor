@@ -248,8 +248,19 @@ function _fire(el, type) {
 	}
 	var id = _getId(el);
 	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
-		_data[id][type][0]();
+		_data[id][type][0].call(el);
 	}
+}
+
+function _ctrl(el, key, fn) {
+	var self = this;
+	key = /^\d{2,}$/.test(key) ? key : key.toUpperCase().charCodeAt(0);
+	_bind(el, 'keydown', function(e) {
+		if (e.ctrlKey && e.which == key && !e.shiftKey && !e.altKey) {
+			fn.call(el);
+			e.stop();
+		}
+	});
 }
 
 function _ready(fn, doc) {
@@ -311,4 +322,5 @@ if (_IE) {
 K.bind = _bind;
 K.unbind = _unbind;
 K.fire = _fire;
+K.ctrl = _ctrl;
 K.ready = _ready;

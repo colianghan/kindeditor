@@ -276,7 +276,7 @@ KNode.prototype = {
 				node = node.offsetParent;
 			}
 		}
-		return {x : x, y : y};
+		return {x : Math.round(x), y : Math.round(y)};
 	},
 	clone : function(bool) {
 		return new KNode(this.node.cloneNode(bool));

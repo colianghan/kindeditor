@@ -18,8 +18,8 @@
 
 function _widget(options) {
 	var name = options.name || '',
-		x = options.x || 0,
-		y = options.y || 0,
+		x = _addUnit(options.x) || 0,
+		y = _addUnit(options.y) || 0,
 		z = options.z || 0,
 		width = _addUnit(options.width) || 0,
 		height = _addUnit(options.height) || 0,
@@ -35,8 +35,8 @@ function _widget(options) {
 	if (z) {
 		div.css({
 			position : 'absolute',
-			left : x + 'px',
-			top : y + 'px',
+			left : x,
+			top : y,
 			'z-index' : z
 		});
 	}

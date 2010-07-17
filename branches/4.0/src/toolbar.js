@@ -39,7 +39,7 @@ function _toolbar(options) {
 	var inner = _node('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
-			e.stop();
+			e.preventDefault();
 		})
 		.append(inner);
 	//add a item of toolbar
@@ -50,8 +50,8 @@ function _toolbar(options) {
 		} else if (item.name == '/') {
 			itemNode = _node('<br />');
 		} else {
-			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#"></a>');
-			itemNode.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
+			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '"></a>')
+				.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);

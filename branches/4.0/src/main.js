@@ -70,7 +70,7 @@ var _options = {
 		'superscript', '|', 'selectall', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'advtable', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
@@ -138,8 +138,18 @@ function KEditor(options) {
 KEditor.prototype = {
 	create : function() {
 		var self = this,
-			container = _node('<div></div>').css('width', self.width);
-		if (self.fullscreenMode) {
+			fullscreenMode = self.fullscreenMode,
+			width = fullscreenMode ? document.documentElement.clientWidth + 'px' : self.width,
+			height = fullscreenMode ? document.documentElement.clientHeight + 'px' : self.height,
+			container = _node('<div></div>').css('width', width);
+		if (fullscreenMode) {
+			var pos = _getScrollPos();
+			container.css({
+				position : 'absolute',
+				left : _addUnit(pos.x),
+				top : _addUnit(pos.y),
+				'z-index' : 19811211
+			});
 			_node(document.body).append(container);
 		} else {
 			self.srcElement.before(container);
@@ -153,6 +163,7 @@ KEditor.prototype = {
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
 				name : name,
+				title : _lang(name),
 				click : function(e) {
 					if (self.menu) {
 						var menuName = self.menu.name;
@@ -166,22 +177,40 @@ KEditor.prototype = {
 				}
 			});
 		});
+		if (fullscreenMode) {
+			height = _removeUnit(height) - toolbar.div().height();
+		}
 		//create edit
 		var edit = _edit({
-			srcElement : self.srcElement,
-			width : '100%',
-			height : self.height,
-			designMode : self.designMode,
-			bodyClass : self.bodyClass,
-			cssData : self.cssData
-		}).create(container);
-		_each([edit.doc, document], function() {
+				srcElement : self.srcElement,
+				width : '100%',
+				height : height,
+				designMode : self.designMode,
+				bodyClass : self.bodyClass,
+				cssData : self.cssData
+			}).create(container),
+			doc = edit.doc, textarea = edit.textarea;
+		//bind events
+		_each([doc, document], function() {
 			_node(this).click(function(e) {
 				if (self.menu) {
 					self.menu.remove();
 					self.menu = null;
 				}
 			});
+		});
+		_each({
+			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U',
+			selectall : 'A', print : 'P'
+		}, function(name, key) {
+			_ctrl(doc, key, function() {
+				_plugin(name).call(doc, self);
+			});
+			if (key == 'Z' || key == 'Y') {
+				_ctrl(textarea.get(), key, function() {
+					_plugin(name).call(textarea, self);
+				});
+			}
 		});
 		//properties
 		self.container = container;
@@ -199,6 +228,12 @@ KEditor.prototype = {
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = null;
 		return self;
+	},
+	fullscreen : function(bool) {
+		var self = this;
+		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
+		self.remove();
+		return self.create();
 	}
 };
 
@@ -228,10 +263,32 @@ if (_IE && _VERSION < 7) {
 	} catch (e) {}
 }
 
+K.create = _create;
+K.remove = _remove;
+K.plugin = _plugin;
+
+var _K = K;
+K = function(id, options) {
+	_ready(function() {
+		_create(id, options);
+	});
+};
+_each(_K, function(key, val) {
+	K[key] = val;
+});
+if (window.K === undefined) {
+	window.K = K;
+}
+window.KindEditor = K;
+
 //define core plugins
 _plugin('source', function(editor) {
 	editor.toolbar.disable();
 	editor.edit.design();
+});
+
+_plugin('fullscreen', function(editor) {
+	editor.fullscreen();
 });
 
 _plugin('formatblock', function(editor) {
@@ -351,21 +408,3 @@ _each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorder
 		editor.edit.cmd[name](null);
 	});
 });
-
-K.create = _create;
-K.remove = _remove;
-K.plugin = _plugin;
-
-var _K = K;
-K = function(id, options) {
-	_ready(function() {
-		_create(id, options);
-	});
-};
-_each(_K, function(key, val) {
-	K[key] = val;
-});
-if (window.K === undefined) {
-	window.K = K;
-}
-window.KindEditor = K;
