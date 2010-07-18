@@ -112,21 +112,17 @@ KNode.prototype = {
 	*/
 	bind : function(type, fn) {
 		var self = this;
-		_bind(self.node, type, function(e) {
-			fn.call(self, e);
-		});
+		_bind(self.node, type, fn, self);
 		return self;
 	},
 	unbind : function(type, fn) {
 		var self = this;
-		_unbind(self.node, type, function(e) {
-			fn.call(self, e);
-		});
+		_unbind(self.node, type, fn);
 		return self;
 	},
 	fire : function(type) {
 		var self = this;
-		_fire(self.node, type);
+		_fire(self.node, type, self);
 		return self;
 	},
 	hasAttr : function(key) {

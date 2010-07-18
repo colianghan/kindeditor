@@ -288,6 +288,7 @@
 	padding: 0;
 	border: 0;
 	background-repeat: no-repeat;
+	font-size: 0;
 	overflow: hidden;
 }
 .ke-toolbar-icon-url {
@@ -298,6 +299,8 @@
 	background-color: transparent;
 	margin: 1px;
 	padding: 1px 2px;
+	font-size: 0;
+	overflow: hidden;
 	cursor: pointer;
 }
 .ke-toolbar-icon-outline-on {
@@ -312,13 +315,15 @@
 	cursor: default;
 }
 .ke-toolbar-separator {
+	height: 16px;
 	margin: 2px 3px;
 	border-left: 1px solid #A0A0A0;
 	border-right: 1px solid #FFFFFF;
 	border-top:0;
 	border-bottom:0;
 	width: 0;
-	height: 16px;
+	font-size: 0;
+	overflow: hidden;
 }
 /* menu */
 .ke-menu {

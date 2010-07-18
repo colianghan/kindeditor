@@ -168,7 +168,8 @@ function _getId(el) {
 	return id;
 }
 
-function _bind(el, type, fn) {
+function _bind(el, type, fn, self) {
+	self = self || el;
 	if (type.indexOf(',') >= 0) {
 		_each(type.split(','), function() {
 			_bind(el, this, fn);
@@ -190,7 +191,7 @@ function _bind(el, type, fn) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
 				if (key > 0 && val) {
-					val.call(el, _event(el, e));
+					val.call(self, _event(el, e));
 				}
 			});
 		};
@@ -226,7 +227,7 @@ function _unbind(el, type, fn) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			delete _data[id][type];
 		} else {
-			for (var i = 0, len = _data[id][type].length; i < len; i++) {
+			for (var i = 1, len = _data[id][type].length; i < len; i++) {
 				if (_data[id][type][i] === fn) {
 					delete _data[id][type][i];
 				}
@@ -234,6 +235,14 @@ function _unbind(el, type, fn) {
 			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				delete _data[id][type];
+			}
+			var typeCount = 0;
+			_each(_data[id], function() {
+				typeCount++;
+			});
+			if (typeCount < 1) {
+				delete _data[id];
+				delete _elList[id];
 			}
 		}
 	}
@@ -248,7 +257,7 @@ function _fire(el, type) {
 	}
 	var id = _getId(el);
 	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
-		_data[id][type][0].call(el);
+		_data[id][type][0]();
 	}
 }
 

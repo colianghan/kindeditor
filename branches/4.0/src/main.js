@@ -320,6 +320,7 @@ _plugin('formatblock', function(editor) {
 			height : heights[key] + 12,
 			checked : (curVal === key || curVal === val),
 			click : function(e) {
+				cmd.select();
 				cmd.formatblock('<' + key.toUpperCase() + '>');
 				editor.menu.remove();
 				editor.menu = null;

@@ -276,6 +276,7 @@ var K = {
 	inString : _inString,
 	trim : _trim,
 	addUnit : _addUnit,
+	removeUnit : _removeUnit,
 	toHex : _toHex,
 	toMap : _toMap
 };
