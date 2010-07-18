@@ -17,7 +17,7 @@
 */
 
 function _menu(options) {
-	options.z = options.z || 19811212;
+	options.z = options.z || 19811213;
 	var self = _widget(options),
 		remove = self.remove,
 		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode,

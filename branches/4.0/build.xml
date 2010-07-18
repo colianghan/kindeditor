@@ -32,6 +32,7 @@
 			<fileset file="${src}/toolbar.js"/>
 			<fileset file="${src}/menu.js"/>
 			<fileset file="${src}/colorpicker.js"/>
+			<fileset file="${src}/dialog.js"/>
 			<fileset file="${src}/main.js"/>
 			<fileset file="${lang}/zh_CN.js"/>
 			<fileset file="${src}/footer.js"/>

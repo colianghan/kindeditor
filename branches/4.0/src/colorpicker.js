@@ -18,7 +18,7 @@
 */
 
 function _colorpicker(options) {
-	options.z = options.z || 19811212;
+	options.z = options.z || 19811213;
 	var self = _widget(options),
 		colors = options.colors || [
 			['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],

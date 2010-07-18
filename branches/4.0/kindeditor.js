@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http:
 * @licence LGPL(http:
-* @version 4.0 (2010-07-17)
+* @version 4.0 (2010-07-18)
 *******************************************************************************/
 
 (function (window, undefined) {
@@ -114,6 +114,7 @@ var K = {
 	inString : _inString,
 	trim : _trim,
 	addUnit : _addUnit,
+	removeUnit : _removeUnit,
 	toHex : _toHex,
 	toMap : _toMap
 };
@@ -237,7 +238,8 @@ function _getId(el) {
 	return id;
 }
 
-function _bind(el, type, fn) {
+function _bind(el, type, fn, self) {
+	self = self || el;
 	if (type.indexOf(',') >= 0) {
 		_each(type.split(','), function() {
 			_bind(el, this, fn);
@@ -259,7 +261,7 @@ function _bind(el, type, fn) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
 				if (key > 0 && val) {
-					val.call(el, _event(el, e));
+					val.call(self, _event(el, e));
 				}
 			});
 		};
@@ -295,7 +297,7 @@ function _unbind(el, type, fn) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			delete _data[id][type];
 		} else {
-			for (var i = 0, len = _data[id][type].length; i < len; i++) {
+			for (var i = 1, len = _data[id][type].length; i < len; i++) {
 				if (_data[id][type][i] === fn) {
 					delete _data[id][type][i];
 				}
@@ -303,6 +305,14 @@ function _unbind(el, type, fn) {
 			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				delete _data[id][type];
+			}
+			var typeCount = 0;
+			_each(_data[id], function() {
+				typeCount++;
+			});
+			if (typeCount < 1) {
+				delete _data[id];
+				delete _elList[id];
 			}
 		}
 	}
@@ -317,7 +327,7 @@ function _fire(el, type) {
 	}
 	var id = _getId(el);
 	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
-		_data[id][type][0].call(el);
+		_data[id][type][0]();
 	}
 }
 
@@ -747,21 +757,17 @@ KNode.prototype = {
 
 	bind : function(type, fn) {
 		var self = this;
-		_bind(self.node, type, function(e) {
-			fn.call(self, e);
-		});
+		_bind(self.node, type, fn, self);
 		return self;
 	},
 	unbind : function(type, fn) {
 		var self = this;
-		_unbind(self.node, type, function(e) {
-			fn.call(self, e);
-		});
+		_unbind(self.node, type, fn);
 		return self;
 	},
 	fire : function(type) {
 		var self = this;
-		_fire(self.node, type);
+		_fire(self.node, type, self);
 		return self;
 	},
 	hasAttr : function(key) {
@@ -2384,6 +2390,64 @@ function _cmd(mixed) {
 
 K.cmd = _cmd;
 
+function _bindDragEvent(options) {
+	var moveEl = options.moveEl,
+		moveFn = options.moveFn,
+		clickEl = options.clickEl || moveEl,
+		iframeFix = options.iframeFix === undefined ? true : options.iframeFix;
+	var docs = [];
+	if (iframeFix) {
+		_each(_queryAll('iframe'), function() {
+			docs.push(_getIframeDoc(this));
+		});
+	}
+	clickEl.mousedown(function(e) {
+		var self = clickEl.get(),
+			x = parseInt(moveEl.css('left')),
+			y = _removeUnit(moveEl.css('top')),
+			width = moveEl.width(),
+			height = moveEl.height(),
+			pageX = e.pageX,
+			pageY = e.pageY,
+			dragging = true;
+		function moveListener(e) {
+			if (dragging) {
+				var diffX = Math.round(e.pageX - pageX),
+					diffY = Math.round(e.pageY - pageY);
+				moveFn.call(clickEl, x, y, width, height, diffX, diffY);
+			}
+			e.stop();
+		}
+		function selectListener(e) {
+			e.stop();
+		}
+		function upListener(e) {
+			dragging = false;
+			if (self.releaseCapture) {
+				self.releaseCapture();
+			}
+			_node(document).unbind('mousemove', moveListener)
+				.unbind('mouseup', upListener)
+				.unbind('selectstart', selectListener);
+			_each(docs, function() {
+				_node(this).unbind('mousemove', moveListener)
+					.unbind('mouseup', upListener);
+			});
+			e.stop();
+		}
+		_node(document).mousemove(moveListener)
+			.mouseup(upListener)
+			.bind('selectstart', selectListener);
+		_each(docs, function() {
+			_node(this).mousemove(moveListener).mouseup(upListener);
+		});
+		if (self.setCapture) {
+			self.setCapture();
+		}
+		e.stop();
+	});
+}
+
 function _widget(options) {
 	var name = options.name || '',
 		x = _addUnit(options.x) || 0,
@@ -2391,6 +2455,8 @@ function _widget(options) {
 		z = options.z || 0,
 		width = _addUnit(options.width) || 0,
 		height = _addUnit(options.height) || 0,
+		css = options.css,
+		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
 		div = _node('<div></div>').css('display', 'block');
@@ -2408,6 +2474,12 @@ function _widget(options) {
 			'z-index' : z
 		});
 	}
+	if (css) {
+		div.css(css);
+	}
+	if (html) {
+		div.html(html);
+	}
 	_node(parent, doc).append(div);
 	return {
 		name : name,
@@ -2423,6 +2495,20 @@ function _widget(options) {
 		remove : function() {
 			div.remove();
 			return this;
+		},
+		draggable : function(options) {
+			options = options || {};
+			options.moveEl = div;
+			options.moveFn = function(x, y, width, height, diffX, diffY) {
+				if ((x = x + diffX) < 0) {
+					x = 0;
+				}
+				if ((y = y + diffY) < 0) {
+					y = 0;
+				}
+				div.css('left', _addUnit(x)).css('top', _addUnit(y));
+			};
+			_bindDragEvent(options);
 		}
 	};
 }
@@ -2707,7 +2793,7 @@ function _toolbar(options) {
 K.toolbar = _toolbar;
 
 function _menu(options) {
-	options.z = options.z || 19811212;
+	options.z = options.z || 19811213;
 	var self = _widget(options),
 		remove = self.remove,
 		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode,
@@ -2774,7 +2860,7 @@ function _menu(options) {
 K.menu = _menu;
 
 function _colorpicker(options) {
-	options.z = options.z || 19811212;
+	options.z = options.z || 19811213;
 	var self = _widget(options),
 		colors = options.colors || [
 			['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
@@ -2837,6 +2923,113 @@ function _colorpicker(options) {
 }
 
 K.colorpicker = _colorpicker;
+
+function _dialog(options) {
+	options.z = options.z || 19811213;
+	var self = _widget(options),
+		remove = self.remove,
+		doc = self.doc,
+		title = options.title,
+		body = _node(options.body, doc),
+		previewBtn = options.previewBtn,
+		yesBtn = options.yesBtn,
+		noBtn = options.noBtn,
+		shadowMode = options.shadowMode === undefined ? true : options.shadowMode;
+
+	self.div().addClass('ke-dialog').bind('click,mousedown', function(e){
+		e.stop();
+	});
+	var contentCell;
+	if (shadowMode) {
+		var table = doc.createElement('table');
+		table.className = 'ke-dialog-table';
+		table.cellPadding = 0;
+		table.cellSpacing = 0;
+		table.border = 0;
+		self.div().append(table);
+		var rowNames = ['t', 'm', 'b'],
+			colNames = ['l', 'c', 'r'],
+			i, j, row, cell;
+		for (i = 0, len = 3; i < len; i++) {
+			row = table.insertRow(i);
+			for (j = 0, l = 3; j < l; j++) {
+				cell = row.insertCell(j);
+				cell.className = 'ke-' + rowNames[i] + colNames[j];
+				if (i == 1 && j == 1) {
+					contentCell = _node(cell);
+				} else {
+					cell.innerHTML = '<span class="ke-dialog-empty"></span>';
+				}
+			}
+		}
+		contentCell.css({
+			width : self.width,
+			height : self.height,
+			'vertical-align' : 'top'
+		});
+	} else {
+		self.div().addClass('ke-dialog-no-shadow');
+		contentCell = self.div();
+	}
+	var headerDiv = _node('<div class="ke-dialog-header"></div>');
+	contentCell.append(headerDiv);
+	headerDiv.html(title);
+	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
+		(shadowMode ? '' : 'no-') + 'shadow" title="' + _plugin('close') + '"></span>')
+		.click(function (e) {
+			self.remove();
+		});
+	headerDiv.append(span);
+	self.draggable({
+		clickEl : headerDiv
+	});
+	var bodyDiv = _node('<div class="ke-dialog-body"></div>');
+	contentCell.append(bodyDiv);
+	bodyDiv.append(body);
+	var footerDiv = _node('<div class="ke-dialog-footer"></div>');
+	if (previewBtn || yesBtn || noBtn) {
+		contentCell.append(footerDiv);
+	}
+	var buttons = [];
+	_each([
+		{ btn : previewBtn, name : 'preview' },
+		{ btn : yesBtn, name : 'yes' },
+		{ btn : noBtn, name : 'no' }
+	], function() {
+		var btn = this.btn;
+		if (btn) {
+			var button = _node('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
+			footerDiv.append(button);
+			button.click(btn.click);
+			buttons.push(button);
+		}
+	});
+	bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
+	var docEl = doc.documentElement;
+	var mask = _widget({
+		x : 0,
+		y : 0,
+		z : 19811212,
+		width : Math.max(docEl.scrollWidth, docEl.clientWidth),
+		height : Math.max(docEl.scrollHeight, docEl.clientHeight)
+	});
+	mask.div().addClass('ke-dialog-mask');
+
+	self.remove = function() {
+		mask.remove();
+		span.remove();
+		_each(buttons, function() {
+			this.remove();
+		});
+		footerDiv.remove();
+		bodyDiv.remove();
+		headerDiv.remove();
+		remove.call(self);
+	};
+	return self;
+}
+
+K.dialog = _dialog;
 
 var _plugins = {};
 
@@ -3139,6 +3332,7 @@ _plugin('formatblock', function(editor) {
 			height : heights[key] + 12,
 			checked : (curVal === key || curVal === val),
 			click : function(e) {
+				cmd.select();
 				cmd.formatblock('<' + key.toUpperCase() + '>');
 				editor.menu.remove();
 				editor.menu = null;
@@ -3304,7 +3498,7 @@ _language.zh_CN = {
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
 	plugins : {
 		about : {
-			version : '4.0 (2010-07-17)',
+			version : '4.0 (2010-07-18)',
 			title : 'HTML可视化编辑器'
 		},
 		plainpaste : {

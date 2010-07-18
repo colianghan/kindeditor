@@ -37,7 +37,6 @@ function _bindDragEvent(options) {
 			pageY = e.pageY,
 			dragging = true;
 		function moveListener(e) {
-			console.log('move');
 			if (dragging) {
 				var diffX = Math.round(e.pageX - pageX),
 					diffY = Math.round(e.pageY - pageY);
