@@ -407,14 +407,11 @@
 }
 /* colorpicker */
 .ke-colorpicker {
-	position: absolute;
 	border: 1px solid #A0A0A0;
 	background-color: #F1F1F1;
 	color: #222222;
 	padding: 2px;
 	margin: 0;
-	font-size: 12px;
-	text-align: left;
 }
 .ke-colorpicker-table {
 	border:0;
@@ -562,7 +559,17 @@
 	border: 0;
 	margin: 0;
 	padding: 0;
+	font: 12px/1.5 "sans serif",tahoma,verdana,helvetica;
+	text-align: left;
 	overflow: hidden;
+}
+.ke-dialog-body textarea {
+	display: block;
+	overflow: auto;
+	resize: none;
+}
+.ke-dialog-body textarea:focus {
+	outline: none;
 }
 .ke-dialog-footer {
 	border:0;

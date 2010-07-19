@@ -92,6 +92,7 @@ function _getScriptPath() {
 	}
 	return '';
 }
+var _round = Math.round;
 var K = {
 	IE : _IE,
 	GECKO : _GECKO,
@@ -829,14 +830,16 @@ KNode.prototype = {
 	width : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return self.node.offsetWidth;
+			var width = self.css('width');
+			return (/^\d/.test(width)) ? _removeUnit(width) : self.node.offsetWidth;
 		}
 		return self.css('width', _addUnit(val));
 	},
 	height : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return self.node.offsetHeight;
+			var height = self.css('height');
+			return (/^\d/.test(height)) ? _removeUnit(height) : self.node.offsetHeight;
 		}
 		return self.css('height', _addUnit(val));
 	},
@@ -2362,16 +2365,35 @@ function _bindDragEvent(options) {
 }
 function _widget(options) {
 	var name = options.name || '',
-		x = _addUnit(options.x) || 0,
-		y = _addUnit(options.y) || 0,
-		z = options.z || 0,
-		width = _addUnit(options.width) || 0,
-		height = _addUnit(options.height) || 0,
+		x = _addUnit(options.x),
+		y = _addUnit(options.y),
+		z = options.z,
+		width = _addUnit(options.width),
+		height = _addUnit(options.height),
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
 		div = _node('<div></div>').css('display', 'block');
+	if (z && (x === undefined || y === undefined)) {
+		var w = _removeUnit(width),
+			h = _removeUnit(height);
+		if (options.alignEl) {
+			var el = options.alignEl,
+				pos = _node(el).pos(),
+				diffX = _round(el.clientWidth / 2 - w / 2),
+				diffY = _round(el.clientHeight / 2 - h / 2);
+			x = diffX < 0 ? pos.x : pos.x + diffX;
+			y = diffY < 0 ? pos.y : pos.y + diffY;
+		} else {
+			var docEl = doc.documentElement,
+				scrollPos = _getScrollPos();
+			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
+			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+		}
+		x = x < 0 ? 0 : _addUnit(x);
+		y = y < 0 ? 0 : _addUnit(y);
+	}
 	if (width) {
 		div.css('width', width);
 	}
@@ -3070,6 +3092,18 @@ if (window.K === undefined) {
 }
 window.KindEditor = K;
 _plugin('about', function(editor) {
+	var dialog = K.dialog({
+		width : 300,
+		height : 200,
+		title : _lang('about'),
+		body : '<div style="margin:10px;"><strong>内容</strong></div>',
+		noBtn : {
+			name : _lang('close'),
+			click : function(e) {
+				dialog.remove();
+			}
+		}
+	});
 });
 _plugin('source', function(editor) {
 	editor.toolbar.disable();

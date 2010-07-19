@@ -29,7 +29,7 @@ function _dialog(options) {
 		shadowMode = options.shadowMode === undefined ? true : options.shadowMode;
 	//create dialog
 	self.div().addClass('ke-dialog').bind('click,mousedown', function(e){
-		e.stop();
+		e.stopPropagation();
 	});
 	var contentCell;
 	if (shadowMode) {
@@ -67,7 +67,7 @@ function _dialog(options) {
 	contentCell.append(headerDiv);
 	headerDiv.html(title);
 	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
-		(shadowMode ? '' : 'no-') + 'shadow" title="' + _plugin('close') + '"></span>')
+		(shadowMode ? '' : 'no-') + 'shadow" title="' + _lang('close') + '"></span>')
 		.click(function (e) {
 			self.remove();
 		});
@@ -96,16 +96,20 @@ function _dialog(options) {
 			buttons.push(button);
 		}
 	});
-	bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
-	var docEl = doc.documentElement;
-	var mask = _widget({
-		x : 0,
-		y : 0,
-		z : 19811212,
-		width : Math.max(docEl.scrollWidth, docEl.clientWidth),
-		height : Math.max(docEl.scrollHeight, docEl.clientHeight)
-	});
+	if (self.height) {
+		bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
+	}
+	var docEl = doc.documentElement,
+		mask = _widget({
+			x : 0,
+			y : 0,
+			z : 19811212,
+			width : Math.max(docEl.scrollWidth, docEl.clientWidth),
+			height : Math.max(docEl.scrollHeight, docEl.clientHeight)
+		});
 	mask.div().addClass('ke-dialog-mask');
+	//set dialog position
+	self.resetPos(self.div().width(), self.div().height());
 	//remove dialog
 	self.remove = function() {
 		mask.remove();

@@ -267,6 +267,8 @@ function _getScriptPath() {
 	return '';
 }
 
+var _round = Math.round;
+
 var K = {
 	IE : _IE,
 	GECKO : _GECKO,

@@ -76,16 +76,44 @@ function _bindDragEvent(options) {
 
 function _widget(options) {
 	var name = options.name || '',
-		x = _addUnit(options.x) || 0,
-		y = _addUnit(options.y) || 0,
-		z = options.z || 0,
-		width = _addUnit(options.width) || 0,
-		height = _addUnit(options.height) || 0,
+		x = _addUnit(options.x),
+		y = _addUnit(options.y),
+		z = options.z,
+		width = _addUnit(options.width),
+		height = _addUnit(options.height),
+		autoWidth = options.autoWidth,
+		autoHeight = options.autoHeight,
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
 		div = _node('<div></div>').css('display', 'block');
+	//set widget position
+	function resetPos(width, height) {
+		if (z && (options.x === undefined || options.y === undefined)) {
+			var w = _removeUnit(width) || 0,
+				h = _removeUnit(height) || 0;
+			if (options.alignEl) {
+				var el = options.alignEl,
+					pos = _node(el).pos(),
+					diffX = _round(el.clientWidth / 2 - w / 2),
+					diffY = _round(el.clientHeight / 2 - h / 2);
+				x = diffX < 0 ? pos.x : pos.x + diffX;
+				y = diffY < 0 ? pos.y : pos.y + diffY;
+			} else {
+				var docEl = doc.documentElement,
+					scrollPos = _getScrollPos();
+				x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
+				y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+			}
+			x = x < 0 ? 0 : _addUnit(x);
+			y = y < 0 ? 0 : _addUnit(y);
+			div.css({
+				left : x,
+				top : y
+			});
+		}
+	}
 	if (width) {
 		div.css('width', width);
 	}
@@ -100,6 +128,7 @@ function _widget(options) {
 			'z-index' : z
 		});
 	}
+	resetPos(width, height);
 	if (css) {
 		div.css(css);
 	}
@@ -135,7 +164,8 @@ function _widget(options) {
 				div.css('left', _addUnit(x)).css('top', _addUnit(y));
 			};
 			_bindDragEvent(options);
-		}
+		},
+		resetPos : resetPos
 	};
 }
 

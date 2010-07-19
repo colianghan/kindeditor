@@ -199,6 +199,54 @@ window.KindEditor = K;
 
 //define core plugins
 _plugin('about', function(editor) {
+	var html = '<div style="margin:20px;">' +
+		'<div>KindEditor ${VERSION}</div>' +
+		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
+		'</div>';
+	var dialog = K.dialog({
+		width : 300,
+		title : _lang('about'),
+		body : html,
+		noBtn : {
+			name : _lang('close'),
+			click : function(e) {
+				dialog.remove();
+				editor.edit.focus();
+			}
+		}
+	});
+});
+
+_plugin('plainpaste', function(editor) {
+	var lang = _pluginLang('plainpaste'),
+		html = '<div style="margin:10px;">' +
+			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
+			'<textarea id="ke_plainpaste_textarea" style="width:99%;height:260px;border:1px solid #A0A0A0;"></textarea>' +
+			'</div>';
+	var dialog = K.dialog({
+		width : 450,
+		title : _lang('plainpaste'),
+		body : html,
+		yesBtn : {
+			name : _lang('yes'),
+			click : function(e) {
+				var html = _node('#ke_plainpaste_textarea').val();
+				//html = KE.util.escape(html);
+				html = html.replace(/ /g, '&nbsp;');
+				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
+				editor.edit.cmd.inserthtml(html);
+				dialog.remove();
+				editor.edit.focus();
+			}
+		},
+		noBtn : {
+			name : _lang('close'),
+			click : function(e) {
+				dialog.remove();
+				editor.edit.focus();
+			}
+		}
+	});
 });
 
 _plugin('source', function(editor) {
