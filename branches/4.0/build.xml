@@ -59,7 +59,7 @@
 			flags="gs"
 		/>
 		<replaceregexp file="${filename}.js"
-			match="//.*$"
+			match="(^|\s)//.*$"
 			replace=""
 			encoding="${charset}"
 			byline="true"
@@ -80,8 +80,8 @@
 			flags="g"
 		/>
 		<replaceregexp file="${filename}.js"
-			match="(\r\n){3,}"
-			replace="\1\1"
+			match="(\r\n){2,}"
+			replace="\1"
 			encoding="${charset}"
 			byline="false"
 			flags="g"

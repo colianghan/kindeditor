@@ -430,52 +430,52 @@ test('range.cloneContents', function() {
 	range = K.range(document);
 	range.selectNode(strong);
 	frag = range.cloneContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>');
 	ok(!range.collapsed);
 	//2
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
 	frag = range.cloneContents();
-	same(K.node(frag).outer().toLowerCase(), 'f');
+	same(K(frag).outer().toLowerCase(), 'f');
 	//3
 	range = K.range(document);
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
 	frag = range.cloneContents();
-	same(K.node(frag).outer().toLowerCase(), 'efg');
+	same(K(frag).outer().toLowerCase(), 'efg');
 	//4
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.nextSibling, 1);
 	frag = range.cloneContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>h');
+	same(K(frag).outer().toLowerCase(), '<strong>fg</strong>h');
 return;
 	//5
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.nextSibling, 0);
 	frag = range.cloneContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>');
+	same(K(frag).outer().toLowerCase(), '<strong>fg</strong>');
 	//6
 	range = K.range(document);
 	range.setStart(p, 0);
 	range.setEnd(p, 4);
 	frag = range.cloneContents();
-	ok(K.node(frag).children().length === 4);
+	ok(K(frag).children().length === 4);
 	//7
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
 	range.setEnd(strong.nextSibling, 4);
 	frag = range.cloneContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>hijk');
+	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>hijk');
 	//8
 	range = K.range(document);
 	range.setStart(strong.nextSibling, 4);
 	range.setEnd(p, 4);
 	frag = range.cloneContents();
-	ok(K.node(frag).children().length === 1);
-	same(K.node(frag).first().name, 'img');
+	ok(K(frag).children().length === 1);
+	same(K(frag).first().name, 'img');
 });
 
 test('range.extractContents', function() {
@@ -488,7 +488,7 @@ test('range.extractContents', function() {
 	range = K.range(document);
 	range.selectNode(strong);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>');
 	ok(range.collapsed);
 	document.body.removeChild(cloneP);
 	//2
@@ -499,7 +499,7 @@ test('range.extractContents', function() {
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), 'f');
+	same(K(frag).outer().toLowerCase(), 'f');
 	document.body.removeChild(cloneP);
 	//3
 	cloneP = p.cloneNode(true);
@@ -509,7 +509,7 @@ test('range.extractContents', function() {
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), 'efg');
+	same(K(frag).outer().toLowerCase(), 'efg');
 	document.body.removeChild(cloneP);
 	//4
 	cloneP = p.cloneNode(true);
@@ -519,7 +519,7 @@ test('range.extractContents', function() {
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.nextSibling, 1);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>h');
+	same(K(frag).outer().toLowerCase(), '<strong>fg</strong>h');
 	document.body.removeChild(cloneP);
 	//5
 	cloneP = p.cloneNode(true);
@@ -529,7 +529,7 @@ test('range.extractContents', function() {
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.nextSibling, 0);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>fg</strong>');
+	same(K(frag).outer().toLowerCase(), '<strong>fg</strong>');
 	document.body.removeChild(cloneP);
 	//6
 	cloneP = p.cloneNode(true);
@@ -539,7 +539,7 @@ test('range.extractContents', function() {
 	range.setStart(cloneP, 0);
 	range.setEnd(cloneP, 4);
 	frag = range.extractContents();
-	ok(K.node(frag).children().length === 4);
+	ok(K(frag).children().length === 4);
 	document.body.removeChild(cloneP);
 	//7
 	cloneP = p.cloneNode(true);
@@ -549,7 +549,7 @@ test('range.extractContents', function() {
 	range.selectNode(strong.firstChild);
 	range.setEnd(strong.nextSibling, 4);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>hijk');
+	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>hijk');
 	document.body.removeChild(cloneP);
 	//8
 	cloneP = p.cloneNode(true);
@@ -559,8 +559,8 @@ test('range.extractContents', function() {
 	range.setStart(cloneP, 3);
 	range.setEnd(cloneP, 4);
 	frag = range.extractContents();
-	ok(K.node(frag).children().length === 1);
-	same(K.node(frag).first().name, 'img');
+	ok(K(frag).children().length === 1);
+	same(K(frag).first().name, 'img');
 	document.body.removeChild(cloneP);
 	//9
 	cloneP = p.cloneNode(true);
@@ -570,7 +570,7 @@ test('range.extractContents', function() {
 	range.setStart(cloneP, 1);
 	range.setEnd(strong.firstChild, 3);
 	frag = range.extractContents();
-	same(K.node(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>');
 	document.body.removeChild(cloneP);
 	//10
 	cloneP = p.cloneNode(true);
@@ -580,7 +580,7 @@ test('range.extractContents', function() {
 	range.setStart(cloneP, 0);
 	range.setEnd(strong.firstChild, 1);
 	frag = range.extractContents();
-	same(K.node(frag).outer(), 'abcd<strong>e</strong>');
+	same(K(frag).outer(), 'abcd<strong>e</strong>');
 	document.body.removeChild(cloneP);
 });
 
@@ -608,7 +608,7 @@ test('range.insertNode', function() {
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.selectNode(strong);
-	range.insertNode(K.node('<span>abc</span>').get());
+	range.insertNode(K('<span>abc</span>').get());
 	same(range.toString(), 'abcefg');
 	document.body.removeChild(cloneP);
 	//2
@@ -617,7 +617,7 @@ test('range.insertNode', function() {
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
-	range.insertNode(K.node('<span>123</span>').get());
+	range.insertNode(K('<span>123</span>').get());
 	same(range.toString(), '123efg');
 	document.body.removeChild(cloneP);
 	//3
@@ -627,7 +627,7 @@ test('range.insertNode', function() {
 	range = K.range(document);
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
-	range.insertNode(K.node('<span>123</span>').get());
+	range.insertNode(K('<span>123</span>').get());
 	same(range.toString(), '123efg');
 	document.body.removeChild(cloneP);
 	//4
@@ -637,7 +637,7 @@ test('range.insertNode', function() {
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
-	range.insertNode(K.node('<span>123</span>').get());
+	range.insertNode(K('<span>123</span>').get());
 	same(range.toString(), '123f');
 	document.body.removeChild(cloneP);
 	//5
@@ -645,8 +645,8 @@ test('range.insertNode', function() {
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
 	var frag = document.createDocumentFragment();
-	frag.appendChild(K.node('<span>1</span>').get());
-	frag.appendChild(K.node('<span>2</span>').get());
+	frag.appendChild(K('<span>1</span>').get());
+	frag.appendChild(K('<span>2</span>').get());
 	range = K.range(document);
 	range.selectNode(strong);
 	range.insertNode(frag);
@@ -663,7 +663,7 @@ test('range.surroundContents', function() {
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.selectNode(strong);
-	range.surroundContents(K.node('<span></span>').get());
+	range.surroundContents(K('<span></span>').get());
 	same(range.html(), '<span><strong>efg</strong></span>');
 	document.body.removeChild(cloneP);
 	//2
@@ -672,7 +672,7 @@ test('range.surroundContents', function() {
 	strong = K.query('strong', cloneP);
 	range = K.range(document);
 	range.selectNode(strong.firstChild);
-	range.surroundContents(K.node('<span></span>').get());
+	range.surroundContents(K('<span></span>').get());
 	same(range.html(), '<span>efg</span>');
 	document.body.removeChild(cloneP);
 	//3
@@ -682,7 +682,7 @@ test('range.surroundContents', function() {
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
-	range.surroundContents(K.node('<span></span>').get());
+	range.surroundContents(K('<span></span>').get());
 	same(range.html(), '<span>f</span>');
 	document.body.removeChild(cloneP);
 	//4
@@ -692,7 +692,7 @@ test('range.surroundContents', function() {
 	range = K.range(document);
 	range.setStart(strong.firstChild, 0);
 	range.setEnd(strong.firstChild, 3);
-	range.surroundContents(K.node('<span></span>').get());
+	range.surroundContents(K('<span></span>').get());
 	same(range.html(), '<span>efg</span>');
 	document.body.removeChild(cloneP);
 	//5
@@ -702,7 +702,7 @@ test('range.surroundContents', function() {
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(cloneP, 3);
-	range.surroundContents(K.node('<span></span>').get());
+	range.surroundContents(K('<span></span>').get());
 	same(range.html(), '<span><strong>fg</strong>hijk</span>');
 	document.body.removeChild(cloneP);
 });

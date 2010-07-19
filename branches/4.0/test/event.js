@@ -6,22 +6,21 @@ test('bind/unbind/fire', function() {
 		result += 'click1';
 	}
 	//bind
-	K.bind(document, 'click', click1);
+	K(document).click(click1);
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, 'click1');
 	//unbind
-	K.unbind(document, 'click', click1);
+	K(document).unbind('click', click1);
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, '');
 	function click2(e) {
-		this.innerHTML = 'click2';
+		this.html('click2');
 	}
-	var div = document.getElementById('test-data-01');
-	K.bind(div, 'click', click2);
-	K.fire(div, 'click');
-	equals(div.innerHTML, 'click2');
+	K('#test-data-01').click(click2);
+	K('#test-data-01').click();
+	equals(K('#test-data-01').html(), 'click2');
 });
 
 test('unbind(el, type, fn)', function() {
@@ -35,26 +34,26 @@ test('unbind(el, type, fn)', function() {
 	function mousedown1(e) {
 		result += 'mousedown1';
 	}
-	K.bind(document, 'click', click1);
-	K.bind(document, 'click', click2);
-	K.bind(document, 'mousedown', mousedown1);
+	K(document).click(click1);
+	K(document).click(click2);
+	K(document).mousedown(mousedown1);
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, 'click1click2');
 	result = '';
-	K.fire(document, 'mousedown');
+	K(document).mousedown();
 	equals(result, 'mousedown1');
-	K.unbind(document, 'click', click1);
+	K(document).unbind('click', click1);
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, 'click2');
-	K.unbind(document, 'click', click2);
+	K(document).unbind('click', click2);
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, '');
-	K.unbind(document, 'mousedown', mousedown1);
+	K(document).unbind('mousedown', mousedown1);
 	result = '';
-	K.fire(document, 'mousedown');
+	K(document).mousedown();
 	equals(result, '');
 });
 
@@ -69,18 +68,18 @@ test('unbind(el, type)', function() {
 	function mousedown1(e) {
 		result += 'mousedown1';
 	}
-	K.bind(document, 'click', click1);
-	K.bind(document, 'click', click2);
-	K.bind(document, 'mousedown', mousedown1);
+	K(document).click(click1);
+	K(document).click(click2);
+	K(document).mousedown(mousedown1);
 	//unbind click
-	K.unbind(document, 'click');
+	K(document).unbind('click');
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, '');
 	//unbind mousedown
-	K.unbind(document, 'mousedown');
+	K(document).unbind('mousedown');
 	result = '';
-	K.fire(document, 'mousedown');
+	K(document).mousedown();
 	equals(result, '');
 });
 
@@ -98,41 +97,41 @@ test('unbind(el)', function() {
 		result += 'mousedown1';
 		console.log('check');
 	}
-	K.bind(document, 'click', click1);
-	K.bind(document, 'click', click2);
-	K.bind(document, 'mousedown', mousedown1);
+	K(document).click(click1);
+	K(document).click(click2);
+	K(document).mousedown(mousedown1);
 	//unbind
-	K.unbind(document);
+	K(document).unbind();
 	result = '';
-	K.fire(document, 'click');
+	K(document).click();
 	equals(result, '');
 	result = '';
-	K.fire(document, 'mousedown');
+	K(document).mousedown();
 	equals(result, '');
 });
 
 (function () {
-	var outerEvent = document.getElementById('outerEvent');
-	var innerEvent = document.getElementById('innerEvent');
-	var eventMethod = document.getElementById('eventMethod');
-	var outerDiv = document.getElementById('outerDiv');
-	var innerDiv = document.getElementById('innerDiv');
-	K.bind(outerEvent, 'change', function(e) {
-		K.unbind(outerDiv);
-		if (outerEvent.value === 'none') return;
-		K.bind(outerDiv, outerEvent.value, function(e) {
-			console.log('outer: ' + outerEvent.value);
-			if (eventMethod.value === 'none') return;
-			e[eventMethod.value]();
+	var outerEvent = K('#outerEvent'),
+		innerEvent = K('#innerEvent'),
+		eventMethod = K('#eventMethod'),
+		outerDiv = K('#outerDiv'),
+		innerDiv = K('#innerDiv');
+	outerEvent.change(function(e) {
+		outerDiv.unbind();
+		if (outerEvent.val() === 'none') return;
+		outerDiv.bind(outerEvent.val(), function(e) {
+			console.log('outer: ' + outerEvent.val());
+			if (eventMethod.val() === 'none') return;
+			e[eventMethod.val()]();
 		});
 	});
-	K.bind(innerEvent, 'change', function(e) {
-		K.unbind(innerDiv);
-		if (innerEvent.value === 'none') return;
-		K.bind(innerDiv, innerEvent.value, function(e) {
-			console.log('inner: ' + innerEvent.value);
-			if (eventMethod.value === 'none') return;
-			e[eventMethod.value]();
+	innerEvent.change(function(e) {
+		innerDiv.unbind();
+		if (innerEvent.val() === 'none') return;
+		innerDiv.bind(innerEvent.val(), function(e) {
+			console.log('inner: ' + innerEvent.val());
+			if (eventMethod.val() === 'none') return;
+			e[eventMethod.val()]();
 		});
 	});
 })();

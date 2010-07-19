@@ -20,27 +20,27 @@ var cmds = {
 	removeFormat : ''
 };
 K.each(cmds, function(key, val) {
-	var a = K.node('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
+	var a = K('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
 		return function(e) {
 			edit.cmd.exec(key, val);
 			e.stop();
 		};
 	})(key, val));
-	K.node('#cmdArea').append(a);
-	K.node('#cmdArea').append(document.createTextNode(' '));
+	K('#cmdArea').append(a);
+	K('#cmdArea').append(document.createTextNode(' '));
 });
-K.node('#create').bind('click', function(e) {
+K('#create').bind('click', function(e) {
 	edit.create('div#edit');
 });
-K.node('#remove').bind('click', function(e) {
+K('#remove').bind('click', function(e) {
 	edit.remove();
 });
-K.node('#design').bind('click', function(e) {
+K('#design').bind('click', function(e) {
 	edit.design(true);
 });
-K.node('#source').bind('click', function(e) {
+K('#source').bind('click', function(e) {
 	edit.design(false);
 });
-K.node('#toggle').bind('click', function(e) {
+K('#toggle').bind('click', function(e) {
 	edit.design();
 });

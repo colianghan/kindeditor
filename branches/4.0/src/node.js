@@ -441,4 +441,8 @@ function _node(expr, root) {
 	return newNode(expr);
 }
 
-K.node = _node;
+var _K = K;
+K = K.node = _node;
+_each(_K, function(key, val) {
+	K[key] = val;
+});

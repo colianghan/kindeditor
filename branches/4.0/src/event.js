@@ -328,8 +328,5 @@ if (_IE) {
 	});
 }
 
-K.bind = _bind;
-K.unbind = _unbind;
-K.fire = _fire;
 K.ctrl = _ctrl;
 K.ready = _ready;

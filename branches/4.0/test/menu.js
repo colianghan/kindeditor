@@ -1,15 +1,15 @@
 
 var menu = null;
-K.node('#menu').bind('click', function(e) {
+K('#menu').bind('click', function(e) {
 	if (menu) {
 		menu.remove();
 		menu = null;
 	} else {
-		var menuPos = K.node('#menu').pos();
+		var menuPos = K('#menu').pos();
 		menu = K.menu({
 			width : 200,
 			x : menuPos.x,
-			y : menuPos.y + K.node('#menu').height(),
+			y : menuPos.y + K('#menu').height(),
 			z : 19811212,
 			centerLineMode : false
 		});
@@ -27,16 +27,16 @@ K.node('#menu').bind('click', function(e) {
 });
 
 var contextmenu = null;
-K.node('#contextmenu').bind('click', function(e) {
+K('#contextmenu').bind('click', function(e) {
 	if (contextmenu) {
 		contextmenu.remove();
 		contextmenu = null;
 	} else {
-		var contextmenuPos = K.node('#contextmenu').pos();
+		var contextmenuPos = K('#contextmenu').pos();
 		contextmenu = K.menu({
 			width : 200,
 			x : contextmenuPos.x,
-			y : contextmenuPos.y + K.node('#contextmenu').height(),
+			y : contextmenuPos.y + K('#contextmenu').height(),
 			z : 19811213
 		});
 		K.each('image,flash,media,-,bold,cut,copy,paste,-,selectall'.split(','), function(i, val) {
@@ -52,15 +52,15 @@ K.node('#contextmenu').bind('click', function(e) {
 });
 
 var colorpicker = null;
-K.node('#colorpicker').bind('click', function(e) {
+K('#colorpicker').bind('click', function(e) {
 	if (colorpicker) {
 		colorpicker.remove();
 		colorpicker = null;
 	} else {
-		var colorpickerPos = K.node('#colorpicker').pos();
+		var colorpickerPos = K('#colorpicker').pos();
 		colorpicker = K.colorpicker({
 			x : colorpickerPos.x,
-			y : colorpickerPos.y + K.node('#colorpicker').height(),
+			y : colorpickerPos.y + K('#colorpicker').height(),
 			z : 19811214,
 			selectedColor : 'default',
 			click : function(color) {

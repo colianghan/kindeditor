@@ -112,8 +112,8 @@ test('cmd.wrap', function() {
 	range.selectNodeContents(cloneP);
 	cmd = K.cmd(range);
 	cmd.wrap('<div></div>');
-	equals(K.node(cloneP).first().name, 'div');
-	same(K.node(cloneP).children().length, 1);
+	equals(K(cloneP).first().name, 'div');
+	same(K(cloneP).children().length, 1);
 	document.body.removeChild(cloneP);
 	//11
 	cloneP = p.cloneNode(true);
@@ -159,7 +159,7 @@ test('cmd.wrap', function() {
 	equals(range.html(), '<span class="aaa"><strong><em>f</em></strong></span>');
 	document.body.removeChild(cloneP);
 	//15
-	cloneP = K.node('<p>abc</p>').get();
+	cloneP = K('<p>abc</p>').get();
 	document.body.appendChild(cloneP);
 	range = K.range(document);
 	range.selectNodeContents(cloneP);
@@ -239,7 +239,7 @@ test('cmd.remove', function() {
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
-	K.node(strong).addClass('abc').css('color', '#FF0000');
+	K(strong).addClass('abc').css('color', '#FF0000');
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
@@ -253,7 +253,7 @@ test('cmd.remove', function() {
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
-	K.node(strong).addClass('abc').css('color', '#FF0000');
+	K(strong).addClass('abc').css('color', '#FF0000');
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
@@ -267,7 +267,7 @@ test('cmd.remove', function() {
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
-	K.node(strong).addClass('abc').css('color', '#FF0000');
+	K(strong).addClass('abc').css('color', '#FF0000');
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);
 	range.setEnd(strong.firstChild, 2);
@@ -316,7 +316,7 @@ test('cmd.remove', function() {
 	cmd.remove({
 		'strong' : '*'
 	});
-	equals(K.node(cloneP).html().substr(0, 11), 'abcdefghijk');
+	equals(K(cloneP).html().substr(0, 11), 'abcdefghijk');
 	document.body.removeChild(cloneP);
 	//12
 	cloneP = p.cloneNode(true);
@@ -330,7 +330,7 @@ test('cmd.remove', function() {
 		'strong' : '*'
 	});
 	var str = 'abcd<strong>efg';
-	equals(K.node(cloneP).html().substr(0, str.length), str);
+	equals(K(cloneP).html().substr(0, str.length), str);
 	document.body.removeChild(cloneP);
 	//13
 	cloneP = p.cloneNode(true);
@@ -363,10 +363,10 @@ test('cmd.remove', function() {
 });
 
 test('cmd.bold/cmd.italic', function() {
-	var div = K.node('<div></div>'), node, range;
+	var div = K('<div></div>'), node, range;
 	document.body.appendChild(div.get());
 	//1
-	node = K.node('<strong>abcd</strong>').get();
+	node = K('<strong>abcd</strong>').get();
 	div.append(node);
 	range = K.range(document);
 	range.selectNode(node);

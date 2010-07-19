@@ -1,7 +1,7 @@
 
 var toolbar = null;
 
-K.node('#create').bind('click', function(e) {
+K('#create').bind('click', function(e) {
 	if (toolbar) {
 		return;
 	}
@@ -27,26 +27,26 @@ K.node('#create').bind('click', function(e) {
 		});
 	});
 });
-K.node('#remove').bind('click', function(e) {
+K('#remove').bind('click', function(e) {
 	if (toolbar) {
 		toolbar.remove();
 		toolbar = null;
 	}
 });
-K.node('#enable').bind('click', function(e) {
+K('#enable').bind('click', function(e) {
 	if (toolbar) {
 		toolbar.disable(false);
 	}
 });
-K.node('#disable').bind('click', function(e) {
+K('#disable').bind('click', function(e) {
 	if (toolbar) {
 		toolbar.disable(true);
 	}
 });
-K.node('#toggle').bind('click', function(e) {
+K('#toggle').bind('click', function(e) {
 	if (toolbar) {
 		toolbar.disable();
 	}
 });
 
-K.node('#create').fire('click');
+K('#create').fire('click');

@@ -3,13 +3,11 @@
 * Copyright (C) 2006-2010 Longhao Luo
 *
 * @author Longhao Luo <luolonghao@gmail.com>
-* @website http:
-* @licence LGPL(http:
-* @version 4.0 (2010-07-18)
+* @website http://www.kindsoft.net/
+* @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
+* @version 4.0 (2010-07-19)
 *******************************************************************************/
-
 (function (window, undefined) {
-
 var _ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -17,11 +15,9 @@ var _ua = navigator.userAgent.toLowerCase(),
 	_OPERA = _ua.indexOf('opera') > -1,
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
 	_VERSION = _matches ? _matches[1] : '0';
-
 function _isArray(val) {
 	return Object.prototype.toString.call(val) === '[object Array]';
 }
-
 function _inArray(val, arr) {
 	for (var i = 0, len = arr.length; i < len; i++) {
 		if (val === arr[i]) {
@@ -30,7 +26,6 @@ function _inArray(val, arr) {
 	}
 	return -1;
 }
-
 function _each(obj, fn) {
 	if (_isArray(obj)) {
 		for (var i = 0, len = obj.length; i < len; i++) {
@@ -48,25 +43,20 @@ function _each(obj, fn) {
 		}
 	}
 }
-
 function _trim(str) {
 	return str.replace(/^\s+|\s+$/g, '');
 }
-
 function _inString(val, str, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
-
 function _addUnit(val) {
 	return val && /^\d+$/.test(val) ? val + 'px' : val;
 }
-
 function _removeUnit(val) {
 	var match;
 	return val && (match = /(\d+)/.exec(val)) ? parseInt(match[1], 10) : 0;
 }
-
 function _toHex(color) {
 	function hex(d) {
 		var s = parseInt(d, 10).toString(16).toUpperCase();
@@ -78,7 +68,6 @@ function _toHex(color) {
 		}
 	);
 }
-
 function _toMap(str, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
 	var map = {}, arr = str.split(delimiter), match;
@@ -93,7 +82,6 @@ function _toMap(str, delimiter) {
 	});
 	return map;
 }
-
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
 	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
@@ -101,7 +89,6 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select'),
 	_LANG_TYPE = 'zh_CN';
-
 var K = {
 	IE : _IE,
 	GECKO : _GECKO,
@@ -118,7 +105,6 @@ var K = {
 	toHex : _toHex,
 	toMap : _toMap
 };
-
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
@@ -126,7 +112,6 @@ function _bindEvent(el, type, fn) {
 		el.attachEvent('on' + type, fn);
 	}
 }
-
 function _unbindEvent(el, type, fn) {
 	if (el.removeEventListener){
 		el.removeEventListener(type, fn, false);
@@ -134,9 +119,7 @@ function _unbindEvent(el, type, fn) {
 		el.detachEvent('on' + type, fn);
 	}
 }
-
 var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
-
 function _event(el, event) {
 	if (!event) {
 		return;
@@ -169,7 +152,6 @@ function _event(el, event) {
 	if (!e.which && e.button !== undefined) {
 		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
 	}
-
 	switch (e.which) {
 	case 186 :
 		e.which = 59;
@@ -214,9 +196,7 @@ function _event(el, event) {
 	};
 	return e;
 }
-
 var _elList = [], _data = {};
-
 function _getId(el) {
 	var id = _inArray(el, _elList);
 	if (id < 0) {
@@ -237,7 +217,6 @@ function _getId(el) {
 	}
 	return id;
 }
-
 function _bind(el, type, fn, self) {
 	self = self || el;
 	if (type.indexOf(',') >= 0) {
@@ -271,7 +250,6 @@ function _bind(el, type, fn, self) {
 	}
 	_bindEvent(el, type, _data[id][type][0]);
 }
-
 function _unbind(el, type, fn) {
 	if (type && type.indexOf(',') >= 0) {
 		_each(type.split(','), function() {
@@ -317,7 +295,6 @@ function _unbind(el, type, fn) {
 		}
 	}
 }
-
 function _fire(el, type) {
 	if (type.indexOf(',') >= 0) {
 		_each(type.split(','), function() {
@@ -330,7 +307,6 @@ function _fire(el, type) {
 		_data[id][type][0]();
 	}
 }
-
 function _ctrl(el, key, fn) {
 	var self = this;
 	key = /^\d{2,}$/.test(key) ? key : key.toUpperCase().charCodeAt(0);
@@ -341,7 +317,6 @@ function _ctrl(el, key, fn) {
 		}
 	});
 }
-
 function _ready(fn, doc) {
 	doc = doc || document;
 	var win = doc.parentWindow || doc.defaultView, loaded = false;
@@ -379,7 +354,6 @@ function _ready(fn, doc) {
 	}
 	_bind(win, 'load', readyFunc);
 }
-
 if (_IE) {
 	window.attachEvent('onunload', function() {
 		var id, target;
@@ -390,13 +364,8 @@ if (_IE) {
 		});
 	});
 }
-
-K.bind = _bind;
-K.unbind = _unbind;
-K.fire = _fire;
 K.ctrl = _ctrl;
 K.ready = _ready;
-
 function _getCssList(css) {
 	var list = {},
 		reg = /\s*([\w\-]+)\s*:([^;]*)(;|$)/g,
@@ -408,7 +377,6 @@ function _getCssList(css) {
 	}
 	return list;
 }
-
 function _getAttrList(tag) {
 	var list = {},
 		reg = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
@@ -420,7 +388,6 @@ function _getAttrList(tag) {
 	}
 	return list;
 }
-
 function _formatCss(css) {
 	var str = '';
 	_each(_getCssList(css), function(key, val) {
@@ -428,7 +395,6 @@ function _formatCss(css) {
 	});
 	return str;
 }
-
 function _formatHtml(html) {
 	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s"'<>]*))?)*\s*(\/)?>((?:[\r\n])*)/g;
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
@@ -480,9 +446,7 @@ function _formatHtml(html) {
 	});
 	return _trim(html);
 }
-
 K.formatHtml = _formatHtml;
-
 function _contains(nodeA, nodeB) {
 	var docA = nodeA.ownerDocument || nodeA,
 		docB = nodeB.ownerDocument || nodeB;
@@ -512,7 +476,6 @@ function _contains(nodeA, nodeB) {
 	}
 	return nodeA !== nodeB && nodeA.contains(nodeB);
 }
-
 function _getAttr(el, key) {
 	key = key.toLowerCase();
 	var val = null;
@@ -531,7 +494,6 @@ function _getAttr(el, key) {
 	}
 	return val;
 }
-
 function _queryAll(expr, root) {
 	root = root || document;
 	function escape(str) {
@@ -696,19 +658,15 @@ function _queryAll(expr, root) {
 	}
 	return results;
 }
-
 function _query(expr, root) {
 	var arr = _queryAll(expr, root);
 	return arr.length > 0 ? arr[0] : null;
 }
-
 K.query = _query;
 K.queryAll = _queryAll;
-
 function _get(val) {
 	return val.get ? val.get() : val;
 }
-
 function _toCamel(str) {
 	var arr = str.split('-');
 	str = '';
@@ -717,14 +675,12 @@ function _toCamel(str) {
 	});
 	return str;
 }
-
 function _setHtml(el, html) {
 	if (el.nodeType != 1) {
 		return;
 	}
 	el.innerHTML = '' + html;
 }
-
 function _getScrollPos() {
 	var x, y;
 	if (_IE || _OPERA) {
@@ -737,24 +693,17 @@ function _getScrollPos() {
 	}
 	return {x : x, y : y};
 }
-
 function KNode(node) {
 	var self = this;
 	self.node = node;
-
 	self.doc = self.node.ownerDocument || self.node;
-
 	self.name = self.node.nodeName.toLowerCase();
-
 	self.type = self.node.nodeType;
 	self.win = self.doc.parentWindow || self.doc.defaultView;
-
 	self._data = {};
 	self._prevDisplay = '';
 }
-
 KNode.prototype = {
-
 	bind : function(type, fn) {
 		var self = this;
 		_bind(self.node, type, fn, self);
@@ -1054,7 +1003,6 @@ KNode.prototype = {
 		return self.type == 3 ? self.node.nodeValue : self.outer();
 	}
 };
-
 _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +
 	'change,select,submit,keydown,keypress,keyup,error').split(','), function(i, type) {
@@ -1062,7 +1010,6 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 		return fn ? this.bind(type, fn) : this.fire(type);
 	};
 });
-
 function _node(expr, root) {
 	function newNode(node) {
 		if (!node) {
@@ -1084,18 +1031,18 @@ function _node(expr, root) {
 	}
 	return newNode(expr);
 }
-
-K.node = _node;
-
+var _K = K;
+K = K.node = _node;
+_each(_K, function(key, val) {
+	K[key] = val;
+});
 var _START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
-
 function _updateCollapsed() {
 	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
 }
-
 function _updateCommonAncestor() {
 	function getParents(node) {
 		var parents = [];
@@ -1117,7 +1064,6 @@ function _updateCommonAncestor() {
 	}
 	this.commonAncestorContainer = parentsA[lenA - i + 1];
 }
-
 function _copyAndDelete(isCopy, isDelete) {
 	var self = this, doc = self.doc,
 		sc = self.startContainer, so = self.startOffset,
@@ -1205,7 +1151,6 @@ function _copyAndDelete(isCopy, isDelete) {
 	}
 	var frag = doc.createDocumentFragment();
 	extractNodes(selfRange.commonAncestorContainer, frag);
-
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
 		if (node.parentNode) {
@@ -1214,7 +1159,6 @@ function _copyAndDelete(isCopy, isDelete) {
 	}
 	return isCopy ? frag : self;
 }
-
 function _getStartEnd(rng, isStart) {
 	var doc = rng.parentElement().ownerDocument,
 		pointRange = rng.duplicate();
@@ -1262,7 +1206,6 @@ function _getStartEnd(rng, isStart) {
 	startPos -= testRange.text.length;
 	return {node: startNode, offset: startPos};
 }
-
 function _toRange(rng) {
 	var doc, range;
 	if (_IE) {
@@ -1287,7 +1230,6 @@ function _toRange(rng) {
 		return range;
 	}
 }
-
 function _getBeforeLength(node) {
 	var doc = node.ownerDocument,
 		len = 0,
@@ -1308,7 +1250,6 @@ function _getBeforeLength(node) {
 	}
 	return len;
 }
-
 function _getEndRange(node, offset) {
 	var doc = node.ownerDocument || node,
 		range = doc.body.createTextRange();
@@ -1359,26 +1300,17 @@ function _getEndRange(node, offset) {
 	}
 	return range;
 }
-
 function KRange(doc) {
 	var self = this;
-
 	self.startContainer = doc;
-
 	self.startOffset = 0;
-
 	self.endContainer = doc;
-
 	self.endOffset = 0;
-
 	self.collapsed = true;
-
 	self.commonAncestorContainer = doc;
 	self.doc = doc;
 }
-
 KRange.prototype = {
-
 	setStart : function(node, offset) {
 		var self = this, doc = self.doc;
 		self.startContainer = node;
@@ -1391,7 +1323,6 @@ KRange.prototype = {
 		_updateCommonAncestor.call(this);
 		return self;
 	},
-
 	setEnd : function(node, offset) {
 		var self = this, doc = self.doc;
 		self.endContainer = node;
@@ -1404,27 +1335,21 @@ KRange.prototype = {
 		_updateCommonAncestor.call(this);
 		return self;
 	},
-
 	setStartBefore : function(node) {
 		return this.setStart(node.parentNode || this.doc, _node(node).index());
 	},
-
 	setStartAfter : function(node) {
 		return this.setStart(node.parentNode || this.doc, _node(node).index() + 1);
 	},
-
 	setEndBefore : function(node) {
 		return this.setEnd(node.parentNode || this.doc, _node(node).index());
 	},
-
 	setEndAfter : function(node) {
 		return this.setEnd(node.parentNode || this.doc, _node(node).index() + 1);
 	},
-
 	selectNode : function(node) {
 		return this.setStartBefore(node).setEndAfter(node);
 	},
-
 	selectNodeContents : function(node) {
 		var knode = _node(node);
 		if (knode.type == 3 || knode.isSingle()) {
@@ -1436,14 +1361,12 @@ KRange.prototype = {
 		}
 		return this.setStart(node, 0).setEnd(node, 0);
 	},
-
 	collapse : function(toStart) {
 		if (toStart) {
 			return this.setEnd(this.startContainer, this.startOffset);
 		}
 		return this.setStart(this.endContainer, this.endOffset);
 	},
-
 	compareBoundaryPoints : function(how, range) {
 		var rangeA = this.get(), rangeB = range.get();
 		if (!this.doc.createRange) {
@@ -1473,12 +1396,10 @@ KRange.prototype = {
 				nodeB = range.endContainer;
 				posB = range.endOffset;
 			}
-
 			if (nodeA === nodeB) {
 				var diff = posA - posB;
 				return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
 			}
-
 			nodeC = nodeB;
 			while (nodeC && nodeC.parentNode !== nodeA) {
 				nodeC = nodeC.parentNode;
@@ -1486,7 +1407,6 @@ KRange.prototype = {
 			if (nodeC) {
 				return _node(nodeC).index() >= posA ? -1 : 1;
 			}
-
 			nodeC = nodeA;
 			while (nodeC && nodeC.parentNode !== nodeB) {
 				nodeC = nodeC.parentNode;
@@ -1494,63 +1414,50 @@ KRange.prototype = {
 			if (nodeC) {
 				return _node(nodeC).index() >= posB ? 1 : -1;
 			}
-
 		} else {
 			return rangeA.compareBoundaryPoints(how, rangeB);
 		}
 	},
-
 	cloneRange : function() {
 		return new KRange(this.doc).setStart(this.startContainer, this.startOffset).setEnd(this.endContainer, this.endOffset);
 	},
-
 	toString : function() {
-
 		var rng = this.get(),
 			str = this.doc.createRange ? rng.toString() : rng.text;
 		return str.replace(/\r\n|\n|\r/g, '');
 	},
-
 	cloneContents : function() {
 		return _copyAndDelete.call(this, true, false);
 	},
-
 	deleteContents : function() {
 		return _copyAndDelete.call(this, false, true);
 	},
-
 	extractContents : function() {
 		return _copyAndDelete.call(this, true, true);
 	},
-
 	insertNode : function(node) {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset,
 			firstChild, lastChild, c, nodeCount = 1;
-
 		if (node.nodeName.toLowerCase() === '#document-fragment') {
 			firstChild = node.firstChild;
 			lastChild = node.lastChild;
 			nodeCount = node.childNodes.length;
 		}
-
 		if (sc.nodeType == 1) {
 			c = sc.childNodes[so];
 			if (c) {
 				sc.insertBefore(node, c);
-
 				if (sc === ec) {
 					eo += nodeCount;
 				}
 			} else {
 				sc.appendChild(node);
 			}
-
 		} else if (sc.nodeType == 3) {
 			if (so === 0) {
 				sc.parentNode.insertBefore(node, sc);
-
 				if (sc.parentNode === ec) {
 					eo += nodeCount;
 				}
@@ -1563,7 +1470,6 @@ KRange.prototype = {
 			} else {
 				c = sc.splitText(so);
 				sc.parentNode.insertBefore(node, c);
-
 				if (sc === ec) {
 					ec = c;
 					eo -= so;
@@ -1580,12 +1486,10 @@ KRange.prototype = {
 		}
 		return self.setEnd(ec, eo);
 	},
-
 	surroundContents : function(node) {
 		node.appendChild(this.extractContents());
 		return this.insertNode(node).selectNode(node);
 	},
-
 	get : function() {
 		var self = this, doc = self.doc, node,
 			sc = self.startContainer, so = self.startOffset,
@@ -1603,29 +1507,23 @@ KRange.prototype = {
 		}
 		return rng;
 	},
-
 	html : function() {
 		return _node(this.cloneContents()).outer();
 	}
 };
-
 function _range(mixed) {
 	if (!mixed.nodeName) {
 		return mixed.get ? mixed : _toRange(mixed);
 	}
 	return new KRange(mixed);
 }
-
 K.range = _range;
 K.START_TO_START = _START_TO_START;
 K.START_TO_END = _START_TO_END;
 K.END_TO_END = _END_TO_END;
 K.END_TO_START = _END_TO_START;
-
 var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
-
 var _CURSORMOVE_KEY_MAP = _toMap('8,13,33..40,46');
-
 var _CHANGE_KEY_MAP = {};
 _each(_INPUT_KEY_MAP, function(key, val) {
 	_CHANGE_KEY_MAP[key] = val;
@@ -1633,13 +1531,11 @@ _each(_INPUT_KEY_MAP, function(key, val) {
 _each(_CURSORMOVE_KEY_MAP, function(key, val) {
 	_CHANGE_KEY_MAP[key] = val;
 });
-
 function _nativeCommand(doc, key, val) {
 	try {
 		doc.execCommand(key, false, val);
 	} catch(e) {}
 }
-
 function _nativeCommandValue(doc, key) {
 	var val = '';
 	try {
@@ -1650,16 +1546,13 @@ function _nativeCommandValue(doc, key) {
 	}
 	return val;
 }
-
 function _getWin(doc) {
 	return doc.parentWindow || doc.defaultView;
 }
-
 function _getSel(doc) {
 	var win = _getWin(doc);
 	return win.getSelection ? win.getSelection() : doc.selection;
 }
-
 function _getRng(doc) {
 	var sel = _getSel(doc), rng;
 	try {
@@ -1674,7 +1567,6 @@ function _getRng(doc) {
 	}
 	return rng;
 }
-
 function _singleKeyMap(map) {
 	var newMap = {}, arr, v;
 	_each(map, function(key, val) {
@@ -1686,7 +1578,6 @@ function _singleKeyMap(map) {
 	});
 	return newMap;
 }
-
 function _hasAttrOrCss(knode, map) {
 	return _hasAttrOrCssByKey(knode, map, '*') || _hasAttrOrCssByKey(knode, map);
 }
@@ -1717,7 +1608,6 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 	}
 	return false;
 }
-
 function _removeAttrOrCss(knode, map) {
 	_removeAttrOrCssByKey(knode, map, '*');
 	_removeAttrOrCssByKey(knode, map);
@@ -1758,7 +1648,6 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 		}
 	}
 }
-
 function _getInnerNode(knode) {
 	var inner = knode;
 	while (inner.first()) {
@@ -1766,11 +1655,9 @@ function _getInnerNode(knode) {
 	}
 	return inner;
 }
-
 function _isEmptyNode(knode) {
 	return _getInnerNode(knode).isInline();
 }
-
 function _mergeWrapper(a, b) {
 	a = a.clone(true);
 	var lastA = _getInnerNode(a), childA = a, merged = false;
@@ -1790,22 +1677,18 @@ function _mergeWrapper(a, b) {
 	}
 	return a;
 }
-
 function _wrapNode(knode, wrapper) {
 	wrapper = wrapper.clone(true);
-
 	if (knode.type == 3) {
 		_getInnerNode(wrapper).append(knode.clone(false));
 		knode.before(wrapper);
 		knode.remove();
 		return wrapper;
 	}
-
 	var nodeWrapper = knode, child;
 	while ((child = knode.first()) && child.children().length == 1) {
 		knode = child;
 	}
-
 	var next, frag = knode.doc.createDocumentFragment();
 	while ((child = knode.first())) {
 		next = child.next();
@@ -1820,7 +1703,6 @@ function _wrapNode(knode, wrapper) {
 	nodeWrapper.remove();
 	return wrapper;
 }
-
 function _mergeAttrs(knode, attrs, styles) {
 	_each(attrs, function(key, val) {
 		if (key !== 'style') {
@@ -1831,7 +1713,6 @@ function _mergeAttrs(knode, attrs, styles) {
 		knode.css(key, val);
 	});
 }
-
 function _getCommonNode(range, map) {
 	var ec = range.endContainer, eo = range.endOffset,
 		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
@@ -1849,26 +1730,21 @@ function _getCommonNode(range, map) {
 	}
 	return null;
 }
-
 function KCmd(range) {
 	var self = this, doc = range.doc;
-
 	self.doc = doc;
 	self.win = _getWin(doc);
 	self.sel = _getSel(doc);
 	self.range = range;
-
 	self._preformat = null;
 	self._preremove = null;
 }
-
 KCmd.prototype = {
 	select : function() {
 		var self = this, sel = self.sel, range = self.range.cloneRange(),
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset,
 			doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-
 		if (_IE && sc.nodeType == 1 && range.collapsed) {
 			var empty = _node('<span>&nbsp;</span>', doc);
 			range.insertNode(empty.get());
@@ -1880,7 +1756,6 @@ KCmd.prototype = {
 			win.focus();
 			return self;
 		}
-
 		rng = range.get();
 		if (_IE) {
 			rng.select();
@@ -1895,16 +1770,12 @@ KCmd.prototype = {
 		var self = this, doc = self.doc, range = self.range, wrapper,
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
-
 		if (typeof val == 'string') {
 			wrapper = _node(val, doc);
-
 		} else {
 			wrapper = val;
 		}
-
 		if (range.collapsed) {
-
 			if (self._preformat) {
 				wrapper = _mergeWrapper(self._preformat.wrapper, wrapper);
 			}
@@ -1914,10 +1785,8 @@ KCmd.prototype = {
 			};
 			return self;
 		}
-
 		if (!wrapper.isInline()) {
 			var w = wrapper.clone(true), child = w;
-
 			while (child.first()) {
 				child = child.first();
 			}
@@ -1925,7 +1794,6 @@ KCmd.prototype = {
 			range.insertNode(w.get()).selectNode(w.get());
 			return self;
 		}
-
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node;
 			if (endOffset <= startOffset) {
@@ -1939,7 +1807,6 @@ KCmd.prototype = {
 			}
 			var parent, knode = _node(center),
 				isStart = sc == node, isEnd = ec == node;
-
 			while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
 				if (!isStart) {
 					isStart = sc == parent.get();
@@ -1957,7 +1824,6 @@ KCmd.prototype = {
 				range.setEndAfter(el);
 			}
 		}
-
 		function wrapRange(parent) {
 			var node = parent.firstChild;
 			if (parent.nodeType == 3) {
@@ -1993,14 +1859,12 @@ KCmd.prototype = {
 			}
 		}
 		wrapRange(range.commonAncestorContainer);
-
 		return self;
 	},
 	split : function(isStart, map) {
 		var range = this.range, doc = range.doc,
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
-
 		var tempRange = range.cloneRange().collapse(isStart);
 		var node = tempRange.startContainer, pos = tempRange.startOffset,
 			parent = node.nodeType == 3 ? node.parentNode : node,
@@ -2016,7 +1880,6 @@ KCmd.prototype = {
 			needSplit = true;
 			parent = parent.parentNode;
 		}
-
 		if (needSplit) {
 			var mark = doc.createElement('span');
 			range.cloneRange().collapse(!isStart).insertNode(mark);
@@ -2044,7 +1907,6 @@ KCmd.prototype = {
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
-
 		if (range.collapsed) {
 			self._preremove = {
 				map : map,
@@ -2052,10 +1914,8 @@ KCmd.prototype = {
 			};
 			return self;
 		}
-
 		self.split(true, map);
 		self.split(false, map);
-
 		var nodeList = [];
 		_node(range.commonAncestorContainer).each(function(knode) {
 			var testRange = _range(doc);
@@ -2067,7 +1927,6 @@ KCmd.prototype = {
 				nodeList.push(knode);
 			}
 		});
-
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
@@ -2079,7 +1938,6 @@ KCmd.prototype = {
 					range.setEnd(ec, eo - 1);
 				}
 			}
-
 			before = _node(sc.childNodes[so]);
 			if (before && _isEmptyNode(before)) {
 				before.remove();
@@ -2092,11 +1950,9 @@ KCmd.prototype = {
 		if (after && _isEmptyNode(after)) {
 			after.remove();
 		}
-
 		_each(nodeList, function() {
 			_removeAttrOrCss(this, map);
 		});
-
 		return self;
 	},
 	_applyPreformat : function() {
@@ -2114,7 +1970,6 @@ KCmd.prototype = {
 			if (remove) {
 				self.remove(remove.map);
 			}
-
 			var sc = range.startContainer, so = range.startOffset,
 				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
@@ -2124,11 +1979,9 @@ KCmd.prototype = {
 			self._preremove = null;
 		}
 	},
-
 	exec : function(key, val) {
 		return this[key.toLowerCase()](val);
 	},
-
 	state : function(key) {
 		var self = this, doc = self.doc, range = self.range, bool = false;
 		try {
@@ -2136,7 +1989,6 @@ KCmd.prototype = {
 		} catch (e) {}
 		return bool;
 	},
-
 	val : function(key) {
 		var self = this, doc = self.doc, range = self.range;
 		function lc(val) {
@@ -2288,7 +2140,6 @@ KCmd.prototype = {
 		this.win.print();
 		return this;
 	},
-
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
 		_node(doc).keyup(function(e) {
@@ -2299,7 +2150,6 @@ KCmd.prototype = {
 		});
 		return self;
 	},
-
 	oncursormove : function(fn) {
 		var self = this, doc = self.doc;
 		_node(doc).keyup(function(e) {
@@ -2311,7 +2161,6 @@ KCmd.prototype = {
 		_node(doc).mouseup(fn);
 		return self;
 	},
-
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
 		_node(doc).keyup(function(e) {
@@ -2334,7 +2183,6 @@ KCmd.prototype = {
 		return self;
 	}
 };
-
 _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
 	KCmd.prototype[name] = function(val) {
@@ -2343,7 +2191,6 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 		return self;
 	};
 });
-
 _each('cut,copy,paste'.split(','), function(i, name) {
 	KCmd.prototype[name] = function() {
 		var self = this;
@@ -2359,37 +2206,29 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 		return self;
 	};
 });
-
 function _cmd(mixed) {
-
 	if (mixed.nodeName) {
 		var doc = mixed.ownerDocument || mixed,
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
-
 		cmd.onchange(function(e) {
 			var rng = _getRng(doc);
 			if (rng) {
 				cmd.range = _range(rng);
 			}
 		});
-
 		cmd.oninput(function(e) {
 			cmd._applyPreformat();
 		});
-
 		cmd.oncursormove(function(e) {
 			cmd._preformat = null;
 			cmd._preremove = null;
 		});
 		return cmd;
 	}
-
 	return new KCmd(mixed);
 }
-
 K.cmd = _cmd;
-
 function _bindDragEvent(options) {
 	var moveEl = options.moveEl,
 		moveFn = options.moveFn,
@@ -2403,7 +2242,7 @@ function _bindDragEvent(options) {
 	}
 	clickEl.mousedown(function(e) {
 		var self = clickEl.get(),
-			x = parseInt(moveEl.css('left')),
+			x = _removeUnit(moveEl.css('left')),
 			y = _removeUnit(moveEl.css('top')),
 			width = moveEl.width(),
 			height = moveEl.height(),
@@ -2447,7 +2286,6 @@ function _bindDragEvent(options) {
 		e.stop();
 	});
 }
-
 function _widget(options) {
 	var name = options.name || '',
 		x = _addUnit(options.x) || 0,
@@ -2512,13 +2350,10 @@ function _widget(options) {
 		}
 	};
 }
-
 K.widget = _widget;
-
 function _getIframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
-
 function _getInitHtml(bodyClass, cssData) {
 	var arr = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
 	if (cssData) {
@@ -2538,7 +2373,6 @@ function _getInitHtml(bodyClass, cssData) {
 	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
 	return arr.join('');
 }
-
 function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
@@ -2549,7 +2383,6 @@ function _iframeVal(val) {
 		return self;
 	}
 }
-
 function _textareaVal(val) {
 	var self = this,
 		textarea = self.textarea;
@@ -2560,11 +2393,9 @@ function _textareaVal(val) {
 		return self;
 	}
 }
-
 function _elementVal(knode, val) {
 	return knode.hasVal() ? knode.val(val) : knode.html(val);
 }
-
 function KEdit(options) {
 	var self = this;
 	self.srcElement = _node(options.srcElement);
@@ -2574,7 +2405,6 @@ function KEdit(options) {
 	self.bodyClass = options.bodyClass;
 	self.cssData = options.cssData;
 }
-
 KEdit.prototype = {
 	html : function(val) {
 		this.val(val);
@@ -2592,7 +2422,6 @@ KEdit.prototype = {
 		if (self.div) {
 			return self;
 		}
-
 		var div = _node('<div></div>').addClass('ke-edit'),
 		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
 		textarea = _node('<textarea class="ke-edit-textarea"></textarea>'),
@@ -2646,11 +2475,9 @@ KEdit.prototype = {
 		if (!div) {
 			return self;
 		}
-
 		_node(doc).unbind();
 		_node(doc.body).unbind();
 		_node(document).unbind();
-
 		_elementVal(srcElement, self.val());
 		srcElement.show();
 		self.doc.write('');
@@ -2699,13 +2526,10 @@ KEdit.prototype = {
 		return self;
 	}
 };
-
 function _edit(options) {
 	return new KEdit(options);
 }
-
 K.edit = _edit;
-
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
 		this.addClass('ke-toolbar-icon-outline-on');
@@ -2718,21 +2542,18 @@ function _bindToolbarEvent(itemNode, item) {
 		e.stop();
 	});
 }
-
 function _toolbar(options) {
 	var self = _widget(options),
 		remove = self.remove,
 		disableMode = options.disableMode === undefined ? false : options.disableMode,
 		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
 		itemNodes = [];
-
 	var inner = _node('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
 		})
 		.append(inner);
-
 	self.addItem = function(item) {
 		var itemNode;
 		if (item.name == '|') {
@@ -2748,7 +2569,6 @@ function _toolbar(options) {
 		itemNodes.push(itemNode);
 		inner.append(itemNode);
 	};
-
 	self.remove = function() {
 		_each(itemNodes, function() {
 			this.remove();
@@ -2756,10 +2576,8 @@ function _toolbar(options) {
 		inner.remove();
 		remove.call(self);
 	};
-
 	self.disable = function(bool) {
 		var arr = noDisableItems, item;
-
 		if (bool === undefined ? !disableMode : bool) {
 			_each(itemNodes, function() {
 				item = this.data('item');
@@ -2772,7 +2590,6 @@ function _toolbar(options) {
 				}
 			});
 			disableMode = true;
-
 		} else {
 			_each(itemNodes, function() {
 				item = this.data('item');
@@ -2789,9 +2606,7 @@ function _toolbar(options) {
 	};
 	return self;
 }
-
 K.toolbar = _toolbar;
-
 function _menu(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
@@ -2799,7 +2614,6 @@ function _menu(options) {
 		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode,
 		itemNodes = [];
 	self.div().addClass('ke-menu');
-
 	self.addItem = function(item) {
 		if (item.title === '-') {
 			self.div().append(_node('<div class="ke-menu-separator"></div>'));
@@ -2847,7 +2661,6 @@ function _menu(options) {
 		rightDiv.html(item.title);
 		itemNodes.push(itemDiv);
 	};
-
 	self.remove = function() {
 		_each(itemNodes, function() {
 			this.remove();
@@ -2856,9 +2669,7 @@ function _menu(options) {
 	};
 	return self;
 }
-
 K.menu = _menu;
-
 function _colorpicker(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
@@ -2871,7 +2682,6 @@ function _colorpicker(options) {
 		selectedColor = (options.selectedColor || '').toLowerCase(),
 		remove = self.remove,
 		cells = [];
-
 	self.div().addClass('ke-colorpicker');
 	function addAttr(cell, color, cls) {
 		cell = _node(cell).addClass(cls);
@@ -2912,7 +2722,6 @@ function _colorpicker(options) {
 			addAttr(cell, colors[i][j], 'ke-colorpicker-cell');
 		}
 	}
-
 	self.remove = function() {
 		_each(cells, function() {
 			this.remove();
@@ -2921,9 +2730,7 @@ function _colorpicker(options) {
 	};
 	return self;
 }
-
 K.colorpicker = _colorpicker;
-
 function _dialog(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
@@ -2935,7 +2742,6 @@ function _dialog(options) {
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
 		shadowMode = options.shadowMode === undefined ? true : options.shadowMode;
-
 	self.div().addClass('ke-dialog').bind('click,mousedown', function(e){
 		e.stop();
 	});
@@ -3014,7 +2820,6 @@ function _dialog(options) {
 		height : Math.max(docEl.scrollHeight, docEl.clientHeight)
 	});
 	mask.div().addClass('ke-dialog-mask');
-
 	self.remove = function() {
 		mask.remove();
 		span.remove();
@@ -3028,29 +2833,22 @@ function _dialog(options) {
 	};
 	return self;
 }
-
 K.dialog = _dialog;
-
 var _plugins = {};
-
 function _plugin(name, obj) {
 	if (obj === undefined) {
 		return _plugins[name];
 	}
 	_plugins[name] = obj;
 }
-
 var _language = {};
-
 function _lang(key, langType) {
 	langType = langType === undefined ? _LANG_TYPE : langType;
 	return _language[langType][key];
 }
-
 function _pluginLang(key, langType) {
 	return _lang('plugins', langType)[key];
 }
-
 var _scriptPath = (function() {
 	var els = document.getElementsByTagName('script'), src;
 	for (var i = 0, len = els.length; i < len; i++) {
@@ -3061,7 +2859,6 @@ var _scriptPath = (function() {
 	}
 	return '';
 })();
-
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
@@ -3126,7 +2923,6 @@ var _options = {
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
-
 function KEditor(options) {
 	var self = this;
 	_each(options, function(key, val) {
@@ -3148,7 +2944,6 @@ function KEditor(options) {
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
 }
-
 KEditor.prototype = {
 	create : function() {
 		var self = this,
@@ -3168,7 +2963,6 @@ KEditor.prototype = {
 		} else {
 			self.srcElement.before(container);
 		}
-
 		var toolbar = _toolbar({
 				parent : container,
 				width : '100%',
@@ -3194,7 +2988,6 @@ KEditor.prototype = {
 		if (fullscreenMode) {
 			height = _removeUnit(height) - toolbar.div().height();
 		}
-
 		var edit = _edit({
 				srcElement : self.srcElement,
 				width : '100%',
@@ -3204,7 +2997,6 @@ KEditor.prototype = {
 				cssData : self.cssData
 			}).create(container),
 			doc = edit.doc, textarea = edit.textarea;
-
 		_each([doc, document], function() {
 			_node(this).click(function(e) {
 				if (self.menu) {
@@ -3226,7 +3018,6 @@ KEditor.prototype = {
 				});
 			}
 		});
-
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
@@ -3250,9 +3041,7 @@ KEditor.prototype = {
 		return self.create();
 	}
 };
-
 var _editors = {};
-
 function _create(id, options) {
 	if (!options) {
 		options = {};
@@ -3262,47 +3051,33 @@ function _create(id, options) {
 	}
 	return (_editors[id] = new KEditor(options).create());
 }
-
 function _remove(id) {
 	if (_editors[id]) {
 		_editors[id].remove();
 		delete _editors[id];
 	}
 }
-
 if (_IE && _VERSION < 7) {
 	try {
 		document.execCommand('BackgroundImageCache', false, true);
 	} catch (e) {}
 }
-
 K.create = _create;
 K.remove = _remove;
 K.plugin = _plugin;
-
-var _K = K;
-K = function(id, options) {
-	_ready(function() {
-		_create(id, options);
-	});
-};
-_each(_K, function(key, val) {
-	K[key] = val;
-});
 if (window.K === undefined) {
 	window.K = K;
 }
 window.KindEditor = K;
-
+_plugin('about', function(editor) {
+});
 _plugin('source', function(editor) {
 	editor.toolbar.disable();
 	editor.edit.design();
 });
-
 _plugin('fullscreen', function(editor) {
 	editor.fullscreen();
 });
-
 _plugin('formatblock', function(editor) {
 	var pos = this.pos(),
 		blocks = _pluginLang('formatblock').formatblock,
@@ -3341,7 +3116,6 @@ _plugin('formatblock', function(editor) {
 		});
 	});
 });
-
 _plugin('fontname', function(editor) {
 	var pos = this.pos(),
 		cmd = editor.edit.cmd,
@@ -3366,7 +3140,6 @@ _plugin('fontname', function(editor) {
 		});
 	});
 });
-
 _plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
 		pos = this.pos(),
@@ -3393,7 +3166,6 @@ _plugin('fontsize', function(editor) {
 		});
 	});
 });
-
 _each('forecolor,hilitecolor'.split(','), function(i, name) {
 	_plugin(name, function(editor) {
 		var pos = this.pos(),
@@ -3412,7 +3184,6 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 		});
 	});
 });
-
 _each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,cut,copy,paste,' +
 	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
@@ -3421,7 +3192,6 @@ _each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorder
 		editor.edit.cmd[name](null);
 	});
 });
-
 _language.zh_CN = {
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',
@@ -3498,7 +3268,7 @@ _language.zh_CN = {
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
 	plugins : {
 		about : {
-			version : '4.0 (2010-07-18)',
+			version : '4.0 (2010-07-19)',
 			title : 'HTML可视化编辑器'
 		},
 		plainpaste : {
@@ -3600,5 +3370,4 @@ _language.zh_CN = {
 		}
 	}
 };
-
 })(window);

@@ -29,7 +29,7 @@ function _bindDragEvent(options) {
 	}
 	clickEl.mousedown(function(e) {
 		var self = clickEl.get(),
-			x = parseInt(moveEl.css('left')),
+			x = _removeUnit(moveEl.css('left')),
 			y = _removeUnit(moveEl.css('top')),
 			width = moveEl.width(),
 			height = moveEl.height(),

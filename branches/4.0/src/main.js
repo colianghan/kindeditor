@@ -267,21 +267,15 @@ K.create = _create;
 K.remove = _remove;
 K.plugin = _plugin;
 
-var _K = K;
-K = function(id, options) {
-	_ready(function() {
-		_create(id, options);
-	});
-};
-_each(_K, function(key, val) {
-	K[key] = val;
-});
 if (window.K === undefined) {
 	window.K = K;
 }
 window.KindEditor = K;
 
 //define core plugins
+_plugin('about', function(editor) {
+});
+
 _plugin('source', function(editor) {
 	editor.toolbar.disable();
 	editor.edit.design();
