@@ -18,11 +18,10 @@
 */
 
 function _contains(nodeA, nodeB) {
-	while (nodeB) {
+	while ((nodeB = nodeB.parentNode)) {
 		if (nodeB === nodeA) {
 			return true;
 		}
-		nodeB = nodeB.parentNode;
 	}
 	return false;
 }

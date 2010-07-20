@@ -83,10 +83,6 @@ function _nativeCommandValue(doc, key) {
 	}
 	return val;
 }
-//get window by document
-function _getWin(doc) {
-	return doc.parentWindow || doc.defaultView;
-}
 //get current selection of a document
 function _getSel(doc) {
 	var win = _getWin(doc);

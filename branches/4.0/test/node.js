@@ -1,23 +1,29 @@
 module('node');
 
-test('node(html)',function(){
-	var node = K('<div class="abc" style="font-size:12px;"></div>');
+test('K(html)',function(){
+	var node = K('<div class="abc" style="font-size:12px;"></div>abc<p></p>');
 	equals(node.name, 'div');
+	equals(node.length, 3);
 	equals(node.attr('class'), 'abc');
 	equals(node.css('font-size'), '12px');
 });
 
-test('node(selector)',function(){
+test('K(selector)',function(){
 	var node = K('p > strong');
 	equals(node.name, 'strong');
+	equals(node.get(1).nodeName.toLowerCase(), 'strong');
+	equals(node.get(2).nodeName.toLowerCase(), 'strong');
+	equals(node.length, 3);
 });
 
-test('node(textNode)',function(){
-	var node = K(document.createTextNode('abc'));
+test('K(node)',function(){
+	var node = K(document.createTextNode('abc'), document.createElement('div'));
 	equals(node.name, '#text');
+	equals(node.get(1).nodeName.toLowerCase(), 'div');
+	equals(node.length, 2);
 });
 
-test('node.attr/node.removeAttr', function() {
+test('attr/removeAttr', function() {
 	equals(K('#test-data-01').attr('src', 'aaa').attr('src'), 'aaa');
 	equals(K('#test-data-02').attr('src', 'aaa').removeAttr('src').attr('src'), '');
 	equals(K('#test-data-01').attr('id'), 'test-data-01');
@@ -26,12 +32,11 @@ test('node.attr/node.removeAttr', function() {
 	equals(K('#test-data-03 p span').attr('style'), 'color:red;');
 	equals(K('#test-data-01 p img').attr('border'), '0');
 	equals(K('#test-data-01').attr('class'), 'test-class');
-	var knode = K('<div></div>');
-	equals(knode.attr('class', 'aaa').attr('class'), 'aaa');
-	equals(knode.removeAttr('class').attr('class'), '');
+	equals(K('<div></div>').attr('class', 'aaa').attr('class'), 'aaa');
+	equals(K('<div></div>').removeAttr('class').attr('class'), '');
 });
 
-test("node.hasClass/node.addClass/node.removeClass", function() {
+test("hasClass/addClass/removeClass", function() {
 	var knode = K('<div></div>');
 	var div = knode.get();
 	knode.addClass('aaa');
@@ -56,7 +61,7 @@ test("node.hasClass/node.addClass/node.removeClass", function() {
 	equals(div.className, '');
 });
 
-test("node.contains",function(){
+test("contains",function(){
 	ok(K('#test-data-01 p').contains(K('#test-data-01 p')) === false);
 	ok(K('#test-data-01').contains(K('#test-data-01 p')) === true);
 	ok(K('#test-data-01 strong').contains(K('#test-data-01 strong').first()) === true);
@@ -65,7 +70,7 @@ test("node.contains",function(){
 	ok(K('#test-data-01 strong').first().contains(K('#test-data-01 strong')) === false);
 });
 
-test("node.val",function(){
+test("val",function(){
 	equals(K('<input value="aa" />').val(), "aa");
 	equals(K('<div value="aa"></div>').val(), "aa");
 	equals(K('<input value="aa" />').val("bb").val(), "bb");
@@ -73,7 +78,7 @@ test("node.val",function(){
 	equals(K('<textarea></textarea>').val('abc').val(), 'abc');
 });
 
-test("node.css",function(){
+test("css",function(){
 	var node = K('<div></div>');
 	equals(node.css('width','300px').css('width'), '300px');
 	equals(node.css('border','1px solid #ccc').css('border'),node.css('border'));
@@ -81,19 +86,19 @@ test("node.css",function(){
 	equals(node.css('width'), '300px');
 });
 
-test("node.width/node.height",function(){
+test("width/height",function(){
 	equals(K('#test-data-01').width(), 300);
 	ok(K('#test-data-01').height() > 120);
 });
 
-test("node.html",function(){
+test("html",function(){
 	var node = K('<div>xxx</div>');
 	equals(node.html(), 'xxx');
 	equals(node.html('bbb').html(), 'bbb');
 	equals(K('<textarea></textarea>').html('abc').html(), 'abc');
 });
 
-test("node.outer",function(){
+test("outer",function(){
 	var node = K('<div>xxx</div>');
 	equals(node.outer(), '<div>xxx</div>');
 	equals(node.addClass('aaa').outer(), '<div class="aaa">xxx</div>');

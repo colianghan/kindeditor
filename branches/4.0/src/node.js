@@ -38,6 +38,37 @@ function _setHtml(el, html) {
 	el.innerHTML = '' + html;
 }
 
+function _setAttr(el, key, val) {
+	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+		key = 'className';
+	}
+	el.setAttribute(key, '' + val);
+}
+
+function _removeAttr(el, key) {
+	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+		key = 'className';
+	}
+	_setAttr(el, key, '');
+	el.removeAttribute(key);
+}
+
+function _getDoc(node) {
+	return node.ownerDocument || node.document || node;
+}
+
+function _getWin(doc) {
+	return doc.parentWindow || doc.defaultView;
+}
+
+function _getNodeName(node) {
+	return node.nodeName.toLowerCase();
+}
+
+function _hasVal(node) {
+	return !!_VALUE_TAG_MAP[_getNodeName(node)];
+}
+
 function _getScrollPos() {
 	var x, y;
 	if (_IE || _OPERA) {
@@ -52,56 +83,59 @@ function _getScrollPos() {
 }
 
 /**
-	@name KindEditor.node
+	@name KNode
 	@class KNode类
 	@param {String|Node} expr DOM元素、选择器字符串、HTML
 	@param {Element} root DOM根元素，在root范围内选择DOM元素
 	@description
-	KNode类，只能通过K.node(expr, root)创建，不能使用new KNode()。
+	KNode类，只能通过K(expr, root)创建，不能使用new KNode()。
 	@example
-	var knode = K.node('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
-	knode = K.node('#id div'); //选择第一个匹配的div元素，并返回该元素的KNode对象
-	knode = K.node(document.getElementById('id')); //返回原生Node的KNode对象
+	var knode = K('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
+	knode = K('#id div'); //选择匹配的DIV NodeList
+	knode = K(document.getElementById('id')); //选择原生Node
 */
 function KNode(node) {
 	var self = this;
+	_each(node, function(i) {
+		self[i] = this;
+	});
 	self.node = node;
+	self.length = self.node.length;
 	/**
-		@name KindEditor.node#doc
+		@name KNode#doc
 		@property
 		@public
 		@type {document}
 		@description
 		包含Node的document对象。
 	*/
-	self.doc = self.node.ownerDocument || self.node;
+	self.doc = _getDoc(self.node[0]);
 	/**
-		@name KindEditor.node#name
+		@name KNode#name
 		@property
 		@public
 		@type {String}
 		@description
 		节点名称。
 	*/
-	self.name = self.node.nodeName.toLowerCase();
+	self.name = _getNodeName(self.node[0]);
 	/**
-		@name KindEditor.node#type
+		@name KNode#type
 		@property
 		@public
 		@type {String}
 		@description
 		节点类型。1: Element, 3: textNode
 	*/
-	self.type = self.node.nodeType;
-	self.win = self.doc.parentWindow || self.doc.defaultView;
+	self.type = self.node[0].nodeType;
+	self.win = _getWin(self.doc);
 	//private properties
 	self._data = {};
-	self._prevDisplay = '';
 }
 
 KNode.prototype = {
 	/**
-		@name KindEditor.node#bind
+		@name KNode#bind
 		@function
 		@public
 		@param {String} type
@@ -112,21 +146,25 @@ KNode.prototype = {
 	*/
 	bind : function(type, fn) {
 		var self = this;
-		_bind(self.node, type, fn, self);
+		_each(self.node, function() {
+			_bind(this, type, fn, self);
+		});
 		return self;
 	},
 	unbind : function(type, fn) {
 		var self = this;
-		_unbind(self.node, type, fn);
+		_each(self.node, function() {
+			_unbind(this, type, fn);
+		});
 		return self;
 	},
 	fire : function(type) {
 		var self = this;
-		_fire(self.node, type, self);
+		_fire(self.node[0], type, self);
 		return self;
 	},
 	hasAttr : function(key) {
-		return _getAttr(this.node, key);
+		return _getAttr(this.node[0], key);
 	},
 	attr : function(key, val) {
 		var self = this, node = self.node;
@@ -140,77 +178,71 @@ KNode.prototype = {
 			return self;
 		}
 		if (val === undefined) {
-			val = _getAttr(node, key);
+			val = _getAttr(node[0], key);
 			return val === null ? '' : val;
 		}
-		if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-			key = 'className';
-		}
-		node.setAttribute(key, '' + val);
+		_each(node, function() {
+			_setAttr(this, key, val);
+		});
 		return self;
 	},
 	removeAttr : function(key) {
 		var self = this;
-		if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
-			key = 'className';
-		}
-		self.attr(key, '');
-		self.node.removeAttribute(key);
+		_each(self.node, function() {
+			_removeAttr(this, key);
+		});
 		return self;
 	},
-	width : function(val) {
-		var self = this;
-		if (val === undefined) {
-			return self.node.offsetWidth;
-		}
-		return self.css('width', _addUnit(val));
-	},
-	height : function(val) {
-		var self = this;
-		if (val === undefined) {
-			return self.node.offsetHeight;
-		}
-		return self.css('height', _addUnit(val));
-	},
-	get : function() {
-		return this.node;
+	get : function(i) {
+		return i === undefined ? this.node[0] : this.node[i];
 	},
 	hasClass : function(cls) {
-		return _inString(cls, this.node.className, ' ');
+		return _inString(cls, this.node[0].className, ' ');
 	},
 	addClass : function(cls) {
-		var self = this, node = self.node;
-		if (!self.hasClass(cls)) {
-			node.className = _trim(node.className + ' ' + cls);
-		}
+		var self = this;
+		_each(self.node, function() {
+			if (!_inString(cls, this.className, ' ')) {
+				this.className = _trim(this.className + ' ' + cls);
+			}
+		});
 		return self;
 	},
 	removeClass : function(cls) {
-		var self = this, node = self.node;
-		if (self.hasClass(cls)) {
-			node.className = _trim(node.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
-		}
+		var self = this;
+		_each(self.node, function() {
+			if (_inString(cls, this.className, ' ')) {
+				this.className = _trim(this.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+			}
+		});
 		return self;
 	},
 	html : function(val) {
 		var self = this, node = self.node;
 		if (val === undefined) {
-			return _formatHtml(node.innerHTML);
+			return _formatHtml(node[0].innerHTML);
 		} else {
-			_setHtml(node, _formatHtml(val));
+			_each(node, function() {
+				_setHtml(this, _formatHtml(val));
+			});
 			return self;
 		}
+	},
+	hasVal : function() {
+		return _hasVal(this.node[0]);
 	},
 	val : function(val) {
 		var self = this, node = self.node;
 		if (val === undefined) {
-			return self.hasVal() ? node.value : self.attr('value');
+			return self.hasVal() ? node[0].value : self.attr('value');
 		} else {
-			if (self.hasVal()) {
-				node.value = val;
-			} else {
-				self.attr('value' , val);
-			}
+			_each(node, function() {
+				if (_hasVal(this)) {
+					this.value = val;
+				} else {
+					_setAttr(this, 'value' , val);
+				}
+			});
 			return self;
 		}
 	},
@@ -226,13 +258,15 @@ KNode.prototype = {
 			return self;
 		}
 		if (val === undefined) {
-			return node.style[key] || self.computedCss(key) || '';
+			return node[0].style[key] || self.computedCss(key) || '';
 		}
-		node.style[_toCamel(key)] = val;
+		_each(node, function() {
+			this.style[_toCamel(key)] = val;
+		});
 		return self;
 	},
 	computedCss : function(key) {
-		var self = this, node = self.node, camelKey = _toCamel(key), val = '';
+		var self = this, node = self.node[0], camelKey = _toCamel(key), val = '';
 		if (self.win.getComputedStyle) {
 			var style = self.win.getComputedStyle(node, null);
 			val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
@@ -241,13 +275,29 @@ KNode.prototype = {
 		}
 		return val;
 	},
-	opacity : function(val) {
-		var self = this, node = self.node;
-		if (node.style.opacity === undefined) {
-			node.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
-			return self;
+	width : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return self.node[0].offsetWidth;
 		}
-		node.style.opacity = val == 1 ? '' : val;
+		return self.css('width', _addUnit(val));
+	},
+	height : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return self.node[0].offsetHeight;
+		}
+		return self.css('height', _addUnit(val));
+	},
+	opacity : function(val) {
+		var self = this;
+		_each(self.node, function() {
+			if (this.style.opacity === undefined) {
+				this.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
+				return self;
+			}
+			this.style.opacity = val == 1 ? '' : val;
+		});
 		return self;
 	},
 	data : function(key, val) {
@@ -259,7 +309,7 @@ KNode.prototype = {
 		return self;
 	},
 	pos : function() {
-		var self = this, node = self.node, x = 0, y = 0;
+		var self = this, node = self.node[0], x = 0, y = 0;
 		if (node.getBoundingClientRect) {
 			var box = node.getBoundingClientRect(),
 				pos = _getScrollPos();
@@ -275,67 +325,67 @@ KNode.prototype = {
 		return {x : Math.round(x), y : Math.round(y)};
 	},
 	clone : function(bool) {
-		return new KNode(this.node.cloneNode(bool));
+		return new KNode([this.node[0].cloneNode(bool)]);
 	},
 	append : function(val) {
-		this.node.appendChild(_get(val));
-		return this;
+		var self = this;
+		_each(self.node, function() {
+			this.appendChild(_get(val));
+		});
+		return self;
 	},
 	before : function(val) {
-		var self = this, node = self.node;
-		node.parentNode.insertBefore(_get(val), node);
+		var self = this;
+		_each(self.node, function() {
+			this.parentNode.insertBefore(_get(val), this);
+		});
 		return self;
 	},
 	after : function(val) {
-		var self = this, node = self.node;
-		if (node.nextSibling) {
-			node.parentNode.insertBefore(_get(val), node.nextSibling);
-		} else {
-			self.append(val);
-		}
+		var self = this;
+		_each(self.node, function() {
+			if (this.nextSibling) {
+				this.parentNode.insertBefore(_get(val), this.nextSibling);
+			} else {
+				this.appendChild(_get(val));
+			}
+		});
 		return self;
 	},
 	replaceWith : function(val) {
-		val = _get(val);
-		var self = this, node = self.node;
-		node.parentNode.replaceChild(val, node);
-		self.unbind();
-		self.node = val;
+		var self = this, list = [], clone;
+		_each(self.node, function() {
+			clone = _get(val).cloneNode(true);
+			_unbind(this);
+			this.parentNode.replaceChild(clone, this);
+			list.push(clone);
+		});
+		self.node = list;
 		return self;
 	},
 	remove : function() {
-		var self = this, node = self.node;
-		self.unbind();
-		if (node.parentNode) {
-			node.parentNode.removeChild(node);
-		}
-		self.node = null;
+		var self = this;
+		_each(self.node, function() {
+			_unbind(this);
+			if (this.parentNode) {
+				this.parentNode.removeChild(this);
+			}
+		});
+		self.node = [];
 		return self;
 	},
-	show : function() {
-		var self = this;
-		if (self.computedCss('display') === 'none') {
-			self.css('display', self._prevDisplay);
-		}
-		return self;
+	show : function(val) {
+		return this.css('display', val === undefined ? 'block' : val);
 	},
 	hide : function() {
-		var self = this;
-		if (self.computedCss('display') !== 'none') {
-			self._prevDisplay = self.css('display');
-			self.css('display', 'none');
-		}
-		return self;
+		return this.css('display', 'none');
 	},
 	outer : function() {
 		var self = this, div = self.doc.createElement('div'), html;
-		div.appendChild(self.node.cloneNode(true));
+		div.appendChild(self.node[0].cloneNode(true));
 		html = _formatHtml(div.innerHTML);
 		div = null;
 		return html;
-	},
-	hasVal : function() {
-		return !!_VALUE_TAG_MAP[this.name];
 	},
 	isSingle : function() {
 		return !!_SINGLE_TAG_MAP[this.name];
@@ -347,17 +397,17 @@ KNode.prototype = {
 		return !!_BLOCK_TAG_MAP[this.name];
 	},
 	contains : function(otherNode) {
-		return _contains(this.node, _get(otherNode));
+		return _contains(this.node[0], _get(otherNode));
 	},
 	parent : function() {
-		var node = this.node.parentNode;
-		return node ? new KNode(node) : null;
+		var node = this.node[0].parentNode;
+		return node ? new KNode([node]) : null;
 	},
 	children : function() {
-		var list = [], child = this.node.firstChild;
+		var list = [], child = this.node[0].firstChild;
 		while (child) {
 			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
-				list.push(new KNode(child));
+				list.push(new KNode([child]));
 			}
 			child = child.nextSibling;
 		}
@@ -372,7 +422,7 @@ KNode.prototype = {
 		return list.length > 0 ? list[list.length - 1] : null;
 	},
 	index : function() {
-		var i = -1, sibling = this.node;
+		var i = -1, sibling = this.node[0];
 		while (sibling) {
 			i++;
 			sibling = sibling.previousSibling;
@@ -380,12 +430,12 @@ KNode.prototype = {
 		return i;
 	},
 	prev : function() {
-		var node = this.node.previousSibling;
-		return node ? new KNode(node) : null;
+		var node = this.node[0].previousSibling;
+		return node ? new KNode([node]) : null;
 	},
 	next : function() {
-		var node = this.node.nextSibling;
-		return node ? new KNode(node) : null;
+		var node = this.node[0].nextSibling;
+		return node ? new KNode([node]) : null;
 	},
 	each : function(fn, order) {
 		order = (order === undefined) ? true : order;
@@ -393,7 +443,7 @@ KNode.prototype = {
 			var n = order ? node.firstChild : node.lastChild;
 			while (n) {
 				var next = order ? n.nextSibling : n.previousSibling;
-				if (fn(new KNode(n)) === false) {
+				if (fn(new KNode([n])) === false) {
 					return false;
 				}
 				if (walk(n) === false) {
@@ -402,11 +452,10 @@ KNode.prototype = {
 				n = next;
 			}
 		}
-		walk(this.node);
+		walk(this.node[0]);
 	},
 	toString : function() {
-		var self = this;
-		return self.type == 3 ? self.node.nodeValue : self.outer();
+		return this.node.toString();
 	}
 };
 
@@ -421,7 +470,7 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 
 function _node(expr, root) {
 	function newNode(node) {
-		if (!node) {
+		if (node.length < 1 || !node[0]) {
 			return null;
 		}
 		return new KNode(node);
@@ -429,16 +478,19 @@ function _node(expr, root) {
 	if (typeof expr === 'string') {
 		if (/<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
-				div = doc.createElement('div');
+				div = doc.createElement('div'), list = [];
 			_setHtml(div, expr);
-			return newNode(div.firstChild);
+			for (var i = 0, len = div.childNodes.length; i < len; i++) {
+				list.push(div.childNodes[i]);
+			}
+			return newNode(list);
 		}
-		return newNode(_query(expr, root));
+		return newNode(_queryAll(expr, root));
 	}
 	if (expr && expr.get) {
 		return expr;
 	}
-	return newNode(expr);
+	return newNode(_toArray(arguments));
 }
 
 var _K = K;

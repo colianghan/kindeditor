@@ -280,6 +280,10 @@ function _toMap(str, delimiter) {
 	return map;
 }
 
+function _toArray(obj) {
+	return Array.prototype.slice.call(obj, 0);
+}
+
 function _getScriptPath() {
 	var els = document.getElementsByTagName('script'), src;
 	for (var i = 0, len = els.length; i < len; i++) {
@@ -309,5 +313,6 @@ var K = {
 	escape : _escape,
 	unescape : _unescape,
 	toHex : _toHex,
-	toMap : _toMap
+	toMap : _toMap,
+	toArray : _toArray
 };
