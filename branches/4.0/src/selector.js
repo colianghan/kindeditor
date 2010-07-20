@@ -13,75 +13,18 @@
 
 /**
 #using "core.js"
+#using "config.js"
 #using "html.js"
 */
 
-/**
-	@name KindEditor.query
-	@function
-	@param {String} expr 选择器查询语句。
-	@param {element} root
-	@returns {element}
-	@description
-	根据expr在root范围内查找DOM元素，并返回第一个元素。没找到则返回null。
-	@example
-	// Only support the following selector syntax.
-	// Patterns:
-	// *: any element
-	// E: an element of type E
-	// E[foo]: an E element with a "foo" attribute
-	// E[foo="bar"]: an E element whose "foo" attribute value is exactly equal to "bar"
-	// E.warning: an E element whose class is "warning" (the document language specifies how class is determined)
-	// E#myid: an E element with ID equal to "myid"
-	// E F: an F element descendant of an E element
-	// E > F: an F element child of an E element
-
-	var div = K.query('#id div');
-	var span = K.query('span.class', div);
-	@see <a href="http://www.w3.org/TR/css3-selectors/" target="_blank">Selectors Level 3</a>
-*/
-
-/**
-	@name KindEditor.queryAll
-	@function
-	@param {String} expr 选择器查询语句。
-	@param {element} root
-	@returns {element[]}
-	@description
-	根据expr在root范围内查找DOM元素，并返回所有元素。没找到则返回空数组。
-	@example
-	var divArray = K.query('#id div');
-	var spanArray = K.query('span.class', div);
-*/
-
 function _contains(nodeA, nodeB) {
-	var docA = nodeA.ownerDocument || nodeA,
-		docB = nodeB.ownerDocument || nodeB;
-	if (docA !== docB) {
-		return false;
-	}
-	if (nodeB === docB) {
-		return false;
-	}
-	if (nodeA === docA) {
-		return true;
-	}
-	if (nodeA.nodeType === 3) {
-		return false;
-	}
-	if (nodeB.nodeType === 3) {
-		nodeB = nodeB.parentNode;
-		if (!nodeB) {
-			return false;
-		}
-		if (nodeA === nodeB) {
+	while (nodeB) {
+		if (nodeB === nodeA) {
 			return true;
 		}
+		nodeB = nodeB.parentNode;
 	}
-	if (nodeA.compareDocumentPosition) {
-		return !!(nodeA.compareDocumentPosition(nodeB) & 16);
-	}
-	return nodeA !== nodeB && nodeA.contains(nodeB);
+	return false;
 }
 
 function _getAttr(el, key) {
@@ -103,6 +46,18 @@ function _getAttr(el, key) {
 	return val;
 }
 
+/**
+	@name KindEditor.queryAll
+	@function
+	@param {String} expr 选择器查询语句。
+	@param {element} root
+	@returns {element[]}
+	@description
+	根据expr在root范围内查找DOM元素，并返回所有元素。没找到则返回空数组。
+	@example
+	var divArray = K.query('#id div');
+	var spanArray = K.query('span.class', div);
+*/
 function _queryAll(expr, root) {
 	root = root || document;
 	function escape(str) {
@@ -118,9 +73,9 @@ function _queryAll(expr, root) {
 		return tagA === '*' || tagA.toLowerCase() === escape(tagB.toLowerCase());
 	}
 	function byId(id, tag, root) {
-		var arr = [];
-		var doc = root.ownerDocument || root;
-		var el = doc.getElementById(stripslashes(id));
+		var arr = [],
+			doc = root.ownerDocument || root,
+			el = doc.getElementById(stripslashes(id));
 		if (el) {
 			if (cmpTag(tag, el.nodeName) && _contains(root, el)) {
 				arr.push(el);
@@ -162,9 +117,8 @@ function _queryAll(expr, root) {
 		return arr;
 	}
 	function byName(name, tag, root) {
-		var arr = [];
-		var els = root.getElementsByName(stripslashes(name));
-		for (var i = 0, len = els.length, el; i < len; i++) {
+		var arr = [], els = root.getElementsByName(stripslashes(name)), el;
+		for (var i = 0, len = els.length; i < len; i++) {
 			el = els[i];
 			if (cmpTag(tag, el.nodeName)) {
 				if (el.getAttributeNode('name')) {
@@ -175,9 +129,8 @@ function _queryAll(expr, root) {
 		return arr;
 	}
 	function byAttr(key, val, tag, root) {
-		var arr = [];
-		var els = root.getElementsByTagName(tag);
-		for (var i = 0, len = els.length, el; i < len; i++) {
+		var arr = [], els = root.getElementsByTagName(tag), el;
+		for (var i = 0, len = els.length; i < len; i++) {
 			el = els[i];
 			if (el.nodeType == 1) {
 				if (val === null) {
@@ -215,8 +168,8 @@ function _queryAll(expr, root) {
 				arr = byAttr(key, val, tag, root);
 			}
 		} else {
-			var els = root.getElementsByTagName(tag);
-			for (var i = 0, len = els.length, el; i < len; i++) {
+			var els = root.getElementsByTagName(tag), el;
+			for (var i = 0, len = els.length; i < len; i++) {
 				el = els[i];
 				if (el.nodeType == 1) {
 					arr.push(el);
@@ -225,8 +178,7 @@ function _queryAll(expr, root) {
 		}
 		return arr;
 	}
-	var parts = [];
-	var arr, re = /((?:\\.|[^\s>])+|[\s>])/g;
+	var parts = [], arr, re = /((?:\\.|[^\s>])+|[\s>])/g;
 	while ((arr = re.exec(expr))) {
 		if (arr[1] !== ' ') {
 			parts.push(arr[1]);
@@ -236,18 +188,20 @@ function _queryAll(expr, root) {
 	if (parts.length == 1) {
 		return select(parts[0], root);
 	}
-	var isChild = false;
-	for (var i = 0, lenth = parts.length; i < lenth; i++) {
-		var part = parts[i];
+	var isChild = false, part, els, subResults, val, v, i, j, k, length, len, l;
+	for (i = 0, lenth = parts.length; i < lenth; i++) {
+		part = parts[i];
 		if (part === '>') {
 			isChild = true;
 			continue;
 		}
 		if (i > 0) {
-			var els = [];
-			for (var j = 0, len = results.length, val = results[j]; j < len; j++) {
-				var subResults = select(part, val);
-				for (var k = 0, l = subResults.length, v = subResults[k]; k < l; k++) {
+			els = [];
+			for (j = 0, len = results.length; j < len; j++) {
+				val = results[j];
+				subResults = select(part, val);
+				for (k = 0, l = subResults.length; k < l; k++) {
+					v = subResults[k];
 					if (isChild) {
 						if (val === v.parentNode) {
 							els.push(v);
@@ -268,6 +222,30 @@ function _queryAll(expr, root) {
 	return results;
 }
 
+/**
+	@name KindEditor.query
+	@function
+	@param {String} expr 选择器查询语句。
+	@param {element} root
+	@returns {element}
+	@description
+	根据expr在root范围内查找DOM元素，并返回第一个元素。没找到则返回null。
+	@example
+	// Only support the following selector syntax.
+	// Patterns:
+	// *: any element
+	// E: an element of type E
+	// E[foo]: an E element with a "foo" attribute
+	// E[foo="bar"]: an E element whose "foo" attribute value is exactly equal to "bar"
+	// E.warning: an E element whose class is "warning" (the document language specifies how class is determined)
+	// E#myid: an E element with ID equal to "myid"
+	// E F: an F element descendant of an E element
+	// E > F: an F element child of an E element
+
+	var div = K.query('#id div');
+	var span = K.query('span.class', div);
+	@see <a href="http://www.w3.org/TR/css3-selectors/" target="_blank">Selectors Level 3</a>
+*/
 function _query(expr, root) {
 	var arr = _queryAll(expr, root);
 	return arr.length > 0 ? arr[0] : null;

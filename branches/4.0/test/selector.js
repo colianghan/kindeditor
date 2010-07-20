@@ -48,4 +48,5 @@ test('queryAll', function() {
 	ok(K.queryAll('p *', div).length === jQuery('p *', div).length);
 	ok(K.queryAll('strong', div).length === jQuery('strong', div).length);
 	ok(K.queryAll('strong', strong).length === jQuery('strong', strong).length);
+	ok(K.queryAll('div p').length === jQuery('div p').length);
 });

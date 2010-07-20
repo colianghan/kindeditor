@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-19)
+* @version 4.0 (2010-07-20)
 *******************************************************************************/
 (function (window, undefined) {
 var _ua = navigator.userAgent.toLowerCase(),
@@ -57,6 +57,12 @@ function _removeUnit(val) {
 	var match;
 	return val && (match = /(\d+)/.exec(val)) ? parseInt(match[1], 10) : 0;
 }
+function _escape(val) {
+	return val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function _unescape(val) {
+	return val.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+}
 function _toHex(color) {
 	function hex(d) {
 		var s = parseInt(d, 10).toString(16).toUpperCase();
@@ -106,6 +112,8 @@ var K = {
 	trim : _trim,
 	addUnit : _addUnit,
 	removeUnit : _removeUnit,
+	escape : _escape,
+	unescape : _unescape,
 	toHex : _toHex,
 	toMap : _toMap
 };
@@ -523,33 +531,13 @@ function _formatHtml(html) {
 }
 K.formatHtml = _formatHtml;
 function _contains(nodeA, nodeB) {
-	var docA = nodeA.ownerDocument || nodeA,
-		docB = nodeB.ownerDocument || nodeB;
-	if (docA !== docB) {
-		return false;
-	}
-	if (nodeB === docB) {
-		return false;
-	}
-	if (nodeA === docA) {
-		return true;
-	}
-	if (nodeA.nodeType === 3) {
-		return false;
-	}
-	if (nodeB.nodeType === 3) {
-		nodeB = nodeB.parentNode;
-		if (!nodeB) {
-			return false;
-		}
-		if (nodeA === nodeB) {
+	while (nodeB) {
+		if (nodeB === nodeA) {
 			return true;
 		}
+		nodeB = nodeB.parentNode;
 	}
-	if (nodeA.compareDocumentPosition) {
-		return !!(nodeA.compareDocumentPosition(nodeB) & 16);
-	}
-	return nodeA !== nodeB && nodeA.contains(nodeB);
+	return false;
 }
 function _getAttr(el, key) {
 	key = key.toLowerCase();
@@ -584,9 +572,9 @@ function _queryAll(expr, root) {
 		return tagA === '*' || tagA.toLowerCase() === escape(tagB.toLowerCase());
 	}
 	function byId(id, tag, root) {
-		var arr = [];
-		var doc = root.ownerDocument || root;
-		var el = doc.getElementById(stripslashes(id));
+		var arr = [],
+			doc = root.ownerDocument || root,
+			el = doc.getElementById(stripslashes(id));
 		if (el) {
 			if (cmpTag(tag, el.nodeName) && _contains(root, el)) {
 				arr.push(el);
@@ -628,9 +616,8 @@ function _queryAll(expr, root) {
 		return arr;
 	}
 	function byName(name, tag, root) {
-		var arr = [];
-		var els = root.getElementsByName(stripslashes(name));
-		for (var i = 0, len = els.length, el; i < len; i++) {
+		var arr = [], els = root.getElementsByName(stripslashes(name)), el;
+		for (var i = 0, len = els.length; i < len; i++) {
 			el = els[i];
 			if (cmpTag(tag, el.nodeName)) {
 				if (el.getAttributeNode('name')) {
@@ -641,9 +628,8 @@ function _queryAll(expr, root) {
 		return arr;
 	}
 	function byAttr(key, val, tag, root) {
-		var arr = [];
-		var els = root.getElementsByTagName(tag);
-		for (var i = 0, len = els.length, el; i < len; i++) {
+		var arr = [], els = root.getElementsByTagName(tag), el;
+		for (var i = 0, len = els.length; i < len; i++) {
 			el = els[i];
 			if (el.nodeType == 1) {
 				if (val === null) {
@@ -681,8 +667,8 @@ function _queryAll(expr, root) {
 				arr = byAttr(key, val, tag, root);
 			}
 		} else {
-			var els = root.getElementsByTagName(tag);
-			for (var i = 0, len = els.length, el; i < len; i++) {
+			var els = root.getElementsByTagName(tag), el;
+			for (var i = 0, len = els.length; i < len; i++) {
 				el = els[i];
 				if (el.nodeType == 1) {
 					arr.push(el);
@@ -691,8 +677,7 @@ function _queryAll(expr, root) {
 		}
 		return arr;
 	}
-	var parts = [];
-	var arr, re = /((?:\\.|[^\s>])+|[\s>])/g;
+	var parts = [], arr, re = /((?:\\.|[^\s>])+|[\s>])/g;
 	while ((arr = re.exec(expr))) {
 		if (arr[1] !== ' ') {
 			parts.push(arr[1]);
@@ -702,18 +687,20 @@ function _queryAll(expr, root) {
 	if (parts.length == 1) {
 		return select(parts[0], root);
 	}
-	var isChild = false;
-	for (var i = 0, lenth = parts.length; i < lenth; i++) {
-		var part = parts[i];
+	var isChild = false, part, els, subResults, val, v, i, j, k, length, len, l;
+	for (i = 0, lenth = parts.length; i < lenth; i++) {
+		part = parts[i];
 		if (part === '>') {
 			isChild = true;
 			continue;
 		}
 		if (i > 0) {
-			var els = [];
-			for (var j = 0, len = results.length, val = results[j]; j < len; j++) {
-				var subResults = select(part, val);
-				for (var k = 0, l = subResults.length, v = subResults[k]; k < l; k++) {
+			els = [];
+			for (j = 0, len = results.length; j < len; j++) {
+				val = results[j];
+				subResults = select(part, val);
+				for (k = 0, l = subResults.length; k < l; k++) {
+					v = subResults[k];
 					if (isChild) {
 						if (val === v.parentNode) {
 							els.push(v);
@@ -830,16 +817,14 @@ KNode.prototype = {
 	width : function(val) {
 		var self = this;
 		if (val === undefined) {
-			var width = self.css('width');
-			return (/^\d/.test(width)) ? _removeUnit(width) : self.node.offsetWidth;
+			return self.node.offsetWidth;
 		}
 		return self.css('width', _addUnit(val));
 	},
 	height : function(val) {
 		var self = this;
 		if (val === undefined) {
-			var height = self.css('height');
-			return (/^\d/.test(height)) ? _removeUnit(height) : self.node.offsetHeight;
+			return self.node.offsetHeight;
 		}
 		return self.css('height', _addUnit(val));
 	},
@@ -2370,29 +2355,37 @@ function _widget(options) {
 		z = options.z,
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
+		autoWidth = options.autoWidth,
+		autoHeight = options.autoHeight,
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
 		div = _node('<div></div>').css('display', 'block');
-	if (z && (x === undefined || y === undefined)) {
-		var w = _removeUnit(width),
-			h = _removeUnit(height);
-		if (options.alignEl) {
-			var el = options.alignEl,
-				pos = _node(el).pos(),
-				diffX = _round(el.clientWidth / 2 - w / 2),
-				diffY = _round(el.clientHeight / 2 - h / 2);
-			x = diffX < 0 ? pos.x : pos.x + diffX;
-			y = diffY < 0 ? pos.y : pos.y + diffY;
-		} else {
-			var docEl = doc.documentElement,
-				scrollPos = _getScrollPos();
-			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
-			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+	function resetPos(width, height) {
+		if (z && (options.x === undefined || options.y === undefined)) {
+			var w = _removeUnit(width) || 0,
+				h = _removeUnit(height) || 0;
+			if (options.alignEl) {
+				var el = options.alignEl,
+					pos = _node(el).pos(),
+					diffX = _round(el.clientWidth / 2 - w / 2),
+					diffY = _round(el.clientHeight / 2 - h / 2);
+				x = diffX < 0 ? pos.x : pos.x + diffX;
+				y = diffY < 0 ? pos.y : pos.y + diffY;
+			} else {
+				var docEl = doc.documentElement,
+					scrollPos = _getScrollPos();
+				x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
+				y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+			}
+			x = x < 0 ? 0 : _addUnit(x);
+			y = y < 0 ? 0 : _addUnit(y);
+			div.css({
+				left : x,
+				top : y
+			});
 		}
-		x = x < 0 ? 0 : _addUnit(x);
-		y = y < 0 ? 0 : _addUnit(y);
 	}
 	if (width) {
 		div.css('width', width);
@@ -2408,6 +2401,7 @@ function _widget(options) {
 			'z-index' : z
 		});
 	}
+	resetPos(width, height);
 	if (css) {
 		div.css(css);
 	}
@@ -2443,7 +2437,8 @@ function _widget(options) {
 				div.css('left', _addUnit(x)).css('top', _addUnit(y));
 			};
 			_bindDragEvent(options);
-		}
+		},
+		resetPos : resetPos
 	};
 }
 K.widget = _widget;
@@ -2839,7 +2834,7 @@ function _dialog(options) {
 		noBtn = options.noBtn,
 		shadowMode = options.shadowMode === undefined ? true : options.shadowMode;
 	self.div().addClass('ke-dialog').bind('click,mousedown', function(e){
-		e.stop();
+		e.stopPropagation();
 	});
 	var contentCell;
 	if (shadowMode) {
@@ -2877,7 +2872,7 @@ function _dialog(options) {
 	contentCell.append(headerDiv);
 	headerDiv.html(title);
 	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
-		(shadowMode ? '' : 'no-') + 'shadow" title="' + _plugin('close') + '"></span>')
+		(shadowMode ? '' : 'no-') + 'shadow" title="' + _lang('close') + '"></span>')
 		.click(function (e) {
 			self.remove();
 		});
@@ -2906,16 +2901,19 @@ function _dialog(options) {
 			buttons.push(button);
 		}
 	});
-	bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
-	var docEl = doc.documentElement;
-	var mask = _widget({
-		x : 0,
-		y : 0,
-		z : 19811212,
-		width : Math.max(docEl.scrollWidth, docEl.clientWidth),
-		height : Math.max(docEl.scrollHeight, docEl.clientHeight)
-	});
+	if (self.height) {
+		bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
+	}
+	var docEl = doc.documentElement,
+		mask = _widget({
+			x : 0,
+			y : 0,
+			z : 19811212,
+			width : Math.max(docEl.scrollWidth, docEl.clientWidth),
+			height : Math.max(docEl.scrollHeight, docEl.clientHeight)
+		});
 	mask.div().addClass('ke-dialog-mask');
+	self.resetPos(self.div().width(), self.div().height());
 	self.remove = function() {
 		mask.remove();
 		span.remove();
@@ -3092,15 +3090,50 @@ if (window.K === undefined) {
 }
 window.KindEditor = K;
 _plugin('about', function(editor) {
+	var html = '<div style="margin:20px;">' +
+		'<div>KindEditor 4.0 (2010-07-20)</div>' +
+		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
+		'</div>';
 	var dialog = K.dialog({
 		width : 300,
-		height : 200,
 		title : _lang('about'),
-		body : '<div style="margin:10px;"><strong>内容</strong></div>',
+		body : html,
 		noBtn : {
 			name : _lang('close'),
 			click : function(e) {
 				dialog.remove();
+				editor.edit.focus();
+			}
+		}
+	});
+});
+_plugin('plainpaste', function(editor) {
+	var lang = _pluginLang('plainpaste'),
+		html = '<div style="margin:10px;">' +
+			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
+			'<textarea id="ke_plainpaste_textarea" style="width:99%;height:260px;border:1px solid #A0A0A0;"></textarea>' +
+			'</div>';
+	var dialog = K.dialog({
+		width : 450,
+		title : _lang('plainpaste'),
+		body : html,
+		yesBtn : {
+			name : _lang('yes'),
+			click : function(e) {
+				var html = _node('#ke_plainpaste_textarea').val();
+				html = _escape(html);
+				html = html.replace(/ /g, '&nbsp;');
+				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
+				editor.edit.cmd.inserthtml(html);
+				dialog.remove();
+				editor.edit.focus();
+			}
+		},
+		noBtn : {
+			name : _lang('close'),
+			click : function(e) {
+				dialog.remove();
+				editor.edit.focus();
 			}
 		}
 	});
@@ -3302,7 +3335,7 @@ _language.zh_CN = {
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
 	plugins : {
 		about : {
-			version : '4.0 (2010-07-19)',
+			version : '4.0 (2010-07-20)',
 			title : 'HTML可视化编辑器'
 		},
 		plainpaste : {

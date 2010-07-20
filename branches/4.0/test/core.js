@@ -96,6 +96,22 @@ test('addUnit', function() {
 	equals(K.addUnit('100%'), '100%');
 });
 
+test('removeUnit', function() {
+	ok(K.removeUnit() === 0);
+	ok(K.removeUnit(null) === 0);
+	ok(K.removeUnit(0) === 0);
+	equals(K.removeUnit(100), 100);
+	equals(K.removeUnit('100px'), 100);
+});
+
+test('escape', function() {
+	same(K.escape('<div id="abc">&</div>'), '&lt;div id=&quot;abc&quot;&gt;&amp;&lt;/div&gt;');
+});
+
+test('unescape', function() {
+	same(K.unescape('&lt;div id=&quot;abc&quot;&gt;&amp;&lt;/div&gt;'), '<div id="abc">&</div>');
+});
+
 test('toMap', function() {
 	same(K.toMap('a,b'), {a : true, b : true});
 	same(K.toMap('a,1..3,b'), {a : true, '1' : true, '2' : true, '3' : true, b : true});

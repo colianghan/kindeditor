@@ -209,6 +209,30 @@ function _removeUnit(val) {
 }
 
 /**
+	@name KindEditor.escape
+	@function
+	@param {String} val The string being converted.
+	@returns {String} The converted string.
+	@description
+	Convert special characters to HTML entities
+*/
+function _escape(val) {
+	return val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+	@name KindEditor.unescape
+	@function
+	@param {String} val The string to decode.
+	@returns {String} The decoded string.
+	@description
+	Convert special HTML entities back to characters
+*/
+function _unescape(val) {
+	return val.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+}
+
+/**
 	@name KindEditor.toHex
 	@function
 	@param {String} color RGB颜色
@@ -282,6 +306,8 @@ var K = {
 	trim : _trim,
 	addUnit : _addUnit,
 	removeUnit : _removeUnit,
+	escape : _escape,
+	unescape : _unescape,
 	toHex : _toHex,
 	toMap : _toMap
 };

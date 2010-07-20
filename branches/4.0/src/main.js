@@ -231,7 +231,7 @@ _plugin('plainpaste', function(editor) {
 			name : _lang('yes'),
 			click : function(e) {
 				var html = _node('#ke_plainpaste_textarea').val();
-				//html = KE.util.escape(html);
+				html = _escape(html);
 				html = html.replace(/ /g, '&nbsp;');
 				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 				editor.edit.cmd.inserthtml(html);
