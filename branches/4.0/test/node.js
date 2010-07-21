@@ -91,6 +91,12 @@ test("width/height",function(){
 	ok(K('#test-data-01').height() > 120);
 });
 
+test("remove",function(){
+	var node = K('<div></div><p>123</p>').addClass('abc').html('test');
+	node.remove();
+	equals(node.length, 0);
+});
+
 test("html",function(){
 	var node = K('<div>xxx</div>');
 	equals(node.html(), 'xxx');

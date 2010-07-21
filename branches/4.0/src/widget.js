@@ -135,7 +135,7 @@ function _widget(options) {
 	if (html) {
 		div.html(html);
 	}
-	_node(parent, doc).append(div);
+	_node(parent).append(div);
 	return {
 		name : name,
 		x : x,

@@ -38,6 +38,10 @@ function _setHtml(el, html) {
 	el.innerHTML = '' + html;
 }
 
+function _hasClass(el, cls) {
+	return _inString(cls, el.className, ' ');
+}
+
 function _setAttr(el, key, val) {
 	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
 		key = 'className';
@@ -57,12 +61,24 @@ function _getDoc(node) {
 	return node.ownerDocument || node.document || node;
 }
 
-function _getWin(doc) {
+function _getWin(node) {
+	var doc = _getDoc(node);
 	return doc.parentWindow || doc.defaultView;
 }
 
 function _getNodeName(node) {
 	return node.nodeName.toLowerCase();
+}
+
+function _computedCss(el, key) {
+	var self = this, win = _getWin(el), camelKey = _toCamel(key), val = '';
+	if (win.getComputedStyle) {
+		var style = win.getComputedStyle(el, null);
+		val = style[camelKey] || style.getPropertyValue(key) || el.style[camelKey];
+	} else if (el.currentStyle) {
+		val = el.currentStyle[camelKey] || el.style[camelKey];
+	}
+	return val;
 }
 
 function _hasVal(node) {
@@ -99,8 +115,7 @@ function KNode(node) {
 	_each(node, function(i) {
 		self[i] = this;
 	});
-	self.node = node;
-	self.length = self.node.length;
+	self.length = node.length;
 	/**
 		@name KNode#doc
 		@property
@@ -109,7 +124,7 @@ function KNode(node) {
 		@description
 		包含Node的document对象。
 	*/
-	self.doc = _getDoc(self.node[0]);
+	self.doc = _getDoc(self[0]);
 	/**
 		@name KNode#name
 		@property
@@ -118,7 +133,7 @@ function KNode(node) {
 		@description
 		节点名称。
 	*/
-	self.name = _getNodeName(self.node[0]);
+	self.name = _getNodeName(self[0]);
 	/**
 		@name KNode#type
 		@property
@@ -127,8 +142,8 @@ function KNode(node) {
 		@description
 		节点类型。1: Element, 3: textNode
 	*/
-	self.type = self.node[0].nodeType;
-	self.win = _getWin(self.doc);
+	self.type = self[0].nodeType;
+	self.win = _getWin(self[0]);
 	//private properties
 	self._data = {};
 }
@@ -146,28 +161,28 @@ KNode.prototype = {
 	*/
 	bind : function(type, fn) {
 		var self = this;
-		_each(self.node, function() {
-			_bind(this, type, fn, self);
-		});
+		for (var i = 0; i < self.length; i++) {
+			_bind(self[i], type, fn, self);
+		}
 		return self;
 	},
 	unbind : function(type, fn) {
 		var self = this;
-		_each(self.node, function() {
-			_unbind(this, type, fn);
-		});
+		for (var i = 0; i < self.length; i++) {
+			_unbind(self[i], type, fn);
+		}
 		return self;
 	},
 	fire : function(type) {
 		var self = this;
-		_fire(self.node[0], type, self);
+		_fire(self[0], type, self);
 		return self;
 	},
 	hasAttr : function(key) {
-		return _getAttr(this.node[0], key);
+		return _getAttr(this[0], key);
 	},
 	attr : function(key, val) {
-		var self = this, node = self.node;
+		var self = this;
 		if (key === undefined) {
 			return _getAttrList(self.outer());
 		}
@@ -178,76 +193,76 @@ KNode.prototype = {
 			return self;
 		}
 		if (val === undefined) {
-			val = _getAttr(node[0], key);
+			val = _getAttr(self[0], key);
 			return val === null ? '' : val;
 		}
-		_each(node, function() {
-			_setAttr(this, key, val);
-		});
+		for (var i = 0; i < self.length; i++) {
+			_setAttr(self[i], key, val);
+		}
 		return self;
 	},
 	removeAttr : function(key) {
 		var self = this;
-		_each(self.node, function() {
-			_removeAttr(this, key);
-		});
+		for (var i = 0; i < self.length; i++) {
+			_removeAttr(self[i], key);
+		}
 		return self;
 	},
 	get : function(i) {
-		return i === undefined ? this.node[0] : this.node[i];
+		return this[i || 0];
 	},
 	hasClass : function(cls) {
-		return _inString(cls, this.node[0].className, ' ');
+		return _hasClass(this[0], cls);
 	},
 	addClass : function(cls) {
 		var self = this;
-		_each(self.node, function() {
-			if (!_inString(cls, this.className, ' ')) {
-				this.className = _trim(this.className + ' ' + cls);
+		for (var i = 0; i < self.length; i++) {
+			if (!_hasClass(self[i], cls)) {
+				self[i].className = _trim(self[i].className + ' ' + cls);
 			}
-		});
+		}
 		return self;
 	},
 	removeClass : function(cls) {
 		var self = this;
-		_each(self.node, function() {
-			if (_inString(cls, this.className, ' ')) {
-				this.className = _trim(this.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+		for (var i = 0; i < self.length; i++) {
+			if (_hasClass(self[i], cls)) {
+				self[i].className = _trim(self[i].className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
 			}
-		});
+		}
 		return self;
 	},
 	html : function(val) {
-		var self = this, node = self.node;
+		var self = this;
 		if (val === undefined) {
-			return _formatHtml(node[0].innerHTML);
+			return _formatHtml(self[0].innerHTML);
 		} else {
-			_each(node, function() {
-				_setHtml(this, _formatHtml(val));
-			});
+			for (var i = 0; i < self.length; i++) {
+				_setHtml(self[i], _formatHtml(val));
+			}
 			return self;
 		}
 	},
 	hasVal : function() {
-		return _hasVal(this.node[0]);
+		return _hasVal(this[0]);
 	},
 	val : function(val) {
-		var self = this, node = self.node;
+		var self = this;
 		if (val === undefined) {
-			return self.hasVal() ? node[0].value : self.attr('value');
+			return self.hasVal() ? self[0].value : self.attr('value');
 		} else {
-			_each(node, function() {
-				if (_hasVal(this)) {
-					this.value = val;
+			for (var i = 0; i < self.length; i++) {
+				if (_hasVal(self[i])) {
+					self[i].value = val;
 				} else {
-					_setAttr(this, 'value' , val);
+					_setAttr(self[i], 'value' , val);
 				}
-			});
+			}
 			return self;
 		}
 	},
 	css : function(key, val) {
-		var self = this, node = self.node;
+		var self = this;
 		if (key === undefined) {
 			return _getCssList(self.attr('style'));
 		}
@@ -258,46 +273,36 @@ KNode.prototype = {
 			return self;
 		}
 		if (val === undefined) {
-			return node[0].style[key] || self.computedCss(key) || '';
+			return self[0].style[key] || _computedCss(self[0], key) || '';
 		}
-		_each(node, function() {
-			this.style[_toCamel(key)] = val;
-		});
+		for (var i = 0; i < self.length; i++) {
+			self[i].style[_toCamel(key)] = val;
+		}
 		return self;
-	},
-	computedCss : function(key) {
-		var self = this, node = self.node[0], camelKey = _toCamel(key), val = '';
-		if (self.win.getComputedStyle) {
-			var style = self.win.getComputedStyle(node, null);
-			val = style[camelKey] || style.getPropertyValue(key) || node.style[camelKey];
-		} else if (node.currentStyle) {
-			val = node.currentStyle[camelKey] || node.style[camelKey];
-		}
-		return val;
 	},
 	width : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return self.node[0].offsetWidth;
+			return self[0].offsetWidth;
 		}
 		return self.css('width', _addUnit(val));
 	},
 	height : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return self.node[0].offsetHeight;
+			return self[0].offsetHeight;
 		}
 		return self.css('height', _addUnit(val));
 	},
 	opacity : function(val) {
 		var self = this;
-		_each(self.node, function() {
-			if (this.style.opacity === undefined) {
-				this.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
-				return self;
+		for (var i = 0; i < self.length; i++) {
+			if (self[i].style.opacity === undefined) {
+				self[i].style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
+			} else {
+				self[i].style.opacity = val == 1 ? '' : val;
 			}
-			this.style.opacity = val == 1 ? '' : val;
-		});
+		}
 		return self;
 	},
 	data : function(key, val) {
@@ -309,7 +314,7 @@ KNode.prototype = {
 		return self;
 	},
 	pos : function() {
-		var self = this, node = self.node[0], x = 0, y = 0;
+		var self = this, node = self[0], x = 0, y = 0;
 		if (node.getBoundingClientRect) {
 			var box = node.getBoundingClientRect(),
 				pos = _getScrollPos();
@@ -322,56 +327,48 @@ KNode.prototype = {
 				node = node.offsetParent;
 			}
 		}
-		return {x : Math.round(x), y : Math.round(y)};
+		return {x : _round(x), y : _round(y)};
 	},
 	clone : function(bool) {
-		return new KNode([this.node[0].cloneNode(bool)]);
+		return new KNode([this[0].cloneNode(bool)]);
 	},
 	append : function(val) {
 		var self = this;
-		_each(self.node, function() {
-			this.appendChild(_get(val));
-		});
+		self[0].appendChild(_get(val));
 		return self;
 	},
 	before : function(val) {
 		var self = this;
-		_each(self.node, function() {
-			this.parentNode.insertBefore(_get(val), this);
-		});
+		self[0].parentNode.insertBefore(_get(val), self[0]);
 		return self;
 	},
 	after : function(val) {
 		var self = this;
-		_each(self.node, function() {
-			if (this.nextSibling) {
-				this.parentNode.insertBefore(_get(val), this.nextSibling);
-			} else {
-				this.appendChild(_get(val));
-			}
-		});
+		if (self[0].nextSibling) {
+			self[0].parentNode.insertBefore(_get(val), self[0].nextSibling);
+		} else {
+			self[0].appendChild(_get(val));
+		}
 		return self;
 	},
 	replaceWith : function(val) {
-		var self = this, list = [], clone;
-		_each(self.node, function() {
-			clone = _get(val).cloneNode(true);
-			_unbind(this);
-			this.parentNode.replaceChild(clone, this);
-			list.push(clone);
-		});
-		self.node = list;
+		var self = this, node = _get(val);
+		_unbind(self[0]);
+		self[0].parentNode.replaceChild(node, self[0]);
+		self[0] = node;
 		return self;
 	},
 	remove : function() {
-		var self = this;
-		_each(self.node, function() {
-			_unbind(this);
-			if (this.parentNode) {
-				this.parentNode.removeChild(this);
+		var self = this, len = self.length;
+		for (var i = 0; i < self.length; i++) {
+			_unbind(self[i]);
+			if (self[i].parentNode) {
+				self[i].parentNode.removeChild(self[i]);
 			}
-		});
-		self.node = [];
+			delete self[i];
+			len--;
+		}
+		self.length = len;
 		return self;
 	},
 	show : function(val) {
@@ -382,7 +379,7 @@ KNode.prototype = {
 	},
 	outer : function() {
 		var self = this, div = self.doc.createElement('div'), html;
-		div.appendChild(self.node[0].cloneNode(true));
+		div.appendChild(self[0].cloneNode(true));
 		html = _formatHtml(div.innerHTML);
 		div = null;
 		return html;
@@ -397,14 +394,14 @@ KNode.prototype = {
 		return !!_BLOCK_TAG_MAP[this.name];
 	},
 	contains : function(otherNode) {
-		return _contains(this.node[0], _get(otherNode));
+		return _contains(this[0], _get(otherNode));
 	},
 	parent : function() {
-		var node = this.node[0].parentNode;
+		var node = this[0].parentNode;
 		return node ? new KNode([node]) : null;
 	},
 	children : function() {
-		var list = [], child = this.node[0].firstChild;
+		var list = [], child = this[0].firstChild;
 		while (child) {
 			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
 				list.push(new KNode([child]));
@@ -422,7 +419,7 @@ KNode.prototype = {
 		return list.length > 0 ? list[list.length - 1] : null;
 	},
 	index : function() {
-		var i = -1, sibling = this.node[0];
+		var i = -1, sibling = this[0];
 		while (sibling) {
 			i++;
 			sibling = sibling.previousSibling;
@@ -430,11 +427,11 @@ KNode.prototype = {
 		return i;
 	},
 	prev : function() {
-		var node = this.node[0].previousSibling;
+		var node = this[0].previousSibling;
 		return node ? new KNode([node]) : null;
 	},
 	next : function() {
-		var node = this.node[0].nextSibling;
+		var node = this[0].nextSibling;
 		return node ? new KNode([node]) : null;
 	},
 	each : function(fn, order) {
@@ -452,10 +449,7 @@ KNode.prototype = {
 				n = next;
 			}
 		}
-		walk(this.node[0]);
-	},
-	toString : function() {
-		return this.node.toString();
+		walk(this[0]);
 	}
 };
 
