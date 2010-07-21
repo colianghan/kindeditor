@@ -38,13 +38,13 @@ function _colorpicker(options) {
 		}
 		cell.attr('title', color || _lang('noColor'));
 		cell.mouseover(function(e) {
-			this.addClass('ke-colorpicker-cell-on');
+			_node(this).addClass('ke-colorpicker-cell-on');
 		});
 		cell.mouseout(function(e) {
-			this.removeClass('ke-colorpicker-cell-on');
+			_node(this).removeClass('ke-colorpicker-cell-on');
 		});
 		cell.click(function(e) {
-			options.click.call(this, color);
+			options.click.call(_node(this), color);
 			e.stop();
 		});
 		if (color) {
@@ -73,7 +73,7 @@ function _colorpicker(options) {
 	//remove color picker
 	self.remove = function() {
 		_each(cells, function() {
-			this.remove();
+			this.unbind();
 		});
 		remove.call(self);
 	};

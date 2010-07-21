@@ -87,7 +87,7 @@ function _widget(options) {
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
-		div = _node('<div></div>').css('display', 'block');
+		div = _node('<div style="display:block;"></div>');
 	//set widget position
 	function resetPos(width, height) {
 		if (z && (options.x === undefined || options.y === undefined)) {

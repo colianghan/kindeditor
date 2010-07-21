@@ -19,11 +19,11 @@
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
 		_node(this).addClass('ke-toolbar-icon-outline-on');
-	});
-	itemNode.mouseout(function(e) {
+	})
+	.mouseout(function(e) {
 		_node(this).removeClass('ke-toolbar-icon-outline-on');
-	});
-	itemNode.click(function(e) {
+	})
+	.click(function(e) {
 		item.click.call(_node(this), e);
 		e.stop();
 	});
@@ -50,8 +50,8 @@ function _toolbar(options) {
 		} else if (item.name == '/') {
 			itemNode = _node('<br />');
 		} else {
-			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '"></a>')
-				.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
+			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
+				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);

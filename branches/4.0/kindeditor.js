@@ -1134,6 +1134,9 @@ function _node(expr, root) {
 	if (expr && expr.get) {
 		return expr;
 	}
+	if (_isArray(expr)) {
+		return newNode(expr);
+	}
 	return newNode(_toArray(arguments));
 }
 var _K = K;
@@ -2401,7 +2404,7 @@ function _widget(options) {
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
-		div = _node('<div></div>').css('display', 'block');
+		div = _node('<div style="display:block;"></div>');
 	function resetPos(width, height) {
 		if (z && (options.x === undefined || options.y === undefined)) {
 			var w = _removeUnit(width) || 0,
@@ -2664,11 +2667,11 @@ K.edit = _edit;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
 		_node(this).addClass('ke-toolbar-icon-outline-on');
-	});
-	itemNode.mouseout(function(e) {
+	})
+	.mouseout(function(e) {
 		_node(this).removeClass('ke-toolbar-icon-outline-on');
-	});
-	itemNode.click(function(e) {
+	})
+	.click(function(e) {
 		item.click.call(_node(this), e);
 		e.stop();
 	});
@@ -2692,8 +2695,8 @@ function _toolbar(options) {
 		} else if (item.name == '/') {
 			itemNode = _node('<br />');
 		} else {
-			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '"></a>')
-				.append(_node('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span>'));
+			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
+				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
@@ -2741,21 +2744,21 @@ K.toolbar = _toolbar;
 function _menu(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
+		div = self.div(),
 		remove = self.remove,
-		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode,
-		itemNodes = [];
-	self.div().addClass('ke-menu');
+		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
+	div.addClass('ke-menu');
 	self.addItem = function(item) {
 		if (item.title === '-') {
-			self.div().append(_node('<div class="ke-menu-separator"></div>'));
+			div.append(_node('<div class="ke-menu-separator"></div>'));
 			return;
 		}
-		var itemDiv = _node('<div></div>').addClass('ke-menu-item'),
-			leftDiv = _node('<div></div>').addClass('ke-menu-item-left'),
-			rightDiv = _node('<div></div>').addClass('ke-menu-item-right'),
+		var itemDiv = _node('<div class="ke-menu-item"></div>'),
+			leftDiv = _node('<div class="ke-menu-item-left"></div>'),
+			rightDiv = _node('<div class="ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
-		self.div().append(itemDiv);
+		div.append(itemDiv);
 		if (height) {
 			itemDiv.css('height', height);
 			rightDiv.css('line-height', height);
@@ -2790,12 +2793,9 @@ function _menu(options) {
 		}
 		leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
 		rightDiv.html(item.title);
-		itemNodes.push(itemDiv);
 	};
 	self.remove = function() {
-		_each(itemNodes, function() {
-			this.remove();
-		});
+		_node('.ke-menu-item', div.get()).remove();
 		remove.call(self);
 	};
 	return self;
@@ -2821,13 +2821,13 @@ function _colorpicker(options) {
 		}
 		cell.attr('title', color || _lang('noColor'));
 		cell.mouseover(function(e) {
-			this.addClass('ke-colorpicker-cell-on');
+			_node(this).addClass('ke-colorpicker-cell-on');
 		});
 		cell.mouseout(function(e) {
-			this.removeClass('ke-colorpicker-cell-on');
+			_node(this).removeClass('ke-colorpicker-cell-on');
 		});
 		cell.click(function(e) {
-			options.click.call(this, color);
+			options.click.call(_node(this), color);
 			e.stop();
 		});
 		if (color) {
@@ -2855,7 +2855,7 @@ function _colorpicker(options) {
 	}
 	self.remove = function() {
 		_each(cells, function() {
-			this.remove();
+			this.unbind();
 		});
 		remove.call(self);
 	};
@@ -3059,7 +3059,6 @@ KEditor.prototype = {
 			doc = edit.doc, textarea = edit.textarea;
 		_node(doc, document).click(function(e) {
 			if (self.menu) {
-				console.log(this);
 				self.menu.remove();
 				self.menu = null;
 			}

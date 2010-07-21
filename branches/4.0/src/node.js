@@ -469,6 +469,7 @@ function _node(expr, root) {
 		return new KNode(node);
 	}
 	if (typeof expr === 'string') {
+		//HTML
 		if (/<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
 				div = doc.createElement('div'), list = [];
@@ -478,11 +479,18 @@ function _node(expr, root) {
 			}
 			return newNode(list);
 		}
+		//selector
 		return newNode(_queryAll(expr, root));
 	}
+	//KNode
 	if (expr && expr.get) {
 		return expr;
 	}
+	//NodeList
+	if (_isArray(expr)) {
+		return newNode(expr);
+	}
+	//Node
 	return newNode(_toArray(arguments));
 }
 

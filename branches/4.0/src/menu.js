@@ -19,22 +19,22 @@
 function _menu(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
+		div = self.div(),
 		remove = self.remove,
-		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode,
-		itemNodes = [];
-	self.div().addClass('ke-menu');
+		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
+	div.addClass('ke-menu');
 	//add an item of menu
 	self.addItem = function(item) {
 		if (item.title === '-') {
-			self.div().append(_node('<div class="ke-menu-separator"></div>'));
+			div.append(_node('<div class="ke-menu-separator"></div>'));
 			return;
 		}
-		var itemDiv = _node('<div></div>').addClass('ke-menu-item'),
-			leftDiv = _node('<div></div>').addClass('ke-menu-item-left'),
-			rightDiv = _node('<div></div>').addClass('ke-menu-item-right'),
+		var itemDiv = _node('<div class="ke-menu-item"></div>'),
+			leftDiv = _node('<div class="ke-menu-item-left"></div>'),
+			rightDiv = _node('<div class="ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
-		self.div().append(itemDiv);
+		div.append(itemDiv);
 		if (height) {
 			itemDiv.css('height', height);
 			rightDiv.css('line-height', height);
@@ -69,13 +69,10 @@ function _menu(options) {
 		}
 		leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
 		rightDiv.html(item.title);
-		itemNodes.push(itemDiv);
 	};
 	//remove menu
 	self.remove = function() {
-		_each(itemNodes, function() {
-			this.remove();
-		});
+		_node('.ke-menu-item', div.get()).remove();
 		remove.call(self);
 	};
 	return self;
