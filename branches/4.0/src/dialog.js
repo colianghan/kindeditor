@@ -21,14 +21,18 @@ function _dialog(options) {
 	var self = _widget(options),
 		remove = self.remove,
 		doc = self.doc,
+		div = self.div(),
 		title = options.title,
 		body = _node(options.body, doc),
 		previewBtn = options.previewBtn,
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
-		shadowMode = options.shadowMode === undefined ? true : options.shadowMode;
+		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
+		docEl = doc.documentElement,
+		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
+		docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight);
 	//create dialog
-	self.div().addClass('ke-dialog').bind('click,mousedown', function(e){
+	div.addClass('ke-dialog').bind('click,mousedown', function(e){
 		e.stopPropagation();
 	});
 	var contentCell;
@@ -38,7 +42,7 @@ function _dialog(options) {
 		table.cellPadding = 0;
 		table.cellSpacing = 0;
 		table.border = 0;
-		self.div().append(table);
+		div.append(table);
 		var rowNames = ['t', 'm', 'b'],
 			colNames = ['l', 'c', 'r'],
 			i, j, row, cell;
@@ -60,8 +64,8 @@ function _dialog(options) {
 			'vertical-align' : 'top' 
 		});
 	} else {
-		self.div().addClass('ke-dialog-no-shadow');
-		contentCell = self.div();
+		div.addClass('ke-dialog-no-shadow');
+		contentCell = div;
 	}
 	var headerDiv = _node('<div class="ke-dialog-header"></div>');
 	contentCell.append(headerDiv);
@@ -82,7 +86,6 @@ function _dialog(options) {
 	if (previewBtn || yesBtn || noBtn) {
 		contentCell.append(footerDiv);
 	}
-	var buttons = [];
 	_each([
 		{ btn : previewBtn, name : 'preview' },
 		{ btn : yesBtn, name : 'yes' },
@@ -93,30 +96,26 @@ function _dialog(options) {
 			var button = _node('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
 			footerDiv.append(button);
 			button.click(btn.click);
-			buttons.push(button);
 		}
 	});
 	if (self.height) {
 		bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
 	}
-	var docEl = doc.documentElement,
-		mask = _widget({
-			x : 0,
-			y : 0,
-			z : 19811212,
-			width : Math.max(docEl.scrollWidth, docEl.clientWidth),
-			height : Math.max(docEl.scrollHeight, docEl.clientHeight)
-		});
-	mask.div().addClass('ke-dialog-mask');
+	var mask = _widget({
+		x : 0,
+		y : 0,
+		z : 19811212,
+		cls : 'ke-dialog-mask',
+		width : docWidth,
+		height : docHeight
+	});
 	//set dialog position
-	self.resetPos(self.div().width(), self.div().height());
+	self.resetPos(div.width(), div.height());
 	//remove dialog
 	self.remove = function() {
 		mask.remove();
 		span.remove();
-		_each(buttons, function() {
-			this.remove();
-		});
+		_node('input', div.get()).remove();
 		footerDiv.remove();
 		bodyDiv.remove();
 		headerDiv.remove();

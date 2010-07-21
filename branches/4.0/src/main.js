@@ -64,8 +64,17 @@ KEditor.prototype = {
 	create : function() {
 		var self = this,
 			fullscreenMode = self.fullscreenMode,
-			width = fullscreenMode ? document.documentElement.clientWidth + 'px' : self.width,
-			height = fullscreenMode ? document.documentElement.clientHeight + 'px' : self.height,
+			bodyParent = document.body.parentNode;
+		if (fullscreenMode) {
+			bodyParent.style.overflow = 'hidden';
+		} else {
+			bodyParent.style.overflow = 'auto';
+		}
+		var docEl = document.documentElement,
+			docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
+			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
+			width = fullscreenMode ? docWidth + 'px' : self.width,
+			height = fullscreenMode ? docHeight + 'px' : self.height,
 			container = _node('<div></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
@@ -102,9 +111,7 @@ KEditor.prototype = {
 				}
 			});
 		});
-		if (fullscreenMode) {
-			height = _removeUnit(height) - toolbar.div().height();
-		}
+		height = _removeUnit(height) - toolbar.div().height() - 4;
 		//create edit
 		var edit = _edit({
 				srcElement : self.srcElement,
@@ -160,34 +167,35 @@ KEditor.prototype = {
 	}
 };
 
-var _editors = {};
-
-function _create(id, options) {
+/**
+	@example
+	K.create('textarea');
+	K.create('textarea.class');
+	K.create('#id');
+*/
+function _create(expr, options) {
 	if (!options) {
 		options = {};
 	}
-	if (!options.srcElement) {
-		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
-	}
-	return (_editors[id] = new KEditor(options).create());
-}
-
-function _remove(id) {
-	if (_editors[id]) {
-		_editors[id].remove();
-		delete _editors[id];
+	var knode = _node(expr);
+	if (knode) {
+		options.srcElement = knode[0];
+		if (!options.width) {
+			options.width = knode.width();
+		}
+		if (!options.height) {
+			options.height = knode.height();
+		}
+		return new KEditor(options).create();
 	}
 }
 
 //解决IE6浏览器重复下载背景图片的问题
 if (_IE && _VERSION < 7) {
-	try {
-		document.execCommand('BackgroundImageCache', false, true);
-	} catch (e) {}
+	_nativeCommand(document, 'BackgroundImageCache', true);
 }
 
 K.create = _create;
-K.remove = _remove;
 K.plugin = _plugin;
 
 if (window.K === undefined) {

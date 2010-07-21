@@ -2400,6 +2400,7 @@ function _widget(options) {
 		height = _addUnit(options.height),
 		autoWidth = options.autoWidth,
 		autoHeight = options.autoHeight,
+		cls = options.cls,
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
@@ -2445,6 +2446,9 @@ function _widget(options) {
 		});
 	}
 	resetPos(width, height);
+	if (cls) {
+		div.addClass(cls);
+	}
 	if (css) {
 		div.css(css);
 	}
@@ -2558,7 +2562,7 @@ KEdit.prototype = {
 		}
 		var div = _node('<div></div>').addClass('ke-edit'),
 		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
-		textarea = _node('<textarea class="ke-edit-textarea"></textarea>'),
+		textarea = _node('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
 		srcElement = self.srcElement,
 		commonCss = {
 			display : 'block',
@@ -2613,6 +2617,7 @@ KEdit.prototype = {
 		_node(doc.body).unbind();
 		_node(document).unbind();
 		_elementVal(srcElement, self.val());
+		srcElement.removeAttr('kindeditor');
 		srcElement.show();
 		self.doc.write('');
 		self.doc.clear();
@@ -2867,13 +2872,17 @@ function _dialog(options) {
 	var self = _widget(options),
 		remove = self.remove,
 		doc = self.doc,
+		div = self.div(),
 		title = options.title,
 		body = _node(options.body, doc),
 		previewBtn = options.previewBtn,
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
-		shadowMode = options.shadowMode === undefined ? true : options.shadowMode;
-	self.div().addClass('ke-dialog').bind('click,mousedown', function(e){
+		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
+		docEl = doc.documentElement,
+		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
+		docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight);
+	div.addClass('ke-dialog').bind('click,mousedown', function(e){
 		e.stopPropagation();
 	});
 	var contentCell;
@@ -2883,7 +2892,7 @@ function _dialog(options) {
 		table.cellPadding = 0;
 		table.cellSpacing = 0;
 		table.border = 0;
-		self.div().append(table);
+		div.append(table);
 		var rowNames = ['t', 'm', 'b'],
 			colNames = ['l', 'c', 'r'],
 			i, j, row, cell;
@@ -2905,8 +2914,8 @@ function _dialog(options) {
 			'vertical-align' : 'top'
 		});
 	} else {
-		self.div().addClass('ke-dialog-no-shadow');
-		contentCell = self.div();
+		div.addClass('ke-dialog-no-shadow');
+		contentCell = div;
 	}
 	var headerDiv = _node('<div class="ke-dialog-header"></div>');
 	contentCell.append(headerDiv);
@@ -2927,7 +2936,6 @@ function _dialog(options) {
 	if (previewBtn || yesBtn || noBtn) {
 		contentCell.append(footerDiv);
 	}
-	var buttons = [];
 	_each([
 		{ btn : previewBtn, name : 'preview' },
 		{ btn : yesBtn, name : 'yes' },
@@ -2938,28 +2946,24 @@ function _dialog(options) {
 			var button = _node('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
 			footerDiv.append(button);
 			button.click(btn.click);
-			buttons.push(button);
 		}
 	});
 	if (self.height) {
 		bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
 	}
-	var docEl = doc.documentElement,
-		mask = _widget({
-			x : 0,
-			y : 0,
-			z : 19811212,
-			width : Math.max(docEl.scrollWidth, docEl.clientWidth),
-			height : Math.max(docEl.scrollHeight, docEl.clientHeight)
-		});
-	mask.div().addClass('ke-dialog-mask');
-	self.resetPos(self.div().width(), self.div().height());
+	var mask = _widget({
+		x : 0,
+		y : 0,
+		z : 19811212,
+		cls : 'ke-dialog-mask',
+		width : docWidth,
+		height : docHeight
+	});
+	self.resetPos(div.width(), div.height());
 	self.remove = function() {
 		mask.remove();
 		span.remove();
-		_each(buttons, function() {
-			this.remove();
-		});
+		_node('input', div.get()).remove();
 		footerDiv.remove();
 		bodyDiv.remove();
 		headerDiv.remove();
@@ -3008,8 +3012,17 @@ KEditor.prototype = {
 	create : function() {
 		var self = this,
 			fullscreenMode = self.fullscreenMode,
-			width = fullscreenMode ? document.documentElement.clientWidth + 'px' : self.width,
-			height = fullscreenMode ? document.documentElement.clientHeight + 'px' : self.height,
+			bodyParent = document.body.parentNode;
+		if (fullscreenMode) {
+			bodyParent.style.overflow = 'hidden';
+		} else {
+			bodyParent.style.overflow = 'auto';
+		}
+		var docEl = document.documentElement,
+			docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
+			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
+			width = fullscreenMode ? docWidth + 'px' : self.width,
+			height = fullscreenMode ? docHeight + 'px' : self.height,
 			container = _node('<div></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
@@ -3045,9 +3058,7 @@ KEditor.prototype = {
 				}
 			});
 		});
-		if (fullscreenMode) {
-			height = _removeUnit(height) - toolbar.div().height();
-		}
+		height = _removeUnit(height) - toolbar.div().height() - 4;
 		var edit = _edit({
 				srcElement : self.srcElement,
 				width : '100%',
@@ -3099,29 +3110,26 @@ KEditor.prototype = {
 		return self.create();
 	}
 };
-var _editors = {};
-function _create(id, options) {
+function _create(expr, options) {
 	if (!options) {
 		options = {};
 	}
-	if (!options.srcElement) {
-		options.srcElement = _node('#' + id) || _node('[name=' + id + ']');
-	}
-	return (_editors[id] = new KEditor(options).create());
-}
-function _remove(id) {
-	if (_editors[id]) {
-		_editors[id].remove();
-		delete _editors[id];
+	var knode = _node(expr);
+	if (knode) {
+		options.srcElement = knode[0];
+		if (!options.width) {
+			options.width = knode.width();
+		}
+		if (!options.height) {
+			options.height = knode.height();
+		}
+		return new KEditor(options).create();
 	}
 }
 if (_IE && _VERSION < 7) {
-	try {
-		document.execCommand('BackgroundImageCache', false, true);
-	} catch (e) {}
+	_nativeCommand(document, 'BackgroundImageCache', true);
 }
 K.create = _create;
-K.remove = _remove;
 K.plugin = _plugin;
 if (window.K === undefined) {
 	window.K = K;

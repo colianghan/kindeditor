@@ -83,6 +83,7 @@ function _widget(options) {
 		height = _addUnit(options.height),
 		autoWidth = options.autoWidth,
 		autoHeight = options.autoHeight,
+		cls = options.cls,
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
@@ -129,6 +130,9 @@ function _widget(options) {
 		});
 	}
 	resetPos(width, height);
+	if (cls) {
+		div.addClass(cls);
+	}
 	if (css) {
 		div.css(css);
 	}

@@ -42,24 +42,39 @@
 	</head>
 	<body>
 		<h1>KindEditor Main Test</h1>
-		<textarea id="editor1" name="editor1" cols="100" rows="20">测试内容</textarea>
+		<textarea name="editor1" cols="100" rows="20" style="width:800px;height:200px;">测试内容1</textarea>
+		<textarea name="editor2" cols="100" rows="20" style="width:700px;height:100px;">测试内容2</textarea>
 		<br />
 		<input type="button" id="create" value="Create" />
 		<input type="button" id="remove" value="Remove" />
+		<input type="button" id="create1" value="Create #1" />
+		<input type="button" id="create2" value="Create #2" />
+		<input type="button" id="remove1" value="Remove #1" />
+		<input type="button" id="remove2" value="Remove #2" />
 		<script>
 			KindEditor.ready(function(K) {
-				K.create('editor1', {
-					width : 700,
-					height : 100
+				var editor1 = K.create('textarea'), editor2;
+				K('#create1').click(function() {
+					if (!editor1) {
+						editor1 = K.create('textarea[name=editor1]');
+					}
 				});
-				K.node('#create').click(function() {
-					K.create('editor1', {
-						width : 700,
-						height : 100
-					});
+				K('#create2').click(function() {
+					if (!editor2) {
+						editor2 = K.create(K('textarea[name=editor2]').get());
+					}
 				});
-				K.node('#remove').click(function() {
-					K.remove('editor1');
+				K('#remove1').click(function() {
+					if (editor1) {
+						editor1.remove();
+						editor1 = null;
+					}
+				});
+				K('#remove2').click(function() {
+					if (editor2) {
+						editor2.remove();
+						editor2 = null;
+					}
 				});
 			});
 		</script>

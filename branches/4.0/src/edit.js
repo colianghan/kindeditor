@@ -108,7 +108,7 @@ KEdit.prototype = {
 		//create elements
 		var div = _node('<div></div>').addClass('ke-edit'),
 		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
-		textarea = _node('<textarea class="ke-edit-textarea"></textarea>'),
+		textarea = _node('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
 		srcElement = self.srcElement,
 		commonCss = {
 			display : 'block',
@@ -165,6 +165,7 @@ KEdit.prototype = {
 		_node(document).unbind();
 		//remove elements
 		_elementVal(srcElement, self.val());
+		srcElement.removeAttr('kindeditor');
 		srcElement.show();
 		self.doc.write('');
 		self.doc.clear();
