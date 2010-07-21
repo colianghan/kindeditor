@@ -116,14 +116,21 @@ KEditor.prototype = {
 			}).create(container),
 			doc = edit.doc, textarea = edit.textarea;
 		//bind events
-		_each([doc, document], function() {
-			_node(this).click(function(e) {
-				if (self.menu) {
-					self.menu.remove();
-					self.menu = null;
-				}
-			});
+		_node(doc, document).click(function(e) {
+			if (self.menu) {
+				console.log(this);
+				self.menu.remove();
+				self.menu = null;
+			}
 		});
+		//_each([doc, document], function() {
+		//	_node(this).click(function(e) {
+		//		if (self.menu) {
+		//			self.menu.remove();
+		//			self.menu = null;
+		//		}
+		//	});
+		//});
 		_each({
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U',
 			selectall : 'A', print : 'P'

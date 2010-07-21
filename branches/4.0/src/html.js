@@ -50,7 +50,7 @@ function _formatCss(css) {
 //Modified by zhanyi1022
 function _formatHtml(html) {
 	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s"'<>]*))?)*\s*(\/)?>((?:[\r\n])*)/g;
-	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
+	html = (html + '').replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var startNewline = $1 || '',
 			startSlash = $2 || '',
 			tagName = $3.toLowerCase(),

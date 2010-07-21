@@ -18,13 +18,13 @@
 
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		this.addClass('ke-toolbar-icon-outline-on');
+		_node(this).addClass('ke-toolbar-icon-outline-on');
 	});
 	itemNode.mouseout(function(e) {
-		this.removeClass('ke-toolbar-icon-outline-on');
+		_node(this).removeClass('ke-toolbar-icon-outline-on');
 	});
 	itemNode.click(function(e) {
-		item.click.call(this, e);
+		item.click.call(_node(this), e);
 		e.stop();
 	});
 }

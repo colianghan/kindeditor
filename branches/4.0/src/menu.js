@@ -47,13 +47,13 @@ function _menu(options) {
 			}
 		}
 		itemDiv.mouseover(function(e) {
-			this.addClass('ke-menu-item-on');
+			_node(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
 		});
 		itemDiv.mouseout(function(e) {
-			this.removeClass('ke-menu-item-on');
+			_node(this).removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}

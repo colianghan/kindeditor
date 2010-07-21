@@ -162,7 +162,7 @@ KNode.prototype = {
 	bind : function(type, fn) {
 		var self = this;
 		for (var i = 0; i < self.length; i++) {
-			_bind(self[i], type, fn, self);
+			_bind(self[i], type, fn);
 		}
 		return self;
 	},
@@ -175,7 +175,7 @@ KNode.prototype = {
 	},
 	fire : function(type) {
 		var self = this;
-		_fire(self[0], type, self);
+		_fire(self[0], type);
 		return self;
 	},
 	hasAttr : function(key) {
@@ -236,12 +236,11 @@ KNode.prototype = {
 		var self = this;
 		if (val === undefined) {
 			return _formatHtml(self[0].innerHTML);
-		} else {
-			for (var i = 0; i < self.length; i++) {
-				_setHtml(self[i], _formatHtml(val));
-			}
-			return self;
 		}
+		for (var i = 0; i < self.length; i++) {
+			_setHtml(self[i], _formatHtml(val));
+		}
+		return self;
 	},
 	hasVal : function() {
 		return _hasVal(this[0]);

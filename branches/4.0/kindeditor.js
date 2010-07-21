@@ -16,7 +16,10 @@ var _ua = navigator.userAgent.toLowerCase(),
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
 	_VERSION = _matches ? _matches[1] : '0';
 function _isArray(val) {
-	return Object.prototype.toString.call(val) === '[object Array]';
+	return val && Object.prototype.toString.call(val) === '[object Array]';
+}
+function _isFunction(val) {
+	return val && Object.prototype.toString.call(val) === '[object Function]';
 }
 function _inArray(val, arr) {
 	for (var i = 0, len = arr.length; i < len; i++) {
@@ -110,6 +113,7 @@ var K = {
 	VERSION : _VERSION,
 	each : _each,
 	isArray : _isArray,
+	isFunction : _isFunction,
 	inArray : _inArray,
 	inString : _inString,
 	trim : _trim,
@@ -304,8 +308,7 @@ function _getId(el) {
 	}
 	return id;
 }
-function _bind(el, type, fn, self) {
-	self = self || el;
+function _bind(el, type, fn) {
 	if (type.indexOf(',') >= 0) {
 		_each(type.split(','), function() {
 			_bind(el, this, fn);
@@ -327,7 +330,7 @@ function _bind(el, type, fn, self) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
 				if (key > 0 && val) {
-					val.call(self, _event(el, e));
+					val.call(el, _event(el, e));
 				}
 			});
 		};
@@ -410,7 +413,7 @@ function _ready(fn, doc) {
 	function readyFunc() {
 		if (!loaded) {
 			loaded = true;
-			fn(window.KindEditor);
+			fn(KindEditor);
 		}
 		_unbind(doc, 'DOMContentLoaded');
 		_unbind(doc, 'readystatechange');
@@ -484,7 +487,7 @@ function _formatCss(css) {
 }
 function _formatHtml(html) {
 	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s"'<>]*))?)*\s*(\/)?>((?:[\r\n])*)/g;
-	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
+	html = (html + '').replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var startNewline = $1 || '',
 			startSlash = $2 || '',
 			tagName = $3.toLowerCase(),
@@ -813,7 +816,7 @@ KNode.prototype = {
 	bind : function(type, fn) {
 		var self = this;
 		for (var i = 0; i < self.length; i++) {
-			_bind(self[i], type, fn, self);
+			_bind(self[i], type, fn);
 		}
 		return self;
 	},
@@ -826,7 +829,7 @@ KNode.prototype = {
 	},
 	fire : function(type) {
 		var self = this;
-		_fire(self[0], type, self);
+		_fire(self[0], type);
 		return self;
 	},
 	hasAttr : function(key) {
@@ -887,12 +890,11 @@ KNode.prototype = {
 		var self = this;
 		if (val === undefined) {
 			return _formatHtml(self[0].innerHTML);
-		} else {
-			for (var i = 0; i < self.length; i++) {
-				_setHtml(self[i], _formatHtml(val));
-			}
-			return self;
 		}
+		for (var i = 0; i < self.length; i++) {
+			_setHtml(self[i], _formatHtml(val));
+		}
+		return self;
 	},
 	hasVal : function() {
 		return _hasVal(this[0]);
@@ -1010,7 +1012,7 @@ KNode.prototype = {
 		return self;
 	},
 	remove : function() {
-		var self = this, len;
+		var self = this, len = self.length;
 		for (var i = 0; i < self.length; i++) {
 			_unbind(self[i]);
 			if (self[i].parentNode) {
@@ -2661,13 +2663,13 @@ function _edit(options) {
 K.edit = _edit;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		this.addClass('ke-toolbar-icon-outline-on');
+		_node(this).addClass('ke-toolbar-icon-outline-on');
 	});
 	itemNode.mouseout(function(e) {
-		this.removeClass('ke-toolbar-icon-outline-on');
+		_node(this).removeClass('ke-toolbar-icon-outline-on');
 	});
 	itemNode.click(function(e) {
-		item.click.call(this, e);
+		item.click.call(_node(this), e);
 		e.stop();
 	});
 }
@@ -2766,13 +2768,13 @@ function _menu(options) {
 			}
 		}
 		itemDiv.mouseover(function(e) {
-			this.addClass('ke-menu-item-on');
+			_node(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
 		});
 		itemDiv.mouseout(function(e) {
-			this.removeClass('ke-menu-item-on');
+			_node(this).removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
@@ -3055,13 +3057,12 @@ KEditor.prototype = {
 				cssData : self.cssData
 			}).create(container),
 			doc = edit.doc, textarea = edit.textarea;
-		_each([doc, document], function() {
-			_node(this).click(function(e) {
-				if (self.menu) {
-					self.menu.remove();
-					self.menu = null;
-				}
-			});
+		_node(doc, document).click(function(e) {
+			if (self.menu) {
+				console.log(this);
+				self.menu.remove();
+				self.menu = null;
+			}
 		});
 		_each({
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U',

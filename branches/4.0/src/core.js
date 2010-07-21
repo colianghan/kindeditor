@@ -86,7 +86,22 @@ var _ua = navigator.userAgent.toLowerCase(),
 	bool = K.isArray({one : 1}); //返回false
 */
 function _isArray(val) {
-	return Object.prototype.toString.call(val) === '[object Array]';
+	return val && Object.prototype.toString.call(val) === '[object Array]';
+}
+
+/**
+	@name KindEditor.isFunction
+	@function
+	@param {Mixed} val 要判断的变量
+	@returns {Boolean} 变量为函数时返回true，否则返回false。
+	@description
+	判断一个变量是不是函数。
+	@example
+	var bool = K.isArray(function () { }); //返回true
+	bool = K.isArray({}); //返回false
+*/
+function _isFunction(val) {
+	return val && Object.prototype.toString.call(val) === '[object Function]';
 }
 
 /**
@@ -305,6 +320,7 @@ var K = {
 	VERSION : _VERSION,
 	each : _each,
 	isArray : _isArray,
+	isFunction : _isFunction,
 	inArray : _inArray,
 	inString : _inString,
 	trim : _trim,

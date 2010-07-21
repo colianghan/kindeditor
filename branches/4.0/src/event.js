@@ -168,8 +168,7 @@ function _getId(el) {
 	return id;
 }
 
-function _bind(el, type, fn, self) {
-	self = self || el;
+function _bind(el, type, fn) {
 	if (type.indexOf(',') >= 0) {
 		_each(type.split(','), function() {
 			_bind(el, this, fn);
@@ -191,7 +190,7 @@ function _bind(el, type, fn, self) {
 		_data[id][type][0] = function(e) {
 			_each(_data[id][type], function(key, val) {
 				if (key > 0 && val) {
-					val.call(self, _event(el, e));
+					val.call(el, _event(el, e));
 				}
 			});
 		};
@@ -278,7 +277,7 @@ function _ready(fn, doc) {
 	function readyFunc() {
 		if (!loaded) {
 			loaded = true;
-			fn(window.KindEditor);
+			fn(KindEditor);
 		}
 		_unbind(doc, 'DOMContentLoaded');
 		_unbind(doc, 'readystatechange');
