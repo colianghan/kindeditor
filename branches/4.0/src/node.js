@@ -360,9 +360,13 @@ KNode.prototype = {
 	remove : function() {
 		var self = this, len = self.length;
 		for (var i = 0; i < self.length; i++) {
-			_unbind(self[i]);
-			if (self[i].parentNode) {
-				self[i].parentNode.removeChild(self[i]);
+			var node = self[i];
+			_unbind(node);
+			if (node.hasChildNodes()) {
+				node.innerHTML = '';
+			}
+			if (node.parentNode) {
+				node.parentNode.removeChild(node);
 			}
 			delete self[i];
 			len--;

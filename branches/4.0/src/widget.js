@@ -157,9 +157,11 @@ function _widget(options) {
 		},
 		show : function() {
 			div.show();
+			return this;
 		},
 		hide : function() {
 			div.hide();
+			return this;
 		},
 		draggable : function(options) {
 			options = options || {};
@@ -174,6 +176,7 @@ function _widget(options) {
 				div.css('left', _addUnit(x)).css('top', _addUnit(y));
 			};
 			_bindDragEvent(options);
+			return this;
 		},
 		resetPos : resetPos
 	};

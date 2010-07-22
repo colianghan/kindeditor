@@ -41,7 +41,7 @@ function _menu(options) {
 		}
 		var centerDiv;
 		if (centerLineMode) {
-			centerDiv = _node('<div></div>').addClass('ke-menu-item-center');
+			centerDiv = _node('<div class="ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
 			}
