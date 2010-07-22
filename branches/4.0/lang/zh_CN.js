@@ -5,7 +5,7 @@
  * Released under LGPL License.
  */
 
-_language.zh_CN = {
+KindEditor.lang({
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',
 	redo : '前进(Ctrl+Y)',
@@ -79,107 +79,83 @@ _language.zh_CN = {
 	cutError : '您的浏览器安全设置不允许使用剪切操作，请使用快捷键(Ctrl+X)来完成。',
 	copyError : '您的浏览器安全设置不允许使用复制操作，请使用快捷键(Ctrl+C)来完成。',
 	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
-	plugins : {
-		about : {
-			version : '${VERSION}',
-			title : 'HTML可视化编辑器'
-		},
-		plainpaste : {
-			comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
-		},
-		wordpaste : {
-			comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
-		},
-		link : {
-			url : 'URL地址',
-			linkType : '打开类型',
-			newWindow : '新窗口',
-			selfWindow : '当前窗口'
-		},
-		flash : {
-			url : 'Flash地址',
-			width : '宽度',
-			height : '高度'
-		},
-		media : {
-			url : '媒体文件地址',
-			width : '宽度',
-			height : '高度',
-			autostart : '自动播放'
-		},
-		image : {
-			remoteImage : '远程图片',
-			localImage : '本地上传',
-			remoteUrl : '图片地址',
-			localUrl : '图片地址',
-			size : '图片大小',
-			width : '宽',
-			height : '高',
-			resetSize : '重置大小',
-			align : '对齐方式',
-			defaultAlign : '默认方式',
-			leftAlign : '左对齐',
-			rightAlign : '右对齐',
-			imgTitle : '图片说明',
-			viewServer : '浏览...'
-		},
-		filemanager : {
-			emptyFolder : '空文件夹',
-			moveup : '移到上一级文件夹',
-			viewType : '显示方式：',
-			viewImage : '缩略图',
-			listImage : '详细信息',
-			orderType : '排序方式：',
-			fileName : '名称',
-			fileSize : '大小',
-			fileType : '类型'
-		},
-		advtable : {
-			cells : '单元格数',
-			rows : '行数',
-			cols : '列数',
-			size : '表格大小',
-			width : '宽度',
-			height : '高度',
-			percent : '%',
-			px : 'px',
-			space : '边距间距',
-			padding : '边距',
-			spacing : '间距',
-			align : '对齐方式',
-			alignDefault : '默认',
-			alignLeft : '左对齐',
-			alignCenter : '居中',
-			alignRight : '右对齐',
-			border : '表格边框',
-			borderWidth : '边框',
-			borderColor : '颜色',
-			backgroundColor : '背景颜色'
-		},
-		formatblock : {
-			formatblock : {
-				h1 : '标题 1',
-				h2 : '标题 2',
-				h3 : '标题 3',
-				h4 : '标题 4',
-				p : '正 文'
-			}
-		},
-		fontname : {
-			fontName : {
-				'SimSun' : '宋体',
-				'NSimSun' : '新宋体',
-				'FangSong_GB2312' : '仿宋_GB2312',
-				'KaiTi_GB2312' : '楷体_GB2312',
-				'SimHei' : '黑体',
-				'Microsoft YaHei' : '微软雅黑',
-				'Arial' : 'Arial',
-				'Arial Black' : 'Arial Black',
-				'Times New Roman' : 'Times New Roman',
-				'Courier New' : 'Courier New',
-				'Tahoma' : 'Tahoma',
-				'Verdana' : 'Verdana'
-			}
-		}
+	'about.version' : '${VERSION}',
+	'about.title' : 'HTML可视化编辑器',
+	'plainpaste.comment' : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。',
+	'wordpaste.comment' : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。',
+	'link.url' : 'URL地址',
+	'link.linkType' : '打开类型',
+	'link.newWindow' : '新窗口',
+	'link.selfWindow' : '当前窗口',
+	'flash.url' : 'Flash地址',
+	'flash.width' : '宽度',
+	'flash.height' : '高度',
+	'media.url' : '媒体文件地址',
+	'media.width' : '宽度',
+	'media.height' : '高度',
+	'media.autostart' : '自动播放',
+	'image.remoteImage' : '远程图片',
+	'image.localImage' : '本地上传',
+	'image.remoteUrl' : '图片地址',
+	'image.localUrl' : '图片地址',
+	'image.size' : '图片大小',
+	'image.width' : '宽',
+	'image.height' : '高',
+	'image.resetSize' : '重置大小',
+	'image.align' : '对齐方式',
+	'image.defaultAlign' : '默认方式',
+	'image.leftAlign' : '左对齐',
+	'image.rightAlign' : '右对齐',
+	'image.imgTitle' : '图片说明',
+	'image.viewServer' : '浏览...',
+	'filemanager.emptyFolder' : '空文件夹',
+	'filemanager.moveup' : '移到上一级文件夹',
+	'filemanager.viewType' : '显示方式：',
+	'filemanager.viewImage' : '缩略图',
+	'filemanager.listImage' : '详细信息',
+	'filemanager.orderType' : '排序方式：',
+	'filemanager.fileName' : '名称',
+	'filemanager.fileSize' : '大小',
+	'filemanager.fileType' : '类型',
+	'table.cells' : '单元格数',
+	'table.rows' : '行数',
+	'table.cols' : '列数',
+	'table.size' : '表格大小',
+	'table.width' : '宽度',
+	'table.height' : '高度',
+	'table.percent' : '%',
+	'table.px' : 'px',
+	'table.space' : '边距间距',
+	'table.padding' : '边距',
+	'table.spacing' : '间距',
+	'table.align' : '对齐方式',
+	'table.alignDefault' : '默认',
+	'table.alignLeft' : '左对齐',
+	'table.alignCenter' : '居中',
+	'table.alignRight' : '右对齐',
+	'table.border' : '表格边框',
+	'table.borderWidth' : '边框',
+	'table.borderColor' : '颜色',
+	'table.backgroundColor' : '背景颜色',
+	'formatblock.formatBlock' : {
+		h1 : '标题 1',
+		h2 : '标题 2',
+		h3 : '标题 3',
+		h4 : '标题 4',
+		p : '正 文'
+	},
+	'fontname.fontName' : {
+		'SimSun' : '宋体',
+		'NSimSun' : '新宋体',
+		'FangSong_GB2312' : '仿宋_GB2312',
+		'KaiTi_GB2312' : '楷体_GB2312',
+		'SimHei' : '黑体',
+		'Microsoft YaHei' : '微软雅黑',
+		'Arial' : 'Arial',
+		'Arial Black' : 'Arial Black',
+		'Times New Roman' : 'Times New Roman',
+		'Courier New' : 'Courier New',
+		'Tahoma' : 'Tahoma',
+		'Verdana' : 'Verdana'
 	}
-};
+}, 'zh_CN');

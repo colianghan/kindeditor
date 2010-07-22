@@ -5,7 +5,7 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-21)
+* @version 4.0 (2010-07-22)
 *******************************************************************************/
 (function (window, undefined) {
 var _ua = navigator.userAgent.toLowerCase(),
@@ -196,6 +196,7 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
+K.LANG_TYPE = _LANG_TYPE;
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
@@ -2980,12 +2981,34 @@ function _plugin(name, obj) {
 	_plugins[name] = obj;
 }
 var _language = {};
-function _lang(key, langType) {
-	langType = langType === undefined ? _LANG_TYPE : langType;
-	return _language[langType][key];
+function _parseLangKey(key) {
+	var match, ns = 'core';
+	if ((match = /^(\w+)\.(\w+)$/.exec(key))) {
+		ns = match[1];
+		key = match[2];
+	}
+	return { ns : ns, key : key };
 }
-function _pluginLang(key, langType) {
-	return _lang('plugins', langType)[key];
+function _lang(mixed, langType) {
+	langType = langType === undefined ? _LANG_TYPE : langType;
+	if (typeof mixed === 'string') {
+		var pos = mixed.length - 1;
+		if (mixed.substr(pos) === '.') {
+			return _language[langType][mixed.substr(0, pos)];
+		}
+		var obj = _parseLangKey(mixed);
+		return _language[langType][obj.ns][obj.key];
+	}
+	_each(mixed, function(key, val) {
+		var obj = _parseLangKey(key);
+		if (!_language[langType]) {
+			_language[langType] = {};
+		}
+		if (!_language[langType][obj.ns]) {
+			_language[langType][obj.ns] = {};
+		}
+		_language[langType][obj.ns][obj.key] = val;
+	});
 }
 function KEditor(options) {
 	var self = this;
@@ -3131,21 +3154,24 @@ if (_IE && _VERSION < 7) {
 }
 K.create = _create;
 K.plugin = _plugin;
+K.lang = _lang;
 if (window.K === undefined) {
 	window.K = K;
 }
 window.KindEditor = K;
-_plugin('about', function(editor) {
+})(window);
+(function(K, undefined) {
+K.plugin('about', function(editor) {
 	var html = '<div style="margin:20px;">' +
-		'<div>KindEditor 4.0 (2010-07-21)</div>' +
+		'<div>KindEditor 4.0 (2010-07-22)</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
 	var dialog = K.dialog({
 		width : 300,
-		title : _lang('about'),
+		title : K.lang('about'),
 		body : html,
 		noBtn : {
-			name : _lang('close'),
+			name : K.lang('close'),
 			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
@@ -3153,21 +3179,21 @@ _plugin('about', function(editor) {
 		}
 	});
 });
-_plugin('plainpaste', function(editor) {
-	var lang = _pluginLang('plainpaste'),
+K.plugin('plainpaste', function(editor) {
+	var lang = K.lang('plainpaste.'),
 		html = '<div style="margin:10px;">' +
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
-			'<textarea id="ke_plainpaste_textarea" style="width:99%;height:260px;border:1px solid #A0A0A0;"></textarea>' +
+			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
 	var dialog = K.dialog({
 		width : 450,
-		title : _lang('plainpaste'),
+		title : K.lang('plainpaste'),
 		body : html,
 		yesBtn : {
-			name : _lang('yes'),
+			name : K.lang('yes'),
 			click : function(e) {
-				var html = _node('#ke_plainpaste_textarea').val();
-				html = _escape(html);
+				var html = K('textarea', dialog.div().get()).val();
+				html = K.escape(html);
 				html = html.replace(/ /g, '&nbsp;');
 				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 				editor.edit.cmd.inserthtml(html);
@@ -3176,7 +3202,7 @@ _plugin('plainpaste', function(editor) {
 			}
 		},
 		noBtn : {
-			name : _lang('close'),
+			name : K.lang('close'),
 			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
@@ -3184,16 +3210,16 @@ _plugin('plainpaste', function(editor) {
 		}
 	});
 });
-_plugin('source', function(editor) {
+K.plugin('source', function(editor) {
 	editor.toolbar.disable();
 	editor.edit.design();
 });
-_plugin('fullscreen', function(editor) {
+K.plugin('fullscreen', function(editor) {
 	editor.fullscreen();
 });
-_plugin('formatblock', function(editor) {
+K.plugin('formatblock', function(editor) {
 	var pos = this.pos(),
-		blocks = _pluginLang('formatblock').formatblock,
+		blocks = K.lang('formatblock.formatBlock'),
 		heights = {
 			h1 : 28,
 			h2 : 24,
@@ -3203,14 +3229,14 @@ _plugin('formatblock', function(editor) {
 		},
 		cmd = editor.edit.cmd,
 		curVal = cmd.val('formatblock');
-	editor.menu = _menu({
+	editor.menu = K.menu({
 		name : 'formatblock',
-		width : _LANG_TYPE == 'en' ? 200 : 150,
+		width : K.LANG_TYPE == 'en' ? 200 : 150,
 		x : pos.x,
 		y : pos.y + this.height(),
 		centerLineMode : false
 	});
-	_each(blocks, function(key, val) {
+	K.each(blocks, function(key, val) {
 		var style = 'font-size:' + heights[key] + 'px;';
 		if (key.charAt(0) === 'h') {
 			style += 'font-weight:bold;';
@@ -3229,18 +3255,18 @@ _plugin('formatblock', function(editor) {
 		});
 	});
 });
-_plugin('fontname', function(editor) {
+K.plugin('fontname', function(editor) {
 	var pos = this.pos(),
 		cmd = editor.edit.cmd,
 		curVal = cmd.val('fontname');
-	editor.menu = _menu({
+	editor.menu = K.menu({
 		name : 'fontname',
 		width : 150,
 		x : pos.x,
 		y : pos.y + this.height(),
 		centerLineMode : false
 	});
-	_each(_pluginLang('fontname').fontName, function(key, val) {
+	K.each(K.lang('fontname.fontName'), function(key, val) {
 		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
@@ -3253,22 +3279,22 @@ _plugin('fontname', function(editor) {
 		});
 	});
 });
-_plugin('fontsize', function(editor) {
+K.plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
 		pos = this.pos(),
 		cmd = editor.edit.cmd,
 		curVal = cmd.val('fontsize');
-	editor.menu = _menu({
+	editor.menu = K.menu({
 		name : 'fontsize',
 		width : 150,
 		x : pos.x,
 		y : pos.y + this.height(),
 		centerLineMode : false
 	});
-	_each(fontSize, function(i, val) {
+	K.each(fontSize, function(i, val) {
 		editor.menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
-			height : _removeUnit(val) + 12,
+			height : K.removeUnit(val) + 12,
 			checked : curVal === val,
 			click : function(e) {
 				cmd.fontsize(val);
@@ -3279,12 +3305,12 @@ _plugin('fontsize', function(editor) {
 		});
 	});
 });
-_each('forecolor,hilitecolor'.split(','), function(i, name) {
-	_plugin(name, function(editor) {
+K.each('forecolor,hilitecolor'.split(','), function(i, name) {
+	K.plugin(name, function(editor) {
 		var pos = this.pos(),
 			cmd = editor.edit.cmd,
 			curVal = cmd.val(name);
-		editor.menu = _colorpicker({
+		editor.menu = K.colorpicker({
 			name : name,
 			x : pos.x,
 			y : pos.y + this.height(),
@@ -3297,190 +3323,12 @@ _each('forecolor,hilitecolor'.split(','), function(i, name) {
 		});
 	});
 });
-_each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,cut,copy,paste,' +
 	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
-	_plugin(name, function(editor) {
+	K.plugin(name, function(editor) {
 		editor.edit.focus();
 		editor.edit.cmd[name](null);
 	});
 });
-_language.zh_CN = {
-	source : 'HTML代码',
-	undo : '后退(Ctrl+Z)',
-	redo : '前进(Ctrl+Y)',
-	cut : '剪切(Ctrl+X)',
-	copy : '复制(Ctrl+C)',
-	paste : '粘贴(Ctrl+V)',
-	plainpaste : '粘贴为无格式文本',
-	wordpaste : '从Word粘贴',
-	selectall : '全选(Ctrl+A)',
-	justifyleft : '左对齐',
-	justifycenter : '居中',
-	justifyright : '右对齐',
-	justifyfull : '两端对齐',
-	insertorderedlist : '编号',
-	insertunorderedlist : '项目符号',
-	indent : '增加缩进',
-	outdent : '减少缩进',
-	subscript : '下标',
-	superscript : '上标',
-	formatblock : '段落',
-	fontname : '字体',
-	fontsize : '文字大小',
-	forecolor : '文字颜色',
-	hilitecolor : '文字背景',
-	bold : '粗体(Ctrl+B)',
-	italic : '斜体(Ctrl+I)',
-	underline : '下划线(Ctrl+U)',
-	strikethrough : '删除线',
-	removeformat : '删除格式',
-	image : '图片',
-	flash : '插入Flash',
-	media : '插入多媒体',
-	table : '表格',
-	hr : '插入横线',
-	emoticons : '插入表情',
-	link : '超级链接',
-	unlink : '取消超级链接',
-	fullscreen : '全屏显示',
-	about : '关于',
-	print : '打印(Ctrl+P)',
-	fileManager : '浏览服务器',
-	yes : '确定',
-	no : '取消',
-	close : '关闭',
-	editImage : '图片属性',
-	deleteImage : '删除图片',
-	editLink : '超级链接属性',
-	deleteLink : '取消超级链接',
-	tableprop : '表格属性',
-	tableinsert : '插入表格',
-	tabledelete : '删除表格',
-	tablecolinsertleft : '左侧插入列',
-	tablecolinsertright : '右侧插入列',
-	tablerowinsertabove : '上方插入行',
-	tablerowinsertbelow : '下方插入行',
-	tablecoldelete : '删除列',
-	tablerowdelete : '删除行',
-	noColor : '无颜色',
-	invalidImg : "请输入有效的URL地址。\n只允许jpg,gif,bmp,png格式。",
-	invalidMedia : "请输入有效的URL地址。\n只允许swf,flv,mp3,wav,wma,wmv,mid,avi,mpg,asf,rm,rmvb格式。",
-	invalidWidth : "宽度必须为数字。",
-	invalidHeight : "高度必须为数字。",
-	invalidBorder : "边框必须为数字。",
-	invalidUrl : "请输入有效的URL地址。",
-	invalidRows : '行数为必选项，只允许输入大于0的数字。',
-	invalidCols : '列数为必选项，只允许输入大于0的数字。',
-	invalidPadding : '边距必须为数字。',
-	invalidSpacing : '间距必须为数字。',
-	invalidBorder : '边框必须为数字。',
-	invalidJson : '服务器发生故障。',
-	cutError : '您的浏览器安全设置不允许使用剪切操作，请使用快捷键(Ctrl+X)来完成。',
-	copyError : '您的浏览器安全设置不允许使用复制操作，请使用快捷键(Ctrl+C)来完成。',
-	pasteError : '您的浏览器安全设置不允许使用粘贴操作，请使用快捷键(Ctrl+V)来完成。',
-	plugins : {
-		about : {
-			version : '4.0 (2010-07-21)',
-			title : 'HTML可视化编辑器'
-		},
-		plainpaste : {
-			comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
-		},
-		wordpaste : {
-			comment : '请使用快捷键(Ctrl+V)把内容粘贴到下面的方框里。'
-		},
-		link : {
-			url : 'URL地址',
-			linkType : '打开类型',
-			newWindow : '新窗口',
-			selfWindow : '当前窗口'
-		},
-		flash : {
-			url : 'Flash地址',
-			width : '宽度',
-			height : '高度'
-		},
-		media : {
-			url : '媒体文件地址',
-			width : '宽度',
-			height : '高度',
-			autostart : '自动播放'
-		},
-		image : {
-			remoteImage : '远程图片',
-			localImage : '本地上传',
-			remoteUrl : '图片地址',
-			localUrl : '图片地址',
-			size : '图片大小',
-			width : '宽',
-			height : '高',
-			resetSize : '重置大小',
-			align : '对齐方式',
-			defaultAlign : '默认方式',
-			leftAlign : '左对齐',
-			rightAlign : '右对齐',
-			imgTitle : '图片说明',
-			viewServer : '浏览...'
-		},
-		filemanager : {
-			emptyFolder : '空文件夹',
-			moveup : '移到上一级文件夹',
-			viewType : '显示方式：',
-			viewImage : '缩略图',
-			listImage : '详细信息',
-			orderType : '排序方式：',
-			fileName : '名称',
-			fileSize : '大小',
-			fileType : '类型'
-		},
-		advtable : {
-			cells : '单元格数',
-			rows : '行数',
-			cols : '列数',
-			size : '表格大小',
-			width : '宽度',
-			height : '高度',
-			percent : '%',
-			px : 'px',
-			space : '边距间距',
-			padding : '边距',
-			spacing : '间距',
-			align : '对齐方式',
-			alignDefault : '默认',
-			alignLeft : '左对齐',
-			alignCenter : '居中',
-			alignRight : '右对齐',
-			border : '表格边框',
-			borderWidth : '边框',
-			borderColor : '颜色',
-			backgroundColor : '背景颜色'
-		},
-		formatblock : {
-			formatblock : {
-				h1 : '标题 1',
-				h2 : '标题 2',
-				h3 : '标题 3',
-				h4 : '标题 4',
-				p : '正 文'
-			}
-		},
-		fontname : {
-			fontName : {
-				'SimSun' : '宋体',
-				'NSimSun' : '新宋体',
-				'FangSong_GB2312' : '仿宋_GB2312',
-				'KaiTi_GB2312' : '楷体_GB2312',
-				'SimHei' : '黑体',
-				'Microsoft YaHei' : '微软雅黑',
-				'Arial' : 'Arial',
-				'Arial Black' : 'Arial Black',
-				'Times New Roman' : 'Times New Roman',
-				'Courier New' : 'Courier New',
-				'Tahoma' : 'Tahoma',
-				'Verdana' : 'Verdana'
-			}
-		}
-	}
-};
-})(window);
+})(KindEditor);
