@@ -20,6 +20,8 @@ function _dialog(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
 		remove = self.remove,
+		width = _addUnit(options.width),
+		height = _addUnit(options.height),
 		doc = self.doc,
 		div = self.div(),
 		title = options.title,
@@ -60,8 +62,8 @@ function _dialog(options) {
 			}
 		}
 		contentCell.css({
-			width : self.width,
-			height : self.height,
+			width : width,
+			height : height,
 			'vertical-align' : 'top' 
 		});
 	} else {

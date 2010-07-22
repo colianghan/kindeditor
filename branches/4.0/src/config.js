@@ -27,7 +27,7 @@ var _options = {
 	resizeType : 2, //0,1,2
 	dialogAlignType : 'page', //page,editor
 	bodyClass : 'ke-content',
-	cssData : '', //cssPath, cssContent
+	cssData : 'body {font-size:12px;margin:0;}', //cssPath, cssContent
 	minWidth : 200,
 	minHeight : 100,
 	minChangeSize : 5,

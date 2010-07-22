@@ -113,7 +113,7 @@ KEditor.prototype = {
 			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
 			width = fullscreenMode ? docWidth + 'px' : self.width,
 			height = fullscreenMode ? docHeight + 'px' : self.height,
-			container = K('<div></div>').css('width', width);
+			container = K('<div class="ke-container"></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
 			container.css({
@@ -129,7 +129,6 @@ KEditor.prototype = {
 		//create toolbar
 		var toolbar = _toolbar({
 				parent : container,
-				width : '100%',
 				noDisableItems : 'source,fullscreen'.split(',')
 			});
 		_each(self.items, function(i, name) {
@@ -148,16 +147,16 @@ KEditor.prototype = {
 				}
 			});
 		});
-		height = _removeUnit(height) - toolbar.div().height() - 4;
 		//create edit
 		var edit = _edit({
+				parent : container,
 				srcElement : self.srcElement,
-				width : '100%',
+				width : _removeUnit(width) - 10,
 				height : height,
 				designMode : self.designMode,
 				bodyClass : self.bodyClass,
 				cssData : self.cssData
-			}).create(container),
+			}),
 			doc = edit.doc, textarea = edit.textarea;
 		//bind events
 		K(doc, document).click(function(e) {
@@ -182,10 +181,20 @@ KEditor.prototype = {
 				});
 			}
 		});
+		//create statusbar
+		var statusbar = _widget({
+			parent : container,
+			cls : 'ke-statusbar',
+			width : '100%',
+			height : '11px'
+		});
+		//reset height
+		edit.height(_removeUnit(height) - toolbar.div().height() - statusbar.div().height() - 4);
 		//properties
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
+		self.statusbar = statusbar;
 		self.menu = self.dialog = null;
 		return self;
 	},

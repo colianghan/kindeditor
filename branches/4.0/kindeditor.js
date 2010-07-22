@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-22)
+* @version 4.0 (2010-07-23)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-07-22)',
+var _kindeditor = '4.0 (2010-07-23)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -139,7 +139,7 @@ var _options = {
 	resizeType : 2,
 	dialogAlignType : 'page',
 	bodyClass : 'ke-content',
-	cssData : '',
+	cssData : 'body {font-size:12px;margin:0;}',
 	minWidth : 200,
 	minHeight : 100,
 	minChangeSize : 5,
@@ -2456,11 +2456,6 @@ function _widget(options) {
 	K(parent).append(div);
 	return {
 		name : name,
-		x : x,
-		y : y,
-		z : z,
-		width : width,
-		height : height,
 		doc : doc,
 		div : function() {
 			return div;
@@ -2502,7 +2497,7 @@ function _getIframeDoc(iframe) {
 function _getInitHtml(bodyClass, cssData) {
 	var arr = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
 	if (cssData) {
-		if (typeof cssData == 'string' && !/\{[\s\S]*\}/g.test(cssData)) {
+		if (typeof cssData == 'string' && !/\{[\s\S]*\}/.test(cssData)) {
 			cssData = [cssData];
 		}
 		if (_isArray(cssData)) {
@@ -2518,162 +2513,122 @@ function _getInitHtml(bodyClass, cssData) {
 	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
 	return arr.join('');
 }
-function _iframeVal(val) {
-	var self = this,
-		body = self.doc.body;
-	if (val === undefined) {
-		return K(body).html();
-	} else {
-		K(body).html(val);
-		return self;
-	}
-}
-function _textareaVal(val) {
-	var self = this,
-		textarea = self.textarea;
-	if (val === undefined) {
-		return textarea.val();
-	} else {
-		textarea.val(val);
-		return self;
-	}
-}
 function _elementVal(knode, val) {
 	return knode.hasVal() ? knode.val(val) : knode.html(val);
 }
-function KEdit(options) {
-	var self = this;
-	self.srcElement = K(options.srcElement);
-	self.width = _addUnit(options.width) || 0;
-	self.height = _addUnit(options.height) || 0;
-	self.designMode = options.designMode === undefined ? true : options.designMode;
-	self.bodyClass = options.bodyClass;
-	self.cssData = options.cssData;
-}
-KEdit.prototype = {
-	html : function(val) {
-		this.val(val);
-	},
-	val : function(val) {
-		var self = this;
-		if (self.designMode) {
-			return _iframeVal.call(self, val);
-		} else {
-			return _textareaVal.call(self, val);
-		}
-	},
-	create : function(expr) {
-		var self = this;
-		if (self.div) {
-			return self;
-		}
-		var div = K('<div></div>').addClass('ke-edit'),
+function _edit(options) {
+	var self = _widget(options),
+		remove = self.remove,
+		width = _addUnit(options.width),
+		height = _addUnit(options.height),
+		srcElement = K(options.srcElement),
+		designMode = options.designMode === undefined ? true : options.designMode,
+		bodyClass = options.bodyClass,
+		cssData = options.cssData,
+		div = self.div().addClass('ke-edit'),
 		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
-		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
-		srcElement = self.srcElement,
-		commonCss = {
-			display : 'block',
-			width : self.width,
-			height : self.height
-		};
-		div.css(commonCss);
-		iframe.css(commonCss);
-		textarea.css(commonCss);
-		if (self.designMode) {
-			textarea.hide();
-		} else {
-			iframe.hide();
-		}
-		K(expr).append(div);
-		div.append(iframe);
-		div.append(textarea);
-		srcElement.hide();
-		var doc = _getIframeDoc(iframe.get());
-		if (!_IE) {
-			doc.designMode = 'on';
-		}
-		doc.open();
-		doc.write(_getInitHtml(self.bodyClass, self.cssData));
-		doc.close();
-		if (_IE) {
-			doc.body.contentEditable = 'true';
-		}
-		self.div = div;
-		self.iframe = iframe;
-		self.textarea = textarea;
-		self.doc = doc;
-		if (self.designMode) {
-			_iframeVal.call(self, _elementVal(srcElement));
-		} else {
-			_textareaVal.call(self, _elementVal(srcElement));
-		}
-		self.cmd = _cmd(doc);
+		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>');
+	iframe.css('width', '100%');
+	textarea.css('width', '100%');
+	self.width = function(val) {
+		div.css('width', val);
 		return self;
-	},
-	remove : function() {
-		var self = this,
-			div = self.div,
-			iframe = self.iframe,
-			textarea = self.textarea,
-			doc = self.doc,
-			srcElement = self.srcElement;
-		if (!div) {
-			return self;
-		}
+	};
+	self.height = function(val) {
+		div.css('height', val);
+		iframe.css('height', val);
+		textarea.css('height', val);
+		return self;
+	};
+	if (width) {
+		self.width(width);
+	}
+	if (height) {
+		self.height(height);
+	}
+	if (designMode) {
+		textarea.hide();
+	} else {
+		iframe.hide();
+	}
+	div.append(iframe);
+	div.append(textarea);
+	srcElement.hide();
+	var doc = _getIframeDoc(iframe.get());
+	if (!_IE) {
+		doc.designMode = 'on';
+	}
+	doc.open();
+	doc.write(_getInitHtml(bodyClass, cssData));
+	doc.close();
+	if (_IE) {
+		doc.body.contentEditable = 'true';
+	}
+	self.iframe = iframe;
+	self.textarea = textarea;
+	self.doc = doc;
+	self.remove = function() {
 		K(doc).unbind();
 		K(doc.body).unbind();
 		K(document).unbind();
-		_elementVal(srcElement, self.val());
+		_elementVal(srcElement, self.html());
 		srcElement.removeAttr('kindeditor');
 		srcElement.show();
-		self.doc.write('');
-		self.doc.clear();
+		doc.write('');
+		doc.clear();
 		iframe.remove();
 		textarea.remove();
-		div.remove();
-		self.div = self.iframe = self.textarea = self.doc = null;
+		remove.call(self);
 		return self;
-	},
-	design : function(bool) {
-		var self = this,
-			iframe = self.iframe,
-			textarea = self.textarea;
-		if (!iframe) {
+	};
+	self.html = function(val) {
+		if (designMode) {
+			var body = doc.body;
+			if (val === undefined) {
+				return K(body).html();
+			}
+			K(body).html(val);
 			return self;
 		}
-		if (bool === undefined ? !self.designMode : bool) {
-			if (!self.designMode) {
+		if (val === undefined) {
+			return textarea.val();
+		}
+		textarea.val(val);
+		return self;
+	};
+	self.design = function(bool) {
+		var val;
+		if (bool === undefined ? !designMode : bool) {
+			if (!designMode) {
+				val = self.html();
+				designMode = true;
+				self.html(val);
 				textarea.hide();
-				_iframeVal.call(self, _textareaVal.call(self));
 				iframe.show();
-				self.designMode = true;
 			}
 		} else {
-			if (self.designMode) {
+			if (designMode) {
+				val = self.html();
+				designMode = false;
+				self.html(val);
 				iframe.hide();
-				_textareaVal.call(self, _iframeVal.call(self));
 				textarea.show();
-				self.designMode = false;
 			}
 		}
 		self.focus();
 		return self;
-	},
-	focus : function() {
-		var self = this, iframe = self.iframe;
-		if (!iframe) {
-			return self;
-		}
-		if (self.designMode) {
+	};
+	self.focus = function() {
+		if (designMode) {
 			iframe.get().contentWindow.focus();
 		} else {
-			self.textarea.get().focus();
+			textarea.get().focus();
 		}
 		return self;
-	}
-};
-function _edit(options) {
-	return new KEdit(options);
+	};
+	self.html(_elementVal(srcElement));
+	self.cmd = _cmd(doc);
+	return self;
 }
 K.edit = _edit;
 function _bindToolbarEvent(itemNode, item) {
@@ -2693,13 +2648,12 @@ function _toolbar(options) {
 		remove = self.remove,
 		disableMode = options.disableMode === undefined ? false : options.disableMode,
 		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
+		div = self.div(),
 		itemNodes = {};
-	var inner = K('<div class="ke-toolbar-inner"></div>');
-	self.div().addClass('ke-toolbar')
+	div.addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
-		})
-		.append(inner);
+		});
 	self.get = function(key) {
 		return itemNodes[key];
 	};
@@ -2716,13 +2670,12 @@ function _toolbar(options) {
 		}
 		itemNode.data('item', item);
 		itemNodes[item.name] = itemNode;
-		inner.append(itemNode);
+		div.append(itemNode);
 	};
 	self.remove = function() {
 		_each(itemNodes, function(key, val) {
 			val.remove();
 		});
-		inner.remove();
 		remove.call(self);
 	};
 	self.disable = function(bool) {
@@ -2881,6 +2834,8 @@ function _dialog(options) {
 	options.z = options.z || 19811213;
 	var self = _widget(options),
 		remove = self.remove,
+		width = _addUnit(options.width),
+		height = _addUnit(options.height),
 		doc = self.doc,
 		div = self.div(),
 		title = options.title,
@@ -2920,8 +2875,8 @@ function _dialog(options) {
 			}
 		}
 		contentCell.css({
-			width : self.width,
-			height : self.height,
+			width : width,
+			height : height,
 			'vertical-align' : 'top'
 		});
 	} else {
@@ -3068,7 +3023,7 @@ KEditor.prototype = {
 			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
 			width = fullscreenMode ? docWidth + 'px' : self.width,
 			height = fullscreenMode ? docHeight + 'px' : self.height,
-			container = K('<div></div>').css('width', width);
+			container = K('<div class="ke-container"></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
 			container.css({
@@ -3083,7 +3038,6 @@ KEditor.prototype = {
 		}
 		var toolbar = _toolbar({
 				parent : container,
-				width : '100%',
 				noDisableItems : 'source,fullscreen'.split(',')
 			});
 		_each(self.items, function(i, name) {
@@ -3102,15 +3056,15 @@ KEditor.prototype = {
 				}
 			});
 		});
-		height = _removeUnit(height) - toolbar.div().height() - 4;
 		var edit = _edit({
+				parent : container,
 				srcElement : self.srcElement,
-				width : '100%',
+				width : _removeUnit(width) - 10,
 				height : height,
 				designMode : self.designMode,
 				bodyClass : self.bodyClass,
 				cssData : self.cssData
-			}).create(container),
+			}),
 			doc = edit.doc, textarea = edit.textarea;
 		K(doc, document).click(function(e) {
 			if (self.menu) {
@@ -3134,9 +3088,17 @@ KEditor.prototype = {
 				});
 			}
 		});
+		var statusbar = _widget({
+			parent : container,
+			cls : 'ke-statusbar',
+			width : '100%',
+			height : '11px'
+		});
+		edit.height(_removeUnit(height) - toolbar.div().height() - statusbar.div().height() - 4);
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
+		self.statusbar = statusbar;
 		self.menu = self.dialog = null;
 		return self;
 	},

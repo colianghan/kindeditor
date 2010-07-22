@@ -6,7 +6,6 @@
 	zoom: 1;
 	*display: inline;
 }
-
 /* icons */
 .ke-icon-source {
 	background-position: 0px 0px;
@@ -268,25 +267,21 @@
 	width: 16px;
 	height: 16px;
 }
+/* container (*/
+.ke-container {
+	border: 1px solid #CCCCCC;
+	background-color: #FFFFFF;
+}
 /* toolbar */
 .ke-toolbar {
-	display: block;
-	border-top: 1px solid #CCCCCC;
-	border-left: 1px solid #CCCCCC;
-	border-right: 1px solid #CCCCCC;
-	border-bottom: 1px solid #F0F0EE;
+	border-top: 0;
+	border-left: 0;
+	border-right: 0;
+	border-bottom: 1px solid #CCC;
 	background-color: #F0F0EE;
-	margin: 0;
-	padding: 0;
-}
-.ke-toolbar-inner {
-	margin: 2px 5px;
-	padding: 0;
+	padding: 2px 5px;
 }
 .ke-toolbar-icon {
-	margin: 0;
-	padding: 0;
-	border: 0;
 	background-repeat: no-repeat;
 	font-size: 0;
 	overflow: hidden;
@@ -325,13 +320,38 @@
 	font-size: 0;
 	overflow: hidden;
 }
+/* edit */
+.ke-edit {
+	margin: 5px;
+	overflow: hidden;
+}
+.ke-edit-iframe {
+	border: 0;
+	margin: 0;
+	padding: 0;
+}
+.ke-edit-textarea {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+	color: #222222;
+	overflow: auto;
+	resize: none;
+}
+.ke-edit-textarea:focus {
+	outline: none;
+}
+/* statusbar */
+.ke-statusbar {
+	
+}
 /* menu */
 .ke-menu {
 	border: 1px solid #A0A0A0;
 	background-color: #F1F1F1;
 	color: #222222;
 	padding: 2px;
-	margin: 0;
 	font-family: "sans serif",tahoma,verdana,helvetica;
 	font-size: 12px;
 	text-align: left;
@@ -340,8 +360,6 @@
 	border: 1px solid #F1F1F1;
 	background-color: #F1F1F1;
 	color: #222222;
-	padding: 0;
-	margin: 0;
 	height: 24px;
 	overflow: hidden;
 	cursor: pointer;
@@ -351,9 +369,6 @@
 	background-color: #E9EFF6;
 }
 .ke-menu-item-left {
-	border: 0;
-	margin: 0;
-	padding: 0;
 	width: 27px;
 	text-align: center;
 	overflow: hidden;
@@ -364,8 +379,6 @@
 	*display: inline;
 }
 .ke-menu-item-center {
-	margin: 0;
-	padding: 0;
 	width: 0;
 	height: 24px;
 	border-left: 1px solid #E3E3E3;
@@ -384,7 +397,6 @@
 }
 .ke-menu-item-right {
 	border: 0;
-	margin: 0;
 	padding: 0 0 0 5px;
 	line-height: 24px;
 	text-align: left;
@@ -397,7 +409,6 @@
 }
 .ke-menu-separator {
 	margin: 2px 0;
-	padding: 0;
 	height: 0;
 	overflow: hidden;
 	border-top: 1px solid #CCCCCC;
@@ -411,7 +422,6 @@
 	background-color: #F1F1F1;
 	color: #222222;
 	padding: 2px;
-	margin: 0;
 }
 .ke-colorpicker-table {
 	border:0;
@@ -453,8 +463,6 @@
 /* dialog */
 .ke-dialog {
 	border:0;
-	margin:0;
-	padding:0;
 }
 .ke-dialog-no-shadow {
 	border: 1px solid #A0A0A0;
@@ -538,9 +546,6 @@
 	width: 16px;
 	height: 16px;
 	position: absolute;
-	border: 0;
-	margin: 0;
-	padding: 0;
 	right: 15px;
 	top: 15px;
 	cursor: pointer;
@@ -556,9 +561,6 @@
 	top: 10px;
 }
 .ke-dialog-body {
-	border: 0;
-	margin: 0;
-	padding: 0;
 	font: 12px/1.5 "sans serif",tahoma,verdana,helvetica;
 	text-align: left;
 	overflow: hidden;
@@ -572,9 +574,6 @@
 	outline: none;
 }
 .ke-dialog-footer {
-	border:0;
-	margin:0;
-	padding:0;
 	font: 12px/1 "sans serif",tahoma,verdana,helvetica;
 	text-align: right;
 	padding:0 0 5px 0;
@@ -589,33 +588,7 @@
 	margin: 5px 10px 5px 5px;
 }
 .ke-dialog-mask {
-	border:0;
-	margin:0;
-	padding:0;
 	background-color:#FFF;
 	filter:alpha(opacity=50);
 	opacity:0.5;
-}
-/* edit */
-.ke-edit {
-	display: block;
-}
-.ke-edit-iframe {
-	margin: 0;
-	padding: 0;
-	border: 1px solid #CCCCCC;
-	background-color: #FFFFFF;
-}
-.ke-edit-textarea {
-	font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
-	margin: 0;
-	padding: 0;
-	border: 1px solid #CCCCCC;
-	background-color: #FFFFFF;
-	color: #000000;
-	overflow: auto;
-	resize: none;
-}
-.ke-edit-textarea:focus {
-	outline: none;
 }

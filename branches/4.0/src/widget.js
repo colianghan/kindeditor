@@ -140,11 +140,6 @@ function _widget(options) {
 	K(parent).append(div);
 	return {
 		name : name,
-		x : x,
-		y : y,
-		z : z,
-		width : width,
-		height : height,
 		doc : doc,
 		div : function() {
 			return div;

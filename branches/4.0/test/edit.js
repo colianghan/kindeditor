@@ -1,12 +1,5 @@
 
-var edit = K.edit({
-	srcElement : 'body textarea',
-	width : '700px',
-	height : '200px',
-	designMode : true,
-	bodyClass : 'ke-content',
-	cssData : 'body {font-size:12px;margin:0;}'
-}).create('div#edit');
+var edit = null;
 
 var cmds = {
 	bold : '',
@@ -30,17 +23,37 @@ K.each(cmds, function(key, val) {
 	K('#cmdArea').append(document.createTextNode(' '));
 });
 K('#create').bind('click', function(e) {
-	edit.create('div#edit');
+	if (!edit) {
+		edit = K.edit({
+			parent : 'div#edit',
+			srcElement : 'body textarea',
+			width : '700px',
+			height : '200px',
+			designMode : true,
+			bodyClass : 'ke-content',
+			cssData : 'body {font-size:12px;margin:0;}'
+		});
+	}
 });
+K('#create').click();
 K('#remove').bind('click', function(e) {
-	edit.remove();
+	if (edit) {
+		edit.remove();
+		edit = null;
+	}
 });
 K('#design').bind('click', function(e) {
-	edit.design(true);
+	if (edit) {
+		edit.design(true);
+	}
 });
 K('#source').bind('click', function(e) {
-	edit.design(false);
+	if (edit) {
+		edit.design(false);
+	}
 });
 K('#toggle').bind('click', function(e) {
-	edit.design();
+	if (edit) {
+		edit.design();
+	}
 });

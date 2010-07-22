@@ -34,14 +34,13 @@ function _toolbar(options) {
 		remove = self.remove,
 		disableMode = options.disableMode === undefined ? false : options.disableMode,
 		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
+		div = self.div(),
 		itemNodes = {};
 	//create toolbar
-	var inner = K('<div class="ke-toolbar-inner"></div>');
-	self.div().addClass('ke-toolbar')
+	div.addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
-		})
-		.append(inner);
+		});
 	self.get = function(key) {
 		return itemNodes[key];
 	};
@@ -59,14 +58,13 @@ function _toolbar(options) {
 		}
 		itemNode.data('item', item);
 		itemNodes[item.name] = itemNode;
-		inner.append(itemNode);
+		div.append(itemNode);
 	};
 	//remove toolbar
 	self.remove = function() {
 		_each(itemNodes, function(key, val) {
 			val.remove();
 		});
-		inner.remove();
 		remove.call(self);
 	};
 	//toggle enable/disable
