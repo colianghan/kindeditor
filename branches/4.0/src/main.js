@@ -201,6 +201,33 @@ KEditor.prototype = {
 		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
 		self.remove();
 		return self.create();
+	},
+	createMenu : function(options) {
+		var self = this,
+			knode = self.toolbar.get(options.name),
+			pos = knode.pos();
+		options.x = pos.x;
+		options.y = pos.y + knode.height();
+		options.centerLineMode = false;
+		return self.menu = _menu(options);
+	},
+	removeMenu : function() {
+		this.menu.remove();
+		this.menu = null;
+	},
+	createDialog : function(options) {
+		var self = this, dialog;
+		options.shadowMode = self.shadowMode;
+		options.closeText = self.lang('close');
+		options.noBtn = {
+			name : self.lang('no'),
+			click : function(e) {
+				dialog.remove();
+				self.edit.focus();
+			}
+		};
+		dialog = _dialog(options);
+		return dialog;
 	}
 };
 

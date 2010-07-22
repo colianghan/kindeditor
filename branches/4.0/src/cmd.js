@@ -803,13 +803,8 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 _each('cut,copy,paste'.split(','), function(i, name) {
 	KCmd.prototype[name] = function() {
 		var self = this;
-		try {
-			if (!self.doc.queryCommandSupported(name)) {
-				throw 'e';
-			}
-		} catch(e) {
-			alert(_lang(name + 'Error'));
-			return;
+		if (!self.doc.queryCommandSupported(name)) {
+			throw 'not supported';
 		}
 		_nativeCommand(self.doc, name, null);
 		return self;

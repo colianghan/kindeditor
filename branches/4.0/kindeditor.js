@@ -2301,13 +2301,8 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 _each('cut,copy,paste'.split(','), function(i, name) {
 	KCmd.prototype[name] = function() {
 		var self = this;
-		try {
-			if (!self.doc.queryCommandSupported(name)) {
-				throw 'e';
-			}
-		} catch(e) {
-			alert(_lang(name + 'Error'));
-			return;
+		if (!self.doc.queryCommandSupported(name)) {
+			throw 'not supported';
 		}
 		_nativeCommand(self.doc, name, null);
 		return self;
@@ -2679,7 +2674,7 @@ function _bindToolbarEvent(itemNode, item) {
 		_node(this).removeClass('ke-toolbar-icon-outline-on');
 	})
 	.click(function(e) {
-		item.click.call(_node(this), e);
+		item.click.call(this, e);
 		e.stop();
 	});
 }
@@ -2688,13 +2683,16 @@ function _toolbar(options) {
 		remove = self.remove,
 		disableMode = options.disableMode === undefined ? false : options.disableMode,
 		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
-		itemNodes = [];
+		itemNodes = {};
 	var inner = _node('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
 		})
 		.append(inner);
+	self.get = function(key) {
+		return itemNodes[key];
+	};
 	self.addItem = function(item) {
 		var itemNode;
 		if (item.name == '|') {
@@ -2707,12 +2705,12 @@ function _toolbar(options) {
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
-		itemNodes.push(itemNode);
+		itemNodes[item.name] = itemNode;
 		inner.append(itemNode);
 	};
 	self.remove = function() {
-		_each(itemNodes, function() {
-			this.remove();
+		_each(itemNodes, function(key, val) {
+			val.remove();
 		});
 		inner.remove();
 		remove.call(self);
@@ -2720,25 +2718,25 @@ function _toolbar(options) {
 	self.disable = function(bool) {
 		var arr = noDisableItems, item;
 		if (bool === undefined ? !disableMode : bool) {
-			_each(itemNodes, function() {
-				item = this.data('item');
+			_each(itemNodes, function(key, val) {
+				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					this.addClass('ke-toolbar-icon-outline-disabled');
-					this.opacity(0.5);
+					val.addClass('ke-toolbar-icon-outline-disabled');
+					val.opacity(0.5);
 					if (item.name !== '|') {
-						this.unbind();
+						val.unbind();
 					}
 				}
 			});
 			disableMode = true;
 		} else {
-			_each(itemNodes, function() {
-				item = this.data('item');
+			_each(itemNodes, function(key, val) {
+				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					this.removeClass('ke-toolbar-icon-outline-disabled');
-					this.opacity(1);
+					val.removeClass('ke-toolbar-icon-outline-disabled');
+					val.opacity(1);
 					if (item.name !== '|') {
-						_bindToolbarEvent(this, item);
+						_bindToolbarEvent(val, item);
 					}
 				}
 			});
@@ -2880,6 +2878,7 @@ function _dialog(options) {
 		previewBtn = options.previewBtn,
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
+		closeText = options.closeText,
 		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
 		docEl = doc.documentElement,
 		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
@@ -2923,7 +2922,7 @@ function _dialog(options) {
 	contentCell.append(headerDiv);
 	headerDiv.html(title);
 	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
-		(shadowMode ? '' : 'no-') + 'shadow" title="' + _lang('close') + '"></span>')
+		(shadowMode ? '' : 'no-') + 'shadow" title="' + closeText + '"></span>')
 		.click(function (e) {
 			self.remove();
 		});
@@ -3138,6 +3137,33 @@ KEditor.prototype = {
 		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
 		self.remove();
 		return self.create();
+	},
+	createMenu : function(options) {
+		var self = this,
+			knode = self.toolbar.get(options.name),
+			pos = knode.pos();
+		options.x = pos.x;
+		options.y = pos.y + knode.height();
+		options.centerLineMode = false;
+		return self.menu = _menu(options);
+	},
+	removeMenu : function() {
+		this.menu.remove();
+		this.menu = null;
+	},
+	createDialog : function(options) {
+		var self = this, dialog;
+		options.shadowMode = self.shadowMode;
+		options.closeText = self.lang('close');
+		options.noBtn = {
+			name : self.lang('no'),
+			click : function(e) {
+				dialog.remove();
+				self.edit.focus();
+			}
+		};
+		dialog = _dialog(options);
+		return dialog;
 	}
 };
 function _create(expr, options) {
@@ -3173,17 +3199,10 @@ K.plugin('about', function(editor) {
 		'<div>KindEditor ' + K.kindeditor + '</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
-	var dialog = K.dialog({
+	var dialog = editor.createDialog({
 		width : 300,
 		title : editor.lang('about'),
-		body : html,
-		noBtn : {
-			name : editor.lang('close'),
-			click : function(e) {
-				dialog.remove();
-				editor.edit.focus();
-			}
-		}
+		body : html
 	});
 });
 K.plugin('plainpaste', function(editor) {
@@ -3192,7 +3211,7 @@ K.plugin('plainpaste', function(editor) {
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
-	var dialog = K.dialog({
+	var dialog = editor.createDialog({
 		width : 450,
 		title : editor.lang('plainpaste'),
 		body : html,
@@ -3207,13 +3226,6 @@ K.plugin('plainpaste', function(editor) {
 				dialog.remove();
 				editor.edit.focus();
 			}
-		},
-		noBtn : {
-			name : editor.lang('close'),
-			click : function(e) {
-				dialog.remove();
-				editor.edit.focus();
-			}
 		}
 	});
 });
@@ -3225,8 +3237,7 @@ K.plugin('fullscreen', function(editor) {
 	editor.fullscreen();
 });
 K.plugin('formatblock', function(editor) {
-	var pos = this.pos(),
-		blocks = editor.lang('formatblock.formatBlock'),
+	var blocks = editor.lang('formatblock.formatBlock'),
 		heights = {
 			h1 : 28,
 			h2 : 24,
@@ -3235,52 +3246,42 @@ K.plugin('formatblock', function(editor) {
 			p : 12
 		},
 		cmd = editor.edit.cmd,
-		curVal = cmd.val('formatblock');
-	editor.menu = K.menu({
-		name : 'formatblock',
-		width : editor.langType == 'en' ? 200 : 150,
-		x : pos.x,
-		y : pos.y + this.height(),
-		centerLineMode : false
-	});
+		curVal = cmd.val('formatblock'),
+		menu = editor.createMenu({
+			name : 'formatblock',
+			width : editor.langType == 'en' ? 200 : 150
+		});
 	K.each(blocks, function(key, val) {
 		var style = 'font-size:' + heights[key] + 'px;';
 		if (key.charAt(0) === 'h') {
 			style += 'font-weight:bold;';
 		}
-		editor.menu.addItem({
+		menu.addItem({
 			title : '<span style="' + style + '">' + val + '</span>',
 			height : heights[key] + 12,
 			checked : (curVal === key || curVal === val),
 			click : function(e) {
 				cmd.select();
 				cmd.formatblock('<' + key.toUpperCase() + '>');
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 				e.stop();
 			}
 		});
 	});
 });
 K.plugin('fontname', function(editor) {
-	var pos = this.pos(),
-		cmd = editor.edit.cmd,
-		curVal = cmd.val('fontname');
-	editor.menu = K.menu({
-		name : 'fontname',
-		width : 150,
-		x : pos.x,
-		y : pos.y + this.height(),
-		centerLineMode : false
-	});
+	var cmd = editor.edit.cmd,
+		curVal = cmd.val('fontname'),
+		menu = editor.createMenu({
+			name : 'fontname',
+			width : 150
+		});
 	K.each(editor.lang('fontname.fontName'), function(key, val) {
-		editor.menu.addItem({
+		menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
 			click : function(e) {
-				cmd.fontname(val);
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 				e.stop();
 			}
 		});
@@ -3288,25 +3289,20 @@ K.plugin('fontname', function(editor) {
 });
 K.plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-		pos = this.pos(),
 		cmd = editor.edit.cmd,
 		curVal = cmd.val('fontsize');
-	editor.menu = K.menu({
-		name : 'fontsize',
-		width : 150,
-		x : pos.x,
-		y : pos.y + this.height(),
-		centerLineMode : false
-	});
+		menu = editor.createMenu({
+			name : 'fontsize',
+			width : 150
+		});
 	K.each(fontSize, function(i, val) {
-		editor.menu.addItem({
+		menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
 			height : K.removeUnit(val) + 12,
 			checked : curVal === val,
 			click : function(e) {
 				cmd.fontsize(val);
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 				e.stop();
 			}
 		});
@@ -3314,29 +3310,38 @@ K.plugin('fontsize', function(editor) {
 });
 K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		var pos = this.pos(),
+		var pos = K(this).pos(),
 			cmd = editor.edit.cmd,
 			curVal = cmd.val(name);
 		editor.menu = K.colorpicker({
 			name : name,
 			x : pos.x,
-			y : pos.y + this.height(),
+			y : pos.y + K(this).height(),
 			selectedColor : curVal || 'default',
 			noColor : editor.lang('noColor'),
 			click : function(color) {
 				cmd[name](color);
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 			}
 		});
 	});
 });
 K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
-	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,cut,copy,paste,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
 	K.plugin(name, function(editor) {
 		editor.edit.focus();
 		editor.edit.cmd[name](null);
+	});
+});
+K.each(('cut,copy,paste').split(','), function(i, name) {
+	K.plugin(name, function(editor) {
+		editor.edit.focus();
+		try {
+			editor.edit.cmd[name](null);
+		} catch(e) {
+			alert(editor.lang(name + 'Error'));
+		}
 	});
 });
 })(KindEditor);

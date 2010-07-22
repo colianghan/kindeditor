@@ -18,17 +18,10 @@ K.plugin('about', function(editor) {
 		'<div>KindEditor ' + K.kindeditor + '</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
-	var dialog = K.dialog({
+	var dialog = editor.createDialog({
 		width : 300,
 		title : editor.lang('about'),
-		body : html,
-		noBtn : {
-			name : editor.lang('close'),
-			click : function(e) {
-				dialog.remove();
-				editor.edit.focus();
-			}
-		}
+		body : html
 	});
 });
 
@@ -38,7 +31,7 @@ K.plugin('plainpaste', function(editor) {
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
-	var dialog = K.dialog({
+	var dialog = editor.createDialog({
 		width : 450,
 		title : editor.lang('plainpaste'),
 		body : html,
@@ -50,13 +43,6 @@ K.plugin('plainpaste', function(editor) {
 				html = html.replace(/ /g, '&nbsp;');
 				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 				editor.edit.cmd.inserthtml(html);
-				dialog.remove();
-				editor.edit.focus();
-			}
-		},
-		noBtn : {
-			name : editor.lang('close'),
-			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
 			}
@@ -74,8 +60,7 @@ K.plugin('fullscreen', function(editor) {
 });
 
 K.plugin('formatblock', function(editor) {
-	var pos = this.pos(),
-		blocks = editor.lang('formatblock.formatBlock'),
+	var blocks = editor.lang('formatblock.formatBlock'),
 		heights = {
 			h1 : 28,
 			h2 : 24,
@@ -84,28 +69,24 @@ K.plugin('formatblock', function(editor) {
 			p : 12
 		},
 		cmd = editor.edit.cmd,
-		curVal = cmd.val('formatblock');
-	editor.menu = K.menu({
-		name : 'formatblock',
-		width : editor.langType == 'en' ? 200 : 150,
-		x : pos.x,
-		y : pos.y + this.height(),
-		centerLineMode : false
-	});
+		curVal = cmd.val('formatblock'),
+		menu = editor.createMenu({
+			name : 'formatblock',
+			width : editor.langType == 'en' ? 200 : 150
+		});
 	K.each(blocks, function(key, val) {
 		var style = 'font-size:' + heights[key] + 'px;';
 		if (key.charAt(0) === 'h') {
 			style += 'font-weight:bold;';
 		}
-		editor.menu.addItem({
+		menu.addItem({
 			title : '<span style="' + style + '">' + val + '</span>',
 			height : heights[key] + 12,
 			checked : (curVal === key || curVal === val),
 			click : function(e) {
 				cmd.select();
 				cmd.formatblock('<' + key.toUpperCase() + '>');
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 				e.stop();
 			}
 		});
@@ -113,24 +94,18 @@ K.plugin('formatblock', function(editor) {
 });
 
 K.plugin('fontname', function(editor) {
-	var pos = this.pos(),
-		cmd = editor.edit.cmd,
-		curVal = cmd.val('fontname');
-	editor.menu = K.menu({
-		name : 'fontname',
-		width : 150,
-		x : pos.x,
-		y : pos.y + this.height(),
-		centerLineMode : false
-	});
+	var cmd = editor.edit.cmd,
+		curVal = cmd.val('fontname'),
+		menu = editor.createMenu({
+			name : 'fontname',
+			width : 150
+		});
 	K.each(editor.lang('fontname.fontName'), function(key, val) {
-		editor.menu.addItem({
+		menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
 			click : function(e) {
-				cmd.fontname(val);
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 				e.stop();
 			}
 		});
@@ -139,25 +114,20 @@ K.plugin('fontname', function(editor) {
 
 K.plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-		pos = this.pos(),
 		cmd = editor.edit.cmd,
 		curVal = cmd.val('fontsize');
-	editor.menu = K.menu({
-		name : 'fontsize',
-		width : 150,
-		x : pos.x,
-		y : pos.y + this.height(),
-		centerLineMode : false
-	});
+		menu = editor.createMenu({
+			name : 'fontsize',
+			width : 150
+		});
 	K.each(fontSize, function(i, val) {
-		editor.menu.addItem({
+		menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
 			height : K.removeUnit(val) + 12,
 			checked : curVal === val,
 			click : function(e) {
 				cmd.fontsize(val);
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 				e.stop();
 			}
 		});
@@ -166,30 +136,40 @@ K.plugin('fontsize', function(editor) {
 
 K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		var pos = this.pos(),
+		var pos = K(this).pos(),
 			cmd = editor.edit.cmd,
 			curVal = cmd.val(name);
 		editor.menu = K.colorpicker({
 			name : name,
 			x : pos.x,
-			y : pos.y + this.height(),
+			y : pos.y + K(this).height(),
 			selectedColor : curVal || 'default',
 			noColor : editor.lang('noColor'),
 			click : function(color) {
 				cmd[name](color);
-				editor.menu.remove();
-				editor.menu = null;
+				editor.removeMenu();
 			}
 		});
 	});
 });
 
 K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
-	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,cut,copy,paste,' +
+	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
 	K.plugin(name, function(editor) {
 		editor.edit.focus();
 		editor.edit.cmd[name](null);
+	});
+});
+
+K.each(('cut,copy,paste').split(','), function(i, name) {
+	K.plugin(name, function(editor) {
+		editor.edit.focus();
+		try {
+			editor.edit.cmd[name](null);
+		} catch(e) {
+			alert(editor.lang(name + 'Error'));
+		}
 	});
 });
 

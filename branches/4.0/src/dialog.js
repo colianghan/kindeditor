@@ -27,6 +27,7 @@ function _dialog(options) {
 		previewBtn = options.previewBtn,
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
+		closeText = options.closeText,
 		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
 		docEl = doc.documentElement,
 		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
@@ -71,7 +72,7 @@ function _dialog(options) {
 	contentCell.append(headerDiv);
 	headerDiv.html(title);
 	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
-		(shadowMode ? '' : 'no-') + 'shadow" title="' + _lang('close') + '"></span>')
+		(shadowMode ? '' : 'no-') + 'shadow" title="' + closeText + '"></span>')
 		.click(function (e) {
 			self.remove();
 		});
