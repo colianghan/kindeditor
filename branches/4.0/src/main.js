@@ -48,8 +48,11 @@ K.lang({
 }, 'zh_CN'); //add language
 */
 function _lang(mixed, langType) {
-	langType = langType === undefined ? _LANG_TYPE : langType;
+	langType = langType === undefined ? _options.langType : langType;
 	if (typeof mixed === 'string') {
+		if (!_language[langType]) {
+			return 'no language';
+		}
 		var pos = mixed.length - 1;
 		if (mixed.substr(pos) === '.') {
 			return _language[langType][mixed.substr(0, pos)];
@@ -92,6 +95,9 @@ function KEditor(options) {
 }
 
 KEditor.prototype = {
+	lang : function(mixed) {
+		return _lang(mixed, this.langType);
+	},
 	create : function() {
 		var self = this,
 			fullscreenMode = self.fullscreenMode,
@@ -128,7 +134,7 @@ KEditor.prototype = {
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
 				name : name,
-				title : _lang(name),
+				title : self.lang(name),
 				click : function(e) {
 					if (self.menu) {
 						var menuName = self.menu.name;

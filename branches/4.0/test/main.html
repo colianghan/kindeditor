@@ -39,6 +39,7 @@
 		<script src="../src/dialog.js"></script>
 		<script src="../src/main.js"></script>
 		<script src="../lang/zh_CN.js"></script>
+		<script src="../lang/en.js"></script>
 		<script src="../plugins/default.js"></script>
 	</head>
 	<body>
@@ -60,7 +61,9 @@
 				});
 				K('#create2').click(function(e) {
 					if (!editor2) {
-						editor2 = K.create(K('textarea[name=editor2]').get());
+						editor2 = K.create(K('textarea[name=editor2]').get(), {
+							langType : 'en'
+						});
 					}
 				});
 				K('#create1').click();

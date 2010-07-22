@@ -8,7 +8,8 @@
 * @version 4.0 (2010-07-22)
 *******************************************************************************/
 (function (window, undefined) {
-var _ua = navigator.userAgent.toLowerCase(),
+var _kindeditor = '4.0 (2010-07-22)',
+	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
 	_WEBKIT = _ua.indexOf('applewebkit') > -1,
@@ -106,6 +107,7 @@ function _getScriptPath() {
 }
 var _round = Math.round;
 var K = {
+	kindeditor : _kindeditor,
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,
@@ -125,13 +127,13 @@ var K = {
 	toMap : _toMap,
 	toArray : _toArray
 };
-var _LANG_TYPE = 'zh_CN';
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
 	filterMode : false,
 	shadowMode : true,
 	scriptPath : _getScriptPath(),
+	langType : 'zh_CN',
 	urlType : '',
 	newlineType : 'p',
 	resizeType : 2,
@@ -196,7 +198,6 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
-K.LANG_TYPE = _LANG_TYPE;
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
@@ -2825,7 +2826,7 @@ function _colorpicker(options) {
 		if (selectedColor === color.toLowerCase()) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
-		cell.attr('title', color || _lang('noColor'));
+		cell.attr('title', color || options.noColor);
 		cell.mouseover(function(e) {
 			_node(this).addClass('ke-colorpicker-cell-on');
 		});
@@ -2839,7 +2840,7 @@ function _colorpicker(options) {
 		if (color) {
 			cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
 		} else {
-			cell.html(_lang('noColor'));
+			cell.html(options.noColor);
 		}
 		cells.push(cell);
 	}
@@ -2990,8 +2991,11 @@ function _parseLangKey(key) {
 	return { ns : ns, key : key };
 }
 function _lang(mixed, langType) {
-	langType = langType === undefined ? _LANG_TYPE : langType;
+	langType = langType === undefined ? _options.langType : langType;
 	if (typeof mixed === 'string') {
+		if (!_language[langType]) {
+			return 'no language';
+		}
 		var pos = mixed.length - 1;
 		if (mixed.substr(pos) === '.') {
 			return _language[langType][mixed.substr(0, pos)];
@@ -3032,6 +3036,9 @@ function KEditor(options) {
 	self.srcElement = se;
 }
 KEditor.prototype = {
+	lang : function(mixed) {
+		return _lang(mixed, this.langType);
+	},
 	create : function() {
 		var self = this,
 			fullscreenMode = self.fullscreenMode,
@@ -3067,7 +3074,7 @@ KEditor.prototype = {
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
 				name : name,
-				title : _lang(name),
+				title : self.lang(name),
 				click : function(e) {
 					if (self.menu) {
 						var menuName = self.menu.name;
@@ -3163,15 +3170,15 @@ window.KindEditor = K;
 (function(K, undefined) {
 K.plugin('about', function(editor) {
 	var html = '<div style="margin:20px;">' +
-		'<div>KindEditor 4.0 (2010-07-22)</div>' +
+		'<div>KindEditor ' + K.kindeditor + '</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
 	var dialog = K.dialog({
 		width : 300,
-		title : K.lang('about'),
+		title : editor.lang('about'),
 		body : html,
 		noBtn : {
-			name : K.lang('close'),
+			name : editor.lang('close'),
 			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
@@ -3180,17 +3187,17 @@ K.plugin('about', function(editor) {
 	});
 });
 K.plugin('plainpaste', function(editor) {
-	var lang = K.lang('plainpaste.'),
+	var lang = editor.lang('plainpaste.'),
 		html = '<div style="margin:10px;">' +
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
 	var dialog = K.dialog({
 		width : 450,
-		title : K.lang('plainpaste'),
+		title : editor.lang('plainpaste'),
 		body : html,
 		yesBtn : {
-			name : K.lang('yes'),
+			name : editor.lang('yes'),
 			click : function(e) {
 				var html = K('textarea', dialog.div().get()).val();
 				html = K.escape(html);
@@ -3202,7 +3209,7 @@ K.plugin('plainpaste', function(editor) {
 			}
 		},
 		noBtn : {
-			name : K.lang('close'),
+			name : editor.lang('close'),
 			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
@@ -3219,7 +3226,7 @@ K.plugin('fullscreen', function(editor) {
 });
 K.plugin('formatblock', function(editor) {
 	var pos = this.pos(),
-		blocks = K.lang('formatblock.formatBlock'),
+		blocks = editor.lang('formatblock.formatBlock'),
 		heights = {
 			h1 : 28,
 			h2 : 24,
@@ -3231,7 +3238,7 @@ K.plugin('formatblock', function(editor) {
 		curVal = cmd.val('formatblock');
 	editor.menu = K.menu({
 		name : 'formatblock',
-		width : K.LANG_TYPE == 'en' ? 200 : 150,
+		width : editor.langType == 'en' ? 200 : 150,
 		x : pos.x,
 		y : pos.y + this.height(),
 		centerLineMode : false
@@ -3266,7 +3273,7 @@ K.plugin('fontname', function(editor) {
 		y : pos.y + this.height(),
 		centerLineMode : false
 	});
-	K.each(K.lang('fontname.fontName'), function(key, val) {
+	K.each(editor.lang('fontname.fontName'), function(key, val) {
 		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
@@ -3315,6 +3322,7 @@ K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 			x : pos.x,
 			y : pos.y + this.height(),
 			selectedColor : curVal || 'default',
+			noColor : editor.lang('noColor'),
 			click : function(color) {
 				cmd[name](color);
 				editor.menu.remove();

@@ -36,7 +36,7 @@ function _colorpicker(options) {
 		if (selectedColor === color.toLowerCase()) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
-		cell.attr('title', color || _lang('noColor'));
+		cell.attr('title', color || options.noColor);
 		cell.mouseover(function(e) {
 			_node(this).addClass('ke-colorpicker-cell-on');
 		});
@@ -50,7 +50,7 @@ function _colorpicker(options) {
 		if (color) {
 			cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
 		} else {
-			cell.html(_lang('noColor'));
+			cell.html(options.noColor);
 		}
 		cells.push(cell);
 	}

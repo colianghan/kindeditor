@@ -37,6 +37,12 @@
 /**/ var undefined;
 
 /**
+	@name KindEditor.kindeditor
+	@type {String}
+	@description
+	当前KindEditor的版本号。
+*/
+/**
 	@name KindEditor.IE
 	@type {Boolean}
 	@description
@@ -66,7 +72,8 @@
 	@description
 	当前浏览器的版本号。
 */
-var _ua = navigator.userAgent.toLowerCase(),
+var _kindeditor = '${VERSION}',
+	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
 	_WEBKIT = _ua.indexOf('applewebkit') > -1,
@@ -313,6 +320,7 @@ function _getScriptPath() {
 var _round = Math.round;
 
 var K = {
+	kindeditor : _kindeditor,
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,

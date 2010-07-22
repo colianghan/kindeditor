@@ -15,14 +15,13 @@
 #using "core.js"
 */
 
-var _LANG_TYPE = 'zh_CN';
-
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
 	filterMode : false,
 	shadowMode : true,
 	scriptPath : _getScriptPath(),
+	langType : 'zh_CN',
 	urlType : '', //"",relative,absolute,domain
 	newlineType : 'p', //p,br
 	resizeType : 2, //0,1,2
@@ -88,5 +87,3 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
-
-K.LANG_TYPE = _LANG_TYPE;

@@ -15,15 +15,15 @@
 
 K.plugin('about', function(editor) {
 	var html = '<div style="margin:20px;">' +
-		'<div>KindEditor ${VERSION}</div>' +
+		'<div>KindEditor ' + K.kindeditor + '</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
 	var dialog = K.dialog({
 		width : 300,
-		title : K.lang('about'),
+		title : editor.lang('about'),
 		body : html,
 		noBtn : {
-			name : K.lang('close'),
+			name : editor.lang('close'),
 			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
@@ -33,17 +33,17 @@ K.plugin('about', function(editor) {
 });
 
 K.plugin('plainpaste', function(editor) {
-	var lang = K.lang('plainpaste.'),
+	var lang = editor.lang('plainpaste.'),
 		html = '<div style="margin:10px;">' +
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
 	var dialog = K.dialog({
 		width : 450,
-		title : K.lang('plainpaste'),
+		title : editor.lang('plainpaste'),
 		body : html,
 		yesBtn : {
-			name : K.lang('yes'),
+			name : editor.lang('yes'),
 			click : function(e) {
 				var html = K('textarea', dialog.div().get()).val();
 				html = K.escape(html);
@@ -55,7 +55,7 @@ K.plugin('plainpaste', function(editor) {
 			}
 		},
 		noBtn : {
-			name : K.lang('close'),
+			name : editor.lang('close'),
 			click : function(e) {
 				dialog.remove();
 				editor.edit.focus();
@@ -75,7 +75,7 @@ K.plugin('fullscreen', function(editor) {
 
 K.plugin('formatblock', function(editor) {
 	var pos = this.pos(),
-		blocks = K.lang('formatblock.formatBlock'),
+		blocks = editor.lang('formatblock.formatBlock'),
 		heights = {
 			h1 : 28,
 			h2 : 24,
@@ -87,7 +87,7 @@ K.plugin('formatblock', function(editor) {
 		curVal = cmd.val('formatblock');
 	editor.menu = K.menu({
 		name : 'formatblock',
-		width : K.LANG_TYPE == 'en' ? 200 : 150,
+		width : editor.langType == 'en' ? 200 : 150,
 		x : pos.x,
 		y : pos.y + this.height(),
 		centerLineMode : false
@@ -123,7 +123,7 @@ K.plugin('fontname', function(editor) {
 		y : pos.y + this.height(),
 		centerLineMode : false
 	});
-	K.each(K.lang('fontname.fontName'), function(key, val) {
+	K.each(editor.lang('fontname.fontName'), function(key, val) {
 		editor.menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
@@ -174,6 +174,7 @@ K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 			x : pos.x,
 			y : pos.y + this.height(),
 			selectedColor : curVal || 'default',
+			noColor : editor.lang('noColor'),
 			click : function(color) {
 				cmd[name](color);
 				editor.menu.remove();
