@@ -74,7 +74,6 @@ KindEditor.lang({
 	invalidCols : '列数为必选项，只允许输入大于0的数字。',
 	invalidPadding : '边距必须为数字。',
 	invalidSpacing : '间距必须为数字。',
-	invalidBorder : '边框必须为数字。',
 	invalidJson : '服务器发生故障。',
 	cutError : '您的浏览器安全设置不允许使用剪切操作，请使用快捷键(Ctrl+X)来完成。',
 	copyError : '您的浏览器安全设置不允许使用复制操作，请使用快捷键(Ctrl+C)来完成。',

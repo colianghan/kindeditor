@@ -18,7 +18,8 @@ K.plugin('about', function(editor) {
 		'<div>KindEditor ' + K.kindeditor + '</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
-	var dialog = editor.createDialog({
+	editor.createDialog({
+		name : 'about',
 		width : 300,
 		title : editor.lang('about'),
 		body : html
@@ -31,7 +32,8 @@ K.plugin('plainpaste', function(editor) {
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
-	var dialog = editor.createDialog({
+	editor.createDialog({
+		name : 'plainpaste',
 		width : 450,
 		title : editor.lang('plainpaste'),
 		body : html,
@@ -43,7 +45,7 @@ K.plugin('plainpaste', function(editor) {
 				html = html.replace(/ /g, '&nbsp;');
 				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 				editor.edit.cmd.inserthtml(html);
-				dialog.remove();
+				editor.hideDialog();
 				editor.edit.focus();
 			}
 		}
@@ -74,6 +76,9 @@ K.plugin('formatblock', function(editor) {
 			name : 'formatblock',
 			width : editor.langType == 'en' ? 200 : 150
 		});
+	if (!menu) {
+		return;
+	}
 	K.each(blocks, function(key, val) {
 		var style = 'font-size:' + heights[key] + 'px;';
 		if (key.charAt(0) === 'h') {
@@ -86,7 +91,7 @@ K.plugin('formatblock', function(editor) {
 			click : function(e) {
 				cmd.select();
 				cmd.formatblock('<' + key.toUpperCase() + '>');
-				editor.removeMenu();
+				editor.hideMenu();
 				e.stop();
 			}
 		});
@@ -100,12 +105,15 @@ K.plugin('fontname', function(editor) {
 			name : 'fontname',
 			width : 150
 		});
+	if (!menu) {
+		return;
+	}
 	K.each(editor.lang('fontname.fontName'), function(key, val) {
 		menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
 			click : function(e) {
-				editor.removeMenu();
+				editor.hideMenu();
 				e.stop();
 			}
 		});
@@ -120,6 +128,9 @@ K.plugin('fontsize', function(editor) {
 			name : 'fontsize',
 			width : 150
 		});
+	if (!menu) {
+		return;
+	}
 	K.each(fontSize, function(i, val) {
 		menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
@@ -127,7 +138,7 @@ K.plugin('fontsize', function(editor) {
 			checked : curVal === val,
 			click : function(e) {
 				cmd.fontsize(val);
-				editor.removeMenu();
+				editor.hideMenu();
 				e.stop();
 			}
 		});
@@ -136,15 +147,11 @@ K.plugin('fontsize', function(editor) {
 
 K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		var pos = K(this).pos(),
-			cmd = editor.edit.cmd,
+		var cmd = editor.edit.cmd,
 			curVal = cmd.val(name);
-		editor.menu = K.colorpicker({
+		editor.createMenu({
 			name : name,
-			x : pos.x,
-			y : pos.y + K(this).height(),
 			selectedColor : curVal || 'default',
-			noColor : editor.lang('noColor'),
 			click : function(color) {
 				cmd[name](color);
 				editor.removeMenu();

@@ -138,8 +138,7 @@ KEditor.prototype = {
 				click : function(e) {
 					if (self.menu) {
 						var menuName = self.menu.name;
-						self.menu.remove();
-						self.menu = null;
+						self.hideMenu();
 						if (menuName === name) {
 							return;
 						}
@@ -162,8 +161,7 @@ KEditor.prototype = {
 		//bind events
 		_node(doc, document).click(function(e) {
 			if (self.menu) {
-				self.menu.remove();
-				self.menu = null;
+				self.hideMenu();
 			}
 		});
 		_each({
@@ -183,17 +181,23 @@ KEditor.prototype = {
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
+		self.cache = { menu : {}, dialog : {} };
+		self.menu = self.dialog = null;
 		return self;
 	},
 	remove : function() {
 		var self = this;
-		if (self.menu) {
-			self.menu.remove();
-		}
+		_each(self.cache.menu, function(key, val) {
+			val.remove();
+		});
+		_each(self.cache.dialog, function(key, val) {
+			val.remove();
+		});
 		self.toolbar.remove();
 		self.edit.remove();
 		self.container.remove();
-		self.container = self.toolbar = self.edit = self.menu = null;
+		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
+		self.cache = {};
 		return self;
 	},
 	fullscreen : function(bool) {
@@ -204,30 +208,59 @@ KEditor.prototype = {
 	},
 	createMenu : function(options) {
 		var self = this,
-			knode = self.toolbar.get(options.name),
+			cache = self.cache.menu,
+			name = options.name;
+		if (cache[name]) {
+			self.menu = cache[name];
+			self.menu.show();
+			return;
+		}
+		var knode = self.toolbar.get(name),
 			pos = knode.pos();
 		options.x = pos.x;
 		options.y = pos.y + knode.height();
-		options.centerLineMode = false;
-		return self.menu = _menu(options);
+		if (options.selectedColor !== undefined) {
+			options.noColor = self.lang('noColor');
+			self.menu = _colorpicker(options);
+		} else {
+			options.centerLineMode = false;
+			self.menu = _menu(options);
+		}
+		return cache[name] = self.menu;
 	},
-	removeMenu : function() {
-		this.menu.remove();
+	hideMenu : function() {
+		this.menu.hide();
 		this.menu = null;
 	},
 	createDialog : function(options) {
-		var self = this, dialog;
+		var self = this,
+			cache = self.cache.dialog,
+			name = options.name;
+		if (cache[name]) {
+			self.dialog = cache[name];
+			self.dialog.show();
+			return;
+		}
 		options.shadowMode = self.shadowMode;
-		options.closeText = self.lang('close');
-		options.noBtn = {
-			name : self.lang('no'),
+		options.closeBtn = {
+			name : self.lang('close'),
 			click : function(e) {
-				dialog.remove();
+				self.hideDialog();
 				self.edit.focus();
 			}
 		};
-		dialog = _dialog(options);
-		return dialog;
+		options.noBtn = {
+			name : self.lang('no'),
+			click : function(e) {
+				self.hideDialog();
+				self.edit.focus();
+			}
+		};
+		return cache[name] = self.dialog = _dialog(options);
+	},
+	hideDialog : function() {
+		this.dialog.hide();
+		this.dialog = null;
 	}
 };
 

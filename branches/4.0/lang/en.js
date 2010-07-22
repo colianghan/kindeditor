@@ -74,7 +74,6 @@ KindEditor.lang({
 	invalidCols : 'Invalid columns.',
 	invalidPadding : 'The padding must be number.',
 	invalidSpacing : 'The spacing must be number.',
-	invalidBorder : 'The border width must be number.',
 	invalidJson : 'Invalid JSON string.',
 	cutError : 'Currently not supported by your browser, use keyboard shortcut(Ctrl+X) instead.',
 	copyError : 'Currently not supported by your browser, use keyboard shortcut(Ctrl+C) instead.',

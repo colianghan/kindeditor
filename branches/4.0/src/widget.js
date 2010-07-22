@@ -155,6 +155,12 @@ function _widget(options) {
 			div.remove();
 			return this;
 		},
+		show : function() {
+			div.show();
+		},
+		hide : function() {
+			div.hide();
+		},
 		draggable : function(options) {
 			options = options || {};
 			options.moveEl = div;

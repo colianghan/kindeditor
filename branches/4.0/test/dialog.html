@@ -55,7 +55,12 @@
 					height : 300,
 					title : '测试窗口',
 					body : '<div style="margin:10px;"><strong>内容</strong></div>',
-					closeText : '关闭',
+					closeBtn : {
+						name : '关闭',
+						click : function(e) {
+							dialog.remove();
+						}
+					},
 					yesBtn : {
 						name : '确定',
 						click : function(e) {
@@ -78,8 +83,13 @@
 					height : 300,
 					title : '测试窗口',
 					body : '<div style="margin:10px;"><strong>内容</strong></div>',
-					closeText : '关闭',
 					shadowMode : false,
+					closeBtn : {
+						name : '关闭',
+						click : function(e) {
+							dialog.remove();
+						}
+					},
 					noBtn : {
 						name : '取消',
 						click : function(e) {
