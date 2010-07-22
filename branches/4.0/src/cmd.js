@@ -274,7 +274,7 @@ function _mergeAttrs(knode, attrs, styles) {
 */
 function _getCommonNode(range, map) {
 	var ec = range.endContainer, eo = range.endOffset,
-		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
+		knode = K((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
 		child = knode;
 	while (child && (child = child.firstChild) && child.childNodes.length == 1) {
 		if (_hasAttrOrCss(child, map)) {
@@ -323,7 +323,7 @@ KCmd.prototype = {
 			doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
 		//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
 		if (_IE && sc.nodeType == 1 && range.collapsed) {
-			var empty = _node('<span>&nbsp;</span>', doc);
+			var empty = K('<span>&nbsp;</span>', doc);
 			range.insertNode(empty.get());
 			rng = doc.body.createTextRange();
 			rng.moveToElementText(empty.get());
@@ -350,7 +350,7 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset;
 		//val为HTML
 		if (typeof val == 'string') {
-			wrapper = _node(val, doc);
+			wrapper = K(val, doc);
 		//val为KNode
 		} else {
 			wrapper = val;
@@ -391,7 +391,7 @@ KCmd.prototype = {
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var parent, knode = _node(center),
+			var parent, knode = K(center),
 				isStart = sc == node, isEnd = ec == node;
 			//node为唯一的子节点时重新设置node
 			while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
@@ -460,7 +460,7 @@ KCmd.prototype = {
 			parent = node.nodeType == 3 ? node.parentNode : node,
 			needSplit = false;
 		while (parent && parent.parentNode) {
-			var knode = _node(parent);
+			var knode = K(parent);
 			if (!knode.isInline()) {
 				break;
 			}
@@ -512,7 +512,7 @@ KCmd.prototype = {
 		self.split(false, map);
 		//grep nodes which format will be removed
 		var nodeList = [];
-		_node(range.commonAncestorContainer).each(function(knode) {
+		K(range.commonAncestorContainer).scan(function(knode) {
 			var testRange = _range(doc);
 			testRange.selectNode(knode.get());
 			if (testRange.compareBoundaryPoints(_END_TO_START, range) >= 0) {
@@ -526,7 +526,7 @@ KCmd.prototype = {
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
-			var before = _node(sc.childNodes[so - 1]);
+			var before = K(sc.childNodes[so - 1]);
 			if (before && _isEmptyNode(before)) {
 				before.remove();
 				range.setStart(sc, so - 1);
@@ -536,7 +536,7 @@ KCmd.prototype = {
 			}
 			//<b>abc[</b><b>def]</b><b>ghi</b>时，分割后HTML变成
 			//<b>abc</b>[<b></b><b>def</b>]<b>ghi</b> 
-			before = _node(sc.childNodes[so]);
+			before = K(sc.childNodes[so]);
 			if (before && _isEmptyNode(before)) {
 				before.remove();
 				if (sc == ec) {
@@ -544,7 +544,7 @@ KCmd.prototype = {
 				}
 			}
 		}
-		var after = _node(ec.childNodes[range.endOffset]);
+		var after = K(ec.childNodes[range.endOffset]);
 		if (after && _isEmptyNode(after)) {
 			after.remove();
 		}
@@ -572,7 +572,7 @@ KCmd.prototype = {
 			}
 			//find text node
 			var sc = range.startContainer, so = range.startOffset,
-				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
+				textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
 			self.select();
@@ -747,7 +747,7 @@ KCmd.prototype = {
 	//用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).keyup(function(e) {
+		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
@@ -758,35 +758,35 @@ KCmd.prototype = {
 	//移动光标时触发oncursormove事件
 	oncursormove : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).keyup(function(e) {
+		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).mouseup(fn);
+		K(doc).mouseup(fn);
 		return self;
 	},
 	//输入文字、移动光标、执行命令都会触发onchange事件
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
-		_node(doc).keyup(function(e) {
+		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).mouseup(fn);
+		K(doc).mouseup(fn);
 		if (doc !== document) {
-			_node(document).mousedown(fn);
+			K(document).mousedown(fn);
 		}
 		function timeoutHandler(e) {
 			setTimeout(function() {
 				fn(e);
 			}, 1);
 		}
-		_node(body).bind('paste', timeoutHandler);
-		_node(body).bind('cut', timeoutHandler);
+		K(body).bind('paste', timeoutHandler);
+		K(body).bind('cut', timeoutHandler);
 		return self;
 	}
 };

@@ -18,10 +18,10 @@
 
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		_node(this).addClass('ke-toolbar-icon-outline-on');
+		K(this).addClass('ke-toolbar-icon-outline-on');
 	})
 	.mouseout(function(e) {
-		_node(this).removeClass('ke-toolbar-icon-outline-on');
+		K(this).removeClass('ke-toolbar-icon-outline-on');
 	})
 	.click(function(e) {
 		item.click.call(this, e);
@@ -36,7 +36,7 @@ function _toolbar(options) {
 		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
 		itemNodes = {};
 	//create toolbar
-	var inner = _node('<div class="ke-toolbar-inner"></div>');
+	var inner = K('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
@@ -49,11 +49,11 @@ function _toolbar(options) {
 	self.addItem = function(item) {
 		var itemNode;
 		if (item.name == '|') {
-			itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
+			itemNode = K('<span class="ke-inline-block ke-toolbar-separator"></span>');
 		} else if (item.name == '/') {
-			itemNode = _node('<br />');
+			itemNode = K('<br />');
 		} else {
-			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
+			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
 				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
 			_bindToolbarEvent(itemNode, item);
 		}

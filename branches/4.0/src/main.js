@@ -38,14 +38,15 @@ function _parseLangKey(key) {
 	return { ns : ns, key : key };
 }
 /**
-K.lang('about'); //get core.about
-K.lang('about.version'); // get about.version
-K.lang('about.').version; // get about.version
-K.lang('about', 'en'); //get English core.about
-K.lang({
-	core.about : '关于',
-	about.version : '4.0'
-}, 'zh_CN'); //add language
+	@example
+	K.lang('about'); //get core.about
+	K.lang('about.version'); // get about.version
+	K.lang('about.').version; // get about.version
+	K.lang('about', 'en'); //get English core.about
+	K.lang({
+		core.about : '关于',
+		about.version : '4.0'
+	}, 'zh_CN'); //add language
 */
 function _lang(mixed, langType) {
 	langType = langType === undefined ? _options.langType : langType;
@@ -82,7 +83,7 @@ function KEditor(options) {
 			self[key] = val;
 		}
 	});
-	var se = _node(self.srcElement);
+	var se = K(self.srcElement);
 	if (!self.width) {
 		self.width = se.width() || self.minWidth;
 	}
@@ -112,7 +113,7 @@ KEditor.prototype = {
 			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
 			width = fullscreenMode ? docWidth + 'px' : self.width,
 			height = fullscreenMode ? docHeight + 'px' : self.height,
-			container = _node('<div></div>').css('width', width);
+			container = K('<div></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
 			container.css({
@@ -121,7 +122,7 @@ KEditor.prototype = {
 				top : _addUnit(pos.y),
 				'z-index' : 19811211
 			});
-			_node(document.body).append(container);
+			K(document.body).append(container);
 		} else {
 			self.srcElement.before(container);
 		}
@@ -159,21 +160,25 @@ KEditor.prototype = {
 			}).create(container),
 			doc = edit.doc, textarea = edit.textarea;
 		//bind events
-		_node(doc, document).click(function(e) {
+		K(doc, document).click(function(e) {
 			if (self.menu) {
 				self.hideMenu();
 			}
 		});
 		_each({
-			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U',
-			selectall : 'A', print : 'P'
+			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I',
+			underline : 'U', selectall : 'A', print : 'P'
 		}, function(name, key) {
 			_ctrl(doc, key, function() {
-				_plugin(name).call(doc, self);
+				if (_plugin(name)) {
+					_plugin(name).call(doc, self);
+				}
 			});
 			if (key == 'Z' || key == 'Y') {
 				_ctrl(textarea.get(), key, function() {
-					_plugin(name).call(textarea, self);
+					if (_plugin(name)) {
+						_plugin(name).call(textarea, self);
+					}
 				});
 			}
 		});
@@ -181,23 +186,18 @@ KEditor.prototype = {
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
-		self.cache = { menu : {}, dialog : {} };
 		self.menu = self.dialog = null;
 		return self;
 	},
 	remove : function() {
 		var self = this;
-		_each(self.cache.menu, function(key, val) {
-			val.remove();
-		});
-		_each(self.cache.dialog, function(key, val) {
-			val.remove();
-		});
+		if (self.menu) {
+			self.menu.remove();
+		}
 		self.toolbar.remove();
 		self.edit.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
-		self.cache = {};
 		return self;
 	},
 	fullscreen : function(bool) {
@@ -208,14 +208,8 @@ KEditor.prototype = {
 	},
 	createMenu : function(options) {
 		var self = this,
-			cache = self.cache.menu,
-			name = options.name;
-		if (cache[name]) {
-			self.menu = cache[name];
-			self.menu.show();
-			return;
-		}
-		var knode = self.toolbar.get(name),
+			name = options.name,
+			knode = self.toolbar.get(name),
 			pos = knode.pos();
 		options.x = pos.x;
 		options.y = pos.y + knode.height();
@@ -226,21 +220,15 @@ KEditor.prototype = {
 			options.centerLineMode = false;
 			self.menu = _menu(options);
 		}
-		return cache[name] = self.menu;
+		return self.menu;
 	},
 	hideMenu : function() {
-		this.menu.hide();
+		this.menu.remove();
 		this.menu = null;
 	},
 	createDialog : function(options) {
 		var self = this,
-			cache = self.cache.dialog,
 			name = options.name;
-		if (cache[name]) {
-			self.dialog = cache[name];
-			self.dialog.show();
-			return;
-		}
 		options.shadowMode = self.shadowMode;
 		options.closeBtn = {
 			name : self.lang('close'),
@@ -256,10 +244,10 @@ KEditor.prototype = {
 				self.edit.focus();
 			}
 		};
-		return cache[name] = self.dialog = _dialog(options);
+		return (self.dialog = _dialog(options));
 	},
 	hideDialog : function() {
-		this.dialog.hide();
+		this.dialog.remove();
 		this.dialog = null;
 	}
 };
@@ -274,7 +262,7 @@ function _create(expr, options) {
 	if (!options) {
 		options = {};
 	}
-	var knode = _node(expr);
+	var knode = K(expr);
 	if (knode) {
 		options.srcElement = knode[0];
 		if (!options.width) {

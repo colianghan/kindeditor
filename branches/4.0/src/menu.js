@@ -26,12 +26,12 @@ function _menu(options) {
 	//add an item of menu
 	self.addItem = function(item) {
 		if (item.title === '-') {
-			div.append(_node('<div class="ke-menu-separator"></div>'));
+			div.append(K('<div class="ke-menu-separator"></div>'));
 			return;
 		}
-		var itemDiv = _node('<div class="ke-menu-item"></div>'),
-			leftDiv = _node('<div class="ke-menu-item-left"></div>'),
-			rightDiv = _node('<div class="ke-menu-item-right"></div>'),
+		var itemDiv = K('<div class="ke-menu-item"></div>'),
+			leftDiv = K('<div class="ke-menu-item-left"></div>'),
+			rightDiv = K('<div class="ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
 		div.append(itemDiv);
@@ -41,19 +41,19 @@ function _menu(options) {
 		}
 		var centerDiv;
 		if (centerLineMode) {
-			centerDiv = _node('<div class="ke-menu-item-center"></div>');
+			centerDiv = K('<div class="ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
 			}
 		}
 		itemDiv.mouseover(function(e) {
-			_node(this).addClass('ke-menu-item-on');
+			K(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
 		});
 		itemDiv.mouseout(function(e) {
-			_node(this).removeClass('ke-menu-item-on');
+			K(this).removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
@@ -72,7 +72,7 @@ function _menu(options) {
 	};
 	//remove menu
 	self.remove = function() {
-		_node('.ke-menu-item', div.get()).remove();
+		K('.ke-menu-item', div.get()).remove();
 		remove.call(self);
 	};
 	return self;

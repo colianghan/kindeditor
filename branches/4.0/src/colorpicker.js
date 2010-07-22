@@ -32,23 +32,23 @@ function _colorpicker(options) {
 	//create color picker
 	self.div().addClass('ke-colorpicker');
 	function addAttr(cell, color, cls) {
-		cell = _node(cell).addClass(cls);
+		cell = K(cell).addClass(cls);
 		if (selectedColor === color.toLowerCase()) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
 		cell.attr('title', color || options.noColor);
 		cell.mouseover(function(e) {
-			_node(this).addClass('ke-colorpicker-cell-on');
+			K(this).addClass('ke-colorpicker-cell-on');
 		});
 		cell.mouseout(function(e) {
-			_node(this).removeClass('ke-colorpicker-cell-on');
+			K(this).removeClass('ke-colorpicker-cell-on');
 		});
 		cell.click(function(e) {
-			options.click.call(_node(this), color);
+			options.click.call(K(this), color);
 			e.stop();
 		});
 		if (color) {
-			cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
+			cell.append(K('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
 		} else {
 			cell.html(options.noColor);
 		}

@@ -76,9 +76,6 @@ K.plugin('formatblock', function(editor) {
 			name : 'formatblock',
 			width : editor.langType == 'en' ? 200 : 150
 		});
-	if (!menu) {
-		return;
-	}
 	K.each(blocks, function(key, val) {
 		var style = 'font-size:' + heights[key] + 'px;';
 		if (key.charAt(0) === 'h') {
@@ -105,9 +102,6 @@ K.plugin('fontname', function(editor) {
 			name : 'fontname',
 			width : 150
 		});
-	if (!menu) {
-		return;
-	}
 	K.each(editor.lang('fontname.fontName'), function(key, val) {
 		menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
@@ -128,9 +122,6 @@ K.plugin('fontsize', function(editor) {
 			name : 'fontsize',
 			width : 150
 		});
-	if (!menu) {
-		return;
-	}
 	K.each(fontSize, function(i, val) {
 		menu.addItem({
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
@@ -154,7 +145,7 @@ K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 			selectedColor : curVal || 'default',
 			click : function(color) {
 				cmd[name](color);
-				editor.removeMenu();
+				editor.hideMenu();
 			}
 		});
 	});

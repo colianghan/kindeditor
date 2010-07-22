@@ -149,6 +149,15 @@ function KNode(node) {
 }
 
 KNode.prototype = {
+	each : function(fn) {
+		var self = this;
+		for (var i = 0; i < self.length; i++) {
+			if (fn.call(self[i], i, self[i]) === false) {
+				return self;
+			}
+		}
+		return self;
+	},
 	/**
 		@name KNode#bind
 		@function
@@ -160,23 +169,20 @@ KNode.prototype = {
 		绑定一个事件。
 	*/
 	bind : function(type, fn) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			_bind(self[i], type, fn);
-		}
-		return self;
+		this.each(function() {
+			_bind(this, type, fn);
+		});
+		return this;
 	},
 	unbind : function(type, fn) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			_unbind(self[i], type, fn);
-		}
-		return self;
+		this.each(function() {
+			_unbind(this, type, fn);
+		});
+		return this;
 	},
 	fire : function(type) {
-		var self = this;
-		_fire(self[0], type);
-		return self;
+		_fire(this[0], type);
+		return this;
 	},
 	hasAttr : function(key) {
 		return _getAttr(this[0], key);
@@ -196,17 +202,16 @@ KNode.prototype = {
 			val = _getAttr(self[0], key);
 			return val === null ? '' : val;
 		}
-		for (var i = 0; i < self.length; i++) {
-			_setAttr(self[i], key, val);
-		}
+		self.each(function() {
+			_setAttr(this, key, val);
+		});
 		return self;
 	},
 	removeAttr : function(key) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			_removeAttr(self[i], key);
-		}
-		return self;
+		this.each(function() {
+			_removeAttr(this, key);
+		});
+		return this;
 	},
 	get : function(i) {
 		return this[i || 0];
@@ -215,31 +220,29 @@ KNode.prototype = {
 		return _hasClass(this[0], cls);
 	},
 	addClass : function(cls) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			if (!_hasClass(self[i], cls)) {
-				self[i].className = _trim(self[i].className + ' ' + cls);
+		this.each(function() {
+			if (!_hasClass(this, cls)) {
+				this.className = _trim(this.className + ' ' + cls);
 			}
-		}
-		return self;
+		});
+		return this;
 	},
 	removeClass : function(cls) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			if (_hasClass(self[i], cls)) {
-				self[i].className = _trim(self[i].className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+		this.each(function() {
+			if (_hasClass(this, cls)) {
+				this.className = _trim(this.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
 			}
-		}
-		return self;
+		});
+		return this;
 	},
 	html : function(val) {
 		var self = this;
 		if (val === undefined) {
 			return _formatHtml(self[0].innerHTML);
 		}
-		for (var i = 0; i < self.length; i++) {
-			_setHtml(self[i], _formatHtml(val));
-		}
+		self.each(function() {
+			_setHtml(this, _formatHtml(val));
+		});
 		return self;
 	},
 	hasVal : function() {
@@ -250,13 +253,13 @@ KNode.prototype = {
 		if (val === undefined) {
 			return self.hasVal() ? self[0].value : self.attr('value');
 		} else {
-			for (var i = 0; i < self.length; i++) {
-				if (_hasVal(self[i])) {
-					self[i].value = val;
+			self.each(function() {
+				if (_hasVal(this)) {
+					this.value = val;
 				} else {
-					_setAttr(self[i], 'value' , val);
+					_setAttr(this, 'value' , val);
 				}
-			}
+			});
 			return self;
 		}
 	},
@@ -274,9 +277,9 @@ KNode.prototype = {
 		if (val === undefined) {
 			return self[0].style[key] || _computedCss(self[0], key) || '';
 		}
-		for (var i = 0; i < self.length; i++) {
-			self[i].style[_toCamel(key)] = val;
-		}
+		self.each(function() {
+			this.style[_toCamel(key)] = val;
+		});
 		return self;
 	},
 	width : function(val) {
@@ -294,15 +297,14 @@ KNode.prototype = {
 		return self.css('height', _addUnit(val));
 	},
 	opacity : function(val) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			if (self[i].style.opacity === undefined) {
-				self[i].style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
+		this.each(function() {
+			if (this.style.opacity === undefined) {
+				this.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
 			} else {
-				self[i].style.opacity = val == 1 ? '' : val;
+				this.style.opacity = val == 1 ? '' : val;
 			}
-		}
-		return self;
+		});
+		return this;
 	},
 	data : function(key, val) {
 		var self = this;
@@ -358,9 +360,8 @@ KNode.prototype = {
 		return self;
 	},
 	remove : function() {
-		var self = this, len = self.length;
-		for (var i = 0; i < self.length; i++) {
-			var node = self[i];
+		var self = this;
+		self.each(function(i, node) {
 			_unbind(node);
 			if (node.hasChildNodes()) {
 				node.innerHTML = '';
@@ -369,9 +370,8 @@ KNode.prototype = {
 				node.parentNode.removeChild(node);
 			}
 			delete self[i];
-			len--;
-		}
-		self.length = len;
+		});
+		self.length = 0;
 		return self;
 	},
 	show : function(val) {
@@ -437,7 +437,7 @@ KNode.prototype = {
 		var node = this[0].nextSibling;
 		return node ? new KNode([node]) : null;
 	},
-	each : function(fn, order) {
+	scan : function(fn, order) {
 		order = (order === undefined) ? true : order;
 		function walk(node) {
 			var n = order ? node.firstChild : node.lastChild;
@@ -465,7 +465,9 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 	};
 });
 
-function _node(expr, root) {
+var _K = K;
+
+K = function(expr, root) {
 	function newNode(node) {
 		if (node.length < 1 || !node[0]) {
 			return null;
@@ -496,10 +498,8 @@ function _node(expr, root) {
 	}
 	//Node
 	return newNode(_toArray(arguments));
-}
+};
 
-var _K = K;
-K = K.node = _node;
 _each(_K, function(key, val) {
 	K[key] = val;
 });

@@ -815,24 +815,30 @@ function KNode(node) {
 	self._data = {};
 }
 KNode.prototype = {
-	bind : function(type, fn) {
+	each : function(fn) {
 		var self = this;
 		for (var i = 0; i < self.length; i++) {
-			_bind(self[i], type, fn);
+			if (fn.call(self[i], i, self[i]) === false) {
+				return self;
+			}
 		}
 		return self;
+	},
+	bind : function(type, fn) {
+		this.each(function() {
+			_bind(this, type, fn);
+		});
+		return this;
 	},
 	unbind : function(type, fn) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			_unbind(self[i], type, fn);
-		}
-		return self;
+		this.each(function() {
+			_unbind(this, type, fn);
+		});
+		return this;
 	},
 	fire : function(type) {
-		var self = this;
-		_fire(self[0], type);
-		return self;
+		_fire(this[0], type);
+		return this;
 	},
 	hasAttr : function(key) {
 		return _getAttr(this[0], key);
@@ -852,17 +858,16 @@ KNode.prototype = {
 			val = _getAttr(self[0], key);
 			return val === null ? '' : val;
 		}
-		for (var i = 0; i < self.length; i++) {
-			_setAttr(self[i], key, val);
-		}
+		self.each(function() {
+			_setAttr(this, key, val);
+		});
 		return self;
 	},
 	removeAttr : function(key) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			_removeAttr(self[i], key);
-		}
-		return self;
+		this.each(function() {
+			_removeAttr(this, key);
+		});
+		return this;
 	},
 	get : function(i) {
 		return this[i || 0];
@@ -871,31 +876,29 @@ KNode.prototype = {
 		return _hasClass(this[0], cls);
 	},
 	addClass : function(cls) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			if (!_hasClass(self[i], cls)) {
-				self[i].className = _trim(self[i].className + ' ' + cls);
+		this.each(function() {
+			if (!_hasClass(this, cls)) {
+				this.className = _trim(this.className + ' ' + cls);
 			}
-		}
-		return self;
+		});
+		return this;
 	},
 	removeClass : function(cls) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			if (_hasClass(self[i], cls)) {
-				self[i].className = _trim(self[i].className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+		this.each(function() {
+			if (_hasClass(this, cls)) {
+				this.className = _trim(this.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
 			}
-		}
-		return self;
+		});
+		return this;
 	},
 	html : function(val) {
 		var self = this;
 		if (val === undefined) {
 			return _formatHtml(self[0].innerHTML);
 		}
-		for (var i = 0; i < self.length; i++) {
-			_setHtml(self[i], _formatHtml(val));
-		}
+		self.each(function() {
+			_setHtml(this, _formatHtml(val));
+		});
 		return self;
 	},
 	hasVal : function() {
@@ -906,13 +909,13 @@ KNode.prototype = {
 		if (val === undefined) {
 			return self.hasVal() ? self[0].value : self.attr('value');
 		} else {
-			for (var i = 0; i < self.length; i++) {
-				if (_hasVal(self[i])) {
-					self[i].value = val;
+			self.each(function() {
+				if (_hasVal(this)) {
+					this.value = val;
 				} else {
-					_setAttr(self[i], 'value' , val);
+					_setAttr(this, 'value' , val);
 				}
-			}
+			});
 			return self;
 		}
 	},
@@ -930,9 +933,9 @@ KNode.prototype = {
 		if (val === undefined) {
 			return self[0].style[key] || _computedCss(self[0], key) || '';
 		}
-		for (var i = 0; i < self.length; i++) {
-			self[i].style[_toCamel(key)] = val;
-		}
+		self.each(function() {
+			this.style[_toCamel(key)] = val;
+		});
 		return self;
 	},
 	width : function(val) {
@@ -950,15 +953,14 @@ KNode.prototype = {
 		return self.css('height', _addUnit(val));
 	},
 	opacity : function(val) {
-		var self = this;
-		for (var i = 0; i < self.length; i++) {
-			if (self[i].style.opacity === undefined) {
-				self[i].style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
+		this.each(function() {
+			if (this.style.opacity === undefined) {
+				this.style.filter = val == 1 ? '' : 'alpha(opacity=' + (val * 100) + ')';
 			} else {
-				self[i].style.opacity = val == 1 ? '' : val;
+				this.style.opacity = val == 1 ? '' : val;
 			}
-		}
-		return self;
+		});
+		return this;
 	},
 	data : function(key, val) {
 		var self = this;
@@ -1014,16 +1016,18 @@ KNode.prototype = {
 		return self;
 	},
 	remove : function() {
-		var self = this, len = self.length;
-		for (var i = 0; i < self.length; i++) {
-			_unbind(self[i]);
-			if (self[i].parentNode) {
-				self[i].parentNode.removeChild(self[i]);
+		var self = this;
+		self.each(function(i, node) {
+			_unbind(node);
+			if (node.hasChildNodes()) {
+				node.innerHTML = '';
+			}
+			if (node.parentNode) {
+				node.parentNode.removeChild(node);
 			}
 			delete self[i];
-			len--;
-		}
-		self.length = len;
+		});
+		self.length = 0;
 		return self;
 	},
 	show : function(val) {
@@ -1089,7 +1093,7 @@ KNode.prototype = {
 		var node = this[0].nextSibling;
 		return node ? new KNode([node]) : null;
 	},
-	each : function(fn, order) {
+	scan : function(fn, order) {
 		order = (order === undefined) ? true : order;
 		function walk(node) {
 			var n = order ? node.firstChild : node.lastChild;
@@ -1114,7 +1118,8 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 		return fn ? this.bind(type, fn) : this.fire(type);
 	};
 });
-function _node(expr, root) {
+var _K = K;
+K = function(expr, root) {
 	function newNode(node) {
 		if (node.length < 1 || !node[0]) {
 			return null;
@@ -1140,9 +1145,7 @@ function _node(expr, root) {
 		return newNode(expr);
 	}
 	return newNode(_toArray(arguments));
-}
-var _K = K;
-K = K.node = _node;
+};
 _each(_K, function(key, val) {
 	K[key] = val;
 });
@@ -1276,7 +1279,7 @@ function _getStartEnd(rng, isStart) {
 	var parent = pointRange.parentElement(),
 		children = parent.childNodes;
 	if (children.length === 0) {
-		return {node: parent.parentNode, offset: _node(parent).index()};
+		return {node: parent.parentNode, offset: K(parent).index()};
 	}
 	var startNode = doc, startPos = 0, isEnd = false;
 	var testRange = rng.duplicate();
@@ -1308,7 +1311,7 @@ function _getStartEnd(rng, isStart) {
 		}
 	}
 	if (!isEnd && startNode.nodeType == 1) {
-		return {node: parent, offset: _node(parent.lastChild).index() + 1};
+		return {node: parent, offset: K(parent.lastChild).index() + 1};
 	}
 	testRange = rng.duplicate();
 	testRange.moveToElementText(parent);
@@ -1346,7 +1349,7 @@ function _getBeforeLength(node) {
 		sibling = node.previousSibling;
 	while (sibling) {
 		if (sibling.nodeType == 1) {
-			if (!_node(sibling).isSingle()) {
+			if (!K(sibling).isSingle()) {
 				var range = doc.body.createTextRange();
 				range.moveToElementText(sibling);
 				len += range.text.length;
@@ -1446,22 +1449,22 @@ KRange.prototype = {
 		return self;
 	},
 	setStartBefore : function(node) {
-		return this.setStart(node.parentNode || this.doc, _node(node).index());
+		return this.setStart(node.parentNode || this.doc, K(node).index());
 	},
 	setStartAfter : function(node) {
-		return this.setStart(node.parentNode || this.doc, _node(node).index() + 1);
+		return this.setStart(node.parentNode || this.doc, K(node).index() + 1);
 	},
 	setEndBefore : function(node) {
-		return this.setEnd(node.parentNode || this.doc, _node(node).index());
+		return this.setEnd(node.parentNode || this.doc, K(node).index());
 	},
 	setEndAfter : function(node) {
-		return this.setEnd(node.parentNode || this.doc, _node(node).index() + 1);
+		return this.setEnd(node.parentNode || this.doc, K(node).index() + 1);
 	},
 	selectNode : function(node) {
 		return this.setStartBefore(node).setEndAfter(node);
 	},
 	selectNodeContents : function(node) {
-		var knode = _node(node);
+		var knode = K(node);
 		if (knode.type == 3 || knode.isSingle()) {
 			return this.selectNode(node);
 		}
@@ -1515,14 +1518,14 @@ KRange.prototype = {
 				nodeC = nodeC.parentNode;
 			}
 			if (nodeC) {
-				return _node(nodeC).index() >= posA ? -1 : 1;
+				return K(nodeC).index() >= posA ? -1 : 1;
 			}
 			nodeC = nodeA;
 			while (nodeC && nodeC.parentNode !== nodeB) {
 				nodeC = nodeC.parentNode;
 			}
 			if (nodeC) {
-				return _node(nodeC).index() >= posB ? 1 : -1;
+				return K(nodeC).index() >= posB ? 1 : -1;
 			}
 		} else {
 			return rangeA.compareBoundaryPoints(how, rangeB);
@@ -1618,7 +1621,7 @@ KRange.prototype = {
 		return rng;
 	},
 	html : function() {
-		return _node(this.cloneContents()).outer();
+		return K(this.cloneContents()).outer();
 	}
 };
 function _range(mixed) {
@@ -1822,7 +1825,7 @@ function _mergeAttrs(knode, attrs, styles) {
 }
 function _getCommonNode(range, map) {
 	var ec = range.endContainer, eo = range.endOffset,
-		knode = _node((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
+		knode = K((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
 		child = knode;
 	while (child && (child = child.firstChild) && child.childNodes.length == 1) {
 		if (_hasAttrOrCss(child, map)) {
@@ -1853,7 +1856,7 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset,
 			doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
 		if (_IE && sc.nodeType == 1 && range.collapsed) {
-			var empty = _node('<span>&nbsp;</span>', doc);
+			var empty = K('<span>&nbsp;</span>', doc);
 			range.insertNode(empty.get());
 			rng = doc.body.createTextRange();
 			rng.moveToElementText(empty.get());
@@ -1878,7 +1881,7 @@ KCmd.prototype = {
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (typeof val == 'string') {
-			wrapper = _node(val, doc);
+			wrapper = K(val, doc);
 		} else {
 			wrapper = val;
 		}
@@ -1912,7 +1915,7 @@ KCmd.prototype = {
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var parent, knode = _node(center),
+			var parent, knode = K(center),
 				isStart = sc == node, isEnd = ec == node;
 			while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
 				if (!isStart) {
@@ -1977,7 +1980,7 @@ KCmd.prototype = {
 			parent = node.nodeType == 3 ? node.parentNode : node,
 			needSplit = false;
 		while (parent && parent.parentNode) {
-			var knode = _node(parent);
+			var knode = K(parent);
 			if (!knode.isInline()) {
 				break;
 			}
@@ -2024,7 +2027,7 @@ KCmd.prototype = {
 		self.split(true, map);
 		self.split(false, map);
 		var nodeList = [];
-		_node(range.commonAncestorContainer).each(function(knode) {
+		K(range.commonAncestorContainer).scan(function(knode) {
 			var testRange = _range(doc);
 			testRange.selectNode(knode.get());
 			if (testRange.compareBoundaryPoints(_END_TO_START, range) >= 0) {
@@ -2037,7 +2040,7 @@ KCmd.prototype = {
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
-			var before = _node(sc.childNodes[so - 1]);
+			var before = K(sc.childNodes[so - 1]);
 			if (before && _isEmptyNode(before)) {
 				before.remove();
 				range.setStart(sc, so - 1);
@@ -2045,7 +2048,7 @@ KCmd.prototype = {
 					range.setEnd(ec, eo - 1);
 				}
 			}
-			before = _node(sc.childNodes[so]);
+			before = K(sc.childNodes[so]);
 			if (before && _isEmptyNode(before)) {
 				before.remove();
 				if (sc == ec) {
@@ -2053,7 +2056,7 @@ KCmd.prototype = {
 				}
 			}
 		}
-		var after = _node(ec.childNodes[range.endOffset]);
+		var after = K(ec.childNodes[range.endOffset]);
 		if (after && _isEmptyNode(after)) {
 			after.remove();
 		}
@@ -2078,7 +2081,7 @@ KCmd.prototype = {
 				self.remove(remove.map);
 			}
 			var sc = range.startContainer, so = range.startOffset,
-				textNode = _getInnerNode(_node(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
+				textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
 			self.select();
@@ -2249,7 +2252,7 @@ KCmd.prototype = {
 	},
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).keyup(function(e) {
+		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
@@ -2259,34 +2262,34 @@ KCmd.prototype = {
 	},
 	oncursormove : function(fn) {
 		var self = this, doc = self.doc;
-		_node(doc).keyup(function(e) {
+		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).mouseup(fn);
+		K(doc).mouseup(fn);
 		return self;
 	},
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
-		_node(doc).keyup(function(e) {
+		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
 				fn(e);
 				e.stop();
 			}
 		});
-		_node(doc).mouseup(fn);
+		K(doc).mouseup(fn);
 		if (doc !== document) {
-			_node(document).mousedown(fn);
+			K(document).mousedown(fn);
 		}
 		function timeoutHandler(e) {
 			setTimeout(function() {
 				fn(e);
 			}, 1);
 		}
-		_node(body).bind('paste', timeoutHandler);
-		_node(body).bind('cut', timeoutHandler);
+		K(body).bind('paste', timeoutHandler);
+		K(body).bind('cut', timeoutHandler);
 		return self;
 	}
 };
@@ -2367,20 +2370,20 @@ function _bindDragEvent(options) {
 			if (self.releaseCapture) {
 				self.releaseCapture();
 			}
-			_node(document).unbind('mousemove', moveListener)
+			K(document).unbind('mousemove', moveListener)
 				.unbind('mouseup', upListener)
 				.unbind('selectstart', selectListener);
 			_each(docs, function() {
-				_node(this).unbind('mousemove', moveListener)
+				K(this).unbind('mousemove', moveListener)
 					.unbind('mouseup', upListener);
 			});
 			e.stop();
 		}
-		_node(document).mousemove(moveListener)
+		K(document).mousemove(moveListener)
 			.mouseup(upListener)
 			.bind('selectstart', selectListener);
 		_each(docs, function() {
-			_node(this).mousemove(moveListener).mouseup(upListener);
+			K(this).mousemove(moveListener).mouseup(upListener);
 		});
 		if (self.setCapture) {
 			self.setCapture();
@@ -2395,21 +2398,19 @@ function _widget(options) {
 		z = options.z,
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
-		autoWidth = options.autoWidth,
-		autoHeight = options.autoHeight,
 		cls = options.cls,
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
-		div = _node('<div style="display:block;"></div>');
+		div = K('<div style="display:block;"></div>');
 	function resetPos(width, height) {
 		if (z && (options.x === undefined || options.y === undefined)) {
 			var w = _removeUnit(width) || 0,
 				h = _removeUnit(height) || 0;
 			if (options.alignEl) {
 				var el = options.alignEl,
-					pos = _node(el).pos(),
+					pos = K(el).pos(),
 					diffX = _round(el.clientWidth / 2 - w / 2),
 					diffY = _round(el.clientHeight / 2 - h / 2);
 				x = diffX < 0 ? pos.x : pos.x + diffX;
@@ -2452,7 +2453,7 @@ function _widget(options) {
 	if (html) {
 		div.html(html);
 	}
-	_node(parent).append(div);
+	K(parent).append(div);
 	return {
 		name : name,
 		x : x,
@@ -2468,6 +2469,14 @@ function _widget(options) {
 			div.remove();
 			return this;
 		},
+		show : function() {
+			div.show();
+			return this;
+		},
+		hide : function() {
+			div.hide();
+			return this;
+		},
 		draggable : function(options) {
 			options = options || {};
 			options.moveEl = div;
@@ -2481,6 +2490,7 @@ function _widget(options) {
 				div.css('left', _addUnit(x)).css('top', _addUnit(y));
 			};
 			_bindDragEvent(options);
+			return this;
 		},
 		resetPos : resetPos
 	};
@@ -2512,9 +2522,9 @@ function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
 	if (val === undefined) {
-		return _node(body).html();
+		return K(body).html();
 	} else {
-		_node(body).html(val);
+		K(body).html(val);
 		return self;
 	}
 }
@@ -2533,7 +2543,7 @@ function _elementVal(knode, val) {
 }
 function KEdit(options) {
 	var self = this;
-	self.srcElement = _node(options.srcElement);
+	self.srcElement = K(options.srcElement);
 	self.width = _addUnit(options.width) || 0;
 	self.height = _addUnit(options.height) || 0;
 	self.designMode = options.designMode === undefined ? true : options.designMode;
@@ -2557,9 +2567,9 @@ KEdit.prototype = {
 		if (self.div) {
 			return self;
 		}
-		var div = _node('<div></div>').addClass('ke-edit'),
-		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
-		textarea = _node('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
+		var div = K('<div></div>').addClass('ke-edit'),
+		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
+		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
 		srcElement = self.srcElement,
 		commonCss = {
 			display : 'block',
@@ -2574,7 +2584,7 @@ KEdit.prototype = {
 		} else {
 			iframe.hide();
 		}
-		_node(expr).append(div);
+		K(expr).append(div);
 		div.append(iframe);
 		div.append(textarea);
 		srcElement.hide();
@@ -2610,9 +2620,9 @@ KEdit.prototype = {
 		if (!div) {
 			return self;
 		}
-		_node(doc).unbind();
-		_node(doc.body).unbind();
-		_node(document).unbind();
+		K(doc).unbind();
+		K(doc.body).unbind();
+		K(document).unbind();
 		_elementVal(srcElement, self.val());
 		srcElement.removeAttr('kindeditor');
 		srcElement.show();
@@ -2668,10 +2678,10 @@ function _edit(options) {
 K.edit = _edit;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		_node(this).addClass('ke-toolbar-icon-outline-on');
+		K(this).addClass('ke-toolbar-icon-outline-on');
 	})
 	.mouseout(function(e) {
-		_node(this).removeClass('ke-toolbar-icon-outline-on');
+		K(this).removeClass('ke-toolbar-icon-outline-on');
 	})
 	.click(function(e) {
 		item.click.call(this, e);
@@ -2684,7 +2694,7 @@ function _toolbar(options) {
 		disableMode = options.disableMode === undefined ? false : options.disableMode,
 		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
 		itemNodes = {};
-	var inner = _node('<div class="ke-toolbar-inner"></div>');
+	var inner = K('<div class="ke-toolbar-inner"></div>');
 	self.div().addClass('ke-toolbar')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
@@ -2696,11 +2706,11 @@ function _toolbar(options) {
 	self.addItem = function(item) {
 		var itemNode;
 		if (item.name == '|') {
-			itemNode = _node('<span class="ke-inline-block ke-toolbar-separator"></span>');
+			itemNode = K('<span class="ke-inline-block ke-toolbar-separator"></span>');
 		} else if (item.name == '/') {
-			itemNode = _node('<br />');
+			itemNode = K('<br />');
 		} else {
-			itemNode = _node('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
+			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
 				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
 			_bindToolbarEvent(itemNode, item);
 		}
@@ -2755,12 +2765,12 @@ function _menu(options) {
 	div.addClass('ke-menu');
 	self.addItem = function(item) {
 		if (item.title === '-') {
-			div.append(_node('<div class="ke-menu-separator"></div>'));
+			div.append(K('<div class="ke-menu-separator"></div>'));
 			return;
 		}
-		var itemDiv = _node('<div class="ke-menu-item"></div>'),
-			leftDiv = _node('<div class="ke-menu-item-left"></div>'),
-			rightDiv = _node('<div class="ke-menu-item-right"></div>'),
+		var itemDiv = K('<div class="ke-menu-item"></div>'),
+			leftDiv = K('<div class="ke-menu-item-left"></div>'),
+			rightDiv = K('<div class="ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
 		div.append(itemDiv);
@@ -2770,19 +2780,19 @@ function _menu(options) {
 		}
 		var centerDiv;
 		if (centerLineMode) {
-			centerDiv = _node('<div></div>').addClass('ke-menu-item-center');
+			centerDiv = K('<div class="ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
 			}
 		}
 		itemDiv.mouseover(function(e) {
-			_node(this).addClass('ke-menu-item-on');
+			K(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
 		});
 		itemDiv.mouseout(function(e) {
-			_node(this).removeClass('ke-menu-item-on');
+			K(this).removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
@@ -2800,7 +2810,7 @@ function _menu(options) {
 		rightDiv.html(item.title);
 	};
 	self.remove = function() {
-		_node('.ke-menu-item', div.get()).remove();
+		K('.ke-menu-item', div.get()).remove();
 		remove.call(self);
 	};
 	return self;
@@ -2820,23 +2830,23 @@ function _colorpicker(options) {
 		cells = [];
 	self.div().addClass('ke-colorpicker');
 	function addAttr(cell, color, cls) {
-		cell = _node(cell).addClass(cls);
+		cell = K(cell).addClass(cls);
 		if (selectedColor === color.toLowerCase()) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
 		cell.attr('title', color || options.noColor);
 		cell.mouseover(function(e) {
-			_node(this).addClass('ke-colorpicker-cell-on');
+			K(this).addClass('ke-colorpicker-cell-on');
 		});
 		cell.mouseout(function(e) {
-			_node(this).removeClass('ke-colorpicker-cell-on');
+			K(this).removeClass('ke-colorpicker-cell-on');
 		});
 		cell.click(function(e) {
-			options.click.call(_node(this), color);
+			options.click.call(K(this), color);
 			e.stop();
 		});
 		if (color) {
-			cell.append(_node('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
+			cell.append(K('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
 		} else {
 			cell.html(options.noColor);
 		}
@@ -2874,11 +2884,11 @@ function _dialog(options) {
 		doc = self.doc,
 		div = self.div(),
 		title = options.title,
-		body = _node(options.body, doc),
+		body = K(options.body, doc),
 		previewBtn = options.previewBtn,
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
-		closeText = options.closeText,
+		closeBtn = options.closeBtn,
 		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
 		docEl = doc.documentElement,
 		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
@@ -2903,7 +2913,7 @@ function _dialog(options) {
 				cell = row.insertCell(j);
 				cell.className = 'ke-' + rowNames[i] + colNames[j];
 				if (i == 1 && j == 1) {
-					contentCell = _node(cell);
+					contentCell = K(cell);
 				} else {
 					cell.innerHTML = '<span class="ke-dialog-empty"></span>';
 				}
@@ -2918,22 +2928,20 @@ function _dialog(options) {
 		div.addClass('ke-dialog-no-shadow');
 		contentCell = div;
 	}
-	var headerDiv = _node('<div class="ke-dialog-header"></div>');
+	var headerDiv = K('<div class="ke-dialog-header"></div>');
 	contentCell.append(headerDiv);
 	headerDiv.html(title);
-	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
-		(shadowMode ? '' : 'no-') + 'shadow" title="' + closeText + '"></span>')
-		.click(function (e) {
-			self.remove();
-		});
+	var span = K('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
+		(shadowMode ? '' : 'no-') + 'shadow" title="' + closeBtn.name + '"></span>')
+		.click(closeBtn.click);
 	headerDiv.append(span);
 	self.draggable({
 		clickEl : headerDiv
 	});
-	var bodyDiv = _node('<div class="ke-dialog-body"></div>');
+	var bodyDiv = K('<div class="ke-dialog-body"></div>');
 	contentCell.append(bodyDiv);
 	bodyDiv.append(body);
-	var footerDiv = _node('<div class="ke-dialog-footer"></div>');
+	var footerDiv = K('<div class="ke-dialog-footer"></div>');
 	if (previewBtn || yesBtn || noBtn) {
 		contentCell.append(footerDiv);
 	}
@@ -2944,7 +2952,7 @@ function _dialog(options) {
 	], function() {
 		var btn = this.btn;
 		if (btn) {
-			var button = _node('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
+			var button = K('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
 			footerDiv.append(button);
 			button.click(btn.click);
 		}
@@ -2964,11 +2972,19 @@ function _dialog(options) {
 	self.remove = function() {
 		mask.remove();
 		span.remove();
-		_node('input', div.get()).remove();
+		K('input', div.get()).remove();
 		footerDiv.remove();
 		bodyDiv.remove();
 		headerDiv.remove();
 		remove.call(self);
+	};
+	self.show = function() {
+		mask.show();
+		div.show();
+	};
+	self.hide = function() {
+		mask.hide();
+		div.hide();
 	};
 	return self;
 }
@@ -3023,7 +3039,7 @@ function KEditor(options) {
 			self[key] = val;
 		}
 	});
-	var se = _node(self.srcElement);
+	var se = K(self.srcElement);
 	if (!self.width) {
 		self.width = se.width() || self.minWidth;
 	}
@@ -3052,7 +3068,7 @@ KEditor.prototype = {
 			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
 			width = fullscreenMode ? docWidth + 'px' : self.width,
 			height = fullscreenMode ? docHeight + 'px' : self.height,
-			container = _node('<div></div>').css('width', width);
+			container = K('<div></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
 			container.css({
@@ -3061,7 +3077,7 @@ KEditor.prototype = {
 				top : _addUnit(pos.y),
 				'z-index' : 19811211
 			});
-			_node(document.body).append(container);
+			K(document.body).append(container);
 		} else {
 			self.srcElement.before(container);
 		}
@@ -3077,8 +3093,7 @@ KEditor.prototype = {
 				click : function(e) {
 					if (self.menu) {
 						var menuName = self.menu.name;
-						self.menu.remove();
-						self.menu = null;
+						self.hideMenu();
 						if (menuName === name) {
 							return;
 						}
@@ -3097,28 +3112,32 @@ KEditor.prototype = {
 				cssData : self.cssData
 			}).create(container),
 			doc = edit.doc, textarea = edit.textarea;
-		_node(doc, document).click(function(e) {
+		K(doc, document).click(function(e) {
 			if (self.menu) {
-				self.menu.remove();
-				self.menu = null;
+				self.hideMenu();
 			}
 		});
 		_each({
-			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U',
-			selectall : 'A', print : 'P'
+			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I',
+			underline : 'U', selectall : 'A', print : 'P'
 		}, function(name, key) {
 			_ctrl(doc, key, function() {
-				_plugin(name).call(doc, self);
+				if (_plugin(name)) {
+					_plugin(name).call(doc, self);
+				}
 			});
 			if (key == 'Z' || key == 'Y') {
 				_ctrl(textarea.get(), key, function() {
-					_plugin(name).call(textarea, self);
+					if (_plugin(name)) {
+						_plugin(name).call(textarea, self);
+					}
 				});
 			}
 		});
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
+		self.menu = self.dialog = null;
 		return self;
 	},
 	remove : function() {
@@ -3129,7 +3148,7 @@ KEditor.prototype = {
 		self.toolbar.remove();
 		self.edit.remove();
 		self.container.remove();
-		self.container = self.toolbar = self.edit = self.menu = null;
+		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
 		return self;
 	},
 	fullscreen : function(bool) {
@@ -3140,37 +3159,54 @@ KEditor.prototype = {
 	},
 	createMenu : function(options) {
 		var self = this,
-			knode = self.toolbar.get(options.name),
+			name = options.name,
+			knode = self.toolbar.get(name),
 			pos = knode.pos();
 		options.x = pos.x;
 		options.y = pos.y + knode.height();
-		options.centerLineMode = false;
-		return self.menu = _menu(options);
+		if (options.selectedColor !== undefined) {
+			options.noColor = self.lang('noColor');
+			self.menu = _colorpicker(options);
+		} else {
+			options.centerLineMode = false;
+			self.menu = _menu(options);
+		}
+		return self.menu;
 	},
-	removeMenu : function() {
+	hideMenu : function() {
 		this.menu.remove();
 		this.menu = null;
 	},
 	createDialog : function(options) {
-		var self = this, dialog;
+		var self = this,
+			name = options.name;
 		options.shadowMode = self.shadowMode;
-		options.closeText = self.lang('close');
-		options.noBtn = {
-			name : self.lang('no'),
+		options.closeBtn = {
+			name : self.lang('close'),
 			click : function(e) {
-				dialog.remove();
+				self.hideDialog();
 				self.edit.focus();
 			}
 		};
-		dialog = _dialog(options);
-		return dialog;
+		options.noBtn = {
+			name : self.lang('no'),
+			click : function(e) {
+				self.hideDialog();
+				self.edit.focus();
+			}
+		};
+		return (self.dialog = _dialog(options));
+	},
+	hideDialog : function() {
+		this.dialog.remove();
+		this.dialog = null;
 	}
 };
 function _create(expr, options) {
 	if (!options) {
 		options = {};
 	}
-	var knode = _node(expr);
+	var knode = K(expr);
 	if (knode) {
 		options.srcElement = knode[0];
 		if (!options.width) {
@@ -3199,7 +3235,8 @@ K.plugin('about', function(editor) {
 		'<div>KindEditor ' + K.kindeditor + '</div>' +
 		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 		'</div>';
-	var dialog = editor.createDialog({
+	editor.createDialog({
+		name : 'about',
 		width : 300,
 		title : editor.lang('about'),
 		body : html
@@ -3211,7 +3248,8 @@ K.plugin('plainpaste', function(editor) {
 			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 			'</div>';
-	var dialog = editor.createDialog({
+	editor.createDialog({
+		name : 'plainpaste',
 		width : 450,
 		title : editor.lang('plainpaste'),
 		body : html,
@@ -3223,7 +3261,7 @@ K.plugin('plainpaste', function(editor) {
 				html = html.replace(/ /g, '&nbsp;');
 				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
 				editor.edit.cmd.inserthtml(html);
-				dialog.remove();
+				editor.hideDialog();
 				editor.edit.focus();
 			}
 		}
@@ -3263,7 +3301,7 @@ K.plugin('formatblock', function(editor) {
 			click : function(e) {
 				cmd.select();
 				cmd.formatblock('<' + key.toUpperCase() + '>');
-				editor.removeMenu();
+				editor.hideMenu();
 				e.stop();
 			}
 		});
@@ -3281,7 +3319,7 @@ K.plugin('fontname', function(editor) {
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
 			click : function(e) {
-				editor.removeMenu();
+				editor.hideMenu();
 				e.stop();
 			}
 		});
@@ -3302,7 +3340,7 @@ K.plugin('fontsize', function(editor) {
 			checked : curVal === val,
 			click : function(e) {
 				cmd.fontsize(val);
-				editor.removeMenu();
+				editor.hideMenu();
 				e.stop();
 			}
 		});
@@ -3310,18 +3348,14 @@ K.plugin('fontsize', function(editor) {
 });
 K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		var pos = K(this).pos(),
-			cmd = editor.edit.cmd,
+		var cmd = editor.edit.cmd,
 			curVal = cmd.val(name);
-		editor.menu = K.colorpicker({
+		editor.createMenu({
 			name : name,
-			x : pos.x,
-			y : pos.y + K(this).height(),
 			selectedColor : curVal || 'default',
-			noColor : editor.lang('noColor'),
 			click : function(color) {
 				cmd[name](color);
-				editor.removeMenu();
+				editor.hideMenu();
 			}
 		});
 	});

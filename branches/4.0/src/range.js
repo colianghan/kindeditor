@@ -187,7 +187,7 @@ function _getStartEnd(rng, isStart) {
 	var parent = pointRange.parentElement(),
 		children = parent.childNodes;
 	if (children.length === 0) {
-		return {node: parent.parentNode, offset: _node(parent).index()};
+		return {node: parent.parentNode, offset: K(parent).index()};
 	}
 	var startNode = doc, startPos = 0, isEnd = false;
 	var testRange = rng.duplicate();
@@ -219,7 +219,7 @@ function _getStartEnd(rng, isStart) {
 		}
 	}
 	if (!isEnd && startNode.nodeType == 1) {
-		return {node: parent, offset: _node(parent.lastChild).index() + 1};
+		return {node: parent, offset: K(parent.lastChild).index() + 1};
 	}
 	testRange = rng.duplicate();
 	testRange.moveToElementText(parent);
@@ -259,7 +259,7 @@ function _getBeforeLength(node) {
 		sibling = node.previousSibling;
 	while (sibling) {
 		if (sibling.nodeType == 1) {
-			if (!_node(sibling).isSingle()) {
+			if (!K(sibling).isSingle()) {
 				var range = doc.body.createTextRange();
 				range.moveToElementText(sibling);
 				len += range.text.length;
@@ -450,7 +450,7 @@ KRange.prototype = {
 		将Node的开始位置设为Range的开始位置。
 	*/
 	setStartBefore : function(node) {
-		return this.setStart(node.parentNode || this.doc, _node(node).index());
+		return this.setStart(node.parentNode || this.doc, K(node).index());
 	},
 	/**
 		@name KindEditor.range#setStartAfter
@@ -462,7 +462,7 @@ KRange.prototype = {
 		将Node的结束位置设为Range的开始位置。
 	*/
 	setStartAfter : function(node) {
-		return this.setStart(node.parentNode || this.doc, _node(node).index() + 1);
+		return this.setStart(node.parentNode || this.doc, K(node).index() + 1);
 	},
 	/**
 		@name KindEditor.range#setEndBefore
@@ -474,7 +474,7 @@ KRange.prototype = {
 		将Node的开始位置设为Range的结束位置。
 	*/
 	setEndBefore : function(node) {
-		return this.setEnd(node.parentNode || this.doc, _node(node).index());
+		return this.setEnd(node.parentNode || this.doc, K(node).index());
 	},
 	/**
 		@name KindEditor.range#setEndAfter
@@ -486,7 +486,7 @@ KRange.prototype = {
 		将Node的结束位置设为Range的结束位置。
 	*/
 	setEndAfter : function(node) {
-		return this.setEnd(node.parentNode || this.doc, _node(node).index() + 1);
+		return this.setEnd(node.parentNode || this.doc, K(node).index() + 1);
 	},
 	/**
 		@name KindEditor.range#selectNode
@@ -511,7 +511,7 @@ KRange.prototype = {
 		<p>对于文本节点和无结束符的元素，相当于使用selectNode。</p>
 	*/
 	selectNodeContents : function(node) {
-		var knode = _node(node);
+		var knode = K(node);
 		if (knode.type == 3 || knode.isSingle()) {
 			return this.selectNode(node);
 		}
@@ -591,7 +591,7 @@ KRange.prototype = {
 				nodeC = nodeC.parentNode;
 			}
 			if (nodeC) {
-				return _node(nodeC).index() >= posA ? -1 : 1;
+				return K(nodeC).index() >= posA ? -1 : 1;
 			}
 			//nodeB是nodeA的祖先时
 			nodeC = nodeA;
@@ -599,7 +599,7 @@ KRange.prototype = {
 				nodeC = nodeC.parentNode;
 			}
 			if (nodeC) {
-				return _node(nodeC).index() >= posB ? 1 : -1;
+				return K(nodeC).index() >= posB ? 1 : -1;
 			}
 			//其它情况，暂时不需要
 		} else {
@@ -777,7 +777,7 @@ KRange.prototype = {
 		返回KRange内容的HTML。
 	*/
 	html : function() {
-		return _node(this.cloneContents()).outer();
+		return K(this.cloneContents()).outer();
 	}
 };
 

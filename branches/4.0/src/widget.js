@@ -52,20 +52,20 @@ function _bindDragEvent(options) {
 			if (self.releaseCapture) {
 				self.releaseCapture();
 			}
-			_node(document).unbind('mousemove', moveListener)
+			K(document).unbind('mousemove', moveListener)
 				.unbind('mouseup', upListener)
 				.unbind('selectstart', selectListener);
 			_each(docs, function() {
-				_node(this).unbind('mousemove', moveListener)
+				K(this).unbind('mousemove', moveListener)
 					.unbind('mouseup', upListener);
 			});
 			e.stop();
 		}
-		_node(document).mousemove(moveListener)
+		K(document).mousemove(moveListener)
 			.mouseup(upListener)
 			.bind('selectstart', selectListener);
 		_each(docs, function() {
-			_node(this).mousemove(moveListener).mouseup(upListener);
+			K(this).mousemove(moveListener).mouseup(upListener);
 		});
 		if (self.setCapture) {
 			self.setCapture();
@@ -81,14 +81,12 @@ function _widget(options) {
 		z = options.z,
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
-		autoWidth = options.autoWidth,
-		autoHeight = options.autoHeight,
 		cls = options.cls,
 		css = options.css,
 		html = options.html,
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
-		div = _node('<div style="display:block;"></div>');
+		div = K('<div style="display:block;"></div>');
 	//set widget position
 	function resetPos(width, height) {
 		if (z && (options.x === undefined || options.y === undefined)) {
@@ -96,7 +94,7 @@ function _widget(options) {
 				h = _removeUnit(height) || 0;
 			if (options.alignEl) {
 				var el = options.alignEl,
-					pos = _node(el).pos(),
+					pos = K(el).pos(),
 					diffX = _round(el.clientWidth / 2 - w / 2),
 					diffY = _round(el.clientHeight / 2 - h / 2);
 				x = diffX < 0 ? pos.x : pos.x + diffX;
@@ -139,7 +137,7 @@ function _widget(options) {
 	if (html) {
 		div.html(html);
 	}
-	_node(parent).append(div);
+	K(parent).append(div);
 	return {
 		name : name,
 		x : x,

@@ -45,9 +45,9 @@ function _iframeVal(val) {
 	var self = this,
 		body = self.doc.body;
 	if (val === undefined) {
-		return _node(body).html();
+		return K(body).html();
 	} else {
-		_node(body).html(val);
+		K(body).html(val);
 		return self;
 	}
 }
@@ -80,7 +80,7 @@ function _elementVal(knode, val) {
 */
 function KEdit(options) {
 	var self = this;
-	self.srcElement = _node(options.srcElement);
+	self.srcElement = K(options.srcElement);
 	self.width = _addUnit(options.width) || 0;
 	self.height = _addUnit(options.height) || 0;
 	self.designMode = options.designMode === undefined ? true : options.designMode;
@@ -106,9 +106,9 @@ KEdit.prototype = {
 			return self;
 		}
 		//create elements
-		var div = _node('<div></div>').addClass('ke-edit'),
-		iframe = _node('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
-		textarea = _node('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
+		var div = K('<div></div>').addClass('ke-edit'),
+		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
+		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>'),
 		srcElement = self.srcElement,
 		commonCss = {
 			display : 'block',
@@ -123,7 +123,7 @@ KEdit.prototype = {
 		} else {
 			iframe.hide();
 		}
-		_node(expr).append(div);
+		K(expr).append(div);
 		div.append(iframe);
 		div.append(textarea);
 		srcElement.hide();
@@ -160,9 +160,9 @@ KEdit.prototype = {
 			return self;
 		}
 		//remove events
-		_node(doc).unbind();
-		_node(doc.body).unbind();
-		_node(document).unbind();
+		K(doc).unbind();
+		K(doc.body).unbind();
+		K(document).unbind();
 		//remove elements
 		_elementVal(srcElement, self.val());
 		srcElement.removeAttr('kindeditor');

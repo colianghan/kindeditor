@@ -23,7 +23,7 @@ function _dialog(options) {
 		doc = self.doc,
 		div = self.div(),
 		title = options.title,
-		body = _node(options.body, doc),
+		body = K(options.body, doc),
 		previewBtn = options.previewBtn,
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
@@ -53,7 +53,7 @@ function _dialog(options) {
 				cell = row.insertCell(j);
 				cell.className = 'ke-' + rowNames[i] + colNames[j];
 				if (i == 1 && j == 1) {
-					contentCell = _node(cell);
+					contentCell = K(cell);
 				} else {
 					cell.innerHTML = '<span class="ke-dialog-empty"></span>';
 				}
@@ -68,20 +68,20 @@ function _dialog(options) {
 		div.addClass('ke-dialog-no-shadow');
 		contentCell = div;
 	}
-	var headerDiv = _node('<div class="ke-dialog-header"></div>');
+	var headerDiv = K('<div class="ke-dialog-header"></div>');
 	contentCell.append(headerDiv);
 	headerDiv.html(title);
-	var span = _node('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
+	var span = K('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
 		(shadowMode ? '' : 'no-') + 'shadow" title="' + closeBtn.name + '"></span>')
 		.click(closeBtn.click);
 	headerDiv.append(span);
 	self.draggable({
 		clickEl : headerDiv
 	});
-	var bodyDiv = _node('<div class="ke-dialog-body"></div>');
+	var bodyDiv = K('<div class="ke-dialog-body"></div>');
 	contentCell.append(bodyDiv);
 	bodyDiv.append(body);
-	var footerDiv = _node('<div class="ke-dialog-footer"></div>');
+	var footerDiv = K('<div class="ke-dialog-footer"></div>');
 	if (previewBtn || yesBtn || noBtn) {
 		contentCell.append(footerDiv);
 	}
@@ -92,7 +92,7 @@ function _dialog(options) {
 	], function() {
 		var btn = this.btn;
 		if (btn) {
-			var button = _node('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
+			var button = K('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
 			footerDiv.append(button);
 			button.click(btn.click);
 		}
@@ -114,7 +114,7 @@ function _dialog(options) {
 	self.remove = function() {
 		mask.remove();
 		span.remove();
-		_node('input', div.get()).remove();
+		K('input', div.get()).remove();
 		footerDiv.remove();
 		bodyDiv.remove();
 		headerDiv.remove();
