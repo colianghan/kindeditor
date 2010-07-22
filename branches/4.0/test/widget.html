@@ -45,7 +45,7 @@
 		<input type="button" id="remove" value="Remove" />
 		<script>
 			var widget = null;
-			K.node('#create').click(function() {
+			K('#create').click(function() {
 				widget = K.widget({
 					z : 100,
 					width : 200,
@@ -57,7 +57,7 @@
 				});
 				widget.div().html('<strong>abc</strong>123<strong>abc</strong><strong>abc</strong>');
 			});
-			K.node('#remove').click(function() {
+			K('#remove').click(function() {
 				widget.remove();
 			});
 		</script>
