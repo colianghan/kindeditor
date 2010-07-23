@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-23)
+* @version 4.0 (2010-07-24)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-07-23)',
+var _kindeditor = '4.0 (2010-07-24)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -139,8 +139,8 @@ var _options = {
 	resizeType : 2,
 	dialogAlignType : 'page',
 	bodyClass : 'ke-content',
-	cssData : 'body {font-size:12px;margin:0;}',
-	minWidth : 200,
+	cssData : '',
+	minWidth : 600,
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [
@@ -2341,8 +2341,8 @@ function _bindDragEvent(options) {
 		iframeFix = options.iframeFix === undefined ? true : options.iframeFix;
 	var docs = [];
 	if (iframeFix) {
-		_each(_queryAll('iframe'), function() {
-			docs.push(_getIframeDoc(this));
+		K('iframe').each(function() {
+			docs.push(_iframeDoc(this));
 		});
 	}
 	clickEl.mousedown(function(e) {
@@ -2491,15 +2491,23 @@ function _widget(options) {
 	};
 }
 K.widget = _widget;
-function _getIframeDoc(iframe) {
+function _iframeDoc(iframe) {
+	iframe = _get(iframe);
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 function _getInitHtml(bodyClass, cssData) {
-	var arr = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
+	var arr = [
+		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
+		'<style>',
+		'html {margin:0;padding:0;}',
+		'body {margin:0;padding:0;}',
+		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
+		'p {margin:5px 0;}',
+		'table {border-collapse:collapse;}',
+		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'</style>'
+	];
 	if (cssData) {
-		if (typeof cssData == 'string' && !/\{[\s\S]*\}/.test(cssData)) {
-			cssData = [cssData];
-		}
 		if (_isArray(cssData)) {
 			_each(cssData, function(i, path) {
 				if (path !== '') {
@@ -2531,12 +2539,16 @@ function _edit(options) {
 	iframe.css('width', '100%');
 	textarea.css('width', '100%');
 	self.width = function(val) {
-		div.css('width', val);
+		div.css('width', _addUnit(val));
 		return self;
 	};
 	self.height = function(val) {
+		val = _addUnit(val);
 		div.css('height', val);
 		iframe.css('height', val);
+		if ((_IE && _VERSION < 8) || document.compatMode != 'CSS1Compat') {
+			val = _addUnit(_removeUnit(val) - 2);
+		}
 		textarea.css('height', val);
 		return self;
 	};
@@ -2554,7 +2566,7 @@ function _edit(options) {
 	div.append(iframe);
 	div.append(textarea);
 	srcElement.hide();
-	var doc = _getIframeDoc(iframe.get());
+	var doc = _iframeDoc(iframe);
 	if (!_IE) {
 		doc.designMode = 'on';
 	}
@@ -2631,7 +2643,7 @@ function _edit(options) {
 	return self;
 }
 K.edit = _edit;
-K.getIframeDoc = _getIframeDoc;
+K.iframeDoc = _iframeDoc;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
 		K(this).addClass('ke-toolbar-icon-outline-on');
@@ -2723,8 +2735,8 @@ function _menu(options) {
 			return;
 		}
 		var itemDiv = K('<div class="ke-menu-item"></div>'),
-			leftDiv = K('<div class="ke-menu-item-left"></div>'),
-			rightDiv = K('<div class="ke-menu-item-right"></div>'),
+			leftDiv = K('<div class="ke-inline-block ke-menu-item-left"></div>'),
+			rightDiv = K('<div class="ke-inline-block ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
 		div.append(itemDiv);
@@ -2734,7 +2746,7 @@ function _menu(options) {
 		}
 		var centerDiv;
 		if (centerLineMode) {
-			centerDiv = K('<div class="ke-menu-item-center"></div>');
+			centerDiv = K('<div class="ke-inline-block ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
 			}
@@ -3057,11 +3069,12 @@ KEditor.prototype = {
 				}
 			});
 		});
+		if (!self.designMode) {
+			toolbar.disable(true);
+		}
 		var edit = _edit({
 				parent : container,
 				srcElement : self.srcElement,
-				width : _removeUnit(width) - 10,
-				height : height,
 				designMode : self.designMode,
 				bodyClass : self.bodyClass,
 				cssData : self.cssData
@@ -3089,18 +3102,30 @@ KEditor.prototype = {
 				});
 			}
 		});
-		var statusbar = _widget({
-			parent : container,
-			cls : 'ke-statusbar',
-			width : '100%',
-			height : '11px'
+		var statusbar = K('<div class="ke-statusbar"></div>'),
+			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		container.append(statusbar);
+		statusbar.append(rightIcon);
+		_bindDragEvent({
+			moveEl : container,
+			clickEl : rightIcon,
+			moveFn : function(x, y, width, height, diffX, diffY) {
+				width += diffX;
+				height += diffY;
+				if (width >= self.minWidth) {
+					self.resize(width, null);
+				}
+				if (height >= self.minHeight) {
+					self.resize(null, height);
+				}
+			}
 		});
-		edit.height(_removeUnit(height) - toolbar.div().height() - statusbar.div().height() - 4);
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
 		self.statusbar = statusbar;
 		self.menu = self.dialog = null;
+		self.resize(width, height);
 		return self;
 	},
 	remove : function() {
@@ -3110,9 +3135,22 @@ KEditor.prototype = {
 		}
 		self.toolbar.remove();
 		self.edit.remove();
+		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
 		return self;
+	},
+	resize : function(width, height) {
+		var self = this;
+		if (width !== null) {
+			self.container.css('width', _addUnit(width));
+		}
+		if (height !== null) {
+			height = _removeUnit(height) - self.toolbar.div().height() - self.statusbar.height() - 11;
+			if (height > 0) {
+				self.edit.height(height);
+			}
+		}
 	},
 	fullscreen : function(bool) {
 		var self = this;
@@ -3373,7 +3411,7 @@ K.plugin('wordpaste', function(editor) {
 		}),
 		div = dialog.div(),
 		iframe = K('iframe', div.get());
-	var doc = K.getIframeDoc(iframe.get());
+	var doc = K.iframeDoc(iframe);
 	if (!K.IE) {
 		doc.designMode = 'on';
 	}

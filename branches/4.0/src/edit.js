@@ -17,16 +17,24 @@
 #using "cmd.js"
 */
 
-function _getIframeDoc(iframe) {
+function _iframeDoc(iframe) {
+	iframe = _get(iframe);
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 
 function _getInitHtml(bodyClass, cssData) {
-	var arr = ['<!doctype html><html><head><meta charset="utf-8" /><title>KindEditor</title>'];
+	var arr = [
+		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
+		'<style>',
+		'html {margin:0;padding:0;}',
+		'body {margin:0;padding:0;}',
+		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
+		'p {margin:5px 0;}',
+		'table {border-collapse:collapse;}',
+		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'</style>'
+	];
 	if (cssData) {
-		if (typeof cssData == 'string' && !/\{[\s\S]*\}/.test(cssData)) {
-			cssData = [cssData];
-		}
 		if (_isArray(cssData)) {
 			_each(cssData, function(i, path) {
 				if (path !== '') {
@@ -69,13 +77,18 @@ function _edit(options) {
 	textarea.css('width', '100%');
 	//set width
 	self.width = function(val) {
-		div.css('width', val);
+		div.css('width', _addUnit(val));
 		return self;
 	};
 	//set height
 	self.height = function(val) {
+		val = _addUnit(val);
 		div.css('height', val);
 		iframe.css('height', val);
+		//校正IE6和IE7的textarea高度
+		if ((_IE && _VERSION < 8) || document.compatMode != 'CSS1Compat') {
+			val = _addUnit(_removeUnit(val) - 2);
+		}
 		textarea.css('height', val);
 		return self;
 	};
@@ -93,7 +106,7 @@ function _edit(options) {
 	div.append(iframe);
 	div.append(textarea);
 	srcElement.hide();
-	var doc = _getIframeDoc(iframe.get());
+	var doc = _iframeDoc(iframe);
 	if (!_IE) {
 		doc.designMode = 'on';
 	}
@@ -177,4 +190,4 @@ function _edit(options) {
 }
 
 K.edit = _edit;
-K.getIframeDoc = _getIframeDoc;
+K.iframeDoc = _iframeDoc;

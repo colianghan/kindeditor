@@ -147,12 +147,13 @@ KEditor.prototype = {
 				}
 			});
 		});
+		if (!self.designMode) {
+			toolbar.disable(true);
+		}
 		//create edit
 		var edit = _edit({
 				parent : container,
 				srcElement : self.srcElement,
-				width : _removeUnit(width) - 10,
-				height : height,
 				designMode : self.designMode,
 				bodyClass : self.bodyClass,
 				cssData : self.cssData
@@ -182,20 +183,32 @@ KEditor.prototype = {
 			}
 		});
 		//create statusbar
-		var statusbar = _widget({
-			parent : container,
-			cls : 'ke-statusbar',
-			width : '100%',
-			height : '11px'
+		var statusbar = K('<div class="ke-statusbar"></div>'),
+			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		container.append(statusbar);
+		statusbar.append(rightIcon);
+		_bindDragEvent({
+			moveEl : container,
+			clickEl : rightIcon,
+			moveFn : function(x, y, width, height, diffX, diffY) {
+				width += diffX;
+				height += diffY;
+				if (width >= self.minWidth) {
+					self.resize(width, null);
+				}
+				if (height >= self.minHeight) {
+					self.resize(null, height);
+				}
+			}
 		});
-		//reset height
-		edit.height(_removeUnit(height) - toolbar.div().height() - statusbar.div().height() - 4);
 		//properties
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
 		self.statusbar = statusbar;
 		self.menu = self.dialog = null;
+		//reset size
+		self.resize(width, height);
 		return self;
 	},
 	remove : function() {
@@ -205,9 +218,22 @@ KEditor.prototype = {
 		}
 		self.toolbar.remove();
 		self.edit.remove();
+		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
 		return self;
+	},
+	resize : function(width, height) {
+		var self = this;
+		if (width !== null) {
+			self.container.css('width', _addUnit(width));
+		}
+		if (height !== null) {
+			height = _removeUnit(height) - self.toolbar.div().height() - self.statusbar.height() - 11;
+			if (height > 0) {
+				self.edit.height(height);
+			}
+		}
 	},
 	fullscreen : function(bool) {
 		var self = this;

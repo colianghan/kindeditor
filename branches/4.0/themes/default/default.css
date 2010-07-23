@@ -269,21 +269,22 @@
 }
 /* container (*/
 .ke-container {
+	display: block;
 	border: 1px solid #CCCCCC;
 	background-color: #FFFFFF;
+	overflow: hidden;
 }
 /* toolbar */
 .ke-toolbar {
-	border-top: 0;
-	border-left: 0;
-	border-right: 0;
 	border-bottom: 1px solid #CCC;
 	background-color: #F0F0EE;
 	padding: 2px 5px;
+	overflow: hidden;
 }
 .ke-toolbar-icon {
 	background-repeat: no-repeat;
 	font-size: 0;
+	line-height: 0;
 	overflow: hidden;
 }
 .ke-toolbar-icon-url {
@@ -295,6 +296,7 @@
 	margin: 1px;
 	padding: 1px 2px;
 	font-size: 0;
+	line-height: 0;
 	overflow: hidden;
 	cursor: pointer;
 }
@@ -318,12 +320,12 @@
 	border-bottom:0;
 	width: 0;
 	font-size: 0;
+	line-height: 0;
 	overflow: hidden;
 }
 /* edit */
 .ke-edit {
-	margin: 5px;
-	overflow: hidden;
+	padding: 5px 5px 0 5px;
 }
 .ke-edit-iframe {
 	border: 0;
@@ -335,7 +337,7 @@
 	margin: 0;
 	padding: 0;
 	font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
-	color: #222222;
+	color: #000;
 	overflow: auto;
 	resize: none;
 }
@@ -344,7 +346,17 @@
 }
 /* statusbar */
 .ke-statusbar {
-	
+	font-size: 0;
+	line-height: 0;
+	overflow: hidden;
+	text-align: right;
+}
+.ke-statusbar-right-icon {
+	cursor: se-resize;
+	background-position: -9px -745px;
+	width: 7px;
+	height: 7px;
+	background-image: url(default.gif);
 }
 /* menu */
 .ke-menu {
@@ -372,11 +384,6 @@
 	width: 27px;
 	text-align: center;
 	overflow: hidden;
-	display: -moz-inline-stack;
-	display: inline-block;
-	vertical-align: middle;
-	zoom: 1;
-	*display: inline;
 }
 .ke-menu-item-center {
 	width: 0;
@@ -385,11 +392,6 @@
 	border-right: 1px solid #FFFFFF;
 	border-top: 0;
 	border-bottom: 0;
-	display: -moz-inline-stack;
-	display: inline-block;
-	vertical-align: middle;
-	zoom: 1;
-	*display: inline;
 }
 .ke-menu-item-center-on {
 	border-left: 1px solid #E9EFF6;
@@ -401,11 +403,6 @@
 	line-height: 24px;
 	text-align: left;
 	overflow: hidden;
-	display: -moz-inline-stack;
-	display: inline-block;
-	vertical-align: middle;
-	zoom: 1;
-	*display: inline;
 }
 .ke-menu-separator {
 	margin: 2px 0;

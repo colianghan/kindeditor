@@ -203,7 +203,7 @@ K.plugin('wordpaste', function(editor) {
 		}),
 		div = dialog.div(),
 		iframe = K('iframe', div.get());
-	var doc = K.getIframeDoc(iframe.get());
+	var doc = K.iframeDoc(iframe);
 	if (!K.IE) {
 		doc.designMode = 'on';
 	}

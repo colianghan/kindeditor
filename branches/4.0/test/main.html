@@ -44,7 +44,10 @@
 	</head>
 	<body>
 		<h1>KindEditor Main Test</h1>
-		<textarea name="editor1" cols="100" rows="20" style="width:800px;height:200px;">测试内容1</textarea>
+		<textarea name="editor1" cols="100" rows="20" style="width:800px;height:200px;">
+		测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
+		测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
+		</textarea>
 		<br />
 		<textarea name="editor2" cols="100" rows="20" style="width:700px;height:100px;">测试内容2</textarea>
 		<br />
@@ -57,7 +60,9 @@
 				var editor1 = null, editor2 = null;
 				K('#create1').click(function(e) {
 					if (!editor1) {
-						editor1 = K.create('textarea[name=editor1]');
+						editor1 = K.create('textarea[name=editor1]', {
+							designMode : true
+						});
 					}
 				});
 				K('#create2').click(function(e) {

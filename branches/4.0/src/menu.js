@@ -30,8 +30,8 @@ function _menu(options) {
 			return;
 		}
 		var itemDiv = K('<div class="ke-menu-item"></div>'),
-			leftDiv = K('<div class="ke-menu-item-left"></div>'),
-			rightDiv = K('<div class="ke-menu-item-right"></div>'),
+			leftDiv = K('<div class="ke-inline-block ke-menu-item-left"></div>'),
+			rightDiv = K('<div class="ke-inline-block ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
 		div.append(itemDiv);
@@ -41,7 +41,7 @@ function _menu(options) {
 		}
 		var centerDiv;
 		if (centerLineMode) {
-			centerDiv = K('<div class="ke-menu-item-center"></div>');
+			centerDiv = K('<div class="ke-inline-block ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
 			}

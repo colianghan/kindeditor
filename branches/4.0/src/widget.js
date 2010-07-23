@@ -23,8 +23,8 @@ function _bindDragEvent(options) {
 		iframeFix = options.iframeFix === undefined ? true : options.iframeFix;
 	var docs = [];
 	if (iframeFix) {
-		_each(_queryAll('iframe'), function() {
-			docs.push(_getIframeDoc(this));
+		K('iframe').each(function() {
+			docs.push(_iframeDoc(this));
 		});
 	}
 	clickEl.mousedown(function(e) {
