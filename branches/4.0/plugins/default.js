@@ -13,45 +13,6 @@
 
 (function(K, undefined) {
 
-K.plugin('about', function(editor) {
-	var html = '<div style="margin:20px;">' +
-		'<div>KindEditor ' + K.kindeditor + '</div>' +
-		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
-		'</div>';
-	editor.createDialog({
-		name : 'about',
-		width : 300,
-		title : editor.lang('about'),
-		body : html
-	});
-});
-
-K.plugin('plainpaste', function(editor) {
-	var lang = editor.lang('plainpaste.'),
-		html = '<div style="margin:10px;">' +
-			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
-			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
-			'</div>';
-	editor.createDialog({
-		name : 'plainpaste',
-		width : 450,
-		title : editor.lang('plainpaste'),
-		body : html,
-		yesBtn : {
-			name : editor.lang('yes'),
-			click : function(e) {
-				var html = K('textarea', dialog.div().get()).val();
-				html = K.escape(html);
-				html = html.replace(/ /g, '&nbsp;');
-				html = html.replace(/\r\n|\n|\r/g, "<br />$&");
-				editor.edit.cmd.inserthtml(html);
-				editor.hideDialog();
-				editor.edit.focus();
-			}
-		}
-	});
-});
-
 K.plugin('source', function(editor) {
 	editor.toolbar.disable();
 	editor.edit.design();
@@ -169,6 +130,95 @@ K.each(('cut,copy,paste').split(','), function(i, name) {
 			alert(editor.lang(name + 'Error'));
 		}
 	});
+});
+
+K.plugin('about', function(editor) {
+	var html = '<div style="margin:20px;">' +
+		'<div>KindEditor ' + K.kindeditor + '</div>' +
+		'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
+		'</div>';
+	editor.createDialog({
+		name : 'about',
+		width : 300,
+		title : editor.lang('about'),
+		body : html
+	});
+});
+
+K.plugin('plainpaste', function(editor) {
+	var lang = editor.lang('plainpaste.'),
+		html = '<div style="margin:10px;">' +
+			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
+			'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
+			'</div>',
+		dialog = editor.createDialog({
+			name : 'plainpaste',
+			width : 450,
+			title : editor.lang('plainpaste'),
+			body : html,
+			yesBtn : {
+				name : editor.lang('yes'),
+				click : function(e) {
+					var html = textarea.val();
+					html = K.escape(html);
+					html = html.replace(/ /g, '&nbsp;');
+					html = html.replace(/\r\n|\n|\r/g, "<br />$&");
+					editor.edit.cmd.inserthtml(html);
+					editor.hideDialog();
+					editor.edit.focus();
+				}
+			}
+		}),
+		textarea = K('textarea', dialog.div().get());
+	textarea.get().focus();
+});
+
+K.plugin('wordpaste', function(editor) {
+	var lang = editor.lang('wordpaste.'),
+		html = '<div style="margin:10px;">' +
+			'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
+			'<iframe style="width:415px;height:260px;border:1px solid #A0A0A0;" frameborder="0"></iframe>' +
+			'</div>',
+		dialog = editor.createDialog({
+			name : 'wordpaste',
+			width : 450,
+			title : editor.lang('wordpaste'),
+			body : html,
+			yesBtn : {
+				name : editor.lang('yes'),
+				click : function(e) {
+					var str = doc.body.innerHTML;
+					str = str.replace(/<meta(\n|.)*?>/ig, "");
+					str = str.replace(/<!(\n|.)*?>/ig, "");
+					str = str.replace(/<style[^>]*>(\n|.)*?<\/style>/ig, "");
+					str = str.replace(/<script[^>]*>(\n|.)*?<\/script>/ig, "");
+					str = str.replace(/<w:[^>]+>(\n|.)*?<\/w:[^>]+>/ig, "");
+					str = str.replace(/<xml>(\n|.)*?<\/xml>/ig, "");
+					str = str.replace(/\r\n|\n|\r/ig, "");
+					editor.edit.cmd.inserthtml(str);
+					editor.hideDialog();
+					editor.edit.focus();
+				}
+			}
+		}),
+		div = dialog.div(),
+		iframe = K('iframe', div.get());
+	var doc = K.getIframeDoc(iframe.get());
+	if (!K.IE) {
+		doc.designMode = 'on';
+	}
+	doc.open();
+	doc.write('<html><head><title>WordPaste</title></head>');
+	doc.write('<body style="background-color:#FFFFFF;font-size:12px;margin:2px;" />');
+	if (!K.IE) {
+		doc.write('<br />');
+	}
+	doc.write('</body></html>');
+	doc.close();
+	if (K.IE) {
+		doc.body.contentEditable = 'true';
+	}
+	iframe.get().contentWindow.focus();
 });
 
 })(KindEditor);

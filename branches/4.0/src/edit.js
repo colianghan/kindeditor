@@ -177,3 +177,4 @@ function _edit(options) {
 }
 
 K.edit = _edit;
+K.getIframeDoc = _getIframeDoc;
