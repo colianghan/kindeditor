@@ -21,10 +21,13 @@ function _bindDragEvent(options) {
 		moveFn = options.moveFn,
 		clickEl = options.clickEl || moveEl,
 		iframeFix = options.iframeFix === undefined ? true : options.iframeFix;
-	var docs = [];
+	var docs = [document],
+		poss = [{ x : 0, y : 0}],
+		listeners = [];
 	if (iframeFix) {
 		K('iframe').each(function() {
 			docs.push(_iframeDoc(this));
+			poss.push(K(this).pos());
 		});
 	}
 	clickEl.mousedown(function(e) {
@@ -36,36 +39,39 @@ function _bindDragEvent(options) {
 			pageX = e.pageX,
 			pageY = e.pageY,
 			dragging = true;
-		function moveListener(e) {
-			if (dragging) {
-				var diffX = Math.round(e.pageX - pageX),
-					diffY = Math.round(e.pageY - pageY);
-				moveFn.call(clickEl, x, y, width, height, diffX, diffY);
+		_each(docs, function(i, doc) {
+			function moveListener(e) {
+				if (dragging) {
+					var diffX = _round(poss[i].x + e.pageX - pageX),
+						diffY = _round(poss[i].y + e.pageY - pageY);
+					moveFn.call(clickEl, x, y, width, height, diffX, diffY);
+				}
+				e.stop();
 			}
-			e.stop();
-		}
-		function selectListener(e) {
-			e.stop();
-		}
-		function upListener(e) {
-			dragging = false;
-			if (self.releaseCapture) {
-				self.releaseCapture();
+			function selectListener(e) {
+				e.stop();
 			}
-			K(document).unbind('mousemove', moveListener)
-				.unbind('mouseup', upListener)
-				.unbind('selectstart', selectListener);
-			_each(docs, function() {
-				K(this).unbind('mousemove', moveListener)
-					.unbind('mouseup', upListener);
+			function upListener(e) {
+				dragging = false;
+				if (self.releaseCapture) {
+					self.releaseCapture();
+				}
+				_each(listeners, function() {
+					K(this.doc).unbind('mousemove', this.move)
+						.unbind('mouseup', this.up)
+						.unbind('selectstart', this.select);
+				});
+				e.stop();
+			}
+			K(doc).mousemove(moveListener)
+				.mouseup(upListener)
+				.bind('selectstart', selectListener);
+			listeners.push({
+				doc : doc,
+				move : moveListener,
+				up : upListener,
+				select : selectListener
 			});
-			e.stop();
-		}
-		K(document).mousemove(moveListener)
-			.mouseup(upListener)
-			.bind('selectstart', selectListener);
-		_each(docs, function() {
-			K(this).mousemove(moveListener).mouseup(upListener);
 		});
 		if (self.setCapture) {
 			self.setCapture();

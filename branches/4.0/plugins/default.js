@@ -188,13 +188,13 @@ K.plugin('wordpaste', function(editor) {
 				name : editor.lang('yes'),
 				click : function(e) {
 					var str = doc.body.innerHTML;
-					str = str.replace(/<meta(\n|.)*?>/ig, "");
-					str = str.replace(/<!(\n|.)*?>/ig, "");
-					str = str.replace(/<style[^>]*>(\n|.)*?<\/style>/ig, "");
-					str = str.replace(/<script[^>]*>(\n|.)*?<\/script>/ig, "");
-					str = str.replace(/<w:[^>]+>(\n|.)*?<\/w:[^>]+>/ig, "");
-					str = str.replace(/<xml>(\n|.)*?<\/xml>/ig, "");
-					str = str.replace(/\r\n|\n|\r/ig, "");
+					str = str.replace(/<meta(\n|.)*?>/ig, '');
+					str = str.replace(/<!(\n|.)*?>/ig, '');
+					str = str.replace(/<style[^>]*>(\n|.)*?<\/style>/ig, '');
+					str = str.replace(/<script[^>]*>(\n|.)*?<\/script>/ig, '');
+					str = str.replace(/<w:[^>]+>(\n|.)*?<\/w:[^>]+>/ig, '');
+					str = str.replace(/<xml>(\n|.)*?<\/xml>/ig, '');
+					str = str.replace(/\r\n|\n|\r/ig, '');
 					editor.edit.cmd.inserthtml(str);
 					editor.hideDialog();
 					editor.edit.focus();

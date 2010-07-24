@@ -11,8 +11,10 @@
 				width: 600px;
 				height: 200px;
 			}
-			.ke-iframe {
+			iframe {
 				border: 1px solid #A0A0A0;
+				width : 1200px;
+				height : 1200px;
 			}
 		</style>
 		<script src="../lib/firebug/firebug-lite.js"></script>
@@ -43,22 +45,30 @@
 		<h1>KindEditor Widget Test</h1>
 		<input type="button" id="create" value="Create" />
 		<input type="button" id="remove" value="Remove" />
+		<br />
+		<br />
+		<iframe></iframe>
 		<script>
 			var widget = null;
 			K('#create').click(function() {
-				widget = K.widget({
-					z : 100,
-					width : 200,
-					height : 100,
-					css : {
-						border : '1px solid #A0A0A0',
-						background : '#F0F0F0'
-					}
-				});
-				widget.div().html('<strong>abc</strong>123<strong>abc</strong><strong>abc</strong>');
+				if (!widget) {
+					widget = K.widget({
+						z : 100,
+						width : 200,
+						height : 100,
+						html : '<strong>abc</strong>123<strong>abc</strong><strong>abc</strong>',
+						css : {
+							border : '1px solid #A0A0A0',
+							background : '#F0F0F0'
+						}
+					}).draggable();
+				}
 			});
 			K('#remove').click(function() {
-				widget.remove();
+				if (widget) {
+					widget.remove();
+					widget = null;
+				}
 			});
 		</script>
 	</body>
