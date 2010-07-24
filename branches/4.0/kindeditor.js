@@ -768,13 +768,22 @@ function _removeAttr(el, key) {
 	el.removeAttribute(key);
 }
 function _getDoc(node) {
+	if (!node) {
+		return document;
+	}
 	return node.ownerDocument || node.document || node;
 }
 function _getWin(node) {
+	if (!node) {
+		return window;
+	}
 	var doc = _getDoc(node);
 	return doc.parentWindow || doc.defaultView;
 }
 function _getNodeName(node) {
+	if (!node) {
+		return '';
+	}
 	return node.nodeName.toLowerCase();
 }
 function _computedCss(el, key) {
@@ -810,7 +819,7 @@ function KNode(node) {
 	self.length = node.length;
 	self.doc = _getDoc(self[0]);
 	self.name = _getNodeName(self[0]);
-	self.type = self[0].nodeType;
+	self.type = self.length > 0 ? self[0].nodeType : null;
 	self.win = _getWin(self[0]);
 	self._data = {};
 }
@@ -837,10 +846,16 @@ KNode.prototype = {
 		return this;
 	},
 	fire : function(type) {
+		if (this.length < 1) {
+			return this;
+		}
 		_fire(this[0], type);
 		return this;
 	},
 	hasAttr : function(key) {
+		if (this.length < 1) {
+			return null;
+		}
 		return _getAttr(this[0], key);
 	},
 	attr : function(key, val) {
@@ -855,7 +870,7 @@ KNode.prototype = {
 			return self;
 		}
 		if (val === undefined) {
-			val = _getAttr(self[0], key);
+			val = self.length < 1 ? null : _getAttr(self[0], key);
 			return val === null ? '' : val;
 		}
 		self.each(function() {
@@ -870,9 +885,15 @@ KNode.prototype = {
 		return this;
 	},
 	get : function(i) {
+		if (this.length < 1) {
+			return null;
+		}
 		return this[i || 0];
 	},
 	hasClass : function(cls) {
+		if (this.length < 1) {
+			return false;
+		}
 		return _hasClass(this[0], cls);
 	},
 	addClass : function(cls) {
@@ -894,6 +915,9 @@ KNode.prototype = {
 	html : function(val) {
 		var self = this;
 		if (val === undefined) {
+			if (self.length < 1) {
+				return '';
+			}
 			return _formatHtml(self[0].innerHTML);
 		}
 		self.each(function() {
@@ -902,11 +926,17 @@ KNode.prototype = {
 		return self;
 	},
 	hasVal : function() {
+		if (this.length < 1) {
+			return false;
+		}
 		return _hasVal(this[0]);
 	},
 	val : function(val) {
 		var self = this;
 		if (val === undefined) {
+			if (self.length < 1) {
+				return '';
+			}
 			return self.hasVal() ? self[0].value : self.attr('value');
 		} else {
 			self.each(function() {
@@ -931,6 +961,9 @@ KNode.prototype = {
 			return self;
 		}
 		if (val === undefined) {
+			if (self.length < 1) {
+				return '';
+			}
 			return self[0].style[key] || _computedCss(self[0], key) || '';
 		}
 		self.each(function() {
@@ -941,6 +974,9 @@ KNode.prototype = {
 	width : function(val) {
 		var self = this;
 		if (val === undefined) {
+			if (self.length < 1) {
+				return 0;
+			}
 			return self[0].offsetWidth;
 		}
 		return self.css('width', _addUnit(val));
@@ -948,6 +984,9 @@ KNode.prototype = {
 	height : function(val) {
 		var self = this;
 		if (val === undefined) {
+			if (self.length < 1) {
+				return 0;
+			}
 			return self[0].offsetHeight;
 		}
 		return self.css('height', _addUnit(val));
@@ -972,35 +1011,49 @@ KNode.prototype = {
 	},
 	pos : function() {
 		var self = this, node = self[0], x = 0, y = 0;
-		if (node.getBoundingClientRect) {
-			var box = node.getBoundingClientRect(),
-				pos = _getScrollPos();
-			x = box.left + pos.x;
-			y = box.top + pos.y;
-		} else {
-			while (node) {
-				x += node.offsetLeft;
-				y += node.offsetTop;
-				node = node.offsetParent;
+		if (node) {
+			if (node.getBoundingClientRect) {
+				var box = node.getBoundingClientRect(),
+					pos = _getScrollPos();
+				x = box.left + pos.x;
+				y = box.top + pos.y;
+			} else {
+				while (node) {
+					x += node.offsetLeft;
+					y += node.offsetTop;
+					node = node.offsetParent;
+				}
 			}
 		}
 		return {x : _round(x), y : _round(y)};
 	},
 	clone : function(bool) {
+		if (this.length < 1) {
+			return new KNode([]);
+		}
 		return new KNode([this[0].cloneNode(bool)]);
 	},
 	append : function(val) {
 		var self = this;
+		if (self.length < 1) {
+			return self;
+		}
 		self[0].appendChild(_get(val));
 		return self;
 	},
 	before : function(val) {
 		var self = this;
+		if (self.length < 1) {
+			return self;
+		}
 		self[0].parentNode.insertBefore(_get(val), self[0]);
 		return self;
 	},
 	after : function(val) {
 		var self = this;
+		if (self.length < 1) {
+			return self;
+		}
 		if (self[0].nextSibling) {
 			self[0].parentNode.insertBefore(_get(val), self[0].nextSibling);
 		} else {
@@ -1010,6 +1063,9 @@ KNode.prototype = {
 	},
 	replaceWith : function(val) {
 		var self = this, node = _get(val);
+		if (self.length < 1) {
+			return self;
+		}
 		_unbind(self[0]);
 		self[0].parentNode.replaceChild(node, self[0]);
 		self[0] = node;
@@ -1037,7 +1093,11 @@ KNode.prototype = {
 		return this.css('display', 'none');
 	},
 	outer : function() {
-		var self = this, div = self.doc.createElement('div'), html;
+		var self = this;
+		if (self.length < 1) {
+			return '';
+		}
+		var div = self.doc.createElement('div'), html;
 		div.appendChild(self[0].cloneNode(true));
 		html = _formatHtml(div.innerHTML);
 		div = null;
@@ -1053,13 +1113,22 @@ KNode.prototype = {
 		return !!_BLOCK_TAG_MAP[this.name];
 	},
 	contains : function(otherNode) {
+		if (this.length < 1) {
+			return false;
+		}
 		return _contains(this[0], _get(otherNode));
 	},
 	parent : function() {
+		if (this.length < 1) {
+			return null;
+		}
 		var node = this[0].parentNode;
 		return node ? new KNode([node]) : null;
 	},
 	children : function() {
+		if (this.length < 1) {
+			return [];
+		}
 		var list = [], child = this[0].firstChild;
 		while (child) {
 			if (child.nodeType != 3 || _trim(child.nodeValue) !== '') {
@@ -1078,6 +1147,9 @@ KNode.prototype = {
 		return list.length > 0 ? list[list.length - 1] : null;
 	},
 	index : function() {
+		if (this.length < 1) {
+			return -1;
+		}
 		var i = -1, sibling = this[0];
 		while (sibling) {
 			i++;
@@ -1086,14 +1158,23 @@ KNode.prototype = {
 		return i;
 	},
 	prev : function() {
+		if (this.length < 1) {
+			return null;
+		}
 		var node = this[0].previousSibling;
 		return node ? new KNode([node]) : null;
 	},
 	next : function() {
+		if (this.length < 1) {
+			return null;
+		}
 		var node = this[0].nextSibling;
 		return node ? new KNode([node]) : null;
 	},
 	scan : function(fn, order) {
+		if (this.length < 1) {
+			return;
+		}
 		order = (order === undefined) ? true : order;
 		function walk(node) {
 			var n = order ? node.firstChild : node.lastChild;
@@ -1109,6 +1190,7 @@ KNode.prototype = {
 			}
 		}
 		walk(this[0]);
+		return this;
 	}
 };
 _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
@@ -1121,8 +1203,8 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 var _K = K;
 K = function(expr, root) {
 	function newNode(node) {
-		if (node.length < 1 || !node[0]) {
-			return null;
+		if (!node[0]) {
+			node = [];
 		}
 		return new KNode(node);
 	}
