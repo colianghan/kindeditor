@@ -73,7 +73,7 @@ function _getWin(node) {
 }
 
 function _getNodeName(node) {
-	if (!node) {
+	if (!node || !node.nodeName) {
 		return '';
 	}
 	return node.nodeName.toLowerCase();

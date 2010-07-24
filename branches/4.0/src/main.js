@@ -183,24 +183,40 @@ KEditor.prototype = {
 			}
 		});
 		//create statusbar
-		var statusbar = K('<div class="ke-statusbar"></div>'),
-			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		var statusbar = K('<div class="ke-statusbar"></div>');
 		container.append(statusbar);
-		statusbar.append(rightIcon);
-		_bindDragEvent({
-			moveEl : container,
-			clickEl : rightIcon,
-			moveFn : function(x, y, width, height, diffX, diffY) {
-				width += diffX;
-				height += diffY;
-				if (width >= self.minWidth) {
-					self.resize(width, null);
+		if (!fullscreenMode) {
+			var rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+			statusbar.append(rightIcon);
+			_bindDragEvent({
+				moveEl : container,
+				clickEl : rightIcon,
+				moveFn : function(x, y, width, height, diffX, diffY) {
+					width += diffX;
+					height += diffY;
+					if (width >= self.minWidth) {
+						self.resize(width, null);
+					}
+					if (height >= self.minHeight) {
+						self.resize(null, height);
+					}
 				}
-				if (height >= self.minHeight) {
-					self.resize(null, height);
+			});
+		}
+		if (self._resizeListener) {
+			K(window).unbind('resize', self._resizeListener);
+			self._resizeListener = null;
+		}
+		if (self.fullscreenMode) {
+			function resizeListener(e) {
+				if (self.container) {
+					var el = document.documentElement;
+					self.resize(el.clientWidth, el.clientHeight);
 				}
 			}
-		});
+			K(window).bind('resize', resizeListener);
+			self._resizeListener = resizeListener;
+		}
 		//properties
 		self.container = container;
 		self.toolbar = toolbar;
