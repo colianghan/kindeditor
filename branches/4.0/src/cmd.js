@@ -98,7 +98,7 @@ function _getRng(doc) {
 			rng = sel.createRange();
 		}
 	} catch(e) {}
-	if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
+	if (_IE && (!rng || (!rng.item && rng.parentElement().ownerDocument !== doc))) {
 		return null;
 	}
 	return rng;
@@ -309,8 +309,8 @@ KCmd.prototype = {
 			win.focus();
 			return self;
 		}
-		//case 2: 一般情况
-		rng = range.get();
+		//case 2: other case
+		rng = range.get(true);
 		if (_IE) {
 			rng.select();
 		} else {
@@ -752,7 +752,7 @@ KCmd.prototype = {
 		var self = this, doc = self.doc, range = self.range;
 		self.select();
 		var a = self.commonNode({ a : '*' });
-		if (a) {
+		if (a && !range.isControl()) {
 			range.selectNode(a.get());
 			self.select();
 		}

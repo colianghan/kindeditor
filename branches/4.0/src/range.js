@@ -231,12 +231,13 @@ function _getStartEnd(rng, isStart) {
 function _toRange(rng) {
 	var doc, range;
 	if (_IE) {
-		doc = rng.parentElement().ownerDocument;
 		if (rng.item) {
+			doc = _getDoc(rng.item(0));
 			range = new KRange(doc);
 			range.selectNode(rng.item(0));
 			return range;
 		}
+		doc = rng.parentElement().ownerDocument;
 		var start = _getStartEnd(rng, true),
 			end = _getStartEnd(rng, false);
 		range = new KRange(doc);
@@ -744,6 +745,20 @@ KRange.prototype = {
 		return this.insertNode(node).selectNode(node);
 	},
 	/**
+		@name KindEditor.range#isControl
+		@function
+		@public
+		@returns {Boolean}
+		@description
+		判断当前KRange是否可选择的Contral Range。
+	*/
+	isControl : function() {
+		var self = this,
+			sc = self.startContainer, so = self.startOffset,
+			ec = self.endContainer, eo = self.endOffset, rng;
+		return sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
+	},
+	/**
 		@name KindEditor.range#get
 		@function
 		@public
@@ -751,21 +766,29 @@ KRange.prototype = {
 		@description
 		将KRange转换成原生Range并返回。
 	*/
-	get : function() {
+	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
+		// not IE
 		if (doc.createRange) {
 			rng = doc.createRange();
 			try {
 				rng.setStart(sc, so);
 				rng.setEnd(ec, eo);
 			} catch (e) {}
-		} else {
-			rng = doc.body.createTextRange();
-			rng.setEndPoint('StartToStart', _getEndRange(sc, so));
-			rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
+			return rng;
 		}
+		// IE control range
+		if (hasControlRange && self.isControl()) {
+			rng = doc.body.createControlRange();
+			rng.addElement(sc.childNodes[so]);
+			return rng;
+		}
+		// IE text range
+		rng = doc.body.createTextRange();
+		rng.setEndPoint('StartToStart', _getEndRange(sc, so));
+		rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
 		return rng;
 	},
 	/**
