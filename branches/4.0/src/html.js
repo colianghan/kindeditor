@@ -49,6 +49,7 @@ function _formatCss(css) {
 
 //Modified by zhanyi1022
 function _formatHtml(html) {
+	//return _trim(html);
 	var re = /((?:[\r\n])*)<(\/)?([\w-:]+)(\s*(?:[\w-:]+)(?:=(?:"[^"]*"|'[^']*'|[^\s"'<>]*))?)*\s*(\/)?>((?:[\r\n])*)/g;
 	html = (html + '').replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var startNewline = $1 || '',

@@ -28,7 +28,7 @@ var _options = {
 	dialogAlignType : 'page', //page,editor
 	bodyClass : 'ke-content',
 	cssData : '', //cssPath, cssContent
-	minWidth : 600,
+	minWidth : 550,
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [

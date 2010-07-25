@@ -557,6 +557,9 @@ K = function(expr, root) {
 		return new KNode(node);
 	}
 	if (typeof expr === 'string') {
+		if (root) {
+			root = _get(root);
+		}
 		//HTML
 		if (/<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,

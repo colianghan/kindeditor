@@ -151,6 +151,15 @@ function _removeAttrOrCss(knode, map) {
 	_removeAttrOrCssByKey(knode, map, '*');
 	_removeAttrOrCssByKey(knode, map);
 }
+function _removeParent(knode) {
+	var kchild = knode.first();
+	while (kchild) {
+		var next = kchild.next();
+		knode.before(kchild);
+		kchild = next;
+	}
+	knode.remove();
+}
 function _removeAttrOrCssByKey(knode, map, mapKey) {
 	mapKey = mapKey || knode.name;
 	if (knode.type !== 1) {
@@ -175,15 +184,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 			}
 		}
 		if (allFlag) {
-			if (knode.first()) {
-				var kchild = knode.first();
-				while (kchild) {
-					var next = kchild.next();
-					knode.before(kchild);
-					kchild = next;
-				}
-			}
-			knode.remove();
+			_removeParent(knode);
 		}
 	}
 }
@@ -263,31 +264,6 @@ function _mergeAttrs(knode, attrs, styles) {
 	_each(styles, function(key, val) {
 		knode.css(key, val);
 	});
-}
-/**
-	根据规则取得range的共通祖先
-	example:
-	_getCommonNode(range, {
-		'*' : '.font-weight',
-		'strong,b' : '*'
-	});
-*/
-function _getCommonNode(range, map) {
-	var ec = range.endContainer, eo = range.endOffset,
-		knode = K((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
-		child = knode;
-	while (child && (child = child.firstChild) && child.childNodes.length == 1) {
-		if (_hasAttrOrCss(child, map)) {
-			return child;
-		}
-	}
-	while (knode) {
-		if (_hasAttrOrCss(knode, map)) {
-			return knode;
-		}
-		knode = knode.parent();
-	}
-	return null;
 }
 /**
 	@name KindEditor.cmd
@@ -580,6 +556,32 @@ KCmd.prototype = {
 			self._preremove = null;
 		}
 	},
+	/**
+		根据规则取得range的共通祖先
+		example:
+		cmd.commonNode({
+			'*' : '.font-weight',
+			'strong,b' : '*'
+		});
+	*/
+	commonNode : function(map) {
+		var range = this.range,
+			ec = range.endContainer, eo = range.endOffset,
+			knode = K((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
+			child = knode.get();
+		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
+			if (_hasAttrOrCss(child, map)) {
+				return K(child);
+			}
+		}
+		while (knode) {
+			if (_hasAttrOrCss(knode, map)) {
+				return knode;
+			}
+			knode = knode.parent();
+		}
+		return null;
+	},
 	//Reference: document.execCommand
 	exec : function(key, val) {
 		return this[key.toLowerCase()](val);
@@ -608,7 +610,7 @@ KCmd.prototype = {
 		if (key === 'formatblock') {
 			val = _nativeCommandValue(doc, key);
 			if (val === '') {
-				knode = _getCommonNode(range, {'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
+				knode = self.commonNode({'h1,h2,h3,h4,h5,h6,p,div,pre,address' : '*'});
 				if (knode) {
 					val = knode.name;
 				}
@@ -619,14 +621,14 @@ KCmd.prototype = {
 			return lc(val);
 		}
 		if (key === 'fontsize') {
-			knode = _getCommonNode(range, {'*' : '.font-size'});
+			knode = self.commonNode({'*' : '.font-size'});
 			if (knode) {
 				val = knode.css('font-size');
 			}
 			return lc(val);
 		}
 		if (key === 'forecolor') {
-			knode = _getCommonNode(range, {'*' : '.color'});
+			knode = self.commonNode({'*' : '.color'});
 			if (knode) {
 				val = knode.css('color');
 			}
@@ -637,7 +639,7 @@ KCmd.prototype = {
 			return lc(val);
 		}
 		if (key === 'hilitecolor') {
-			knode = _getCommonNode(range, {'*' : '.background-color'});
+			knode = self.commonNode({'*' : '.background-color'});
 			if (knode) {
 				val = knode.css('background-color');
 			}
@@ -647,11 +649,18 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
+		if (key === 'createlink') {
+			knode = self.commonNode({ a : '*' });
+			if (knode) {
+				val = knode.attr('href');
+			}
+			return val;
+		}
 		return val;
 	},
 	toggle : function(wrapper, map) {
 		var self = this;
-		if (_getCommonNode(self.range, map)) {
+		if (self.commonNode(map)) {
 			self.remove(map);
 		} else {
 			self.wrap(wrapper);
@@ -722,16 +731,11 @@ KCmd.prototype = {
 		return this.select();
 	},
 	inserthtml : function(val) {
-		var self = this, doc = self.doc, range = self.range;
-		var div = doc.createElement('div'),
+		var self = this, doc = self.doc, range = self.range,
 			frag = doc.createDocumentFragment();
-		div.innerHTML = val;
-		var node = div.firstChild;
-		while (node) {
-			frag.appendChild(node.cloneNode(true));
-			node = node.nextSibling;
-		}
-		div = null;
+		K(val, doc).each(function() {
+			frag.appendChild(this);
+		});
 		range.deleteContents();
 		range.insertNode(frag);
 		range.collapse(false);
@@ -743,6 +747,56 @@ KCmd.prototype = {
 	print : function() {
 		this.win.print();
 		return this;
+	},
+	createlink : function(url, type) {
+		var self = this, doc = self.doc, range = self.range;
+		self.select();
+		var a = self.commonNode({ a : '*' });
+		if (a) {
+			range.selectNode(a.get());
+			self.select();
+		}
+		if (range.collapsed) {
+			var html = '<a href="' + url + '"';
+			if (type) {
+				html += ' target="' + type + '"';
+			}
+			html += '>' + url + '</a>';
+			self.inserthtml(html);
+			return self;
+		}
+		_nativeCommand(doc, 'createlink', '__ke_temp_url__');
+		a = self.commonNode({ a : '*' });
+		K('a[href="__ke_temp_url__"]', a ? a.parent() : doc).each(function() {
+			K(this).attr('href', url);
+			if (type) {
+				K(this).attr('target', type);
+			} else {
+				K(this).removeAttr('target');
+			}
+		});
+		return self;
+	},
+	unlink : function() {
+		var self = this, doc = self.doc, range = self.range;
+		self.select();
+		if (range.collapsed) {
+			var a = self.commonNode({ a : '*' });
+			if (a) {
+				range.selectNode(a.get());
+				self.select();
+			}
+			_nativeCommand(doc, 'unlink', null);
+			if (_WEBKIT && K(range.startContainer).name === 'img') {
+				var parent = K(range.startContainer).parent();
+				if (parent.name === 'a') {
+					_removeParent(parent);
+				}
+			}
+			return self;
+		}
+		_nativeCommand(doc, 'unlink', null);
+		return self;
 	},
 	//用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
@@ -834,6 +888,19 @@ function _cmd(mixed) {
 			cmd._preformat = null;
 			cmd._preremove = null;
 		});
+		//WEBKIT点击图片选中
+		if (_WEBKIT) {
+			K(doc).click(function(e) {
+				if (K(e.target).name === 'img') {
+					var rng = _getRng(doc);
+					if (rng) {
+						cmd.range = _range(rng);
+					}
+					cmd.range.selectNode(e.target);
+					cmd.select();
+				}
+			});
+		}
 		return cmd;
 	}
 	//mixed is a KRange

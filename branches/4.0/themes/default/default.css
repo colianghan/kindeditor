@@ -570,6 +570,17 @@
 .ke-dialog-body textarea:focus {
 	outline: none;
 }
+.ke-dialog-body label {
+	margin-right: 5px;
+	cursor: pointer;
+	font-weight: bold;
+}
+.ke-dialog-body input {
+	vertical-align:middle;
+}
+.ke-dialog-body img {
+	vertical-align:middle;
+}
 .ke-dialog-footer {
 	font: 12px/1 "sans serif",tahoma,verdana,helvetica;
 	text-align: right;

@@ -13,12 +13,14 @@ test('query', function() {
 	ok(K.query('img[border="1"]', div) === null);
 	ok(typeof K.query('img[src="\\.\\/data\\/logo_180_30\\.gif"]') === 'object'); // note: jquery has a bug
 	ok(K.query('.test-class') === jQuery('.test-class').get(0));
+	ok(K.query('.test-class', document.body) === jQuery('.test-class').get(0));
 	ok(K.query('[class="test-class"]') === jQuery('[class="test-class"]').get(0));
 	ok(K.query('[id="test-data-01"]') === jQuery('[id="test-data-01"]').get(0));
 	ok(K.query('img.test-class') === null);
 	ok(K.query('img#test-data-01') === null);
 	ok(K.query('div#escaped-id\\:\\.') === jQuery('div#escaped-id\\:\\.').get(0));
 	ok(K.query('input[name="escaped-name\\:\\."]') === jQuery('input[name="escaped-name\\:\\."]').get(0));
+	ok(K.query('input[name="escaped-name\\:\\."]', div) === jQuery('input[name="escaped-name\\:\\."]').get(0));
 	ok(K.query('img[border="0"]', div) === jQuery('img[border="0"]', div).get(0));
 	ok(K.query('img[border]', div) === jQuery('img[border]', div).get(0));
 	ok(K.query('.test-class') === jQuery('.test-class').get(0));

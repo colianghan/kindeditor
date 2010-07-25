@@ -114,7 +114,7 @@ K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 
 K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
-	'bold,italic,underline,strikethrough,removeformat').split(','), function(i, name) {
+	'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
 	K.plugin(name, function(editor) {
 		editor.edit.focus();
 		editor.edit.cmd[name](null);
@@ -219,6 +219,38 @@ K.plugin('wordpaste', function(editor) {
 		doc.body.contentEditable = 'true';
 	}
 	iframe.get().contentWindow.focus();
+});
+
+K.plugin('link', function(editor) {
+	var lang = editor.lang('link.'),
+		cmd = editor.edit.cmd,
+		html = '<div style="margin:10px;">' +
+			'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
+			'<input type="text" name="url" value="" style="width:90%;" /></div>' +
+			'<div style="margin-bottom:10px;"><label>' + lang.linkType + '</label>' +
+			'<select name="type"></select>' +
+			'</div>',
+		dialog = editor.createDialog({
+			name : 'link',
+			width : 400,
+			title : editor.lang('link'),
+			body : html,
+			yesBtn : {
+				name : editor.lang('yes'),
+				click : function(e) {
+					cmd.createlink(urlBox.val(), typeBox.val());
+					editor.hideDialog();
+					editor.edit.focus();
+				}
+			}
+		}),
+		div = dialog.div(),
+		urlBox = K('input[name="url"]', div),
+		typeBox = K('select[name="type"]', div);
+	typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
+	typeBox.get().options[1] = new Option(lang.selfWindow, '');
+	urlBox.val(cmd.val('createlink'));
+	urlBox.get().focus();
 });
 
 })(KindEditor);

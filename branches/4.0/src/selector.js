@@ -116,10 +116,11 @@ function _queryAll(expr, root) {
 		return arr;
 	}
 	function byName(name, tag, root) {
-		var arr = [], els = root.getElementsByName(stripslashes(name)), el;
+		var arr = [], doc = root.ownerDocument || root,
+			els = doc.getElementsByName(stripslashes(name)), el;
 		for (var i = 0, len = els.length; i < len; i++) {
 			el = els[i];
-			if (cmpTag(tag, el.nodeName)) {
+			if (cmpTag(tag, el.nodeName) && _contains(root, el)) {
 				if (el.getAttributeNode('name')) {
 					arr.push(el);
 				}

@@ -207,13 +207,13 @@ KEditor.prototype = {
 			K(window).unbind('resize', self._resizeListener);
 			self._resizeListener = null;
 		}
-		if (self.fullscreenMode) {
-			function resizeListener(e) {
-				if (self.container) {
-					var el = document.documentElement;
-					self.resize(el.clientWidth, el.clientHeight);
-				}
+		function resizeListener(e) {
+			if (self.container) {
+				var el = document.documentElement;
+				self.resize(el.clientWidth, el.clientHeight);
 			}
+		}
+		if (self.fullscreenMode) {
 			K(window).bind('resize', resizeListener);
 			self._resizeListener = resizeListener;
 		}
