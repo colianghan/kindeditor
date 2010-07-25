@@ -179,21 +179,38 @@ function _copyAndDelete(isCopy, isDelete) {
 	}
 	return isCopy ? frag : self;
 }
+//判断一个Node是否在marquee元素里，IE专用
+function _inMarquee(node) {
+	var n = node;
+	while (n) {
+		if (K(n).name === 'marquee') {
+			return true;
+		}
+		n = n.parentNode;
+	}
+	return false;
+}
+//在marquee元素里不能使用moveToElementText，IE专用
+function _moveToElementText(range, el) {
+	if (!_inMarquee(el)) {
+		range.moveToElementText(el);
+	}
+}
 //根据原生Range，取得开始节点和结束节点的位置。IE专用
 function _getStartEnd(rng, isStart) {
 	var doc = rng.parentElement().ownerDocument,
 		pointRange = rng.duplicate();
 	pointRange.collapse(isStart);
 	var parent = pointRange.parentElement(),
-		children = parent.childNodes;
-	if (children.length === 0) {
+		nodes = parent.childNodes;
+	if (nodes.length === 0) {
 		return {node: parent.parentNode, offset: K(parent).index()};
 	}
 	var startNode = doc, startPos = 0, isEnd = false;
 	var testRange = rng.duplicate();
-	testRange.moveToElementText(parent);
-	for (var i = 0, len = children.length; i < len; i++) {
-		var node = children[i];
+	_moveToElementText(testRange, parent);
+	for (var i = 0, len = nodes.length; i < len; i++) {
+		var node = nodes[i];
 		var cmp = testRange.compareEndPoints('StartToStart', pointRange);
 		if (cmp > 0) {
 			isEnd = true;
@@ -203,10 +220,10 @@ function _getStartEnd(rng, isStart) {
 		}
 		if (node.nodeType == 1) {
 			var nodeRange = rng.duplicate();
-			nodeRange.moveToElementText(node);
+			_moveToElementText(nodeRange, node);
 			testRange.setEndPoint('StartToEnd', nodeRange);
 			if (isEnd) {
-				startPos += nodeRange.text.length;
+				startPos += nodeRange.text.replace(/\r\n|\n|\r/g, '').length;
 			} else {
 				startPos = 0;
 			}
@@ -222,9 +239,9 @@ function _getStartEnd(rng, isStart) {
 		return {node: parent, offset: K(parent.lastChild).index() + 1};
 	}
 	testRange = rng.duplicate();
-	testRange.moveToElementText(parent);
+	_moveToElementText(testRange, parent);
 	testRange.setEndPoint('StartToEnd', pointRange);
-	startPos -= testRange.text.length;
+	startPos -= testRange.text.replace(/\r\n|\n|\r/g, '').length;
 	return {node: startNode, offset: startPos};
 }
 //将原生Range转换成KRange
@@ -262,7 +279,7 @@ function _getBeforeLength(node) {
 		if (sibling.nodeType == 1) {
 			if (!K(sibling).isSingle()) {
 				var range = doc.body.createTextRange();
-				range.moveToElementText(sibling);
+				_moveToElementText(range, sibling);
 				len += range.text.length;
 			} else {
 				len += 1;
@@ -308,10 +325,10 @@ function _getEndRange(node, offset) {
 			return range;
 		}
 		if (child.nodeType == 1) {
-			range.moveToElementText(child);
+			_moveToElementText(range, child);
 			range.collapse(isStart);
 		} else {
-			range.moveToElementText(node);
+			_moveToElementText(range, node);
 			if (isTemp) {
 				node.removeChild(temp);
 			}
@@ -320,7 +337,7 @@ function _getEndRange(node, offset) {
 			range.moveStart('character', len);
 		}
 	} else if (node.nodeType == 3) {
-		range.moveToElementText(node.parentNode);
+		_moveToElementText(range, node.parentNode);
 		range.moveStart('character', offset + _getBeforeLength(node));
 	}
 	return range;

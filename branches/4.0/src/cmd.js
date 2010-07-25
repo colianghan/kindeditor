@@ -339,6 +339,7 @@ KCmd.prototype = {
 			}
 			self._preformat = {
 				wrapper : wrapper,
+				textLenth : K(sc).type == 3 ? sc.nodeValue.length : sc.childNodes[so - 1].nodeValue.length,
 				range : range.cloneRange()
 			};
 			return self;
@@ -533,6 +534,7 @@ KCmd.prototype = {
 	},
 	_applyPreformat : function() {
 		var self = this, range = self.range,
+			sc = range.startContainer, so = range.startOffset,
 			format = self._preformat, remove = self._preremove;
 		if (format || remove) {
 			if (format) {
@@ -541,14 +543,23 @@ KCmd.prototype = {
 				range.setStart(remove.range.startContainer, remove.range.startOffset);
 			}
 			if (format) {
+				if (range.collapsed) {
+					range.setStart(sc.childNodes[so - 1], format.textLenth);
+				}
 				self.wrap(format.wrapper);
 			}
 			if (remove) {
+				if (range.collapsed) {
+					self._preformat = null;
+					self._preremove = null;
+					return;
+				}
 				self.remove(remove.map);
 			}
-			//find text node
-			var sc = range.startContainer, so = range.startOffset,
-				textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
+			// find text node
+			sc = range.startContainer;
+			so = range.startOffset;
+			var textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
 			self.select();

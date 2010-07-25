@@ -1358,20 +1358,35 @@ function _copyAndDelete(isCopy, isDelete) {
 	}
 	return isCopy ? frag : self;
 }
+function _inMarquee(node) {
+	var n = node;
+	while (n) {
+		if (K(n).name === 'marquee') {
+			return true;
+		}
+		n = n.parentNode;
+	}
+	return false;
+}
+function _moveToElementText(range, el) {
+	if (!_inMarquee(el)) {
+		range.moveToElementText(el);
+	}
+}
 function _getStartEnd(rng, isStart) {
 	var doc = rng.parentElement().ownerDocument,
 		pointRange = rng.duplicate();
 	pointRange.collapse(isStart);
 	var parent = pointRange.parentElement(),
-		children = parent.childNodes;
-	if (children.length === 0) {
+		nodes = parent.childNodes;
+	if (nodes.length === 0) {
 		return {node: parent.parentNode, offset: K(parent).index()};
 	}
 	var startNode = doc, startPos = 0, isEnd = false;
 	var testRange = rng.duplicate();
-	testRange.moveToElementText(parent);
-	for (var i = 0, len = children.length; i < len; i++) {
-		var node = children[i];
+	_moveToElementText(testRange, parent);
+	for (var i = 0, len = nodes.length; i < len; i++) {
+		var node = nodes[i];
 		var cmp = testRange.compareEndPoints('StartToStart', pointRange);
 		if (cmp > 0) {
 			isEnd = true;
@@ -1381,10 +1396,10 @@ function _getStartEnd(rng, isStart) {
 		}
 		if (node.nodeType == 1) {
 			var nodeRange = rng.duplicate();
-			nodeRange.moveToElementText(node);
+			_moveToElementText(nodeRange, node);
 			testRange.setEndPoint('StartToEnd', nodeRange);
 			if (isEnd) {
-				startPos += nodeRange.text.length;
+				startPos += nodeRange.text.replace(/\r\n|\n|\r/g, '').length;
 			} else {
 				startPos = 0;
 			}
@@ -1400,20 +1415,21 @@ function _getStartEnd(rng, isStart) {
 		return {node: parent, offset: K(parent.lastChild).index() + 1};
 	}
 	testRange = rng.duplicate();
-	testRange.moveToElementText(parent);
+	_moveToElementText(testRange, parent);
 	testRange.setEndPoint('StartToEnd', pointRange);
-	startPos -= testRange.text.length;
+	startPos -= testRange.text.replace(/\r\n|\n|\r/g, '').length;
 	return {node: startNode, offset: startPos};
 }
 function _toRange(rng) {
 	var doc, range;
 	if (_IE) {
-		doc = rng.parentElement().ownerDocument;
 		if (rng.item) {
+			doc = _getDoc(rng.item(0));
 			range = new KRange(doc);
 			range.selectNode(rng.item(0));
 			return range;
 		}
+		doc = rng.parentElement().ownerDocument;
 		var start = _getStartEnd(rng, true),
 			end = _getStartEnd(rng, false);
 		range = new KRange(doc);
@@ -1437,7 +1453,7 @@ function _getBeforeLength(node) {
 		if (sibling.nodeType == 1) {
 			if (!K(sibling).isSingle()) {
 				var range = doc.body.createTextRange();
-				range.moveToElementText(sibling);
+				_moveToElementText(range, sibling);
 				len += range.text.length;
 			} else {
 				len += 1;
@@ -1482,10 +1498,10 @@ function _getEndRange(node, offset) {
 			return range;
 		}
 		if (child.nodeType == 1) {
-			range.moveToElementText(child);
+			_moveToElementText(range, child);
 			range.collapse(isStart);
 		} else {
-			range.moveToElementText(node);
+			_moveToElementText(range, node);
 			if (isTemp) {
 				node.removeChild(temp);
 			}
@@ -1494,7 +1510,7 @@ function _getEndRange(node, offset) {
 			range.moveStart('character', len);
 		}
 	} else if (node.nodeType == 3) {
-		range.moveToElementText(node.parentNode);
+		_moveToElementText(range, node.parentNode);
 		range.moveStart('character', offset + _getBeforeLength(node));
 	}
 	return range;
@@ -1689,7 +1705,13 @@ KRange.prototype = {
 		node.appendChild(this.extractContents());
 		return this.insertNode(node).selectNode(node);
 	},
-	get : function() {
+	isControl : function() {
+		var self = this,
+			sc = self.startContainer, so = self.startOffset,
+			ec = self.endContainer, eo = self.endOffset, rng;
+		return sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
+	},
+	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
@@ -1699,11 +1721,16 @@ KRange.prototype = {
 				rng.setStart(sc, so);
 				rng.setEnd(ec, eo);
 			} catch (e) {}
-		} else {
-			rng = doc.body.createTextRange();
-			rng.setEndPoint('StartToStart', _getEndRange(sc, so));
-			rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
+			return rng;
 		}
+		if (hasControlRange && self.isControl()) {
+			rng = doc.body.createControlRange();
+			rng.addElement(sc.childNodes[so]);
+			return rng;
+		}
+		rng = doc.body.createTextRange();
+		rng.setEndPoint('StartToStart', _getEndRange(sc, so));
+		rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
 		return rng;
 	},
 	html : function() {
@@ -1758,7 +1785,7 @@ function _getRng(doc) {
 			rng = sel.createRange();
 		}
 	} catch(e) {}
-	if (_IE && (!rng || rng.parentElement().ownerDocument !== doc)) {
+	if (_IE && (!rng || (!rng.item && rng.parentElement().ownerDocument !== doc))) {
 		return null;
 	}
 	return rng;
@@ -1936,7 +1963,7 @@ KCmd.prototype = {
 			win.focus();
 			return self;
 		}
-		rng = range.get();
+		rng = range.get(true);
 		if (_IE) {
 			rng.select();
 		} else {
@@ -1961,6 +1988,7 @@ KCmd.prototype = {
 			}
 			self._preformat = {
 				wrapper : wrapper,
+				textLenth : K(sc).type == 3 ? sc.nodeValue.length : sc.childNodes[so - 1].nodeValue.length,
 				range : range.cloneRange()
 			};
 			return self;
@@ -2137,6 +2165,7 @@ KCmd.prototype = {
 	},
 	_applyPreformat : function() {
 		var self = this, range = self.range,
+			sc = range.startContainer, so = range.startOffset,
 			format = self._preformat, remove = self._preremove;
 		if (format || remove) {
 			if (format) {
@@ -2145,13 +2174,22 @@ KCmd.prototype = {
 				range.setStart(remove.range.startContainer, remove.range.startOffset);
 			}
 			if (format) {
+				if (range.collapsed) {
+					range.setStart(sc.childNodes[so - 1], format.textLenth);
+				}
 				self.wrap(format.wrapper);
 			}
 			if (remove) {
+				if (range.collapsed) {
+					self._preformat = null;
+					self._preremove = null;
+					return;
+				}
 				self.remove(remove.map);
 			}
-			var sc = range.startContainer, so = range.startOffset,
-				textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
+			sc = range.startContainer;
+			so = range.startOffset;
+			var textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
 			range.setEnd(textNode, textNode.nodeValue.length);
 			range.collapse(false);
 			self.select();
@@ -2344,7 +2382,7 @@ KCmd.prototype = {
 		var self = this, doc = self.doc, range = self.range;
 		self.select();
 		var a = self.commonNode({ a : '*' });
-		if (a) {
+		if (a && !range.isControl()) {
 			range.selectNode(a.get());
 			self.select();
 		}
