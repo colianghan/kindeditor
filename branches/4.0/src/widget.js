@@ -106,7 +106,7 @@ function _widget(options) {
 				x = diffX < 0 ? pos.x : pos.x + diffX;
 				y = diffY < 0 ? pos.y : pos.y + diffY;
 			} else {
-				var docEl = doc.documentElement,
+				var docEl = _docElement(doc),
 					scrollPos = _getScrollPos();
 				x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
 				y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);

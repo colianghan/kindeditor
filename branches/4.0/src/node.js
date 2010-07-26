@@ -94,12 +94,26 @@ function _hasVal(node) {
 	return !!_VALUE_TAG_MAP[_getNodeName(node)];
 }
 
+function _docElement(doc) {
+	doc = doc || document;
+	return (doc.compatMode != 'CSS1Compat') ? doc.body : doc.documentElement;
+}
+
+function _docHeight(doc) {
+	var el = _docElement(doc);
+	return Math.max(el.scrollHeight, el.clientHeight);
+}
+
+function _docWidth(doc) {
+	var el = _docElement(doc);
+	return Math.max(el.scrollWidth, el.clientWidth);
+}
+
 function _getScrollPos() {
 	var x, y;
 	if (_IE || _OPERA) {
-		var docEl = document.documentElement;
-		x = docEl.scrollLeft;
-		y = docEl.scrollTop;
+		x = _docElement().scrollLeft;
+		y = _docElement().scrollTop;
 	} else {
 		x = window.scrollX;
 		y = window.scrollY;

@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-25)
+* @version 4.0 (2010-07-26)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-07-25)',
+var _kindeditor = '4.0 (2010-07-26)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -800,12 +800,23 @@ function _computedCss(el, key) {
 function _hasVal(node) {
 	return !!_VALUE_TAG_MAP[_getNodeName(node)];
 }
+function _docElement(doc) {
+	doc = doc || document;
+	return (doc.compatMode != 'CSS1Compat') ? doc.body : doc.documentElement;
+}
+function _docHeight(doc) {
+	var el = _docElement(doc);
+	return Math.max(el.scrollHeight, el.clientHeight);
+}
+function _docWidth(doc) {
+	var el = _docElement(doc);
+	return Math.max(el.scrollWidth, el.clientWidth);
+}
 function _getScrollPos() {
 	var x, y;
 	if (_IE || _OPERA) {
-		var docEl = document.documentElement;
-		x = docEl.scrollLeft;
-		y = docEl.scrollTop;
+		x = _docElement().scrollLeft;
+		y = _docElement().scrollTop;
 	} else {
 		x = window.scrollX;
 		y = window.scrollY;
@@ -2612,7 +2623,7 @@ function _widget(options) {
 				x = diffX < 0 ? pos.x : pos.x + diffX;
 				y = diffY < 0 ? pos.y : pos.y + diffY;
 			} else {
-				var docEl = doc.documentElement,
+				var docEl = _docElement(doc),
 					scrollPos = _getScrollPos();
 				x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
 				y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
@@ -3220,18 +3231,14 @@ KEditor.prototype = {
 	},
 	create : function() {
 		var self = this,
-			fullscreenMode = self.fullscreenMode,
-			bodyParent = document.body.parentNode;
+			fullscreenMode = self.fullscreenMode;
 		if (fullscreenMode) {
-			bodyParent.style.overflow = 'hidden';
+			_docElement().style.overflow = 'hidden';
 		} else {
-			bodyParent.style.overflow = 'auto';
+			_docElement().style.overflow = 'auto';
 		}
-		var docEl = document.documentElement,
-			docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
-			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
-			width = fullscreenMode ? docWidth + 'px' : self.width,
-			height = fullscreenMode ? docHeight + 'px' : self.height,
+		var width = fullscreenMode ? _docWidth() + 'px' : self.width,
+			height = fullscreenMode ? _docHeight() + 'px' : self.height,
 			container = K('<div class="ke-container"></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
@@ -3324,8 +3331,7 @@ KEditor.prototype = {
 		}
 		function resizeListener(e) {
 			if (self.container) {
-				var el = document.documentElement;
-				self.resize(el.clientWidth, el.clientHeight);
+				self.resize(_docElement().clientWidth, _docElement().clientHeight);
 			}
 		}
 		if (self.fullscreenMode) {

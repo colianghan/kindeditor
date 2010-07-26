@@ -101,18 +101,14 @@ KEditor.prototype = {
 	},
 	create : function() {
 		var self = this,
-			fullscreenMode = self.fullscreenMode,
-			bodyParent = document.body.parentNode;
+			fullscreenMode = self.fullscreenMode;
 		if (fullscreenMode) {
-			bodyParent.style.overflow = 'hidden';
+			_docElement().style.overflow = 'hidden';
 		} else {
-			bodyParent.style.overflow = 'auto';
+			_docElement().style.overflow = 'auto';
 		}
-		var docEl = document.documentElement,
-			docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
-			docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight),
-			width = fullscreenMode ? docWidth + 'px' : self.width,
-			height = fullscreenMode ? docHeight + 'px' : self.height,
+		var width = fullscreenMode ? _docWidth() + 'px' : self.width,
+			height = fullscreenMode ? _docHeight() + 'px' : self.height,
 			container = K('<div class="ke-container"></div>').css('width', width);
 		if (fullscreenMode) {
 			var pos = _getScrollPos();
@@ -209,8 +205,7 @@ KEditor.prototype = {
 		}
 		function resizeListener(e) {
 			if (self.container) {
-				var el = document.documentElement;
-				self.resize(el.clientWidth, el.clientHeight);
+				self.resize(_docElement().clientWidth, _docElement().clientHeight);
 			}
 		}
 		if (self.fullscreenMode) {
