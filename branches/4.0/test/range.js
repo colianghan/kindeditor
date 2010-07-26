@@ -11,7 +11,7 @@ test('range', function() {
 	ok(range.endContainer === document);
 	ok(range.endOffset === 0);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === document);
+	ok(range.commonAncestor() === document);
 
 	range = K.range(document);
 	range.selectNodeContents(strong);
@@ -34,7 +34,7 @@ test('range.setStart', function() {
 	ok(range.endContainer === strong.previousSibling);
 	ok(range.endOffset === 3);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === strong.previousSibling);
+	ok(range.commonAncestor() === strong.previousSibling);
 });
 
 test('range.setEnd', function() {
@@ -52,7 +52,7 @@ test('range.setEnd', function() {
 	ok(range.endContainer === p);
 	ok(range.endOffset === 4);
 	ok(range.collapsed === false);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.setStartBefore', function() {
@@ -69,7 +69,7 @@ test('range.setStartBefore', function() {
 	ok(range.endContainer === p);
 	ok(range.endOffset === 1);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.setStartAfter', function() {
@@ -86,7 +86,7 @@ test('range.setStartAfter', function() {
 	ok(range.endContainer === p);
 	ok(range.endOffset === 2);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.setEndBefore', function() {
@@ -102,7 +102,7 @@ test('range.setEndBefore', function() {
 	ok(range.endContainer === p);
 	ok(range.endOffset === 1);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.setEndAfter', function() {
@@ -120,7 +120,7 @@ test('range.setEndAfter', function() {
 	ok(range.endContainer === p);
 	ok(range.endOffset === 2);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.selectNode', function() {
@@ -136,7 +136,7 @@ test('range.selectNode', function() {
 	ok(range.endContainer === p);
 	ok(range.endOffset === 2);
 	ok(range.collapsed === false);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.selectNodeContents', function() {
@@ -150,7 +150,7 @@ test('range.selectNodeContents', function() {
 	ok(range.endContainer === strong);
 	ok(range.endOffset === 1);
 	ok(range.collapsed === false);
-	ok(range.commonAncestorContainer === strong);
+	ok(range.commonAncestor() === strong);
 	//2
 	img = K.query('#test-data-01 img');
 	range = K.range(document);
@@ -160,7 +160,7 @@ test('range.selectNodeContents', function() {
 	ok(range.endContainer === img.parentNode);
 	ok(range.endOffset === 4);
 	ok(range.collapsed === false);
-	ok(range.commonAncestorContainer === img.parentNode);
+	ok(range.commonAncestor() === img.parentNode);
 	//3
 	strong = K.query('#test-data-02 strong');
 	range = K.range(document);
@@ -170,7 +170,7 @@ test('range.selectNodeContents', function() {
 	ok(range.endContainer === strong);
 	ok(range.endOffset === 0);
 	ok(range.collapsed === true);
-	ok(range.commonAncestorContainer === strong);
+	ok(range.commonAncestor() === strong);
 	//4
 	p = K.query('#test-data-02 p');
 	range = K.range(document);
@@ -185,7 +185,7 @@ test('range.selectNodeContents', function() {
 		ok(range.endOffset === 9);
 	}
 	ok(range.collapsed === false);
-	ok(range.commonAncestorContainer === p);
+	ok(range.commonAncestor() === p);
 });
 
 test('range.collapse', function() {
@@ -370,7 +370,7 @@ test('range.cloneRange', function() {
 	ok(range.endContainer === cloneRange.endContainer);
 	ok(range.endOffset === cloneRange.endOffset);
 	ok(range.collapsed === cloneRange.collapsed);
-	ok(range.commonAncestorContainer === cloneRange.commonAncestorContainer);
+	ok(range.commonAncestor() === cloneRange.commonAncestor());
 });
 
 test('range.toString', function() {

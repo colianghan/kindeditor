@@ -17,7 +17,7 @@
 */
 
 function _menu(options) {
-	options.z = options.z || 19811213;
+	options.z = options.z || 811213;
 	var self = _widget(options),
 		div = self.div(),
 		remove = self.remove,

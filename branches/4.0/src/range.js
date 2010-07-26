@@ -55,33 +55,11 @@ var _START_TO_START = 0,
 function _updateCollapsed() {
 	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
 }
-//更新commonAncestorContainer
-function _updateCommonAncestor() {
-	function getParents(node) {
-		var parents = [];
-		while (node) {
-			parents.push(node);
-			node = node.parentNode;
-		}
-		return parents;
-	}
-	var parentsA = getParents(this.startContainer),
-		parentsB = getParents(this.endContainer),
-		i = 0, lenA = parentsA.length, lenB = parentsB.length, parentA, parentB;
-	while (++i) {
-		parentA = parentsA[lenA - i];
-		parentB = parentsB[lenB - i];
-		if (!parentA || !parentB || parentA !== parentB) {
-			break;
-		}
-	}
-	this.commonAncestorContainer = parentsA[lenA - i + 1];
-}
 /**
 	根据参数复制或删除KRange的内容。
-	cloneContents: copyAndDelete(true, false)
-	extractContents: copyAndDelete(true, true)
-	deleteContents: copyAndDelete(false, true)
+	cloneContents: _copyAndDelete.call(this, true, false)
+	extractContents: _copyAndDelete.call(this, true, true)
+	deleteContents: _copyAndDelete.call(this, false, true)
 */
 function _copyAndDelete(isCopy, isDelete) {
 	var self = this, doc = self.doc,
@@ -123,17 +101,31 @@ function _copyAndDelete(isCopy, isDelete) {
 			}
 			return false;
 		}
-		var node = parent.firstChild, testRange, nextNode;
+		var node = parent.firstChild, testRange, nextNode,
+			start = incStart = incEnd = end = false;
 		while (node) {
 			testRange = new KRange(doc);
 			testRange.selectNode(node);
-			if (testRange.compareBoundaryPoints(_END_TO_START, selfRange) >= 0) {
+			if (!start) {
+				start = testRange.compareBoundaryPoints(_START_TO_END, selfRange) > 0;
+			}
+			if (start && !incStart) {
+				incStart = testRange.compareBoundaryPoints(_START_TO_START, selfRange) >= 0;
+			}
+			if (incStart && !incEnd) {
+				incEnd = testRange.compareBoundaryPoints(_END_TO_END, selfRange) > 0;
+			}
+			if (incEnd && !end) {
+				end = testRange.compareBoundaryPoints(_END_TO_START, selfRange) >= 0;
+			}
+			if (end) {
 				return false;
 			}
+			//下一个节点保存在nextNode，因为下面可能会分割textNode
 			nextNode = node.nextSibling;
-			if (testRange.compareBoundaryPoints(_START_TO_END, selfRange) > 0) {
+			if (start) {
 				if (node.nodeType == 1) {
-					if (testRange.compareBoundaryPoints(_START_TO_START, selfRange) >= 0 && testRange.compareBoundaryPoints(_END_TO_END, selfRange) <= 0) {
+					if (incStart && !incEnd) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -169,7 +161,7 @@ function _copyAndDelete(isCopy, isDelete) {
 		}
 	}
 	var frag = doc.createDocumentFragment();
-	extractNodes(selfRange.commonAncestorContainer, frag);
+	extractNodes(selfRange.commonAncestor(), frag);
 	//isDelete为true时，删除range内容
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
@@ -401,19 +393,39 @@ function KRange(doc) {
 		Range的折叠状态，当Range处于折叠状态时true，否则false。
 	*/
 	self.collapsed = true;
-	/**
-		@name KindEditor.range#commonAncestorContainer
-		@property
-		@public
-		@type {Node}
-		@description
-		开始节点和结束节点的共同祖先Node。
-	*/
-	self.commonAncestorContainer = doc;
 	self.doc = doc;
 }
 
 KRange.prototype = {
+	/**
+		@name KindEditor.range#commonAncestor
+		@function
+		@public
+		@returns {Element}
+		@description
+		取得KRange的共同祖先。
+	*/
+	commonAncestor : function() {
+		function getParents(node) {
+			var parents = [];
+			while (node) {
+				parents.push(node);
+				node = node.parentNode;
+			}
+			return parents;
+		}
+		var parentsA = getParents(this.startContainer),
+			parentsB = getParents(this.endContainer),
+			i = 0, lenA = parentsA.length, lenB = parentsB.length, parentA, parentB;
+		while (++i) {
+			parentA = parentsA[lenA - i];
+			parentB = parentsB[lenB - i];
+			if (!parentA || !parentB || parentA !== parentB) {
+				break;
+			}
+		}
+		return parentsA[lenA - i + 1];
+	},
 	/**
 		@name KindEditor.range#setStart
 		@function
@@ -433,7 +445,6 @@ KRange.prototype = {
 			self.endOffset = offset;
 		}
 		_updateCollapsed.call(this);
-		_updateCommonAncestor.call(this);
 		return self;
 	},
 	/**
@@ -455,7 +466,6 @@ KRange.prototype = {
 			self.startOffset = offset;
 		}
 		_updateCollapsed.call(this);
-		_updateCommonAncestor.call(this);
 		return self;
 	},
 	/**

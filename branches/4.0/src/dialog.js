@@ -17,7 +17,7 @@
 */
 
 function _dialog(options) {
-	options.z = options.z || 19811213;
+	options.z = options.z || 811213;
 	var self = _widget(options),
 		remove = self.remove,
 		width = _addUnit(options.width),
@@ -105,7 +105,7 @@ function _dialog(options) {
 	var mask = _widget({
 		x : 0,
 		y : 0,
-		z : 19811212,
+		z : 811212,
 		cls : 'ke-dialog-mask',
 		width : docWidth,
 		height : docHeight

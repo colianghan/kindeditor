@@ -337,9 +337,15 @@ KCmd.prototype = {
 			if (self._preformat) {
 				wrapper = _mergeWrapper(self._preformat.wrapper, wrapper);
 			}
+			var textLength = 0;
+			if (sc.nodeType == 3) {
+				textLength = sc.nodeValue.length;
+			} else if (so > 0) {
+				textLength = sc.childNodes[so - 1].nodeValue.length;
+			}
 			self._preformat = {
 				wrapper : wrapper,
-				textLenth : K(sc).type == 3 ? sc.nodeValue.length : sc.childNodes[so - 1].nodeValue.length,
+				textLength : textLength,
 				range : range.cloneRange()
 			};
 			return self;
@@ -423,7 +429,7 @@ KCmd.prototype = {
 				node = nextNode;
 			}
 		}
-		wrapRange(range.commonAncestorContainer);
+		wrapRange(range.commonAncestor());
 		//select range
 		return self;
 	},
@@ -435,9 +441,9 @@ KCmd.prototype = {
 		var tempRange = range.cloneRange().collapse(isStart);
 		var node = tempRange.startContainer, pos = tempRange.startOffset,
 			parent = node.nodeType == 3 ? node.parentNode : node,
-			needSplit = false;
+			needSplit = false, knode;
 		while (parent && parent.parentNode) {
-			var knode = K(parent);
+			knode = K(parent);
 			if (!knode.isInline()) {
 				break;
 			}
@@ -489,7 +495,7 @@ KCmd.prototype = {
 		self.split(false, map);
 		//grep nodes which format will be removed
 		var nodeList = [];
-		K(range.commonAncestorContainer).scan(function(knode) {
+		K(range.commonAncestor()).scan(function(knode) {
 			var testRange = _range(doc);
 			testRange.selectNode(knode.get());
 			if (testRange.compareBoundaryPoints(_END_TO_START, range) >= 0) {
@@ -543,8 +549,8 @@ KCmd.prototype = {
 				range.setStart(remove.range.startContainer, remove.range.startOffset);
 			}
 			if (format) {
-				if (range.collapsed) {
-					range.setStart(sc.childNodes[so - 1], format.textLenth);
+				if (range.collapsed && so > 0) {
+					range.setStart(sc.childNodes[so - 1], format.textLength);
 				}
 				self.wrap(format.wrapper);
 			}
