@@ -3240,7 +3240,7 @@ function KEditor(options) {
 	self.srcElement = se;
 	self._handlers = {};
 	_each(_plugins, function() {
-		this.call(self);
+		this.call(self, KindEditor);
 	});
 }
 KEditor.prototype = {
@@ -3382,7 +3382,9 @@ KEditor.prototype = {
 		}
 		self.toolbar.remove();
 		self.edit.remove();
-		self._rightIcon.remove();
+		if (self._rightIcon) {
+			self._rightIcon.remove();
+		}
 		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
@@ -3512,22 +3514,17 @@ if (window.K === undefined) {
 }
 window.KindEditor = K;
 })(window);
-(function(K, undefined) {
-K.plugin(function() {
-	this.clickToolbar('source', function() {
-		this.toolbar.disable();
-		this.edit.design();
+KindEditor.plugin(function(K) {
+	var self = this;
+	self.clickToolbar('source', function() {
+		self.toolbar.disable();
+		self.edit.design();
 	});
-});
-K.plugin(function() {
-	this.clickToolbar('fullscreen', function() {
-		this.fullscreen();
+	self.clickToolbar('fullscreen', function() {
+		self.fullscreen();
 	});
-});
-K.plugin(function() {
-	this.clickToolbar('formatblock', function() {
-		var self = this,
-			blocks = self.lang('formatblock.formatBlock'),
+	self.clickToolbar('formatblock', function() {
+		var blocks = self.lang('formatblock.formatBlock'),
 			heights = {
 				h1 : 28,
 				h2 : 24,
@@ -3555,10 +3552,7 @@ K.plugin(function() {
 			});
 		});
 	});
-});
-K.plugin(function() {
-	this.clickToolbar('fontname', function() {
-		var self = this;
+	self.clickToolbar('fontname', function() {
 		var curVal = self.val('fontname'),
 			menu = self.createMenu({
 				name : 'fontname',
@@ -3574,11 +3568,8 @@ K.plugin(function() {
 			});
 		});
 	});
-});
-K.plugin(function() {
-	this.clickToolbar('fontsize', function() {
-		var self = this,
-			fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
+	self.clickToolbar('fontsize', function() {
+		var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
 			curVal = self.val('fontsize');
 			menu = self.createMenu({
 				name : 'fontsize',
@@ -3595,11 +3586,8 @@ K.plugin(function() {
 			});
 		});
 	});
-});
-K.each('forecolor,hilitecolor'.split(','), function(i, name) {
-	K.plugin(function() {
-		this.clickToolbar(name, function() {
-			var self = this;
+	K.each('forecolor,hilitecolor'.split(','), function(i, name) {
+		self.clickToolbar(name, function() {
 			self.createMenu({
 				name : name,
 				selectedColor : self.val(name) || 'default',
@@ -3609,12 +3597,31 @@ K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 			});
 		});
 	});
-});
-K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
-	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
-	'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
-	K.plugin(function() {
-		var self = this;
+	K.each(('cut,copy,paste').split(','), function(i, name) {
+		self.clickToolbar(name, function() {
+			self.focus();
+			try {
+				self.exec(name, null);
+			} catch(e) {
+				alert(self.lang(name + 'Error'));
+			}
+		});
+	});
+	self.clickToolbar('about', function() {
+		var html = '<div style="margin:20px;">' +
+			'<div>KindEditor ' + K.kindeditor + '</div>' +
+			'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
+			'</div>';
+		self.createDialog({
+			name : 'about',
+			width : 300,
+			title : self.lang('about'),
+			body : html
+		});
+	});
+	K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+		'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
+		'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
 		if (self.shortcutKeys[name]) {
 			self.afterCreate(function() {
 				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
@@ -3627,33 +3634,7 @@ K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorde
 		});
 	});
 });
-K.each(('cut,copy,paste').split(','), function(i, name) {
-	K.plugin(function() {
-		this.clickToolbar(name, function() {
-			this.focus();
-			try {
-				this.exec(name, null);
-			} catch(e) {
-				alert(this.lang(name + 'Error'));
-			}
-		});
-	});
-});
-K.plugin(function() {
-	this.clickToolbar('about', function() {
-		var html = '<div style="margin:20px;">' +
-			'<div>KindEditor ' + K.kindeditor + '</div>' +
-			'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
-			'</div>';
-		this.createDialog({
-			name : 'about',
-			width : 300,
-			title : this.lang('about'),
-			body : html
-		});
-	});
-});
-K.plugin(function() {
+KindEditor.plugin(function(K) {
 	this.clickToolbar('plainpaste', function() {
 		var self = this,
 			lang = self.lang('plainpaste.'),
@@ -3681,10 +3662,10 @@ K.plugin(function() {
 		textarea.get().focus();
 	});
 });
-K.plugin(function() {
-	this.clickToolbar('wordpaste', function() {
-		var self = this,
-			lang = self.lang('wordpaste.'),
+KindEditor.plugin(function(K) {
+	var self = this;
+	self.clickToolbar('wordpaste', function() {
+			var lang = self.lang('wordpaste.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<iframe style="width:415px;height:260px;border:1px solid #A0A0A0;" frameborder="0"></iframe>' +
@@ -3729,7 +3710,7 @@ K.plugin(function() {
 		iframe.get().contentWindow.focus();
 	});
 });
-K.plugin(function() {
+KindEditor.plugin(function(K) {
 	this.clickToolbar('link', function() {
 		var self = this,
 			lang = self.lang('link.'),
@@ -3760,9 +3741,9 @@ K.plugin(function() {
 		urlBox.get().focus();
 	});
 });
-K.plugin(function() {
+KindEditor.plugin(function(K) {
 	var self = this,
-		path = (this.emoticonsPath || this.scriptPath + 'emoticons/'),
+		path = (this.emoticonsPath || this.scriptPath + 'plugins/emoticons/images/'),
 		allowPreview = this.allowPreviewEmoticons === undefined ? true : this.allowPreviewEmoticons;
 	self.clickToolbar('emoticons', function() {
 		var rows = 5, cols = 9, total = 135, startNum = 0,
@@ -3877,4 +3858,3 @@ K.plugin(function() {
 		});
 	});
 });
-})(KindEditor);

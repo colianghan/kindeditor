@@ -243,7 +243,9 @@ KEditor.prototype = {
 		}
 		self.toolbar.remove();
 		self.edit.remove();
-		self._rightIcon.remove();
+		if (self._rightIcon) {
+			self._rightIcon.remove();
+		}
 		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
