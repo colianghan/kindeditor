@@ -380,8 +380,3 @@ if (_IE && _VERSION < 7) {
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
-
-if (window.K === undefined) {
-	window.K = K;
-}
-window.KindEditor = K;

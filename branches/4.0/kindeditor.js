@@ -127,6 +127,12 @@ var K = {
 	toMap : _toMap,
 	toArray : _toArray
 };
+var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
+	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
+	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
+	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
+	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
@@ -196,12 +202,6 @@ var _options = {
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
-var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
-	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
-	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
-	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
-	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
-	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
@@ -1254,6 +1254,10 @@ K = function(expr, root) {
 _each(_K, function(key, val) {
 	K[key] = val;
 });
+if (window.K === undefined) {
+	window.K = K;
+}
+window.KindEditor = K;
 var _START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
@@ -3509,10 +3513,6 @@ if (_IE && _VERSION < 7) {
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
-if (window.K === undefined) {
-	window.K = K;
-}
-window.KindEditor = K;
 })(window);
 KindEditor.plugin(function(K) {
 	var self = this;

@@ -61,6 +61,7 @@ test("hasClass/addClass/removeClass", function() {
 	knode.removeClass('ccc');
 	ok(!knode.hasClass('ccc'));
 	equals(div.className, '');
+	equals(K('<div></div>').addClass('aaa').removeClass('aaa').addClass('bbb').get().className, 'bbb');
 });
 
 test("contains",function(){

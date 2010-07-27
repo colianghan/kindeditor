@@ -306,15 +306,8 @@ function _toArray(obj, offset) {
 	return Array.prototype.slice.call(obj, offset || 0);
 }
 
-function _getScriptPath() {
-	var els = document.getElementsByTagName('script'), src;
-	for (var i = 0, len = els.length; i < len; i++) {
-		src = els[i].src || '';
-		if (/kindeditor[\w\-\.]*\.js/.test(src)) {
-			return src.substring(0, src.lastIndexOf('/') + 1);
-		}
-	}
-	return '';
+function _undef(val, defaultValue) {
+	return val === undefined ? defaultValue : val;
 }
 
 var _round = Math.round;
@@ -338,5 +331,13 @@ var K = {
 	unescape : _unescape,
 	toHex : _toHex,
 	toMap : _toMap,
-	toArray : _toArray
+	toArray : _toArray,
+	undef : _undef
 };
+
+var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
+	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
+	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
+	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
+	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');

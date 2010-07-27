@@ -607,3 +607,8 @@ K = function(expr, root) {
 _each(_K, function(key, val) {
 	K[key] = val;
 });
+
+if (window.K === undefined) {
+	window.K = K;
+}
+window.KindEditor = K;
