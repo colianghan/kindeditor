@@ -18,13 +18,10 @@
 #using "main.js"
 */
 
-var _plugins = {};
+var _plugins = [];
 
-function _plugin(name, obj) {
-	if (obj === undefined) {
-		return _plugins[name];
-	}
-	_plugins[name] = obj;
+function _plugin(fn) {
+	_plugins.push(fn);
 }
 
 var _language = {};
@@ -93,11 +90,42 @@ function KEditor(options) {
 	self.width = _addUnit(self.width);
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
+	//private properties
+	self._clickToolbarHandlers = {};
+	self._afterCreateHandlers = [];
+	_each(_plugins, function() {
+		this.call(self);
+	});
 }
 
 KEditor.prototype = {
 	lang : function(mixed) {
 		return _lang(mixed, this.langType);
+	},
+	clickToolbar : function(name, fn) {
+		var self = this;
+		if (fn === undefined) {
+			_each(self._clickToolbarHandlers[name], function() {
+				this.call(self);
+			});
+			return self;
+		}
+		if (!self._clickToolbarHandlers[name]) {
+			self._clickToolbarHandlers[name] = [];
+		}
+		self._clickToolbarHandlers[name].push(fn);
+		return self;
+	},
+	afterCreate : function(fn) {
+		var self = this;
+		if (fn === undefined) {
+			_each(self._afterCreateHandlers, function() {
+				this.call(self);
+			});
+			return self;
+		}
+		self._afterCreateHandlers.push(fn);
+		return self;
 	},
 	create : function() {
 		var self = this,
@@ -139,7 +167,7 @@ KEditor.prototype = {
 							return;
 						}
 					}
-					_plugin(name).call(this, self);
+					self.clickToolbar(name);
 				}
 			});
 		});
@@ -159,23 +187,6 @@ KEditor.prototype = {
 		K(doc, document).click(function(e) {
 			if (self.menu) {
 				self.hideMenu();
-			}
-		});
-		_each({
-			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I',
-			underline : 'U', selectall : 'A', print : 'P'
-		}, function(name, key) {
-			_ctrl(doc, key, function() {
-				if (_plugin(name)) {
-					_plugin(name).call(doc, self);
-				}
-			});
-			if (key == 'Z' || key == 'Y') {
-				_ctrl(textarea.get(), key, function() {
-					if (_plugin(name)) {
-						_plugin(name).call(textarea, self);
-					}
-				});
 			}
 		});
 		//create statusbar
@@ -220,6 +231,8 @@ KEditor.prototype = {
 		self.menu = self.dialog = null;
 		//reset size
 		self.resize(width, height);
+		//exec afterCreate event
+		self.afterCreate();
 		return self;
 	},
 	remove : function() {

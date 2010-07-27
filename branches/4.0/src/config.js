@@ -31,6 +31,10 @@ var _options = {
 	minWidth : 550,
 	minHeight : 100,
 	minChangeSize : 5,
+	shortcutKeys : {
+		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I',
+		underline : 'U', selectall : 'A', print : 'P'
+	},
 	items : [
 		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
 		'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
