@@ -538,7 +538,7 @@ KNode.prototype = {
 			var n = order ? node.firstChild : node.lastChild;
 			while (n) {
 				var next = order ? n.nextSibling : n.previousSibling;
-				if (fn(new KNode([n])) === false) {
+				if (fn(n) === false) {
 					return false;
 				}
 				if (walk(n) === false) {

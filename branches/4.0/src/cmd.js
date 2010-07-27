@@ -495,15 +495,8 @@ KCmd.prototype = {
 		self.split(false, map);
 		//grep nodes which format will be removed
 		var nodeList = [];
-		K(range.commonAncestor()).scan(function(knode) {
-			var testRange = _range(doc);
-			testRange.selectNode(knode.get());
-			if (testRange.compareBoundaryPoints(_END_TO_START, range) >= 0) {
-				return false;
-			}
-			if (testRange.compareBoundaryPoints(_START_TO_START, range) >= 0) {
-				nodeList.push(knode);
-			}
+		K(range.commonAncestor()).scan(function(node) {
+			nodeList.push(K(node));
 		});
 		//remove empty elements
 		var sc = range.startContainer, so = range.startOffset,
@@ -535,7 +528,6 @@ KCmd.prototype = {
 		_each(nodeList, function() {
 			_removeAttrOrCss(this, map);
 		});
-		//select range
 		return self;
 	},
 	_applyPreformat : function() {
