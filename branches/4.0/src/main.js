@@ -91,8 +91,7 @@ function KEditor(options) {
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
 	//private properties
-	self._clickToolbarHandlers = {};
-	self._afterCreateHandlers = [];
+	self._handlers = {};
 	_each(_plugins, function() {
 		this.call(self);
 	});
@@ -102,30 +101,28 @@ KEditor.prototype = {
 	lang : function(mixed) {
 		return _lang(mixed, this.langType);
 	},
-	clickToolbar : function(name, fn) {
+	handler : function(key, fn) {
 		var self = this;
+		if (!self._handlers[key]) {
+			self._handlers[key] = [];
+		}
 		if (fn === undefined) {
-			_each(self._clickToolbarHandlers[name], function() {
+			_each(self._handlers[key], function() {
 				this.call(self);
 			});
 			return self;
 		}
-		if (!self._clickToolbarHandlers[name]) {
-			self._clickToolbarHandlers[name] = [];
-		}
-		self._clickToolbarHandlers[name].push(fn);
+		self._handlers[key].push(fn);
 		return self;
 	},
+	clickToolbar : function(name, fn) {
+		return this.handler('clickToolbar' + name, fn);
+	},
 	afterCreate : function(fn) {
-		var self = this;
-		if (fn === undefined) {
-			_each(self._afterCreateHandlers, function() {
-				this.call(self);
-			});
-			return self;
-		}
-		self._afterCreateHandlers.push(fn);
-		return self;
+		return this.handler('afterCreate', fn);
+	},
+	beforeHideMenu : function(fn) {
+		return this.handler('beforeHideMenu', fn);
 	},
 	create : function() {
 		var self = this,
@@ -190,10 +187,10 @@ KEditor.prototype = {
 			}
 		});
 		//create statusbar
-		var statusbar = K('<div class="ke-statusbar"></div>');
+		var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
 		container.append(statusbar);
 		if (!fullscreenMode) {
-			var rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
 			statusbar.append(rightIcon);
 			_bindDragEvent({
 				moveEl : container,
@@ -229,6 +226,7 @@ KEditor.prototype = {
 		self.edit = edit;
 		self.statusbar = statusbar;
 		self.menu = self.dialog = null;
+		self._rightIcon = rightIcon;
 		//reset size
 		self.resize(width, height);
 		//exec afterCreate event
@@ -238,10 +236,14 @@ KEditor.prototype = {
 	remove : function() {
 		var self = this;
 		if (self.menu) {
-			self.menu.remove();
+			self.hideMenu();
+		}
+		if (self.dialog) {
+			self.hideDialog();
 		}
 		self.toolbar.remove();
 		self.edit.remove();
+		self._rightIcon.remove();
 		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
@@ -313,6 +315,7 @@ KEditor.prototype = {
 		return self.menu;
 	},
 	hideMenu : function() {
+		this.beforeHideMenu();
 		this.menu.remove();
 		this.menu = null;
 		return this;
@@ -325,14 +328,14 @@ KEditor.prototype = {
 			name : self.lang('close'),
 			click : function(e) {
 				self.hideDialog();
-				self.edit.focus();
+				self.focus();
 			}
 		};
 		options.noBtn = {
 			name : self.lang('no'),
 			click : function(e) {
 				self.hideDialog();
-				self.edit.focus();
+				self.focus();
 			}
 		};
 		return (self.dialog = _dialog(options));

@@ -62,6 +62,7 @@
 				K('#create1').click(function(e) {
 					if (!editor1) {
 						editor1 = K.create('textarea[name=editor1]', {
+							scriptPath : '../',
 							designMode : true
 						});
 					}
@@ -69,6 +70,7 @@
 				K('#create2').click(function(e) {
 					if (!editor2) {
 						editor2 = K.create(K('textarea[name=editor2]').get(), {
+							scriptPath : '../',
 							langType : 'en'
 						});
 					}

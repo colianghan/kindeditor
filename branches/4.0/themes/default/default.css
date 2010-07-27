@@ -327,15 +327,13 @@
 .ke-edit {
 	padding: 5px 0 3px 5px;
 }
-.ke-edit-iframe {
+.ke-edit-iframe,
+.ke-edit-textarea {
 	border: 0;
 	margin: 0;
 	padding: 0;
 }
 .ke-edit-textarea {
-	border: 0;
-	margin: 0;
-	padding: 0;
 	font: 12px/1.5 "Consolas", "Monaco", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
 	color: #000;
 	overflow: auto;
@@ -567,7 +565,9 @@
 	overflow: auto;
 	resize: none;
 }
-.ke-dialog-body textarea:focus {
+.ke-dialog-body textarea:focus,
+.ke-dialog-body input:focus,
+.ke-dialog-body select:focus {
 	outline: none;
 }
 .ke-dialog-body label {
@@ -575,9 +575,7 @@
 	cursor: pointer;
 	font-weight: bold;
 }
-.ke-dialog-body input {
-	vertical-align:middle;
-}
+.ke-dialog-body input,
 .ke-dialog-body img {
 	vertical-align:middle;
 }
@@ -586,9 +584,7 @@
 	text-align: right;
 	padding:0 0 5px 0;
 }
-.ke-dialog-preview {
-	margin: 5px;
-}
+.ke-dialog-preview,
 .ke-dialog-yes {
 	margin: 5px;
 }
@@ -599,4 +595,63 @@
 	background-color:#FFF;
 	filter:alpha(opacity=50);
 	opacity:0.5;
+}
+/* emoticons */
+.ke-plugin-emoticons-wrapper {
+	position: relative;
+}
+.ke-plugin-emoticons-preview {
+	position: absolute;
+	text-align: center;
+	margin: 2px;
+	padding: 10px;
+	top: 0;
+	border: 1px solid #A0A0A0;
+	background-color: #FFFFFF;
+	display: none;
+}
+.ke-plugin-emoticons-preview-img {
+	border:0;
+	margin:0;
+	padding:0;
+}
+.ke-plugin-emoticons-table {
+	border:0;
+	margin:0;
+	padding:0;
+	border-collapse:separate;
+}
+.ke-plugin-emoticons-cell {
+	margin:0;
+	padding:1px;
+	border:1px solid #F0F0EE;
+	cursor:pointer;
+}
+.ke-plugin-emoticons-cell-on {
+	border: 1px solid #5690D2;
+	background-color: #E9EFF6;
+}
+.ke-plugin-emoticons-img {
+	display:block;
+	background-repeat:no-repeat;
+	overflow:hidden;
+	margin:2px;
+	width:24px;
+	height:24px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+.ke-plugin-emoticons-page {
+	text-align: right;
+	margin: 5px;
+	padding: 0;
+	border: 0;
+	font: 12px/1 "sans serif",tahoma,verdana,helvetica;
+	color: #333;
+	text-decoration: none;
+}
+.ke-plugin-emoticons-page a {
+	color: #337FE5;
+	text-decoration: none;
 }
