@@ -3635,17 +3635,17 @@ KindEditor.plugin(function(K) {
 	});
 });
 KindEditor.plugin(function(K) {
-	this.clickToolbar('plainpaste', function() {
-		var self = this,
-			lang = self.lang('plainpaste.'),
+	var self = this, name = 'plainpaste';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 				'</div>',
 			dialog = self.createDialog({
-				name : 'plainpaste',
+				name : name,
 				width : 450,
-				title : self.lang('plainpaste'),
+				title : self.lang(name),
 				body : html,
 				yesBtn : {
 					name : self.lang('yes'),
@@ -3663,17 +3663,17 @@ KindEditor.plugin(function(K) {
 	});
 });
 KindEditor.plugin(function(K) {
-	var self = this;
-	self.clickToolbar('wordpaste', function() {
-			var lang = self.lang('wordpaste.'),
+	var self = this, name = 'wordpaste';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<iframe style="width:415px;height:260px;border:1px solid #A0A0A0;" frameborder="0"></iframe>' +
 				'</div>',
 			dialog = self.createDialog({
-				name : 'wordpaste',
+				name : name,
 				width : 450,
-				title : self.lang('wordpaste'),
+				title : self.lang(name),
 				body : html,
 				yesBtn : {
 					name : self.lang('yes'),
@@ -3711,9 +3711,9 @@ KindEditor.plugin(function(K) {
 	});
 });
 KindEditor.plugin(function(K) {
-	this.clickToolbar('link', function() {
-		var self = this,
-			lang = self.lang('link.'),
+	var self = this, name = 'link';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
 				'<input type="text" name="url" value="" style="width:90%;" /></div>' +
@@ -3721,9 +3721,9 @@ KindEditor.plugin(function(K) {
 				'<select name="type"></select>' +
 				'</div>',
 			dialog = self.createDialog({
-				name : 'link',
+				name : name,
 				width : 400,
-				title : self.lang('link'),
+				title : self.lang(name),
 				body : html,
 				yesBtn : {
 					name : self.lang('yes'),
@@ -3744,7 +3744,8 @@ KindEditor.plugin(function(K) {
 KindEditor.plugin(function(K) {
 	var self = this,
 		path = (this.emoticonsPath || this.scriptPath + 'plugins/emoticons/images/'),
-		allowPreview = this.allowPreviewEmoticons === undefined ? true : this.allowPreviewEmoticons;
+		allowPreview = this.allowPreviewEmoticons === undefined ? true : this.allowPreviewEmoticons,
+		currentPageNum = 1;
 	self.clickToolbar('emoticons', function() {
 		var rows = 5, cols = 9, total = 135, startNum = 0,
 			cells = rows * cols, pages = Math.ceil(total / cells),
@@ -3761,6 +3762,32 @@ KindEditor.plugin(function(K) {
 			previewImg = K('<img class="ke-plugin-emoticons-preview-img" src="' + path + startNum + '.gif" />');
 			wrapperDiv.append(previewDiv);
 			previewDiv.append(previewImg);
+		}
+		function bindCellEvent(cell, j, num) {
+			if (previewDiv) {
+				cell.mouseover(function() {
+					if (j > colsHalf) {
+						previewDiv.css('left', 0);
+						previewDiv.css('right', '');
+					} else {
+						previewDiv.css('left', '');
+						previewDiv.css('right', 0);
+					}
+					previewImg.attr('src', path + num + '.gif');
+					K(this).addClass('ke-plugin-emoticons-cell-on');
+				});
+			} else {
+				cell.mouseover(function() {
+					K(this).addClass('ke-plugin-emoticons-cell-on');
+				});
+			}
+			cell.mouseout(function() {
+				K(this).removeClass('ke-plugin-emoticons-cell-on');
+			});
+			cell.click(function(e) {
+				self.insertHtml('<img src="' + path + num + '.gif" border="0" alt="" />').hideMenu().focus();
+				e.stop();
+			});
 		}
 		function createEmoticonsTable(pageNum, parentDiv) {
 			var table = document.createElement('table');
@@ -3784,34 +3811,7 @@ KindEditor.plugin(function(K) {
 				for (var j = 0; j < cols; j++) {
 					var cell = K(row.insertCell(j));
 					cell.addClass('ke-plugin-emoticons-cell');
-					if (previewDiv) {
-						(function(j, num) {
-							cell.mouseover(function() {
-								if (j > colsHalf) {
-									previewDiv.css('left', 0);
-									previewDiv.css('right', '');
-								} else {
-									previewDiv.css('left', '');
-									previewDiv.css('right', 0);
-								}
-								previewImg.attr('src', path + num + '.gif');
-								K(this).addClass('ke-plugin-emoticons-cell-on');
-							});
-						})(j, num);
-					} else {
-						cell.mouseover(function() {
-							K(this).addClass('ke-plugin-emoticons-cell-on');
-						});
-					}
-					cell.mouseout(function() {
-						K(this).removeClass('ke-plugin-emoticons-cell-on');
-					});
-					(function(num) {
-						cell.click(function(e) {
-							self.insertHtml('<img src="' + path + num + '.gif" border="0" alt="" />').hideMenu().focus();
-							e.stop();
-						});
-					})(num);
+					bindCellEvent(cell, j, num);
 					var span = K('<span class="ke-plugin-emoticons-img"></span>')
 						.css('background-position', '-' + (24 * num) + 'px 0px')
 						.css('background-image', 'url(' + path + 'static.gif)');
@@ -3822,28 +3822,31 @@ KindEditor.plugin(function(K) {
 			}
 			return table;
 		}
-		var table = createEmoticonsTable(1, wrapperDiv);
+		var table = createEmoticonsTable(currentPageNum, wrapperDiv);
 		function removeEvent() {
 			K.each(elements, function() {
 				this.unbind();
 			});
 		}
+		var pageDiv;
+		function bindPageEvent(el, pageNum) {
+			el.click(function(e) {
+				removeEvent();
+				table.parentNode.removeChild(table);
+				pageDiv.remove();
+				table = createEmoticonsTable(pageNum, wrapperDiv);
+				createPageTable(pageNum);
+				currentPageNum = pageNum;
+				e.stop();
+			});
+		}
 		function createPageTable(currentPageNum) {
-			var pageDiv = K('<div class="ke-plugin-emoticons-page"></div>');
+			pageDiv = K('<div class="ke-plugin-emoticons-page"></div>');
 			wrapperDiv.append(pageDiv);
 			for (var pageNum = 1; pageNum <= pages; pageNum++) {
 				if (currentPageNum !== pageNum) {
 					var a = K('<a href="javascript:;">[' + pageNum + ']</a>');
-					(function(pageNum) {
-						a.click(function(e) {
-							removeEvent();
-							table.parentNode.removeChild(table);
-							pageDiv.remove();
-							table = createEmoticonsTable(pageNum, wrapperDiv);
-							createPageTable(pageNum);
-							e.stop();
-						});
-					})(pageNum);
+					bindPageEvent(a, pageNum);
 					pageDiv.append(a);
 					elements.push(a);
 				} else {
@@ -3852,9 +3855,40 @@ KindEditor.plugin(function(K) {
 				pageDiv.append(K('@&nbsp;'));
 			}
 		}
-		createPageTable(1);
+		createPageTable(currentPageNum);
 		self.beforeHideMenu(function() {
 			removeEvent();
 		});
+	});
+});
+KindEditor.plugin(function(K) {
+	var self = this, name = 'image';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
+			html = '<div style="margin:10px;">' +
+				'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
+				'<input type="text" name="url" value="" style="width:90%;" /></div>' +
+				'<div style="margin-bottom:10px;"><label>' + lang.linkType + '</label>' +
+				'<select name="type"></select>' +
+				'</div>',
+			dialog = self.createDialog({
+				name : name,
+				width : 400,
+				title : self.lang(name),
+				body : html,
+				yesBtn : {
+					name : self.lang('yes'),
+					click : function(e) {
+						self.exec('createlink', urlBox.val(), typeBox.val()).hideDialog().focus();
+					}
+				}
+			}),
+			div = dialog.div(),
+			urlBox = K('input[name="url"]', div),
+			typeBox = K('select[name="type"]', div);
+		typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
+		typeBox.get().options[1] = new Option(lang.selfWindow, '');
+		urlBox.val(self.val('createlink'));
+		urlBox.get().focus();
 	});
 });

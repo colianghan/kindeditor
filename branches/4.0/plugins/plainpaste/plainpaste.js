@@ -12,17 +12,17 @@
  */
 
 KindEditor.plugin(function(K) {
-	this.clickToolbar('plainpaste', function() {
-		var self = this,
-			lang = self.lang('plainpaste.'),
+	var self = this, name = 'plainpaste';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
 				'</div>',
 			dialog = self.createDialog({
-				name : 'plainpaste',
+				name : name,
 				width : 450,
-				title : self.lang('plainpaste'),
+				title : self.lang(name),
 				body : html,
 				yesBtn : {
 					name : self.lang('yes'),

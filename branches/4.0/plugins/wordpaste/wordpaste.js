@@ -12,17 +12,17 @@
  */
 
 KindEditor.plugin(function(K) {
-	var self = this;
-	self.clickToolbar('wordpaste', function() {
-			var lang = self.lang('wordpaste.'),
+	var self = this, name = 'wordpaste';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<iframe style="width:415px;height:260px;border:1px solid #A0A0A0;" frameborder="0"></iframe>' +
 				'</div>',
 			dialog = self.createDialog({
-				name : 'wordpaste',
+				name : name,
 				width : 450,
-				title : self.lang('wordpaste'),
+				title : self.lang(name),
 				body : html,
 				yesBtn : {
 					name : self.lang('yes'),

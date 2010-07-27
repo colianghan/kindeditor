@@ -43,6 +43,7 @@
 			<fileset file="${plugins}/wordpaste/wordpaste.js"/>
 			<fileset file="${plugins}/link/link.js"/>
 			<fileset file="${plugins}/emoticons/emoticons.js"/>
+			<fileset file="${plugins}/image/image.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"

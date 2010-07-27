@@ -12,9 +12,9 @@
  */
 
 KindEditor.plugin(function(K) {
-	this.clickToolbar('link', function() {
-		var self = this,
-			lang = self.lang('link.'),
+	var self = this, name = 'link';
+	self.clickToolbar(name, function() {
+		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
 				'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
 				'<input type="text" name="url" value="" style="width:90%;" /></div>' +
@@ -22,9 +22,9 @@ KindEditor.plugin(function(K) {
 				'<select name="type"></select>' +
 				'</div>',
 			dialog = self.createDialog({
-				name : 'link',
+				name : name,
 				width : 400,
-				title : self.lang('link'),
+				title : self.lang(name),
 				body : html,
 				yesBtn : {
 					name : self.lang('yes'),
