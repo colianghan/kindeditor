@@ -31,8 +31,7 @@ K.plugin('formatblock', function(editor) {
 			H4 : 14,
 			p : 12
 		},
-		cmd = editor.edit.cmd,
-		curVal = cmd.val('formatblock'),
+		curVal = editor.val('formatblock'),
 		menu = editor.createMenu({
 			name : 'formatblock',
 			width : editor.langType == 'en' ? 200 : 150
@@ -46,19 +45,15 @@ K.plugin('formatblock', function(editor) {
 			title : '<span style="' + style + '">' + val + '</span>',
 			height : heights[key] + 12,
 			checked : (curVal === key || curVal === val),
-			click : function(e) {
-				cmd.select();
-				cmd.formatblock('<' + key.toUpperCase() + '>');
-				editor.hideMenu();
-				e.stop();
+			click : function() {
+				editor.select().exec('formatblock', '<' + key.toUpperCase() + '>').hideMenu();
 			}
 		});
 	});
 });
 
 K.plugin('fontname', function(editor) {
-	var cmd = editor.edit.cmd,
-		curVal = cmd.val('fontname'),
+	var curVal = editor.val('fontname'),
 		menu = editor.createMenu({
 			name : 'fontname',
 			width : 150
@@ -67,9 +62,8 @@ K.plugin('fontname', function(editor) {
 		menu.addItem({
 			title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 			checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
-			click : function(e) {
-				editor.hideMenu();
-				e.stop();
+			click : function() {
+				editor.exec('fontname', key).hideMenu();
 			}
 		});
 	});
@@ -77,8 +71,7 @@ K.plugin('fontname', function(editor) {
 
 K.plugin('fontsize', function(editor) {
 	var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-		cmd = editor.edit.cmd,
-		curVal = cmd.val('fontsize');
+		curVal = editor.val('fontsize');
 		menu = editor.createMenu({
 			name : 'fontsize',
 			width : 150
@@ -88,10 +81,8 @@ K.plugin('fontsize', function(editor) {
 			title : '<span style="font-size:' + val + ';">' + val + '</span>',
 			height : K.removeUnit(val) + 12,
 			checked : curVal === val,
-			click : function(e) {
-				cmd.fontsize(val);
-				editor.hideMenu();
-				e.stop();
+			click : function() {
+				editor.exec('fontsize', val).hideMenu();
 			}
 		});
 	});
@@ -99,14 +90,11 @@ K.plugin('fontsize', function(editor) {
 
 K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		var cmd = editor.edit.cmd,
-			curVal = cmd.val(name);
 		editor.createMenu({
 			name : name,
-			selectedColor : curVal || 'default',
+			selectedColor : editor.val(name) || 'default',
 			click : function(color) {
-				cmd[name](color);
-				editor.hideMenu();
+				editor.exec(name, color).hideMenu();
 			}
 		});
 	});
@@ -116,16 +104,15 @@ K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorde
 	'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 	'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		editor.edit.focus();
-		editor.edit.cmd[name](null);
+		editor.focus().exec(name, null);
 	});
 });
 
 K.each(('cut,copy,paste').split(','), function(i, name) {
 	K.plugin(name, function(editor) {
-		editor.edit.focus();
+		editor.focus();
 		try {
-			editor.edit.cmd[name](null);
+			editor.exec(name, null);
 		} catch(e) {
 			alert(editor.lang(name + 'Error'));
 		}
@@ -163,13 +150,11 @@ K.plugin('plainpaste', function(editor) {
 					html = K.escape(html);
 					html = html.replace(/ /g, '&nbsp;');
 					html = html.replace(/\r\n|\n|\r/g, "<br />$&");
-					editor.edit.cmd.inserthtml(html);
-					editor.hideDialog();
-					editor.edit.focus();
+					editor.insertHtml(html).hideDialog().focus();
 				}
 			}
 		}),
-		textarea = K('textarea', dialog.div().get());
+		textarea = K('textarea', dialog.div());
 	textarea.get().focus();
 });
 
@@ -195,9 +180,7 @@ K.plugin('wordpaste', function(editor) {
 					str = str.replace(/<w:[^>]+>(\n|.)*?<\/w:[^>]+>/ig, '');
 					str = str.replace(/<xml>(\n|.)*?<\/xml>/ig, '');
 					str = str.replace(/\r\n|\n|\r/ig, '');
-					editor.edit.cmd.inserthtml(str);
-					editor.hideDialog();
-					editor.edit.focus();
+					editor.insertHtml(str).hideDialog().focus();
 				}
 			}
 		}),
@@ -223,7 +206,6 @@ K.plugin('wordpaste', function(editor) {
 
 K.plugin('link', function(editor) {
 	var lang = editor.lang('link.'),
-		cmd = editor.edit.cmd,
 		html = '<div style="margin:10px;">' +
 			'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
 			'<input type="text" name="url" value="" style="width:90%;" /></div>' +
@@ -238,9 +220,7 @@ K.plugin('link', function(editor) {
 			yesBtn : {
 				name : editor.lang('yes'),
 				click : function(e) {
-					cmd.createlink(urlBox.val(), typeBox.val());
-					editor.hideDialog();
-					editor.edit.focus();
+					editor.exec('createlink', urlBox.val(), typeBox.val()).hideDialog().focus();
 				}
 			}
 		}),
@@ -249,7 +229,7 @@ K.plugin('link', function(editor) {
 		typeBox = K('select[name="type"]', div);
 	typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
 	typeBox.get().options[1] = new Option(lang.selfWindow, '');
-	urlBox.val(cmd.val('createlink'));
+	urlBox.val(editor.val('createlink'));
 	urlBox.get().focus();
 });
 

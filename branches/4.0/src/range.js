@@ -102,7 +102,7 @@ function _copyAndDelete(isCopy, isDelete) {
 			return false;
 		}
 		var node = parent.firstChild, testRange, nextNode,
-			start = incStart = incEnd = end = false;
+			start = false, incStart = false, incEnd = false, end = false;
 		while (node) {
 			testRange = new KRange(doc);
 			testRange.selectNode(node);

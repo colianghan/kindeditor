@@ -58,7 +58,10 @@ function _menu(options) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
 		});
-		itemDiv.click(item.click);
+		itemDiv.click(function(e) {
+			item.click.call(K(this));
+			e.stop();
+		});
 		itemDiv.append(leftDiv);
 		if (centerDiv) {
 			itemDiv.append(centerDiv);

@@ -245,6 +245,37 @@ KEditor.prototype = {
 				self.edit.height(height);
 			}
 		}
+		return self;
+	},
+	select : function() {
+		this.edit.cmd.select();
+		return this;
+	},
+	html : function(val) {
+		if (val === undefined) {
+			return this.edit.html();
+		}
+		this.edit.html(val);
+		return this;
+	},
+	insertHtml : function(val) {
+		this.edit.cmd.inserthtml(val);
+		return this;
+	},
+	val : function(key) {
+		return this.edit.cmd.val(key);
+	},
+	state : function(key) {
+		return this.edit.cmd.state(key);
+	},
+	exec : function(key) {
+		var cmd = this.edit.cmd;
+		cmd[key].apply(cmd, _toArray(arguments, 1));
+		return this;
+	},
+	focus : function() {
+		this.edit.focus();
+		return this;
 	},
 	fullscreen : function(bool) {
 		var self = this;
@@ -271,6 +302,7 @@ KEditor.prototype = {
 	hideMenu : function() {
 		this.menu.remove();
 		this.menu = null;
+		return this;
 	},
 	createDialog : function(options) {
 		var self = this,
@@ -295,6 +327,7 @@ KEditor.prototype = {
 	hideDialog : function() {
 		this.dialog.remove();
 		this.dialog = null;
+		return this;
 	}
 };
 

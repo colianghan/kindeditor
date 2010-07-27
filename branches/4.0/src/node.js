@@ -574,8 +574,13 @@ K = function(expr, root) {
 		if (root) {
 			root = _get(root);
 		}
+		var length = expr.length;
+		if (expr.charAt(0) === '@') {
+			expr = expr.substr(1);
+		}
 		//HTML
-		if (/<.+>/.test(expr)) {
+		//包含HTML代码，或者第一个字符为"@"时当做HTML字符串
+		if (expr.length !== length || /<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
 				div = doc.createElement('div'), list = [];
 			_setHtml(div, expr);

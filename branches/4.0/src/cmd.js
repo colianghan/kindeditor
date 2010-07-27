@@ -591,10 +591,6 @@ KCmd.prototype = {
 		}
 		return null;
 	},
-	//Reference: document.execCommand
-	exec : function(key, val) {
-		return this[key.toLowerCase()](val);
-	},
 	//Reference: document.queryCommandState
 	state : function(key) {
 		var self = this, doc = self.doc, range = self.range, bool = false;
@@ -742,7 +738,7 @@ KCmd.prototype = {
 	inserthtml : function(val) {
 		var self = this, doc = self.doc, range = self.range,
 			frag = doc.createDocumentFragment();
-		K(val, doc).each(function() {
+		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
 		});
 		range.deleteContents();

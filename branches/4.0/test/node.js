@@ -6,6 +6,8 @@ test('K(html)',function(){
 	equals(node.length, 3);
 	equals(node.attr('class'), 'abc');
 	equals(node.css('font-size'), '12px');
+	equals(K('@p > strong').get().nodeValue, 'p > strong');
+	equals(K('@1 2 ').get().nodeValue, '1 2 ');
 });
 
 test('K(selector)',function(){

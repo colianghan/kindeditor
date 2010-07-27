@@ -302,8 +302,8 @@ function _toMap(str, delimiter) {
 	return map;
 }
 
-function _toArray(obj) {
-	return Array.prototype.slice.call(obj, 0);
+function _toArray(obj, offset) {
+	return Array.prototype.slice.call(obj, offset || 0);
 }
 
 function _getScriptPath() {
