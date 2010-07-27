@@ -3238,8 +3238,7 @@ function KEditor(options) {
 	self.width = _addUnit(self.width);
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
-	self._clickToolbarHandlers = {};
-	self._afterCreateHandlers = [];
+	self._handlers = {};
 	_each(_plugins, function() {
 		this.call(self);
 	});
@@ -3248,30 +3247,28 @@ KEditor.prototype = {
 	lang : function(mixed) {
 		return _lang(mixed, this.langType);
 	},
-	clickToolbar : function(name, fn) {
+	handler : function(key, fn) {
 		var self = this;
+		if (!self._handlers[key]) {
+			self._handlers[key] = [];
+		}
 		if (fn === undefined) {
-			_each(self._clickToolbarHandlers[name], function() {
+			_each(self._handlers[key], function() {
 				this.call(self);
 			});
 			return self;
 		}
-		if (!self._clickToolbarHandlers[name]) {
-			self._clickToolbarHandlers[name] = [];
-		}
-		self._clickToolbarHandlers[name].push(fn);
+		self._handlers[key].push(fn);
 		return self;
 	},
+	clickToolbar : function(name, fn) {
+		return this.handler('clickToolbar' + name, fn);
+	},
 	afterCreate : function(fn) {
-		var self = this;
-		if (fn === undefined) {
-			_each(self._afterCreateHandlers, function() {
-				this.call(self);
-			});
-			return self;
-		}
-		self._afterCreateHandlers.push(fn);
-		return self;
+		return this.handler('afterCreate', fn);
+	},
+	beforeHideMenu : function(fn) {
+		return this.handler('beforeHideMenu', fn);
 	},
 	create : function() {
 		var self = this,
@@ -3332,10 +3329,10 @@ KEditor.prototype = {
 				self.hideMenu();
 			}
 		});
-		var statusbar = K('<div class="ke-statusbar"></div>');
+		var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
 		container.append(statusbar);
 		if (!fullscreenMode) {
-			var rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
 			statusbar.append(rightIcon);
 			_bindDragEvent({
 				moveEl : container,
@@ -3370,6 +3367,7 @@ KEditor.prototype = {
 		self.edit = edit;
 		self.statusbar = statusbar;
 		self.menu = self.dialog = null;
+		self._rightIcon = rightIcon;
 		self.resize(width, height);
 		self.afterCreate();
 		return self;
@@ -3377,10 +3375,14 @@ KEditor.prototype = {
 	remove : function() {
 		var self = this;
 		if (self.menu) {
-			self.menu.remove();
+			self.hideMenu();
+		}
+		if (self.dialog) {
+			self.hideDialog();
 		}
 		self.toolbar.remove();
 		self.edit.remove();
+		self._rightIcon.remove();
 		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
@@ -3452,6 +3454,7 @@ KEditor.prototype = {
 		return self.menu;
 	},
 	hideMenu : function() {
+		this.beforeHideMenu();
 		this.menu.remove();
 		this.menu = null;
 		return this;
@@ -3464,14 +3467,14 @@ KEditor.prototype = {
 			name : self.lang('close'),
 			click : function(e) {
 				self.hideDialog();
-				self.edit.focus();
+				self.focus();
 			}
 		};
 		options.noBtn = {
 			name : self.lang('no'),
 			click : function(e) {
 				self.hideDialog();
-				self.edit.focus();
+				self.focus();
 			}
 		};
 		return (self.dialog = _dialog(options));
@@ -3755,6 +3758,123 @@ K.plugin(function() {
 		typeBox.get().options[1] = new Option(lang.selfWindow, '');
 		urlBox.val(self.val('createlink'));
 		urlBox.get().focus();
+	});
+});
+K.plugin(function() {
+	var self = this,
+		path = (this.emoticonsPath || this.scriptPath + 'emoticons/'),
+		allowPreview = this.allowPreviewEmoticons === undefined ? true : this.allowPreviewEmoticons;
+	self.clickToolbar('emoticons', function() {
+		var rows = 5, cols = 9, total = 135, startNum = 0,
+			cells = rows * cols, pages = Math.ceil(total / cells),
+			colsHalf = Math.floor(cols / 2),
+			wrapperDiv = K('<div class="ke-plugin-emoticons-wrapper"></div>'),
+			elements = [],
+			menu = self.createMenu({
+				name : 'emoticons'
+			});
+		menu.div().append(wrapperDiv);
+		var previewDiv, previewImg;
+		if (allowPreview) {
+			previewDiv = K('<div class="ke-plugin-emoticons-preview"></div>').css('right', 0);
+			previewImg = K('<img class="ke-plugin-emoticons-preview-img" src="' + path + startNum + '.gif" />');
+			wrapperDiv.append(previewDiv);
+			previewDiv.append(previewImg);
+		}
+		function createEmoticonsTable(pageNum, parentDiv) {
+			var table = document.createElement('table');
+			parentDiv.append(table);
+			if (previewDiv) {
+				K(table).mouseover(function() {
+					previewDiv.show();
+				});
+				K(table).mouseout(function() {
+					previewDiv.hide();
+				});
+				elements.push(K(table));
+			}
+			table.className = 'ke-plugin-emoticons-table';
+			table.cellPadding = 0;
+			table.cellSpacing = 0;
+			table.border = 0;
+			var num = (pageNum - 1) * cells + startNum;
+			for (var i = 0; i < rows; i++) {
+				var row = table.insertRow(i);
+				for (var j = 0; j < cols; j++) {
+					var cell = K(row.insertCell(j));
+					cell.addClass('ke-plugin-emoticons-cell');
+					if (previewDiv) {
+						(function(j, num) {
+							cell.mouseover(function() {
+								if (j > colsHalf) {
+									previewDiv.css('left', 0);
+									previewDiv.css('right', '');
+								} else {
+									previewDiv.css('left', '');
+									previewDiv.css('right', 0);
+								}
+								previewImg.attr('src', path + num + '.gif');
+								K(this).addClass('ke-plugin-emoticons-cell-on');
+							});
+						})(j, num);
+					} else {
+						cell.mouseover(function() {
+							K(this).addClass('ke-plugin-emoticons-cell-on');
+						});
+					}
+					cell.mouseout(function() {
+						K(this).removeClass('ke-plugin-emoticons-cell-on');
+					});
+					(function(num) {
+						cell.click(function(e) {
+							self.insertHtml('<img src="' + path + num + '.gif" border="0" alt="" />').hideMenu().focus();
+							e.stop();
+						});
+					})(num);
+					var span = K('<span class="ke-plugin-emoticons-img"></span>')
+						.css('background-position', '-' + (24 * num) + 'px 0px')
+						.css('background-image', 'url(' + path + 'static.gif)');
+					cell.append(span);
+					elements.push(cell);
+					num++;
+				}
+			}
+			return table;
+		}
+		var table = createEmoticonsTable(1, wrapperDiv);
+		function removeEvent() {
+			K.each(elements, function() {
+				this.unbind();
+			});
+		}
+		function createPageTable(currentPageNum) {
+			var pageDiv = K('<div class="ke-plugin-emoticons-page"></div>');
+			wrapperDiv.append(pageDiv);
+			for (var pageNum = 1; pageNum <= pages; pageNum++) {
+				if (currentPageNum !== pageNum) {
+					var a = K('<a href="javascript:;">[' + pageNum + ']</a>');
+					(function(pageNum) {
+						a.click(function(e) {
+							removeEvent();
+							table.parentNode.removeChild(table);
+							pageDiv.remove();
+							table = createEmoticonsTable(pageNum, wrapperDiv);
+							createPageTable(pageNum);
+							e.stop();
+						});
+					})(pageNum);
+					pageDiv.append(a);
+					elements.push(a);
+				} else {
+					pageDiv.append(K('@[' + pageNum + ']'));
+				}
+				pageDiv.append(K('@&nbsp;'));
+			}
+		}
+		createPageTable(1);
+		self.beforeHideMenu(function() {
+			removeEvent();
+		});
 	});
 });
 })(KindEditor);

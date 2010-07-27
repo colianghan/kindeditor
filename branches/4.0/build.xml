@@ -37,7 +37,12 @@
 			<fileset file="${src}/dialog.js"/>
 			<fileset file="${src}/main.js"/>
 			<fileset file="${src}/footer.js"/>
-			<fileset file="${plugins}/default.js"/>
+			<fileset file="${src}/plugins.js"/>
+			<fileset file="${plugins}/core/core.js"/>
+			<fileset file="${plugins}/plainpaste/plainpaste.js"/>
+			<fileset file="${plugins}/wordpaste/wordpaste.js"/>
+			<fileset file="${plugins}/link/link.js"/>
+			<fileset file="${plugins}/emoticons/emoticons.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"

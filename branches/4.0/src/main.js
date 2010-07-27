@@ -93,7 +93,7 @@ function KEditor(options) {
 	//private properties
 	self._handlers = {};
 	_each(_plugins, function() {
-		this.call(self);
+		this.call(self, KindEditor);
 	});
 }
 
