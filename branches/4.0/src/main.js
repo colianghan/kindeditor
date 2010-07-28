@@ -145,7 +145,7 @@ KEditor.prototype = {
 				position : 'absolute',
 				left : _addUnit(pos.x),
 				top : _addUnit(pos.y),
-				'z-index' : 19811211
+				'z-index' : 811211
 			});
 			K(document.body).append(container);
 		} else {

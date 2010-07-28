@@ -141,7 +141,7 @@ KindEditor.plugin(function(K) {
 			return;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img') {
+		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
 			return;
 		}
 		urlBox.val(img.attr('src'));

@@ -121,6 +121,10 @@ function _mediaClass(type) {
 	return 'ke-media';
 }
 
+function _mediaAttrs(srcTag) {
+	return _getAttrList(unescape(srcTag));
+}
+
 function _mediaEmbed(attrs) {
 	var html = '<embed ';
 	_each(attrs, function(key, val) {
@@ -152,5 +156,6 @@ function _mediaImg(blankPath, attrs) {
 
 K.formatHtml = _formatHtml;
 K.mediaType = _mediaType;
+K.mediaAttrs = _mediaAttrs;
 K.mediaEmbed = _mediaEmbed;
 K.mediaImg = _mediaImg;
