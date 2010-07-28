@@ -1,4 +1,4 @@
-<project name="KindEditor" default="merge" basedir=".">
+<project name="KindEditor" default="check" basedir=".">
 
 	<description>
 		KindEditor build file
@@ -105,15 +105,15 @@
 		</exec>
 	</target>
 
-	<target name="docs">
+	<target name="check" depends="merge">
 		<exec executable="java">
-			<arg line="-jar lib/jsdoc-toolkit/jsrun.jar lib/jsdoc-toolkit/app/run.js -n -e=UTF-8 -c=conf/jsdoc.conf"/>
+			<arg line="-jar lib/jslint/js.jar lib/jslint/jslint-check.js"/>
 		</exec>
 	</target>
 
-	<target name="check">
+	<target name="docs">
 		<exec executable="java">
-			<arg line="-jar lib/jslint/js.jar lib/jslint/jslint-check.js"/>
+			<arg line="-jar lib/jsdoc-toolkit/jsrun.jar lib/jsdoc-toolkit/app/run.js -n -e=UTF-8 -c=conf/jsdoc.conf"/>
 		</exec>
 	</target>
 

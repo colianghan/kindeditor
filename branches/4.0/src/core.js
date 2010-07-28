@@ -279,17 +279,17 @@ function _toHex(color) {
 /**
 	@name KindEditor.toMap
 	@function
-	@param {String} str 用delimiter分隔的字符串
-	@param {String} [delimiter = ","] 分隔符
+	@param {String|Array} 字符串或者数组，字符串时用delimiter分隔的字符串
+	@param {String} [delimiter = ","] 分隔符，第一个参数为字符串时有效
 	@returns {Object}
 	@description
 	将一个字符串转换成对象。
 	@example
 	var map = K.toMap('abc,aaa,bbb'); //返回{abc : true, aaa : true, bbb : true}
 */
-function _toMap(str, delimiter) {
+function _toMap(val, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
-	var map = {}, arr = str.split(delimiter), match;
+	var map = {}, arr = _isArray(val) ? val : val.split(delimiter), match;
 	_each(arr, function(key, val) {
 		if ((match = /^(\d+)\.\.(\d+)$/.exec(val))) {
 			for (var i = parseInt(match[1], 10); i <= parseInt(match[2], 10); i++) {

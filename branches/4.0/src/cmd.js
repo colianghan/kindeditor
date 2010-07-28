@@ -430,7 +430,6 @@ KCmd.prototype = {
 			}
 		}
 		wrapRange(range.commonAncestor());
-		//select range
 		return self;
 	},
 	split : function(isStart, map) {
