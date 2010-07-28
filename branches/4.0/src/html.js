@@ -101,4 +101,56 @@ function _formatHtml(html) {
 	return _trim(html);
 }
 
+function _mediaType(src) {
+	if (/\.(rm|rmvb)(\?|$)/i.test(src)) {
+		return 'audio/x-pn-realaudio-plugin';
+	}
+	if (/\.(swf|flv)(\?|$)/i.test(src)) {
+		return 'application/x-shockwave-flash';
+	}
+	return 'video/x-ms-asf-plugin';
+}
+
+function _mediaClass(type) {
+	if (/realaudio/i.test(type)) {
+		return 'ke-rm';
+	}
+	if (/flash/i.test(type)) {
+		return 'ke-flash';
+	}
+	return 'ke-media';
+}
+
+function _mediaEmbed(attrs) {
+	var html = '<embed ';
+	_each(attrs, function(key, val) {
+		html += key + '="' + val + '" ';
+	});
+	html += '/>';
+	return html;
+}
+
+function _mediaImg(blankPath, attrs) {
+	var width = attrs.width,
+		height = attrs.height,
+		type = attrs.type || _mediaType(attrs.src),
+		srcTag = _mediaEmbed(attrs),
+		style = '';
+	if (width > 0) {
+		style += 'width:' + width + 'px;';
+	}
+	if (height > 0) {
+		style += 'height:' + height + 'px;';
+	}
+	var html = '<img class="' + _mediaClass(type) + '" src="' + blankPath + '" ';
+	if (style !== '') {
+		html += 'style="' + style + '" ';
+	}
+	html += 'kesrctag="' + escape(srcTag) + '" alt="" />';
+	return html;
+}
+
 K.formatHtml = _formatHtml;
+K.mediaType = _mediaType;
+K.mediaEmbed = _mediaEmbed;
+K.mediaImg = _mediaImg;

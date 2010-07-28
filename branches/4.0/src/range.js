@@ -783,7 +783,7 @@ KRange.prototype = {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
-		return sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
+		return sc.nodeType == 1 && sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
 	},
 	/**
 		@name KindEditor.range#get

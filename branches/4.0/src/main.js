@@ -74,6 +74,10 @@ function KEditor(options) {
 	var self = this;
 	_each(options, function(key, val) {
 		self[key] = options[key];
+		if (key === 'scriptPath') {
+			self.themesPath = options[key] + 'themes/';
+			self.pluginsPath = options[key] + 'plugins/';
+		}
 	});
 	_each(_options, function(key, val) {
 		if (self[key] === undefined) {
@@ -176,7 +180,9 @@ KEditor.prototype = {
 				parent : container,
 				srcElement : self.srcElement,
 				designMode : self.designMode,
+				themesPath : self.themesPath,
 				bodyClass : self.bodyClass,
+				cssPath : self.cssPath,
 				cssData : self.cssData
 			}),
 			doc = edit.doc, textarea = edit.textarea;

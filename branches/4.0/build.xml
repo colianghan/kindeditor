@@ -44,6 +44,7 @@
 			<fileset file="${plugins}/link/link.js"/>
 			<fileset file="${plugins}/emoticons/emoticons.js"/>
 			<fileset file="${plugins}/image/image.js"/>
+			<fileset file="${plugins}/flash/flash.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"

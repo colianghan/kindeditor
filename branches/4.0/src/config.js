@@ -38,7 +38,8 @@ var _options = {
 	resizeType : 2, //0,1,2
 	dialogAlignType : 'page', //page,editor
 	bodyClass : 'ke-content',
-	cssData : '', //cssPath, cssContent
+	cssPath : '', //String or Array
+	cssData : '',
 	minWidth : 550,
 	minHeight : 100,
 	minChangeSize : 5,
@@ -95,3 +96,6 @@ var _options = {
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
+
+_options.themesPath = _options.scriptPath + 'themes/';
+_options.pluginsPath = _options.scriptPath + 'plugins/';

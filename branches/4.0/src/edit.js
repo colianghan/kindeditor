@@ -22,7 +22,7 @@ function _iframeDoc(iframe) {
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
 
-function _getInitHtml(bodyClass, cssData) {
+function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 	var arr = [
 		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
 		'<style>',
@@ -32,18 +32,45 @@ function _getInitHtml(bodyClass, cssData) {
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',
 		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'.ke-flash {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/flash.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-rm {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/rm.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-media {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/media.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
 		'</style>'
 	];
-	if (cssData) {
-		if (_isArray(cssData)) {
-			_each(cssData, function(i, path) {
-				if (path !== '') {
-					arr.push('<link href="' + path + '" rel="stylesheet" />');
-				}
-			});
-		} else {
-			arr.push('<style>' + cssData + '</style>');
+	if (_isArray(cssPath)) {
+		_each(cssPath, function(i, path) {
+			if (path !== '') {
+				arr.push('<link href="' + path + '" rel="stylesheet" />');
+			}
+		});
+	} else {
+		if (cssPath !== '') {
+			arr.push('<link href="' + cssPath + '" rel="stylesheet" />');
 		}
+	}
+	if (cssData) {
+		arr.push('<style>' + cssData + '</style>');
 	}
 	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
 	return arr.join('');
@@ -68,7 +95,9 @@ function _edit(options) {
 		height = _addUnit(options.height),
 		srcElement = K(options.srcElement),
 		designMode = options.designMode === undefined ? true : options.designMode,
+		themesPath = options.themesPath,
 		bodyClass = options.bodyClass,
+		cssPath = options.cssPath,
 		cssData = options.cssData,
 		div = self.div().addClass('ke-edit'),
 		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
@@ -111,7 +140,7 @@ function _edit(options) {
 		doc.designMode = 'on';
 	}
 	doc.open();
-	doc.write(_getInitHtml(bodyClass, cssData));
+	doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
 	doc.close();
 	if (_IE) {
 		doc.body.contentEditable = 'true';

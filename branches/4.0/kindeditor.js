@@ -170,6 +170,7 @@ var _options = {
 	resizeType : 2,
 	dialogAlignType : 'page',
 	bodyClass : 'ke-content',
+	cssPath : '',
 	cssData : '',
 	minWidth : 550,
 	minHeight : 100,
@@ -227,6 +228,8 @@ var _options = {
 		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
+_options.themesPath = _options.scriptPath + 'themes/';
+_options.pluginsPath = _options.scriptPath + 'plugins/';
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, false);
@@ -567,7 +570,55 @@ function _formatHtml(html) {
 	});
 	return _trim(html);
 }
+function _mediaType(src) {
+	if (/\.(rm|rmvb)(\?|$)/i.test(src)) {
+		return 'audio/x-pn-realaudio-plugin';
+	}
+	if (/\.(swf|flv)(\?|$)/i.test(src)) {
+		return 'application/x-shockwave-flash';
+	}
+	return 'video/x-ms-asf-plugin';
+}
+function _mediaClass(type) {
+	if (/realaudio/i.test(type)) {
+		return 'ke-rm';
+	}
+	if (/flash/i.test(type)) {
+		return 'ke-flash';
+	}
+	return 'ke-media';
+}
+function _mediaEmbed(attrs) {
+	var html = '<embed ';
+	_each(attrs, function(key, val) {
+		html += key + '="' + val + '" ';
+	});
+	html += '/>';
+	return html;
+}
+function _mediaImg(blankPath, attrs) {
+	var width = attrs.width,
+		height = attrs.height,
+		type = attrs.type || _mediaType(attrs.src),
+		srcTag = _mediaEmbed(attrs),
+		style = '';
+	if (width > 0) {
+		style += 'width:' + width + 'px;';
+	}
+	if (height > 0) {
+		style += 'height:' + height + 'px;';
+	}
+	var html = '<img class="' + _mediaClass(type) + '" src="' + blankPath + '" ';
+	if (style !== '') {
+		html += 'style="' + style + '" ';
+	}
+	html += 'kesrctag="' + escape(srcTag) + '" alt="" />';
+	return html;
+}
 K.formatHtml = _formatHtml;
+K.mediaType = _mediaType;
+K.mediaEmbed = _mediaEmbed;
+K.mediaImg = _mediaImg;
 function _contains(nodeA, nodeB) {
 	while ((nodeB = nodeB.parentNode)) {
 		if (nodeB === nodeA) {
@@ -1767,7 +1818,7 @@ KRange.prototype = {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
-		return sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
+		return sc.nodeType == 1 && sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
 	},
 	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node,
@@ -2765,7 +2816,7 @@ function _iframeDoc(iframe) {
 	iframe = _get(iframe);
 	return iframe.contentDocument || iframe.contentWindow.document;
 }
-function _getInitHtml(bodyClass, cssData) {
+function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 	var arr = [
 		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
 		'<style>',
@@ -2775,18 +2826,45 @@ function _getInitHtml(bodyClass, cssData) {
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',
 		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'.ke-flash {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/flash.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-rm {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/rm.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-media {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/media.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
 		'</style>'
 	];
-	if (cssData) {
-		if (_isArray(cssData)) {
-			_each(cssData, function(i, path) {
-				if (path !== '') {
-					arr.push('<link href="' + path + '" rel="stylesheet" />');
-				}
-			});
-		} else {
-			arr.push('<style>' + cssData + '</style>');
+	if (_isArray(cssPath)) {
+		_each(cssPath, function(i, path) {
+			if (path !== '') {
+				arr.push('<link href="' + path + '" rel="stylesheet" />');
+			}
+		});
+	} else {
+		if (cssPath !== '') {
+			arr.push('<link href="' + cssPath + '" rel="stylesheet" />');
 		}
+	}
+	if (cssData) {
+		arr.push('<style>' + cssData + '</style>');
 	}
 	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
 	return arr.join('');
@@ -2801,7 +2879,9 @@ function _edit(options) {
 		height = _addUnit(options.height),
 		srcElement = K(options.srcElement),
 		designMode = options.designMode === undefined ? true : options.designMode,
+		themesPath = options.themesPath,
 		bodyClass = options.bodyClass,
+		cssPath = options.cssPath,
 		cssData = options.cssData,
 		div = self.div().addClass('ke-edit'),
 		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
@@ -2841,7 +2921,7 @@ function _edit(options) {
 		doc.designMode = 'on';
 	}
 	doc.open();
-	doc.write(_getInitHtml(bodyClass, cssData));
+	doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
 	doc.close();
 	if (_IE) {
 		doc.body.contentEditable = 'true';
@@ -3271,6 +3351,10 @@ function KEditor(options) {
 	var self = this;
 	_each(options, function(key, val) {
 		self[key] = options[key];
+		if (key === 'scriptPath') {
+			self.themesPath = options[key] + 'themes/';
+			self.pluginsPath = options[key] + 'plugins/';
+		}
 	});
 	_each(_options, function(key, val) {
 		if (self[key] === undefined) {
@@ -3369,7 +3453,9 @@ KEditor.prototype = {
 				parent : container,
 				srcElement : self.srcElement,
 				designMode : self.designMode,
+				themesPath : self.themesPath,
 				bodyClass : self.bodyClass,
+				cssPath : self.cssPath,
 				cssData : self.cssData
 			}),
 			doc = edit.doc, textarea = edit.textarea;
@@ -3917,40 +4003,42 @@ KindEditor.plugin(function(K) {
 		imgPath = this.scriptPath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {
-		var html = '<div style="margin:10px;">' +
-			'<div class="tabs"></div>' +
-			'<iframe name="uploadIframe" style="display:none;"></iframe>' +
-			'<form name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">' +
-			'<input type="hidden" name="referMethod" value="" />' +
-			'<div class="ke-dialog-row">' +
-			'<div class="tab1" style="display:none;">' +
-			'<label for="keUrl">' + lang.remoteUrl + '</label>' +
-			'<input type="text" id="keUrl" name="url" value="" style="width:230px;" />' +
-			' <input type="button" name="viewServer" value="' + lang.viewServer + '" />' +
-			'</div>' +
-			'<div class="tab2" style="display:none;">' +
-			'<label for="keFile">' + lang.localUrl + '</label>' +
-			'<input type="file" id="keFile" name="imgFile" style="width:300px;" />' +
-			'</div>' +
-			'</div>' +
-			'<div class="ke-dialog-row">' +
-			'<label for="keWidth">' + lang.size + '</label>' +
-			lang.width + ' <input type="text" id="keWidth" name="width" value="" maxlength="4" style="width:50px;text-align:right;" /> ' +
-			lang.height + ' <input type="text" name="height" value="" maxlength="4" style="width:50px;text-align:right;" /> ' +
-			'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />' +
-			'</div>' +
-			'<div class="ke-dialog-row">' +
-			'<label>' + lang.align + '</label>' +
-			'<input type="radio" name="align" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />' +
-			' <input type="radio" name="align" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />' +
-			' <input type="radio" name="align" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />' +
-			'</div>' +
-			'<div class="ke-dialog-row">' +
-			'<label for="keTitle">' + lang.imgTitle + '</label>' +
-			'<input type="text" id="keTitle" name="title" value="" style="width:95%;" /></div>' +
-			'</div>' +
-			'</form>' +
-			'</div>';
+		var html = [
+			'<div style="margin:10px;">',
+			'<div class="tabs"></div>',
+			'<iframe name="uploadIframe" style="display:none;"></iframe>',
+			'<form name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">',
+			'<input type="hidden" name="referMethod" value="" />',
+			'<div class="ke-dialog-row">',
+			'<div class="tab1" style="display:none;">',
+			'<label for="keUrl">' + lang.remoteUrl + '</label>',
+			'<input type="text" id="keUrl" name="url" value="" style="width:230px;" />',
+			' <input type="button" name="viewServer" value="' + lang.viewServer + '" />',
+			'</div>',
+			'<div class="tab2" style="display:none;">',
+			'<label for="keFile">' + lang.localUrl + '</label>',
+			'<input type="file" id="keFile" name="imgFile" style="width:300px;" />',
+			'</div>',
+			'</div>',
+			'<div class="ke-dialog-row">',
+			'<label for="keWidth">' + lang.size + '</label>',
+			lang.width + ' <input type="text" id="keWidth" name="width" value="" maxlength="4" style="width:50px;text-align:right;" /> ',
+			lang.height + ' <input type="text" name="height" value="" maxlength="4" style="width:50px;text-align:right;" /> ',
+			'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />',
+			'</div>',
+			'<div class="ke-dialog-row">',
+			'<label>' + lang.align + '</label>',
+			'<input type="radio" name="align" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />',
+			' <input type="radio" name="align" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />',
+			' <input type="radio" name="align" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />',
+			'</div>',
+			'<div class="ke-dialog-row">',
+			'<label for="keTitle">' + lang.imgTitle + '</label>',
+			'<input type="text" id="keTitle" name="title" value="" style="width:95%;" /></div>',
+			'</div>',
+			'</form>',
+			'</div>'
+		].join('');
 		var dialog = self.createDialog({
 			name : name,
 			width : 450,
@@ -3960,12 +4048,12 @@ KindEditor.plugin(function(K) {
 			yesBtn : {
 				name : self.lang('yes'),
 				click : function(e) {
-					var url = K('[name="url"]').val(),
-						width = K('[name="width"]').val(),
-						height = K('[name="height"]').val(),
-						title = K('[name="title"]').val(),
+					var url = urlBox.val(),
+						width = widthBox.val(),
+						height = heightBox.val(),
+						title = titleBox.val(),
 						align = '';
-					K('[name="align"]').each(function() {
+					alignBox.each(function() {
 						if (this.checked) {
 							align = this.value;
 							return false;
@@ -4016,5 +4104,78 @@ KindEditor.plugin(function(K) {
 			panel : K('.tab2', div)
 		});
 		tabs.select(0);
+		var urlBox = K('[name="url"]', div),
+			widthBox = K('[name="width"]', div),
+			heightBox = K('[name="height"]', div),
+			titleBox = K('[name="title"]', div),
+			alignBox = K('[name="align"]');
+		var range = self.edit.cmd.range,
+			sc = range.startContainer, so = range.startOffset;
+		if (!K.WEBKIT && !range.isControl()) {
+			return;
+		}
+		var img = K(sc.childNodes[so]);
+		if (img.name !== 'img') {
+			return;
+		}
+		urlBox.val(img.attr('src'));
+		widthBox.val(img.width());
+		heightBox.val(img.height());
+		titleBox.val(img.attr('title'));
+		alignBox.each(function() {
+			if (this.value === img.attr('align')) {
+				this.checked = true;
+				return false;
+			}
+		});
+		urlBox[0].focus();
+	});
+});
+KindEditor.plugin(function(K) {
+	var self = this, name = 'flash',
+		lang = self.lang(name + '.');
+	self.clickToolbar(name, function() {
+		var html = [
+			'<div style="margin:10px;">',
+			'<div class="ke-dialog-row">',
+			'<label for="keUrl">' + lang.url + '</label>',
+			'<input type="text" id="keUrl" name="url" value="" style="width:90%;" />',
+			'</div>',
+			'<div class="ke-dialog-row">',
+			'<label for="keWidth">' + lang.width + '</label>',
+			'<input type="text" id="keWidth" name="width" value="550" maxlength="4" style="width:50px;text-align:right;" /> ',
+			'</div>',
+			'<div class="ke-dialog-row">',
+			'<label for="keHeight">' + lang.height + '</label>',
+			'<input type="text" id="keHeight" name="height" value="550" maxlength="4" style="width:50px;text-align:right;" /> ',
+			'</div>',
+			'</div>'
+		].join('');
+		var dialog = self.createDialog({
+			name : name,
+			width : 400,
+			height : 200,
+			title : self.lang(name),
+			body : html,
+			yesBtn : {
+				name : self.lang('yes'),
+				click : function(e) {
+					var url = urlBox.val(),
+						html = K.mediaImg(self.themesPath + 'common/blank.gif', {
+							src : url,
+							type : K.mediaType('.swf'),
+							width : widthBox.val(),
+							height : heightBox.val(),
+							quality : 'high'
+						});
+					self.insertHtml(html).hideDialog().focus();
+				}
+			}
+		}),
+		div = dialog.div(),
+		urlBox = K('[name="url"]', div),
+		widthBox = K('[name="width"]', div),
+		heightBox = K('[name="height"]', div);
+		urlBox[0].focus();
 	});
 });
