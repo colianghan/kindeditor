@@ -13,9 +13,9 @@
 
 KindEditor.plugin(function(K) {
 	var self = this, name = 'image',
-		allowUpload = _undef(self.allowUpload, true),
-		allowFileManager = _undef(self.allowFileManager, false),
-		uploadJson = _undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
+		allowUpload = K.undef(self.allowUpload, true),
+		allowFileManager = K.undef(self.allowFileManager, false),
+		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
 		imgPath = this.scriptPath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {

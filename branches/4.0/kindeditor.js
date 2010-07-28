@@ -3314,6 +3314,60 @@ function _dialog(options) {
 	return self;
 }
 K.dialog = _dialog;
+function _tabs(options) {
+	var self = _widget(options),
+		remove = self.remove,
+		afterSelect = options.afterSelect,
+		div = self.div(),
+		liList = [];
+	div.addClass('ke-tabs')
+		.bind('contextmenu,mousedown,mousemove', function(e) {
+			e.preventDefault();
+		});
+	var ul = K('<ul class="ke-tabs-ul ke-clearfix"></ul>');
+	div.append(ul);
+	self.add = function(tab) {
+		var li = K('<li class="ke-tabs-li">' + tab.title + '</li>');
+		li.data('tab', tab);
+		liList.push(li);
+		ul.append(li);
+	};
+	self.selectedIndex = 0;
+	self.select = function(index) {
+		self.selectedIndex = index;
+		_each(liList, function(i, li) {
+			li.unbind();
+			if (i === index) {
+				li.addClass('ke-tabs-li-selected');
+				K(li.data('tab').panel).show('');
+			} else {
+				li.removeClass('ke-tabs-li-selected').removeClass('ke-tabs-li-on')
+				.mouseover(function() {
+					K(this).addClass('ke-tabs-li-on');
+				})
+				.mouseout(function() {
+					K(this).removeClass('ke-tabs-li-on');
+				})
+				.click(function() {
+					self.select(i);
+				});
+				K(li.data('tab').panel).hide();
+			}
+		});
+		if (afterSelect) {
+			afterSelect.call(self, index);
+		}
+	};
+	self.remove = function() {
+		_each(liList, function() {
+			this.remove();
+		});
+		ul.remove();
+		remove.call(self);
+	};
+	return self;
+}
+K.tabs = _tabs;
 var _plugins = [];
 function _plugin(fn) {
 	_plugins.push(fn);
@@ -4001,9 +4055,9 @@ KindEditor.plugin(function(K) {
 });
 KindEditor.plugin(function(K) {
 	var self = this, name = 'image',
-		allowUpload = _undef(self.allowUpload, true),
-		allowFileManager = _undef(self.allowFileManager, false),
-		uploadJson = _undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
+		allowUpload = K.undef(self.allowUpload, true),
+		allowFileManager = K.undef(self.allowFileManager, false),
+		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
 		imgPath = this.scriptPath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {
