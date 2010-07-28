@@ -16,10 +16,15 @@ KindEditor.plugin(function(K) {
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
-				'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
-				'<input type="text" name="url" value="" style="width:90%;" /></div>' +
-				'<div style="margin-bottom:10px;"><label>' + lang.linkType + '</label>' +
-				'<select name="type"></select>' +
+				//url
+				'<div class="ke-dialog-row">' +
+				'<label for="keUrl">' + lang.url + '</label>' +
+				'<input type="text" id="keUrl" name="url" value="" style="width:90%;" /></div>' +
+				//type
+				'<div class="ke-dialog-row"">' +
+				'<label for="keType">' + lang.linkType + '</label>' +
+				'<select id="keType" name="type"></select>' +
+				'</div>' +
 				'</div>',
 			dialog = self.createDialog({
 				name : name,

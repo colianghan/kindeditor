@@ -19,6 +19,7 @@
 function _tabs(options) {
 	var self = _widget(options),
 		remove = self.remove,
+		afterSelect = options.afterSelect,
 		div = self.div(),
 		liList = [];
 	//create toolbar
@@ -28,26 +29,22 @@ function _tabs(options) {
 		});
 	var ul = K('<ul class="ke-tabs-ul ke-clearfix"></ul>');
 	div.append(ul);
-	//add tab
-	/**
-		tab.add({
-			title : 'TAB1',
-			panel : '#tab1'
-		});
-	*/
-	self.add = function(item) {
-		var li = K('<li class="ke-tabs-li">' + item.title + '</li>');
-		li.data('item', item);
+	//add a tab
+	self.add = function(tab) {
+		var li = K('<li class="ke-tabs-li">' + tab.title + '</li>');
+		li.data('tab', tab);
 		liList.push(li);
 		ul.append(li);
 	};
+	//select a tab
 	self.select = function(index) {
 		_each(liList, function(i, li) {
+			li.unbind();
 			if (i === index) {
-				li.addClass('ke-tabs-li-selected').unbind();
-				K(li.data('item').panel).show('');
+				li.addClass('ke-tabs-li-selected');
+				K(li.data('tab').panel).show('');
 			} else {
-				li.removeClass('ke-tabs-li-selected')
+				li.removeClass('ke-tabs-li-selected').removeClass('ke-tabs-li-on')
 				.mouseover(function() {
 					K(this).addClass('ke-tabs-li-on');
 				})
@@ -57,9 +54,12 @@ function _tabs(options) {
 				.click(function() {
 					self.select(i);
 				});
-				K(li.data('item').panel).hide();
+				K(li.data('tab').panel).hide();
 			}
 		});
+		if (afterSelect) {
+			afterSelect.call(self, index);
+		}
 	};
 	//remove toolbar
 	self.remove = function() {

@@ -12,18 +12,18 @@
  */
 
 KindEditor.plugin(function(K) {
-	var self = this,
-		path = (this.emoticonsPath || this.scriptPath + 'plugins/emoticons/images/'),
-		allowPreview = this.allowPreviewEmoticons === undefined ? true : this.allowPreviewEmoticons,
+	var self = this, name = 'emoticons',
+		path = (self.emoticonsPath || self.scriptPath + 'plugins/emoticons/images/'),
+		allowPreview = self.allowPreviewEmoticons === undefined ? true : self.allowPreviewEmoticons,
 		currentPageNum = 1;
-	self.clickToolbar('emoticons', function() {
+	self.clickToolbar(name, function() {
 		var rows = 5, cols = 9, total = 135, startNum = 0,
 			cells = rows * cols, pages = Math.ceil(total / cells),
 			colsHalf = Math.floor(cols / 2),
 			wrapperDiv = K('<div class="ke-plugin-emoticons-wrapper"></div>'),
 			elements = [],
 			menu = self.createMenu({
-				name : 'emoticons'
+				name : name
 			});
 		menu.div().append(wrapperDiv);
 		var previewDiv, previewImg;

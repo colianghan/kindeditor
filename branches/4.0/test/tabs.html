@@ -49,7 +49,10 @@
 			K('#create').click(function() {
 				if (!tabs) {
 					tabs = K.tabs({
-						parent : '#tabs'
+						parent : '#tabs',
+						afterSelect : function(i) {
+							K('#tab' + (i + 1)).html('选中了标签#' + (i + 1));
+						}
 					});
 					tabs.add({
 						title : '标签#1',
