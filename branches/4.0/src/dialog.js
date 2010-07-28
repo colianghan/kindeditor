@@ -99,8 +99,8 @@ function _dialog(options) {
 			button.click(btn.click);
 		}
 	});
-	if (self.height) {
-		bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
+	if (height) {
+		bodyDiv.height(_removeUnit(height) - headerDiv.height() - footerDiv.height());
 	}
 	var mask = _widget({
 		x : 0,

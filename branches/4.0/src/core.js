@@ -302,6 +302,28 @@ function _toMap(str, delimiter) {
 	return map;
 }
 
+//From http://www.json.org/json2.js
+function _json(text) {
+	var match;
+	if ((match = /\{[\s\S]*\}|\[[\s\S]*\]/.exec(text))) {
+		text = match[0];
+	}
+	var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+	cx.lastIndex = 0;
+	if (cx.test(text)) {
+		text = text.replace(cx, function (a) {
+			return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+		});
+	}
+	if (/^[\],:{}\s]*$/.
+	test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@').
+	replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+	replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+		return eval('(' + text + ')');
+	}
+	throw 'JSON parse error';
+}
+
 function _toArray(obj, offset) {
 	return Array.prototype.slice.call(obj, offset || 0);
 }
@@ -332,7 +354,8 @@ var K = {
 	toHex : _toHex,
 	toMap : _toMap,
 	toArray : _toArray,
-	undef : _undef
+	undef : _undef,
+	json : _json
 };
 
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),

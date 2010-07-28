@@ -36,8 +36,10 @@ function _tabs(options) {
 		liList.push(li);
 		ul.append(li);
 	};
+	self.selectedIndex = 0;
 	//select a tab
 	self.select = function(index) {
+		self.selectedIndex = index;
 		_each(liList, function(i, li) {
 			li.unbind();
 			if (i === index) {

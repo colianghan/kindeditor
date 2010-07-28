@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-27)
+* @version 4.0 (2010-07-28)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-07-27)',
+var _kindeditor = '4.0 (2010-07-28)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -92,18 +92,31 @@ function _toMap(str, delimiter) {
 	});
 	return map;
 }
+function _json(text) {
+	var match;
+	if ((match = /\{[\s\S]*\}|\[[\s\S]*\]/.exec(text))) {
+		text = match[0];
+	}
+	var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+	cx.lastIndex = 0;
+	if (cx.test(text)) {
+		text = text.replace(cx, function (a) {
+			return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+		});
+	}
+	if (/^[\],:{}\s]*$/.
+	test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@').
+	replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+	replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+		return eval('(' + text + ')');
+	}
+	throw 'JSON parse error';
+}
 function _toArray(obj, offset) {
 	return Array.prototype.slice.call(obj, offset || 0);
 }
-function _getScriptPath() {
-	var els = document.getElementsByTagName('script'), src;
-	for (var i = 0, len = els.length; i < len; i++) {
-		src = els[i].src || '';
-		if (/kindeditor[\w\-\.]*\.js/.test(src)) {
-			return src.substring(0, src.lastIndexOf('/') + 1);
-		}
-	}
-	return '';
+function _undef(val, defaultValue) {
+	return val === undefined ? defaultValue : val;
 }
 var _round = Math.round;
 var K = {
@@ -125,7 +138,9 @@ var K = {
 	unescape : _unescape,
 	toHex : _toHex,
 	toMap : _toMap,
-	toArray : _toArray
+	toArray : _toArray,
+	undef : _undef,
+	json : _json
 };
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
 	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
@@ -133,6 +148,16 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
+function _getScriptPath() {
+	var els = document.getElementsByTagName('script'), src;
+	for (var i = 0, len = els.length; i < len; i++) {
+		src = els[i].src || '';
+		if (/kindeditor[\w\-\.]*\.js/.test(src)) {
+			return src.substring(0, src.lastIndexOf('/') + 1);
+		}
+	}
+	return '';
+}
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
@@ -2232,18 +2257,18 @@ KCmd.prototype = {
 	commonNode : function(map) {
 		var range = this.range,
 			ec = range.endContainer, eo = range.endOffset,
-			knode = K((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
-			child = knode.get();
+			node = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1],
+			child = node;
 		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
-			if (_hasAttrOrCss(child, map)) {
+			if (_hasAttrOrCss(K(child), map)) {
 				return K(child);
 			}
 		}
-		while (knode) {
-			if (_hasAttrOrCss(knode, map)) {
-				return knode;
+		while (node) {
+			if (_hasAttrOrCss(K(node), map)) {
+				return K(node);
 			}
-			knode = knode.parent();
+			node = node.parentNode;
 		}
 		return null;
 	},
@@ -2406,6 +2431,26 @@ KCmd.prototype = {
 	print : function() {
 		this.win.print();
 		return this;
+	},
+	insertimage : function(url, title, width, height, border, align) {
+		title = _undef(title, '');
+		border = _undef(border, 0);
+		var html = '<img src="' + url + '" ';
+		if (width) {
+			html += 'width="' + width + '" ';
+		}
+		if (height) {
+			html += 'height="' + height + '" ';
+		}
+		if (title) {
+			html += 'title="' + title + '" ';
+		}
+		if (align) {
+			html += 'align="' + align + '" ';
+		}
+		html += 'alt="' + title + '" ';
+		html += 'border="' + border + '" />';
+		return this.inserthtml(html);
 	},
 	createlink : function(url, type) {
 		var self = this, doc = self.doc, range = self.range;
@@ -3153,8 +3198,8 @@ function _dialog(options) {
 			button.click(btn.click);
 		}
 	});
-	if (self.height) {
-		bodyDiv.height(_removeUnit(self.height) - headerDiv.height() - footerDiv.height());
+	if (height) {
+		bodyDiv.height(_removeUnit(height) - headerDiv.height() - footerDiv.height());
 	}
 	var mask = _widget({
 		x : 0,
@@ -3715,10 +3760,13 @@ KindEditor.plugin(function(K) {
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),
 			html = '<div style="margin:10px;">' +
-				'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
-				'<input type="text" name="url" value="" style="width:90%;" /></div>' +
-				'<div style="margin-bottom:10px;"><label>' + lang.linkType + '</label>' +
-				'<select name="type"></select>' +
+				'<div class="ke-dialog-row">' +
+				'<label for="keUrl">' + lang.url + '</label>' +
+				'<input type="text" id="keUrl" name="url" value="" style="width:90%;" /></div>' +
+				'<div class="ke-dialog-row"">' +
+				'<label for="keType">' + lang.linkType + '</label>' +
+				'<select id="keType" name="type"></select>' +
+				'</div>' +
 				'</div>',
 			dialog = self.createDialog({
 				name : name,
@@ -3742,18 +3790,18 @@ KindEditor.plugin(function(K) {
 	});
 });
 KindEditor.plugin(function(K) {
-	var self = this,
-		path = (this.emoticonsPath || this.scriptPath + 'plugins/emoticons/images/'),
-		allowPreview = this.allowPreviewEmoticons === undefined ? true : this.allowPreviewEmoticons,
+	var self = this, name = 'emoticons',
+		path = (self.emoticonsPath || self.scriptPath + 'plugins/emoticons/images/'),
+		allowPreview = self.allowPreviewEmoticons === undefined ? true : self.allowPreviewEmoticons,
 		currentPageNum = 1;
-	self.clickToolbar('emoticons', function() {
+	self.clickToolbar(name, function() {
 		var rows = 5, cols = 9, total = 135, startNum = 0,
 			cells = rows * cols, pages = Math.ceil(total / cells),
 			colsHalf = Math.floor(cols / 2),
 			wrapperDiv = K('<div class="ke-plugin-emoticons-wrapper"></div>'),
 			elements = [],
 			menu = self.createMenu({
-				name : 'emoticons'
+				name : name
 			});
 		menu.div().append(wrapperDiv);
 		var previewDiv, previewImg;
@@ -3862,33 +3910,111 @@ KindEditor.plugin(function(K) {
 	});
 });
 KindEditor.plugin(function(K) {
-	var self = this, name = 'image';
+	var self = this, name = 'image',
+		allowUpload = _undef(self.allowUpload, true),
+		allowFileManager = _undef(self.allowFileManager, false),
+		uploadJson = _undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
+		imgPath = this.scriptPath + 'plugins/image/images/',
+		lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {
-		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px;">' +
-				'<div style="margin-bottom:10px;"><label>' + lang.url + '</label>' +
-				'<input type="text" name="url" value="" style="width:90%;" /></div>' +
-				'<div style="margin-bottom:10px;"><label>' + lang.linkType + '</label>' +
-				'<select name="type"></select>' +
-				'</div>',
-			dialog = self.createDialog({
-				name : name,
-				width : 400,
-				title : self.lang(name),
-				body : html,
-				yesBtn : {
-					name : self.lang('yes'),
-					click : function(e) {
-						self.exec('createlink', urlBox.val(), typeBox.val()).hideDialog().focus();
+		var html = '<div style="margin:10px;">' +
+			'<div class="tabs"></div>' +
+			'<iframe name="uploadIframe" style="display:none;"></iframe>' +
+			'<form name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">' +
+			'<input type="hidden" name="referMethod" value="" />' +
+			'<div class="ke-dialog-row">' +
+			'<div class="tab1" style="display:none;">' +
+			'<label for="keUrl">' + lang.remoteUrl + '</label>' +
+			'<input type="text" id="keUrl" name="url" value="" style="width:230px;" />' +
+			' <input type="button" name="viewServer" value="' + lang.viewServer + '" />' +
+			'</div>' +
+			'<div class="tab2" style="display:none;">' +
+			'<label for="keFile">' + lang.localUrl + '</label>' +
+			'<input type="file" id="keFile" name="imgFile" style="width:300px;" />' +
+			'</div>' +
+			'</div>' +
+			'<div class="ke-dialog-row">' +
+			'<label for="keWidth">' + lang.size + '</label>' +
+			lang.width + ' <input type="text" id="keWidth" name="width" value="" maxlength="4" style="width:50px;text-align:right;" /> ' +
+			lang.height + ' <input type="text" name="height" value="" maxlength="4" style="width:50px;text-align:right;" /> ' +
+			'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />' +
+			'</div>' +
+			'<div class="ke-dialog-row">' +
+			'<label>' + lang.align + '</label>' +
+			'<input type="radio" name="align" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />' +
+			' <input type="radio" name="align" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />' +
+			' <input type="radio" name="align" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />' +
+			'</div>' +
+			'<div class="ke-dialog-row">' +
+			'<label for="keTitle">' + lang.imgTitle + '</label>' +
+			'<input type="text" id="keTitle" name="title" value="" style="width:95%;" /></div>' +
+			'</div>' +
+			'</form>' +
+			'</div>';
+		var dialog = self.createDialog({
+			name : name,
+			width : 450,
+			height : 300,
+			title : self.lang(name),
+			body : html,
+			yesBtn : {
+				name : self.lang('yes'),
+				click : function(e) {
+					var url = K('[name="url"]').val(),
+						width = K('[name="width"]').val(),
+						height = K('[name="height"]').val(),
+						title = K('[name="title"]').val(),
+						align = '';
+					K('[name="align"]').each(function() {
+						if (this.checked) {
+							align = this.value;
+							return false;
+						}
+					});
+					if (tabs.selectedIndex === 1) {
+						var form = K('[name="uploadForm"]', div),
+							iframe = K('[name="uploadIframe"]', div);
+						form.attr('action', uploadJson);
+						iframe.bind('load', function(e) {
+							iframe.unbind();
+							var data = {};
+							try {
+								data = K.json(_iframeDoc(iframe).body.innerHTML);
+							} catch(e) {
+								alert(self.lang('invalidJson'));
+							}
+							if ('error' in data) {
+								if (data.error === 0) {
+									self.exec('insertimage', data.url, title, width, height, 0, align)
+										.hideDialog().focus();
+								} else {
+									alert(data.message);
+									return false;
+								}
+							}
+						});
+						form[0].submit();
+						return;
 					}
+					self.exec('insertimage', url, title, width, height, 0, align)
+						.hideDialog().focus();
 				}
-			}),
-			div = dialog.div(),
-			urlBox = K('input[name="url"]', div),
-			typeBox = K('select[name="type"]', div);
-		typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
-		typeBox.get().options[1] = new Option(lang.selfWindow, '');
-		urlBox.val(self.val('createlink'));
-		urlBox.get().focus();
+			}
+		}),
+		div = dialog.div(),
+		tabs = K.tabs({
+			parent : K('.tabs', div),
+			afterSelect : function(i) {
+			}
+		});
+		tabs.add({
+			title : lang.remoteImage,
+			panel : K('.tab1', div)
+		});
+		tabs.add({
+			title : lang.localImage,
+			panel : K('.tab2', div)
+		});
+		tabs.select(0);
 	});
 });

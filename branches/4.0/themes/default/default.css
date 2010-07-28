@@ -377,6 +377,7 @@
 	font-family: "sans serif",tahoma,verdana,helvetica;
 	font-size: 12px;
 	text-align: left;
+	overflow: hidden;
 }
 .ke-menu-item {
 	border: 1px solid #F1F1F1;

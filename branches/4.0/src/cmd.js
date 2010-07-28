@@ -576,18 +576,18 @@ KCmd.prototype = {
 	commonNode : function(map) {
 		var range = this.range,
 			ec = range.endContainer, eo = range.endOffset,
-			knode = K((ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1]),
-			child = knode.get();
+			node = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1],
+			child = node;
 		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
-			if (_hasAttrOrCss(child, map)) {
+			if (_hasAttrOrCss(K(child), map)) {
 				return K(child);
 			}
 		}
-		while (knode) {
-			if (_hasAttrOrCss(knode, map)) {
-				return knode;
+		while (node) {
+			if (_hasAttrOrCss(K(node), map)) {
+				return K(node);
 			}
-			knode = knode.parent();
+			node = node.parentNode;
 		}
 		return null;
 	},
@@ -752,6 +752,26 @@ KCmd.prototype = {
 	print : function() {
 		this.win.print();
 		return this;
+	},
+	insertimage : function(url, title, width, height, border, align) {
+		title = _undef(title, '');
+		border = _undef(border, 0);
+		var html = '<img src="' + url + '" ';
+		if (width) {
+			html += 'width="' + width + '" ';
+		}
+		if (height) {
+			html += 'height="' + height + '" ';
+		}
+		if (title) {
+			html += 'title="' + title + '" ';
+		}
+		if (align) {
+			html += 'align="' + align + '" ';
+		}
+		html += 'alt="' + title + '" ';
+		html += 'border="' + border + '" />';
+		return this.inserthtml(html);
 	},
 	createlink : function(url, type) {
 		var self = this, doc = self.doc, range = self.range;
