@@ -87,12 +87,12 @@ KindEditor.plugin(function(K) {
 						var form = K('[name="uploadForm"]', div),
 							iframe = K('[name="uploadIframe"]', div);
 						form.attr('action', uploadJson);
-						iframe.bind('load', function(e) {
+						iframe.bind('load', function() {
 							iframe.unbind();
 							var data = {};
 							try {
 								data = K.json(_iframeDoc(iframe).body.innerHTML);
-							} catch(e) {
+							} catch (e) {
 								alert(self.lang('invalidJson'));
 							}
 							if ('error' in data) {
