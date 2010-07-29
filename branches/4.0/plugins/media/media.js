@@ -73,11 +73,9 @@ KindEditor.plugin('media', function(K) {
 			return;
 		}
 		var img = K(sc.childNodes[so]);
-		console.log(img[0].className);
 		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
 			return;
 		}
-		console.log(img[0].className);
 		var attrs = K.mediaAttrs(img.attr('kesrctag'));
 		urlBox.val(attrs.src);
 		widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);

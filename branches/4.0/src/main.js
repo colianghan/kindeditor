@@ -129,8 +129,10 @@ KEditor.prototype = {
 			}
 			//动态加载后执行
 			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
-				_plugins[name].call(self, KindEditor);
-				self.handler(key);
+				if (_plugins[name]) {
+					_plugins[name].call(self, KindEditor);
+					self.handler(key);
+				}
 			});
 			return self;
 		}
