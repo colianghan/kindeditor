@@ -1996,8 +1996,9 @@ KRange.prototype = {
 	isControl : function() {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
-			ec = self.endContainer, eo = self.endOffset, rng;
-		return sc.nodeType == 1 && sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
+			ec = self.endContainer, eo = self.endOffset, rng,
+			tags = _toMap('img,table');
+		return sc.nodeType == 1 && sc === ec && so + 1 === eo && tags[K(sc.childNodes[so]).name];
 	},
 	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node,
@@ -2832,6 +2833,7 @@ function _bindDragEvent(options) {
 	var moveEl = options.moveEl,
 		moveFn = options.moveFn,
 		clickEl = options.clickEl || moveEl,
+		beforeDrag = options.beforeDrag,
 		iframeFix = options.iframeFix === undefined ? true : options.iframeFix;
 	var docs = [document],
 		poss = [{ x : 0, y : 0}],
@@ -2851,6 +2853,9 @@ function _bindDragEvent(options) {
 			pageX = e.pageX,
 			pageY = e.pageY,
 			dragging = true;
+		if (beforeDrag) {
+			beforeDrag();
+		}
 		_each(docs, function(i, doc) {
 			function moveListener(e) {
 				if (dragging) {
@@ -3436,7 +3441,8 @@ function _dialog(options) {
 		.click(closeBtn.click);
 	headerDiv.append(span);
 	self.draggable({
-		clickEl : headerDiv
+		clickEl : headerDiv,
+		beforeDrag : options.beforeDrag
 	});
 	var bodyDiv = K('<div class="ke-dialog-body"></div>');
 	contentCell.append(bodyDiv);
@@ -3664,6 +3670,9 @@ KEditor.prototype = {
 	beforeHideMenu : function(fn) {
 		return this.handler('beforeHideMenu', fn);
 	},
+	beforeHideDialog : function(fn) {
+		return this.handler('beforeHideDialog', fn);
+	},
 	create : function() {
 		var self = this,
 			fullscreenMode = self.fullscreenMode;
@@ -3878,6 +3887,7 @@ KEditor.prototype = {
 		return (self.dialog = _dialog(options));
 	},
 	hideDialog : function() {
+		this.beforeHideDialog();
 		this.dialog.remove();
 		this.dialog = null;
 		return this;

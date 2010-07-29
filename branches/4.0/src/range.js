@@ -782,8 +782,9 @@ KRange.prototype = {
 	isControl : function() {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
-			ec = self.endContainer, eo = self.endOffset, rng;
-		return sc.nodeType == 1 && sc === ec && so + 1 === eo && K(sc.childNodes[so]).name === 'img';
+			ec = self.endContainer, eo = self.endOffset, rng,
+			tags = _toMap('img,table');
+		return sc.nodeType == 1 && sc === ec && so + 1 === eo && tags[K(sc.childNodes[so]).name];
 	},
 	/**
 		@name KindEditor.range#get

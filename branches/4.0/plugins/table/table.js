@@ -77,7 +77,7 @@ KindEditor.plugin('table', function(K) {
 		var dialog = self.createDialog({
 			name : name,
 			width : 400,
-			height : 290,
+			height : 300,
 			title : self.lang(name),
 			body : html,
 			beforeDrag : removePicker,
@@ -94,8 +94,59 @@ KindEditor.plugin('table', function(K) {
 						spacing = spacingBox.val(),
 						align = alignBox.val(),
 						border = borderBox.val(),
-						borderColor = K(colorBox[0]).html(),
-						bgColor = K(colorBox[1]).html();
+						borderColor = K(colorBox[0]).html() || '',
+						bgColor = K(colorBox[1]).html() || '';
+					//modify table
+					if (table) {
+						if (width !== '') {
+							table.width(width + widthType);
+						} else {
+							table.css('width', '');
+						}
+						if (table[0].width !== undefined) {
+							table.removeAttr('width');
+						}
+						if (height !== '') {
+							table.height(height + heightType);
+						} else {
+							table.css('height', '');
+						}
+						if (table[0].height !== undefined) {
+							table.removeAttr('height');
+						}
+						table.css('background-color', bgColor);
+						if (table[0].bgColor !== undefined) {
+							table.removeAttr('bgColor');
+						}
+						if (padding !== '') {
+							table[0].cellPadding = padding;
+						} else {
+							table.removeAttr('cellPadding');
+						}
+						if (spacing !== '') {
+							table[0].cellSpacing = spacing;
+						} else {
+							table.removeAttr('cellSpacing');
+						}
+						if (align !== '') {
+							table[0].align = align;
+						} else {
+							table.removeAttr('align');
+						}
+						if (border !== '') {
+							table.attr('border', border);
+						} else {
+							table.removeAttr('border');
+						}
+						if (borderColor !== '') {
+							table.attr('borderColor', borderColor);
+						} else {
+							table.removeAttr('borderColor');
+						}
+						self.hideDialog().focus();
+						return;
+					}
+					//insert new table
 					var style = '';
 					if (width !== '') {
 						style += 'width:' + width + widthType + ';';
@@ -151,6 +202,7 @@ KindEditor.plugin('table', function(K) {
 		borderBox = K('[name="border"]', div).val(1),
 		colorBox = K('.ke-input-color', div);
 		function setColor(box, color) {
+			color = color.toUpperCase();
 			box.css('background-color', color);
 			box.css('color', color === '#000000' ? '#FFFFFF' : '#000000');
 			box.html(color);
@@ -181,20 +233,32 @@ KindEditor.plugin('table', function(K) {
 			removePicker();
 			colorBox.unbind();
 		});
-		//get selected image node
-		//var range = self.edit.cmd.range,
-		//	sc = range.startContainer, so = range.startOffset;
-		//if (!K.WEBKIT && !range.isControl()) {
-		//	return;
-		//}
-		//var img = K(sc.childNodes[so]);
-		//if (img.name !== 'img' || img[0].className !== 'ke-flash') {
-		//	return;
-		//}
-		//var attrs = K.mediaAttrs(img.attr('kesrctag'));
-		//urlBox.val(attrs.src);
-		//widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
-		//heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
-		//urlBox[0].focus();
+		//get selected table node
+		var table = self.edit.cmd.commonNode({ table : '*' });
+		if (table) {
+			rowsBox.val(table[0].rows.length);
+			colsBox.val(table[0].rows.length > 0 ? table[0].rows[0].cells.length : 0);
+			rowsBox.attr('disabled', true);
+			colsBox.attr('disabled', true);
+			var match,
+				tableWidth = table[0].style.width || table[0].width,
+				tableHeight = table[0].style.height || table[0].height;
+			if (tableWidth !== undefined && (match = /^(\d+)((?:px|%)*)$/.exec(tableWidth))) {
+				widthBox.val(match[1]);
+				widthTypeBox.val(match[2]);
+			} else {
+				widthBox.val('');
+			}
+			if (tableHeight !== undefined && (match = /^(\d+)((?:px|%)*)$/.exec(tableHeight))) {
+				heightBox.val(match[1]);
+				heightTypeBox.val(match[2]);
+			}
+			paddingBox.val(table[0].cellPadding || '');
+			spacingBox.val(table[0].cellSpacing || '');
+			alignBox.val(table[0].align || '');
+			borderBox.val(table[0].border === undefined ? '' : table[0].border);
+			setColor(K(colorBox[0]), K.toHex(table.attr('borderColor')) || '');
+			setColor(K(colorBox[1]), K.toHex(table[0].style.backgroundColor || table[0].bgColor || ''));
+		}
 	});
 });
