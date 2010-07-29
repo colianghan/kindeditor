@@ -18,10 +18,10 @@
 #using "main.js"
 */
 
-var _plugins = [];
+var _plugins = {};
 
-function _plugin(fn) {
-	_plugins.push(fn);
+function _plugin(name, fn) {
+	_plugins[name] = fn;
 }
 
 var _language = {};
@@ -96,8 +96,8 @@ function KEditor(options) {
 	self.srcElement = se;
 	//private properties
 	self._handlers = {};
-	_each(_plugins, function() {
-		this.call(self, KindEditor);
+	_each(_plugins, function(key, val) {
+		val.call(self, KindEditor);
 	});
 }
 
@@ -120,6 +120,21 @@ KEditor.prototype = {
 		return self;
 	},
 	clickToolbar : function(name, fn) {
+		var self = this, key = 'clickToolbar' + name;
+		//getter
+		if (fn === undefined) {
+			//直接执行
+			if (self._handlers[key]) {
+				return self.handler(key);
+			}
+			//动态加载后执行
+			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+				_plugins[name].call(self, KindEditor);
+				self.handler(key);
+			});
+			return self;
+		}
+		//setter
 		return this.handler('clickToolbar' + name, fn);
 	},
 	afterCreate : function(fn) {
@@ -154,7 +169,7 @@ KEditor.prototype = {
 		//create toolbar
 		var toolbar = _toolbar({
 				parent : container,
-				noDisableItems : 'source,fullscreen'.split(',')
+				noDisableItems : self.noDisableItems
 			});
 		_each(self.items, function(i, name) {
 			toolbar.addItem({

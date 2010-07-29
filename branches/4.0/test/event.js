@@ -16,7 +16,7 @@ test('bind/unbind/fire', function() {
 	K(document).click();
 	equals(result, '');
 	function click2(e) {
-		this.html('click2');
+		K(this).html('click2');
 	}
 	K('#test-data-01').click(click2);
 	K('#test-data-01').click();

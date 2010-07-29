@@ -11,7 +11,7 @@
  * @author Longhao Luo
  */
 
-KindEditor.plugin(function(K) {
+KindEditor.plugin('plainpaste', function(K) {
 	var self = this, name = 'plainpaste';
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),

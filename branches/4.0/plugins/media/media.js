@@ -11,7 +11,7 @@
  * @author Longhao Luo
  */
 
-KindEditor.plugin(function(K) {
+KindEditor.plugin('media', function(K) {
 	var self = this, name = 'media',
 		lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {

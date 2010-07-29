@@ -36,17 +36,10 @@
 			<fileset file="${src}/colorpicker.js"/>
 			<fileset file="${src}/dialog.js"/>
 			<fileset file="${src}/tabs.js"/>
+			<fileset file="${src}/net.js"/>
 			<fileset file="${src}/main.js"/>
 			<fileset file="${src}/footer.js"/>
-			<fileset file="${src}/plugins.js"/>
 			<fileset file="${plugins}/core/core.js"/>
-			<fileset file="${plugins}/plainpaste/plainpaste.js"/>
-			<fileset file="${plugins}/wordpaste/wordpaste.js"/>
-			<fileset file="${plugins}/link/link.js"/>
-			<fileset file="${plugins}/emoticons/emoticons.js"/>
-			<fileset file="${plugins}/image/image.js"/>
-			<fileset file="${plugins}/flash/flash.js"/>
-			<fileset file="${plugins}/media/media.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"

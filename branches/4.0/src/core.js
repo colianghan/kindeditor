@@ -93,7 +93,10 @@ var _kindeditor = '${VERSION}',
 	bool = K.isArray({one : 1}); //返回false
 */
 function _isArray(val) {
-	return val && Object.prototype.toString.call(val) === '[object Array]';
+	if (!val) {
+		return false;
+	}
+	return Object.prototype.toString.call(val) === '[object Array]';
 }
 
 /**
@@ -108,7 +111,10 @@ function _isArray(val) {
 	bool = K.isArray({}); //返回false
 */
 function _isFunction(val) {
-	return val && Object.prototype.toString.call(val) === '[object Function]';
+	if (!val) {
+		return false;
+	}
+	return Object.prototype.toString.call(val) === '[object Function]';
 }
 
 /**

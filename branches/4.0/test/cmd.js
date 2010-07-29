@@ -134,7 +134,7 @@ test('cmd.wrap', function() {
 	range.selectNode(strong);
 	cmd = K.cmd(range);
 	cmd.wrap('<div><p></p></div>');
-	equals(range.html(), '<div><p><strong>efg</strong></p></div>');
+	equals(range.html(), '<div><p><strong>efg</strong></p>\n</div>');
 	document.body.removeChild(cloneP);
 	//13
 	cloneP = p.cloneNode(true);

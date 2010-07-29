@@ -11,7 +11,7 @@
  * @author Longhao Luo
  */
 
-KindEditor.plugin(function(K) {
+KindEditor.plugin('link', function(K) {
 	var self = this, name = 'link';
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),

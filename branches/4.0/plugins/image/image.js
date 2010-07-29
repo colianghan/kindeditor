@@ -11,7 +11,7 @@
  * @author Longhao Luo
  */
 
-KindEditor.plugin(function(K) {
+KindEditor.plugin('image', function(K) {
 	var self = this, name = 'image',
 		allowUpload = K.undef(self.allowUpload, true),
 		allowFileManager = K.undef(self.allowFileManager, false),

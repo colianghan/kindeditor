@@ -11,7 +11,7 @@
  * @author Longhao Luo
  */
 
-KindEditor.plugin(function(K) {
+KindEditor.plugin('emoticons', function(K) {
 	var self = this, name = 'emoticons',
 		path = (self.emoticonsPath || self.scriptPath + 'plugins/emoticons/images/'),
 		allowPreview = self.allowPreviewEmoticons === undefined ? true : self.allowPreviewEmoticons,

@@ -11,7 +11,7 @@
  * @author Longhao Luo
  */
 
-KindEditor.plugin(function(K) {
+KindEditor.plugin('core', function(K) {
 	var self = this;
 	//source
 	self.clickToolbar('source', function() {

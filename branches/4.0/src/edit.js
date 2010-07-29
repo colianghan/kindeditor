@@ -65,7 +65,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 			}
 		});
 	} else {
-		if (cssPath !== '') {
+		if (cssPath) {
 			arr.push('<link href="' + cssPath + '" rel="stylesheet" />');
 		}
 	}
@@ -94,8 +94,8 @@ function _edit(options) {
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
 		srcElement = K(options.srcElement),
-		designMode = options.designMode === undefined ? true : options.designMode,
-		themesPath = options.themesPath,
+		designMode = _undef(options.designMode, true),
+		themesPath = _undef(options.themesPath, ''),
 		bodyClass = options.bodyClass,
 		cssPath = options.cssPath,
 		cssData = options.cssData,

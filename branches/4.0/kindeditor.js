@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-28)
+* @version 4.0 (2010-07-29)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-07-28)',
+var _kindeditor = '4.0 (2010-07-29)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -17,10 +17,16 @@ var _kindeditor = '4.0 (2010-07-28)',
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
 	_VERSION = _matches ? _matches[1] : '0';
 function _isArray(val) {
-	return val && Object.prototype.toString.call(val) === '[object Array]';
+	if (!val) {
+		return false;
+	}
+	return Object.prototype.toString.call(val) === '[object Array]';
 }
 function _isFunction(val) {
-	return val && Object.prototype.toString.call(val) === '[object Function]';
+	if (!val) {
+		return false;
+	}
+	return Object.prototype.toString.call(val) === '[object Function]';
 }
 function _inArray(val, arr) {
 	for (var i = 0, len = arr.length; i < len; i++) {
@@ -188,6 +194,7 @@ var _options = {
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
+	noDisableItems : 'source,fullscreen'.split(','),
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
@@ -3031,7 +3038,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 			}
 		});
 	} else {
-		if (cssPath !== '') {
+		if (cssPath) {
 			arr.push('<link href="' + cssPath + '" rel="stylesheet" />');
 		}
 	}
@@ -3050,8 +3057,8 @@ function _edit(options) {
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
 		srcElement = K(options.srcElement),
-		designMode = options.designMode === undefined ? true : options.designMode,
-		themesPath = options.themesPath,
+		designMode = _undef(options.designMode, true),
+		themesPath = _undef(options.themesPath, ''),
 		bodyClass = options.bodyClass,
 		cssPath = options.cssPath,
 		cssData = options.cssData,
@@ -3536,9 +3543,24 @@ function _tabs(options) {
 	return self;
 }
 K.tabs = _tabs;
-var _plugins = [];
-function _plugin(fn) {
-	_plugins.push(fn);
+function _getScript(url, fn) {
+	var head = document.getElementsByTagName('head')[0] || document.documentElement,
+		script = document.createElement('script');
+	head.appendChild(script);
+	script.src = url;
+	script.charset = 'utf-8';
+	script.onload = script.onreadystatechange = function() {
+		if (!this.readyState || this.readyState === 'loaded') {
+			fn();
+			script.onload = script.onreadystatechange = null;
+			head.removeChild(script);
+		}
+	};
+}
+K.getScript = _getScript;
+var _plugins = {};
+function _plugin(name, fn) {
+	_plugins[name] = fn;
 }
 var _language = {};
 function _parseLangKey(key) {
@@ -3598,8 +3620,8 @@ function KEditor(options) {
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
 	self._handlers = {};
-	_each(_plugins, function() {
-		this.call(self, KindEditor);
+	_each(_plugins, function(key, val) {
+		val.call(self, KindEditor);
 	});
 }
 KEditor.prototype = {
@@ -3621,6 +3643,17 @@ KEditor.prototype = {
 		return self;
 	},
 	clickToolbar : function(name, fn) {
+		var self = this, key = 'clickToolbar' + name;
+		if (fn === undefined) {
+			if (self._handlers[key]) {
+				return self.handler(key);
+			}
+			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+				_plugins[name].call(self, KindEditor);
+				self.handler(key);
+			});
+			return self;
+		}
 		return this.handler('clickToolbar' + name, fn);
 	},
 	afterCreate : function(fn) {
@@ -3654,7 +3687,7 @@ KEditor.prototype = {
 		}
 		var toolbar = _toolbar({
 				parent : container,
-				noDisableItems : 'source,fullscreen'.split(',')
+				noDisableItems : self.noDisableItems
 			});
 		_each(self.items, function(i, name) {
 			toolbar.addItem({
@@ -3871,7 +3904,7 @@ K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
 })(window);
-KindEditor.plugin(function(K) {
+KindEditor.plugin('core', function(K) {
 	var self = this;
 	self.clickToolbar('source', function() {
 		self.toolbar.disable();
@@ -3989,502 +4022,5 @@ KindEditor.plugin(function(K) {
 		self.clickToolbar(name, function() {
 			self.focus().exec(name, null);
 		});
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'plainpaste';
-	self.clickToolbar(name, function() {
-		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px;">' +
-				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
-				'<textarea style="width:415px;height:260px;border:1px solid #A0A0A0;"></textarea>' +
-				'</div>',
-			dialog = self.createDialog({
-				name : name,
-				width : 450,
-				title : self.lang(name),
-				body : html,
-				yesBtn : {
-					name : self.lang('yes'),
-					click : function(e) {
-						var html = textarea.val();
-						html = K.escape(html);
-						html = html.replace(/ /g, '&nbsp;');
-						html = html.replace(/\r\n|\n|\r/g, "<br />$&");
-						self.insertHtml(html).hideDialog().focus();
-					}
-				}
-			}),
-			textarea = K('textarea', dialog.div());
-		textarea.get().focus();
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'wordpaste';
-	self.clickToolbar(name, function() {
-		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px;">' +
-				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
-				'<iframe style="width:415px;height:260px;border:1px solid #A0A0A0;" frameborder="0"></iframe>' +
-				'</div>',
-			dialog = self.createDialog({
-				name : name,
-				width : 450,
-				title : self.lang(name),
-				body : html,
-				yesBtn : {
-					name : self.lang('yes'),
-					click : function(e) {
-						var str = doc.body.innerHTML;
-						str = str.replace(/<meta(\n|.)*?>/ig, '');
-						str = str.replace(/<!(\n|.)*?>/ig, '');
-						str = str.replace(/<style[^>]*>(\n|.)*?<\/style>/ig, '');
-						str = str.replace(/<script[^>]*>(\n|.)*?<\/script>/ig, '');
-						str = str.replace(/<w:[^>]+>(\n|.)*?<\/w:[^>]+>/ig, '');
-						str = str.replace(/<xml>(\n|.)*?<\/xml>/ig, '');
-						str = str.replace(/\r\n|\n|\r/ig, '');
-						self.insertHtml(str).hideDialog().focus();
-					}
-				}
-			}),
-			div = dialog.div(),
-			iframe = K('iframe', div.get());
-		var doc = K.iframeDoc(iframe);
-		if (!K.IE) {
-			doc.designMode = 'on';
-		}
-		doc.open();
-		doc.write('<html><head><title>WordPaste</title></head>');
-		doc.write('<body style="background-color:#FFFFFF;font-size:12px;margin:2px;" />');
-		if (!K.IE) {
-			doc.write('<br />');
-		}
-		doc.write('</body></html>');
-		doc.close();
-		if (K.IE) {
-			doc.body.contentEditable = 'true';
-		}
-		iframe.get().contentWindow.focus();
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'link';
-	self.clickToolbar(name, function() {
-		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px;">' +
-				'<div class="ke-dialog-row">' +
-				'<label for="keUrl">' + lang.url + '</label>' +
-				'<input type="text" id="keUrl" name="url" value="" style="width:90%;" /></div>' +
-				'<div class="ke-dialog-row"">' +
-				'<label for="keType">' + lang.linkType + '</label>' +
-				'<select id="keType" name="type"></select>' +
-				'</div>' +
-				'</div>',
-			dialog = self.createDialog({
-				name : name,
-				width : 400,
-				title : self.lang(name),
-				body : html,
-				yesBtn : {
-					name : self.lang('yes'),
-					click : function(e) {
-						self.exec('createlink', urlBox.val(), typeBox.val()).hideDialog().focus();
-					}
-				}
-			}),
-			div = dialog.div(),
-			urlBox = K('input[name="url"]', div),
-			typeBox = K('select[name="type"]', div);
-		typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
-		typeBox.get().options[1] = new Option(lang.selfWindow, '');
-		urlBox.val(self.val('createlink'));
-		urlBox.get().focus();
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'emoticons',
-		path = (self.emoticonsPath || self.scriptPath + 'plugins/emoticons/images/'),
-		allowPreview = self.allowPreviewEmoticons === undefined ? true : self.allowPreviewEmoticons,
-		currentPageNum = 1;
-	self.clickToolbar(name, function() {
-		var rows = 5, cols = 9, total = 135, startNum = 0,
-			cells = rows * cols, pages = Math.ceil(total / cells),
-			colsHalf = Math.floor(cols / 2),
-			wrapperDiv = K('<div class="ke-plugin-emoticons-wrapper"></div>'),
-			elements = [],
-			menu = self.createMenu({
-				name : name
-			});
-		menu.div().append(wrapperDiv);
-		var previewDiv, previewImg;
-		if (allowPreview) {
-			previewDiv = K('<div class="ke-plugin-emoticons-preview"></div>').css('right', 0);
-			previewImg = K('<img class="ke-plugin-emoticons-preview-img" src="' + path + startNum + '.gif" />');
-			wrapperDiv.append(previewDiv);
-			previewDiv.append(previewImg);
-		}
-		function bindCellEvent(cell, j, num) {
-			if (previewDiv) {
-				cell.mouseover(function() {
-					if (j > colsHalf) {
-						previewDiv.css('left', 0);
-						previewDiv.css('right', '');
-					} else {
-						previewDiv.css('left', '');
-						previewDiv.css('right', 0);
-					}
-					previewImg.attr('src', path + num + '.gif');
-					K(this).addClass('ke-plugin-emoticons-cell-on');
-				});
-			} else {
-				cell.mouseover(function() {
-					K(this).addClass('ke-plugin-emoticons-cell-on');
-				});
-			}
-			cell.mouseout(function() {
-				K(this).removeClass('ke-plugin-emoticons-cell-on');
-			});
-			cell.click(function(e) {
-				self.insertHtml('<img src="' + path + num + '.gif" border="0" alt="" />').hideMenu().focus();
-				e.stop();
-			});
-		}
-		function createEmoticonsTable(pageNum, parentDiv) {
-			var table = document.createElement('table');
-			parentDiv.append(table);
-			if (previewDiv) {
-				K(table).mouseover(function() {
-					previewDiv.show();
-				});
-				K(table).mouseout(function() {
-					previewDiv.hide();
-				});
-				elements.push(K(table));
-			}
-			table.className = 'ke-plugin-emoticons-table';
-			table.cellPadding = 0;
-			table.cellSpacing = 0;
-			table.border = 0;
-			var num = (pageNum - 1) * cells + startNum;
-			for (var i = 0; i < rows; i++) {
-				var row = table.insertRow(i);
-				for (var j = 0; j < cols; j++) {
-					var cell = K(row.insertCell(j));
-					cell.addClass('ke-plugin-emoticons-cell');
-					bindCellEvent(cell, j, num);
-					var span = K('<span class="ke-plugin-emoticons-img"></span>')
-						.css('background-position', '-' + (24 * num) + 'px 0px')
-						.css('background-image', 'url(' + path + 'static.gif)');
-					cell.append(span);
-					elements.push(cell);
-					num++;
-				}
-			}
-			return table;
-		}
-		var table = createEmoticonsTable(currentPageNum, wrapperDiv);
-		function removeEvent() {
-			K.each(elements, function() {
-				this.unbind();
-			});
-		}
-		var pageDiv;
-		function bindPageEvent(el, pageNum) {
-			el.click(function(e) {
-				removeEvent();
-				table.parentNode.removeChild(table);
-				pageDiv.remove();
-				table = createEmoticonsTable(pageNum, wrapperDiv);
-				createPageTable(pageNum);
-				currentPageNum = pageNum;
-				e.stop();
-			});
-		}
-		function createPageTable(currentPageNum) {
-			pageDiv = K('<div class="ke-plugin-emoticons-page"></div>');
-			wrapperDiv.append(pageDiv);
-			for (var pageNum = 1; pageNum <= pages; pageNum++) {
-				if (currentPageNum !== pageNum) {
-					var a = K('<a href="javascript:;">[' + pageNum + ']</a>');
-					bindPageEvent(a, pageNum);
-					pageDiv.append(a);
-					elements.push(a);
-				} else {
-					pageDiv.append(K('@[' + pageNum + ']'));
-				}
-				pageDiv.append(K('@&nbsp;'));
-			}
-		}
-		createPageTable(currentPageNum);
-		self.beforeHideMenu(function() {
-			removeEvent();
-		});
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'image',
-		allowUpload = K.undef(self.allowUpload, true),
-		allowFileManager = K.undef(self.allowFileManager, false),
-		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
-		imgPath = this.scriptPath + 'plugins/image/images/',
-		lang = self.lang(name + '.');
-	self.clickToolbar(name, function() {
-		var html = [
-			'<div style="margin:10px;">',
-			'<div class="tabs"></div>',
-			'<iframe name="uploadIframe" style="display:none;"></iframe>',
-			'<form name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">',
-			'<input type="hidden" name="referMethod" value="" />',
-			'<div class="ke-dialog-row">',
-			'<div class="tab1" style="display:none;">',
-			'<label for="keUrl">' + lang.remoteUrl + '</label>',
-			'<input type="text" id="keUrl" name="url" value="" style="width:230px;" />',
-			' <input type="button" name="viewServer" value="' + lang.viewServer + '" />',
-			'</div>',
-			'<div class="tab2" style="display:none;">',
-			'<label for="keFile">' + lang.localUrl + '</label>',
-			'<input type="file" id="keFile" name="imgFile" style="width:300px;" />',
-			'</div>',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keWidth">' + lang.size + '</label>',
-			lang.width + ' <input type="text" id="keWidth" name="width" value="" maxlength="4" style="width:50px;text-align:right;" /> ',
-			lang.height + ' <input type="text" name="height" value="" maxlength="4" style="width:50px;text-align:right;" /> ',
-			'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label>' + lang.align + '</label>',
-			'<input type="radio" name="align" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />',
-			' <input type="radio" name="align" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />',
-			' <input type="radio" name="align" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keTitle">' + lang.imgTitle + '</label>',
-			'<input type="text" id="keTitle" name="title" value="" style="width:95%;" /></div>',
-			'</div>',
-			'</form>',
-			'</div>'
-		].join('');
-		var dialog = self.createDialog({
-			name : name,
-			width : 450,
-			height : 300,
-			title : self.lang(name),
-			body : html,
-			yesBtn : {
-				name : self.lang('yes'),
-				click : function(e) {
-					var url = urlBox.val(),
-						width = widthBox.val(),
-						height = heightBox.val(),
-						title = titleBox.val(),
-						align = '';
-					alignBox.each(function() {
-						if (this.checked) {
-							align = this.value;
-							return false;
-						}
-					});
-					if (tabs.selectedIndex === 1) {
-						var form = K('[name="uploadForm"]', div),
-							iframe = K('[name="uploadIframe"]', div);
-						form.attr('action', uploadJson);
-						iframe.bind('load', function() {
-							iframe.unbind();
-							var data = {};
-							try {
-								data = K.json(_iframeDoc(iframe).body.innerHTML);
-							} catch (e) {
-								alert(self.lang('invalidJson'));
-							}
-							if ('error' in data) {
-								if (data.error === 0) {
-									self.exec('insertimage', data.url, title, width, height, 0, align)
-										.hideDialog().focus();
-								} else {
-									alert(data.message);
-									return false;
-								}
-							}
-						});
-						form[0].submit();
-						return;
-					}
-					self.exec('insertimage', url, title, width, height, 0, align)
-						.hideDialog().focus();
-				}
-			}
-		}),
-		div = dialog.div(),
-		tabs = K.tabs({
-			parent : K('.tabs', div),
-			afterSelect : function(i) {
-			}
-		});
-		tabs.add({
-			title : lang.remoteImage,
-			panel : K('.tab1', div)
-		});
-		tabs.add({
-			title : lang.localImage,
-			panel : K('.tab2', div)
-		});
-		tabs.select(0);
-		var urlBox = K('[name="url"]', div),
-			widthBox = K('[name="width"]', div),
-			heightBox = K('[name="height"]', div),
-			titleBox = K('[name="title"]', div),
-			alignBox = K('[name="align"]');
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
-			return;
-		}
-		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
-			return;
-		}
-		urlBox.val(img.attr('src'));
-		widthBox.val(img.width());
-		heightBox.val(img.height());
-		titleBox.val(img.attr('title'));
-		alignBox.each(function() {
-			if (this.value === img.attr('align')) {
-				this.checked = true;
-				return false;
-			}
-		});
-		urlBox[0].focus();
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'flash',
-		lang = self.lang(name + '.');
-	self.clickToolbar(name, function() {
-		var html = [
-			'<div style="margin:10px;">',
-			'<div class="ke-dialog-row">',
-			'<label for="keUrl">' + lang.url + '</label>',
-			'<input type="text" id="keUrl" name="url" value="" style="width:90%;" />',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keWidth">' + lang.width + '</label>',
-			'<input type="text" id="keWidth" name="width" value="550" maxlength="4" style="width:50px;text-align:right;" /> ',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keHeight">' + lang.height + '</label>',
-			'<input type="text" id="keHeight" name="height" value="400" maxlength="4" style="width:50px;text-align:right;" /> ',
-			'</div>',
-			'</div>'
-		].join('');
-		var dialog = self.createDialog({
-			name : name,
-			width : 400,
-			height : 200,
-			title : self.lang(name),
-			body : html,
-			yesBtn : {
-				name : self.lang('yes'),
-				click : function(e) {
-					var url = urlBox.val(),
-						html = K.mediaImg(self.themesPath + 'common/blank.gif', {
-							src : url,
-							type : K.mediaType('.swf'),
-							width : widthBox.val(),
-							height : heightBox.val(),
-							quality : 'high'
-						});
-					self.insertHtml(html).hideDialog().focus();
-				}
-			}
-		}),
-		div = dialog.div(),
-		urlBox = K('[name="url"]', div),
-		widthBox = K('[name="width"]', div),
-		heightBox = K('[name="height"]', div);
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
-			return;
-		}
-		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || img[0].className !== 'ke-flash') {
-			return;
-		}
-		var attrs = K.mediaAttrs(img.attr('kesrctag'));
-		urlBox.val(attrs.src);
-		widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
-		heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
-		urlBox[0].focus();
-	});
-});
-KindEditor.plugin(function(K) {
-	var self = this, name = 'media',
-		lang = self.lang(name + '.');
-	self.clickToolbar(name, function() {
-		var html = [
-			'<div style="margin:10px;">',
-			'<div class="ke-dialog-row">',
-			'<label for="keUrl">' + lang.url + '</label>',
-			'<input type="text" id="keUrl" name="url" value="" style="width:90%;" />',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keWidth">' + lang.width + '</label>',
-			'<input type="text" id="keWidth" name="width" value="550" maxlength="4" style="width:50px;text-align:right;" />',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keHeight">' + lang.height + '</label>',
-			'<input type="text" id="keHeight" name="height" value="400" maxlength="4" style="width:50px;text-align:right;" />',
-			'</div>',
-			'<div class="ke-dialog-row">',
-			'<label for="keAutostart">' + lang.autostart + '</label>',
-			'<input type="checkbox" id="keAutostart" name="autostart" value="" /> ',
-			'</div>',
-			'</div>'
-		].join('');
-		var dialog = self.createDialog({
-			name : name,
-			width : 400,
-			height : 230,
-			title : self.lang(name),
-			body : html,
-			yesBtn : {
-				name : self.lang('yes'),
-				click : function(e) {
-					var url = urlBox.val(),
-						html = K.mediaImg(self.themesPath + 'common/blank.gif', {
-							src : url,
-							type : K.mediaType(url),
-							width : widthBox.val(),
-							height : heightBox.val(),
-							autostart : autostartBox[0].checked ? 'true' : 'false',
-							loop : 'true'
-						});
-					self.insertHtml(html).hideDialog().focus();
-				}
-			}
-		}),
-		div = dialog.div(),
-		urlBox = K('[name="url"]', div),
-		widthBox = K('[name="width"]', div),
-		heightBox = K('[name="height"]', div),
-		autostartBox = K('[name="autostart"]', div);
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
-			return;
-		}
-		var img = K(sc.childNodes[so]);
-		console.log(img[0].className);
-		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
-			return;
-		}
-		console.log(img[0].className);
-		var attrs = K.mediaAttrs(img.attr('kesrctag'));
-		urlBox.val(attrs.src);
-		widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
-		heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
-		autostartBox[0].checked = (attrs.autostart === 'true');
-		urlBox[0].focus();
 	});
 });
