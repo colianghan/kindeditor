@@ -22,7 +22,7 @@ function _tabs(options) {
 		afterSelect = options.afterSelect,
 		div = self.div(),
 		liList = [];
-	//create toolbar
+	//create tabs
 	div.addClass('ke-tabs')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
@@ -63,7 +63,7 @@ function _tabs(options) {
 			afterSelect.call(self, index);
 		}
 	};
-	//remove toolbar
+	//remove tabs
 	self.remove = function() {
 		_each(liList, function() {
 			this.remove();

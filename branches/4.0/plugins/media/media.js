@@ -25,12 +25,12 @@ KindEditor.plugin('media', function(K) {
 			//width
 			'<div class="ke-dialog-row">',
 			'<label for="keWidth">' + lang.width + '</label>',
-			'<input type="text" id="keWidth" name="width" value="550" maxlength="4" style="width:50px;text-align:right;" />',
+			'<input type="text" id="keWidth" class="ke-input-number" name="width" value="550" maxlength="4" />',
 			'</div>',
 			//height
 			'<div class="ke-dialog-row">',
 			'<label for="keHeight">' + lang.height + '</label>',
-			'<input type="text" id="keHeight" name="height" value="400" maxlength="4" style="width:50px;text-align:right;" />',
+			'<input type="text" id="keHeight" class="ke-input-number" name="height" value="400" maxlength="4" />',
 			'</div>',
 			//autostart
 			'<div class="ke-dialog-row">',

@@ -20,6 +20,7 @@ function _bindDragEvent(options) {
 	var moveEl = options.moveEl,
 		moveFn = options.moveFn,
 		clickEl = options.clickEl || moveEl,
+		beforeDrag = options.beforeDrag,
 		iframeFix = options.iframeFix === undefined ? true : options.iframeFix;
 	var docs = [document],
 		poss = [{ x : 0, y : 0}],
@@ -39,6 +40,9 @@ function _bindDragEvent(options) {
 			pageX = e.pageX,
 			pageY = e.pageY,
 			dragging = true;
+		if (beforeDrag) {
+			beforeDrag();
+		}
 		_each(docs, function(i, doc) {
 			function moveListener(e) {
 				if (dragging) {

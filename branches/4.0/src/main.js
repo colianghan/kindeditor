@@ -145,6 +145,9 @@ KEditor.prototype = {
 	beforeHideMenu : function(fn) {
 		return this.handler('beforeHideMenu', fn);
 	},
+	beforeHideDialog : function(fn) {
+		return this.handler('beforeHideDialog', fn);
+	},
 	create : function() {
 		var self = this,
 			fullscreenMode = self.fullscreenMode;
@@ -366,6 +369,7 @@ KEditor.prototype = {
 		return (self.dialog = _dialog(options));
 	},
 	hideDialog : function() {
+		this.beforeHideDialog();
 		this.dialog.remove();
 		this.dialog = null;
 		return this;

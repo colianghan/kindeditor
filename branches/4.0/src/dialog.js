@@ -78,7 +78,8 @@ function _dialog(options) {
 		.click(closeBtn.click);
 	headerDiv.append(span);
 	self.draggable({
-		clickEl : headerDiv
+		clickEl : headerDiv,
+		beforeDrag : options.beforeDrag
 	});
 	var bodyDiv = K('<div class="ke-dialog-body"></div>');
 	contentCell.append(bodyDiv);
