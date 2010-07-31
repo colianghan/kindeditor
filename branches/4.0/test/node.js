@@ -70,6 +70,7 @@ test("contains",function(){
 	ok(K('#test-data-01 strong').contains(K('#test-data-01 strong').first()) === true);
 	ok(K(document).contains(K('#test-data-01 strong')) === true);
 	ok(K(document).contains(document) === false);
+	ok(K(document).contains(document.body));
 	ok(K('#test-data-01 strong').first().contains(K('#test-data-01 strong')) === false);
 });
 
