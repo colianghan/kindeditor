@@ -653,13 +653,6 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
-		if (key === 'createlink') {
-			knode = self.commonNode({ a : '*' });
-			if (knode) {
-				val = knode.attr('href');
-			}
-			return val;
-		}
 		return val;
 	},
 	toggle : function(wrapper, map) {
@@ -854,7 +847,7 @@ KCmd.prototype = {
 				e.stop();
 			}
 		});
-		K(doc).mouseup(fn);
+		K(doc).mouseup(fn).contextmenu(fn);
 		if (doc !== document) {
 			K(document).mousedown(fn);
 		}

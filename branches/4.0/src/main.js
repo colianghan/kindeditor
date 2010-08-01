@@ -70,12 +70,63 @@ function _lang(mixed, langType) {
 	});
 }
 
+function _bindContextmenuEvent() {
+	var self = this, doc = self.edit.doc;
+	K(doc).contextmenu(function(e) {
+		if (self.menu) {
+			self.hideMenu();
+		}
+		if (self._contextmenus.length === 0) {
+			return;
+		}
+		var maxWidth = 0, items = [];
+		_each(self._contextmenus, function() {
+			if (this.title == '-') {
+				items.push(this);
+				return;
+			}
+			if (this.cond && this.cond()) {
+				items.push(this);
+				if (this.width && this.width > maxWidth) {
+					maxWidth = this.width;
+				}
+			}
+		});
+		while (items.length > 0 && items[0].title == '-') {
+			items.shift();
+		}
+		while (items.length > 0 && items[items.length - 1].title == '-') {
+			items.pop();
+		}
+		var prevItem = null;
+		_each(items, function(i) {
+			if (this.title == '-' && prevItem.title == '-') {
+				delete items[i];
+			}
+			prevItem = this;
+		});
+		if (items.length > 0) {
+			var pos = K(self.edit.iframe).pos();
+			self.menu = _menu({
+				x : pos.x + e.clientX,
+				y : pos.y + e.clientY,
+				width : maxWidth
+			});
+			_each(items, function() {
+				self.menu.addItem(this);
+			});
+			e.stop();
+		}
+	});
+}
+
 function KEditor(options) {
 	var self = this;
 	_each(options, function(key, val) {
 		self[key] = options[key];
 		if (key === 'scriptPath') {
 			self.themesPath = options[key] + 'themes/';
+			self.langPath = options[key] + 'lang/';
 			self.pluginsPath = options[key] + 'plugins/';
 		}
 	});
@@ -96,14 +147,32 @@ function KEditor(options) {
 	self.srcElement = se;
 	//private properties
 	self._handlers = {};
-	_each(_plugins, function(key, val) {
-		val.call(self, KindEditor);
+	self._contextmenus = [];
+	_each(_plugins, function(name, fn) {
+		fn.call(self, KindEditor);
+	});
+	_each(self.preloadPlugins, function(i, name) {
+		self.loadPlugin(name);
 	});
 }
 
 KEditor.prototype = {
 	lang : function(mixed) {
 		return _lang(mixed, this.langType);
+	},
+	loadPlugin : function(name, fn) {
+		var self = this;
+		if (!_plugins[name]) {
+			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+				if (_plugins[name]) {
+					_plugins[name].call(self, KindEditor);
+					if (fn) {
+						fn.call(self);
+					}
+				}
+			});
+		}
+		return self;
 	},
 	handler : function(key, fn) {
 		var self = this;
@@ -121,23 +190,19 @@ KEditor.prototype = {
 	},
 	clickToolbar : function(name, fn) {
 		var self = this, key = 'clickToolbar' + name;
-		//getter
 		if (fn === undefined) {
-			//直接执行
 			if (self._handlers[key]) {
 				return self.handler(key);
 			}
-			//动态加载后执行
-			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
-				if (_plugins[name]) {
-					_plugins[name].call(self, KindEditor);
-					self.handler(key);
-				}
+			self.loadPlugin(name, function() {
+				self.handler(key);
 			});
 			return self;
 		}
-		//setter
-		return this.handler('clickToolbar' + name, fn);
+		return self.handler(key, fn);
+	},
+	addContextmenu : function(item) {
+		this._contextmenus.push(item);
 	},
 	afterCreate : function(fn) {
 		return this.handler('afterCreate', fn);
@@ -206,12 +271,6 @@ KEditor.prototype = {
 				cssData : self.cssData
 			}),
 			doc = edit.doc, textarea = edit.textarea;
-		//bind events
-		K(doc, document).click(function(e) {
-			if (self.menu) {
-				self.hideMenu();
-			}
-		});
 		//create statusbar
 		var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
 		container.append(statusbar);
@@ -251,11 +310,18 @@ KEditor.prototype = {
 		self.toolbar = toolbar;
 		self.edit = edit;
 		self.statusbar = statusbar;
-		self.menu = self.dialog = null;
+		self.menu = self.contextmenu = self.dialog = null;
 		self._rightIcon = rightIcon;
 		//reset size
 		self.resize(width, height);
-		//exec afterCreate event
+		//bind events
+		K(doc, document).click(function(e) {
+			if (self.menu) {
+				self.hideMenu();
+			}
+		});
+		_bindContextmenuEvent.call(self);
+		//execute afterCreate event
 		self.afterCreate();
 		return self;
 	},
@@ -346,6 +412,11 @@ KEditor.prototype = {
 		this.beforeHideMenu();
 		this.menu.remove();
 		this.menu = null;
+		return this;
+	},
+	hideContextmenu : function() {
+		this.contextmenu.remove();
+		this.contextmenu = null;
 		return this;
 	},
 	createDialog : function(options) {

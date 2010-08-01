@@ -23,7 +23,9 @@ function _getScript(url, fn) {
 	script.charset = 'utf-8';
 	script.onload = script.onreadystatechange = function() {
 		if (!this.readyState || this.readyState === 'loaded') {
-			fn();
+			if (fn) {
+				fn();
+			}
 			script.onload = script.onreadystatechange = null;
 			head.removeChild(script);
 		}

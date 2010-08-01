@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-07-29)
+* @version 4.0 (2010-08-01)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-07-29)',
+var _kindeditor = '4.0 (2010-08-01)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -195,6 +195,7 @@ var _options = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : 'source,fullscreen'.split(','),
+	preloadPlugins : 'image,flash,media,link,table'.split(','),
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
@@ -236,6 +237,7 @@ var _options = {
 	}
 };
 _options.themesPath = _options.scriptPath + 'themes/';
+_options.langPath = _options.scriptPath + 'lang/';
 _options.pluginsPath = _options.scriptPath + 'plugins/';
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
@@ -800,7 +802,7 @@ K.mediaEmbed = _mediaEmbed;
 K.mediaImg = _mediaImg;
 function _contains(nodeA, nodeB) {
 	while ((nodeB = nodeB.parentNode)) {
-		if (nodeB === nodeA) {
+		if (nodeB == nodeA) {
 			return true;
 		}
 	}
@@ -1466,7 +1468,7 @@ KNode.prototype = {
 };
 _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +
-	'change,select,submit,keydown,keypress,keyup,error').split(','), function(i, type) {
+	'change,select,submit,keydown,keypress,keyup,error,contextmenu').split(','), function(i, type) {
 	KNode.prototype[type] = function(fn) {
 		return fn ? this.bind(type, fn) : this.fire(type);
 	};
@@ -2564,13 +2566,6 @@ KCmd.prototype = {
 			}
 			return lc(val);
 		}
-		if (key === 'createlink') {
-			knode = self.commonNode({ a : '*' });
-			if (knode) {
-				val = knode.attr('href');
-			}
-			return val;
-		}
 		return val;
 	},
 	toggle : function(wrapper, map) {
@@ -2762,7 +2757,7 @@ KCmd.prototype = {
 				e.stop();
 			}
 		});
-		K(doc).mouseup(fn);
+		K(doc).mouseup(fn).contextmenu(fn);
 		if (doc !== document) {
 			K(document).mousedown(fn);
 		}
@@ -3557,7 +3552,9 @@ function _getScript(url, fn) {
 	script.charset = 'utf-8';
 	script.onload = script.onreadystatechange = function() {
 		if (!this.readyState || this.readyState === 'loaded') {
-			fn();
+			if (fn) {
+				fn();
+			}
 			script.onload = script.onreadystatechange = null;
 			head.removeChild(script);
 		}
@@ -3601,12 +3598,62 @@ function _lang(mixed, langType) {
 		_language[langType][obj.ns][obj.key] = val;
 	});
 }
+function _bindContextmenuEvent() {
+	var self = this, doc = self.edit.doc;
+	K(doc).contextmenu(function(e) {
+		if (self.menu) {
+			self.hideMenu();
+		}
+		if (self._contextmenus.length === 0) {
+			return;
+		}
+		var maxWidth = 0, items = [];
+		_each(self._contextmenus, function() {
+			if (this.title == '-') {
+				items.push(this);
+				return;
+			}
+			if (this.cond && this.cond()) {
+				items.push(this);
+				if (this.width && this.width > maxWidth) {
+					maxWidth = this.width;
+				}
+			}
+		});
+		while (items.length > 0 && items[0].title == '-') {
+			items.shift();
+		}
+		while (items.length > 0 && items[items.length - 1].title == '-') {
+			items.pop();
+		}
+		var prevItem = null;
+		_each(items, function(i) {
+			if (this.title == '-' && prevItem.title == '-') {
+				delete items[i];
+			}
+			prevItem = this;
+		});
+		if (items.length > 0) {
+			var pos = K(self.edit.iframe).pos();
+			self.menu = _menu({
+				x : pos.x + e.clientX,
+				y : pos.y + e.clientY,
+				width : maxWidth
+			});
+			_each(items, function() {
+				self.menu.addItem(this);
+			});
+			e.stop();
+		}
+	});
+}
 function KEditor(options) {
 	var self = this;
 	_each(options, function(key, val) {
 		self[key] = options[key];
 		if (key === 'scriptPath') {
 			self.themesPath = options[key] + 'themes/';
+			self.langPath = options[key] + 'lang/';
 			self.pluginsPath = options[key] + 'plugins/';
 		}
 	});
@@ -3626,13 +3673,31 @@ function KEditor(options) {
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
 	self._handlers = {};
-	_each(_plugins, function(key, val) {
-		val.call(self, KindEditor);
+	self._contextmenus = [];
+	_each(_plugins, function(name, fn) {
+		fn.call(self, KindEditor);
+	});
+	_each(self.preloadPlugins, function(i, name) {
+		self.loadPlugin(name);
 	});
 }
 KEditor.prototype = {
 	lang : function(mixed) {
 		return _lang(mixed, this.langType);
+	},
+	loadPlugin : function(name, fn) {
+		var self = this;
+		if (!_plugins[name]) {
+			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+				if (_plugins[name]) {
+					_plugins[name].call(self, KindEditor);
+					if (fn) {
+						fn.call(self);
+					}
+				}
+			});
+		}
+		return self;
 	},
 	handler : function(key, fn) {
 		var self = this;
@@ -3654,15 +3719,15 @@ KEditor.prototype = {
 			if (self._handlers[key]) {
 				return self.handler(key);
 			}
-			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
-				if (_plugins[name]) {
-					_plugins[name].call(self, KindEditor);
-					self.handler(key);
-				}
+			self.loadPlugin(name, function() {
+				self.handler(key);
 			});
 			return self;
 		}
-		return this.handler('clickToolbar' + name, fn);
+		return self.handler(key, fn);
+	},
+	addContextmenu : function(item) {
+		this._contextmenus.push(item);
 	},
 	afterCreate : function(fn) {
 		return this.handler('afterCreate', fn);
@@ -3729,11 +3794,6 @@ KEditor.prototype = {
 				cssData : self.cssData
 			}),
 			doc = edit.doc, textarea = edit.textarea;
-		K(doc, document).click(function(e) {
-			if (self.menu) {
-				self.hideMenu();
-			}
-		});
 		var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
 		container.append(statusbar);
 		if (!fullscreenMode) {
@@ -3771,9 +3831,15 @@ KEditor.prototype = {
 		self.toolbar = toolbar;
 		self.edit = edit;
 		self.statusbar = statusbar;
-		self.menu = self.dialog = null;
+		self.menu = self.contextmenu = self.dialog = null;
 		self._rightIcon = rightIcon;
 		self.resize(width, height);
+		K(doc, document).click(function(e) {
+			if (self.menu) {
+				self.hideMenu();
+			}
+		});
+		_bindContextmenuEvent.call(self);
 		self.afterCreate();
 		return self;
 	},
@@ -3864,6 +3930,11 @@ KEditor.prototype = {
 		this.beforeHideMenu();
 		this.menu.remove();
 		this.menu = null;
+		return this;
+	},
+	hideContextmenu : function() {
+		this.contextmenu.remove();
+		this.contextmenu = null;
 		return this;
 	},
 	createDialog : function(options) {

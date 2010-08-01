@@ -21,9 +21,9 @@ function _contains(nodeA, nodeB) {
 	// Bypass comparison on document node since
 	// we don't deal with cross frame,
 	// e.g. document.body.parentNode.parentNode == document (false for IE).
-	if (nodeA.nodeType == 9 && nodeB.nodeType != 9) {
-		return true;
-	}
+	//if (nodeA.nodeType == 9 && nodeB.nodeType != 9) {
+	//	return true;
+	//}
 	while ((nodeB = nodeB.parentNode)) {
 		if (nodeB == nodeA) {
 			return true;
