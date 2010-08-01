@@ -801,6 +801,9 @@ K.mediaAttrs = _mediaAttrs;
 K.mediaEmbed = _mediaEmbed;
 K.mediaImg = _mediaImg;
 function _contains(nodeA, nodeB) {
+	if (nodeA.nodeType == 9 && nodeB.nodeType != 9) {
+		return true;
+	}
 	while ((nodeB = nodeB.parentNode)) {
 		if (nodeB == nodeA) {
 			return true;

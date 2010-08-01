@@ -226,7 +226,7 @@ KindEditor.plugin('table', function(K) {
 				if (!picker || this !== currentElement) {
 					var box = K(this),
 						pos = box.pos();
-					picker = _colorpicker({
+					picker = K.colorpicker({
 						x : pos.x,
 						y : pos.y + box.height(),
 						z : 811214,
