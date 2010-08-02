@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-08-01)
+* @version 4.0 (2010-08-02)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-08-01)',
+var _kindeditor = '4.0 (2010-08-02)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -2407,6 +2407,7 @@ KCmd.prototype = {
 			}
 			var markParent = mark.parentNode;
 			markParent.removeChild(mark);
+			mark = null;
 			if (!isStart && markParent === range.endContainer) {
 				range.setEnd(range.endContainer, range.endOffset - 1);
 			}
@@ -2424,9 +2425,18 @@ KCmd.prototype = {
 		}
 		self.split(true, map);
 		self.split(false, map);
-		var nodeList = [];
+		var nodeList = [], testRange, start = false;
 		K(range.commonAncestor()).scan(function(node) {
-			nodeList.push(K(node));
+			testRange = _range(doc).selectNode(node);
+			if (!start) {
+				start = testRange.compareBoundaryPoints(_START_TO_START, range) >= 0;
+			}
+			if (start) {
+				if (testRange.compareBoundaryPoints(_END_TO_END, range) > 0) {
+					return false;
+				}
+				nodeList.push(K(node));
+			}
 		});
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
@@ -2482,8 +2492,10 @@ KCmd.prototype = {
 			}
 			sc = range.startContainer;
 			so = range.startOffset;
-			var textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
-			range.setEnd(textNode, textNode.nodeValue.length);
+			var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
+			if (node.nodeType == 3) {
+				range.setEnd(node, node.nodeValue.length);
+			}
 			range.collapse(false);
 			self.select();
 			self._preformat = null;
@@ -3547,7 +3559,7 @@ function _tabs(options) {
 	return self;
 }
 K.tabs = _tabs;
-function _getScript(url, fn) {
+function _getScript(url, callback) {
 	var head = document.getElementsByTagName('head')[0] || document.documentElement,
 		script = document.createElement('script');
 	head.appendChild(script);
@@ -3555,8 +3567,8 @@ function _getScript(url, fn) {
 	script.charset = 'utf-8';
 	script.onload = script.onreadystatechange = function() {
 		if (!this.readyState || this.readyState === 'loaded') {
-			if (fn) {
-				fn();
+			if (callback) {
+				callback();
 			}
 			script.onload = script.onreadystatechange = null;
 			head.removeChild(script);

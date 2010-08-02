@@ -472,6 +472,7 @@ KCmd.prototype = {
 			}
 			var markParent = mark.parentNode;
 			markParent.removeChild(mark);
+			mark = null;
 			if (!isStart && markParent === range.endContainer) {
 				range.setEnd(range.endContainer, range.endOffset - 1);
 			}
@@ -493,9 +494,18 @@ KCmd.prototype = {
 		self.split(true, map);
 		self.split(false, map);
 		//grep nodes which format will be removed
-		var nodeList = [];
+		var nodeList = [], testRange, start = false;
 		K(range.commonAncestor()).scan(function(node) {
-			nodeList.push(K(node));
+			testRange = _range(doc).selectNode(node);
+			if (!start) {
+				start = testRange.compareBoundaryPoints(_START_TO_START, range) >= 0;
+			}
+			if (start) {
+				if (testRange.compareBoundaryPoints(_END_TO_END, range) > 0) {
+					return false;
+				}
+				nodeList.push(K(node));
+			}
 		});
 		//remove empty elements
 		var sc = range.startContainer, so = range.startOffset,
@@ -556,8 +566,10 @@ KCmd.prototype = {
 			// find text node
 			sc = range.startContainer;
 			so = range.startOffset;
-			var textNode = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so])).get();
-			range.setEnd(textNode, textNode.nodeValue.length);
+			var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
+			if (node.nodeType == 3) {
+				range.setEnd(node, node.nodeValue.length);
+			}
 			range.collapse(false);
 			self.select();
 			self._preformat = null;

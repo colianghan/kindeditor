@@ -15,7 +15,7 @@
 #using "core.js"
 */
 
-function _getScript(url, fn) {
+function _getScript(url, callback) {
 	var head = document.getElementsByTagName('head')[0] || document.documentElement,
 		script = document.createElement('script');
 	head.appendChild(script);
@@ -23,8 +23,8 @@ function _getScript(url, fn) {
 	script.charset = 'utf-8';
 	script.onload = script.onreadystatechange = function() {
 		if (!this.readyState || this.readyState === 'loaded') {
-			if (fn) {
-				fn();
+			if (callback) {
+				callback();
 			}
 			script.onload = script.onreadystatechange = null;
 			head.removeChild(script);

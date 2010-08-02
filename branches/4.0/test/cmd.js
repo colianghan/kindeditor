@@ -173,6 +173,10 @@ test('cmd.wrap', function() {
 test('cmd.remove', function() {
 	var p = K.query('#test-data-01 p'),
 		cloneP, strong, range, cmd;
+
+	var div = K('<div></div>');
+	document.body.appendChild(div.get());
+
 	//1
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -210,18 +214,17 @@ test('cmd.remove', function() {
 	equals(cmd.range.html(), '<strong>efg</strong>');
 	document.body.removeChild(cloneP);
 	//4
-	cloneP = p.cloneNode(true);
-	document.body.appendChild(cloneP);
-	strong = K.query('strong', cloneP);
+	div.html('<strong>efg</strong>');
 	range = K.range(document);
-	range.setStart(strong.firstChild, 1);
-	range.setEnd(strong.firstChild, 2);
+	range.setStart(div.first().first()[0], 1);
+	range.setEnd(div.first().first()[0], 2);
 	cmd = K.cmd(range);
 	cmd.remove({
 		'strong' : '*'
 	});
+	equals(div.html(), '<strong>e</strong>f<strong>g</strong>');
 	equals(cmd.range.toString(), 'f');
-	document.body.removeChild(cloneP);
+	div.html('');
 	//5
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
