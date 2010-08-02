@@ -3696,11 +3696,9 @@ function KEditor(options) {
 	});
 	var tempNames = self.preloadPlugins;
 	function load() {
-		setTimeout(function() {
-			if (tempNames.length > 0) {
-				self.loadPlugin(tempNames.shift(), load);
-			}
-		}, 1000);
+		if (tempNames.length > 0) {
+			self.loadPlugin(tempNames.shift(), load);
+		}
 	}
 	load();
 }
