@@ -57,6 +57,7 @@ var _options = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : 'source,fullscreen'.split(','),
+	preloadPlugins : 'image,media,link,table'.split(','),
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
