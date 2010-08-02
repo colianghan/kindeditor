@@ -906,6 +906,9 @@ function _cmd(mixed) {
 			var rng = _getRng(doc);
 			if (rng) {
 				cmd.range = _range(rng);
+				if (K(cmd.range.startContainer).name == 'html') {
+					cmd.range.selectNodeContents(doc.body).collapse(false);
+				}
 			}
 		});
 		//输入文字后根据预先格式进行格式化

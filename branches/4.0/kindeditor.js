@@ -2813,6 +2813,9 @@ function _cmd(mixed) {
 			var rng = _getRng(doc);
 			if (rng) {
 				cmd.range = _range(rng);
+				if (K(cmd.range.startContainer).name == 'html') {
+					cmd.range.selectNodeContents(doc.body).collapse(false);
+				}
 			}
 		});
 		cmd.oninput(function(e) {
