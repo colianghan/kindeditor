@@ -265,6 +265,43 @@ function _mergeAttrs(knode, attrs, styles) {
 		knode.css(key, val);
 	});
 }
+function _applyPreformat() {
+	var self = this, range = self.range,
+		sc = range.startContainer, so = range.startOffset,
+		format = self._preformat, remove = self._preremove;
+	if (format || remove) {
+		if (format) {
+			range.setStart(format.range.startContainer, format.range.startOffset);
+		} else {
+			range.setStart(remove.range.startContainer, remove.range.startOffset);
+		}
+		if (format) {
+			if (range.collapsed && so > 0) {
+				range.setStart(sc.childNodes[so - 1], format.textLength);
+			}
+			self.wrap(format.wrapper);
+		}
+		if (remove) {
+			if (range.collapsed) {
+				self._preformat = null;
+				self._preremove = null;
+				return;
+			}
+			self.remove(remove.map);
+		}
+		// find text node
+		sc = range.startContainer;
+		so = range.startOffset;
+		var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
+		if (node.nodeType == 3) {
+			range.setEnd(node, node.nodeValue.length);
+		}
+		range.collapse(false);
+		self.select();
+		self._preformat = null;
+		self._preremove = null;
+	}
+}
 /**
 	@name KindEditor.cmd
 	@class KCmd类
@@ -538,43 +575,6 @@ KCmd.prototype = {
 			_removeAttrOrCss(this, map);
 		});
 		return self;
-	},
-	_applyPreformat : function() {
-		var self = this, range = self.range,
-			sc = range.startContainer, so = range.startOffset,
-			format = self._preformat, remove = self._preremove;
-		if (format || remove) {
-			if (format) {
-				range.setStart(format.range.startContainer, format.range.startOffset);
-			} else {
-				range.setStart(remove.range.startContainer, remove.range.startOffset);
-			}
-			if (format) {
-				if (range.collapsed && so > 0) {
-					range.setStart(sc.childNodes[so - 1], format.textLength);
-				}
-				self.wrap(format.wrapper);
-			}
-			if (remove) {
-				if (range.collapsed) {
-					self._preformat = null;
-					self._preremove = null;
-					return;
-				}
-				self.remove(remove.map);
-			}
-			// find text node
-			sc = range.startContainer;
-			so = range.startOffset;
-			var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
-			if (node.nodeType == 3) {
-				range.setEnd(node, node.nodeValue.length);
-			}
-			range.collapse(false);
-			self.select();
-			self._preformat = null;
-			self._preremove = null;
-		}
 	},
 	/**
 		根据规则取得range的共通祖先
@@ -910,7 +910,7 @@ function _cmd(mixed) {
 		});
 		//输入文字后根据预先格式进行格式化
 		cmd.oninput(function(e) {
-			cmd._applyPreformat();
+			_applyPreformat.call(cmd);
 		});
 		//光标移动时移除预先格式
 		cmd.oncursormove(function(e) {

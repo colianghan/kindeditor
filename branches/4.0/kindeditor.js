@@ -195,7 +195,6 @@ var _options = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : 'source,fullscreen'.split(','),
-	preloadPlugins : 'image,flash,media,link,table'.split(','),
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
@@ -2231,6 +2230,42 @@ function _mergeAttrs(knode, attrs, styles) {
 		knode.css(key, val);
 	});
 }
+function _applyPreformat() {
+	var self = this, range = self.range,
+		sc = range.startContainer, so = range.startOffset,
+		format = self._preformat, remove = self._preremove;
+	if (format || remove) {
+		if (format) {
+			range.setStart(format.range.startContainer, format.range.startOffset);
+		} else {
+			range.setStart(remove.range.startContainer, remove.range.startOffset);
+		}
+		if (format) {
+			if (range.collapsed && so > 0) {
+				range.setStart(sc.childNodes[so - 1], format.textLength);
+			}
+			self.wrap(format.wrapper);
+		}
+		if (remove) {
+			if (range.collapsed) {
+				self._preformat = null;
+				self._preremove = null;
+				return;
+			}
+			self.remove(remove.map);
+		}
+		sc = range.startContainer;
+		so = range.startOffset;
+		var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
+		if (node.nodeType == 3) {
+			range.setEnd(node, node.nodeValue.length);
+		}
+		range.collapse(false);
+		self.select();
+		self._preformat = null;
+		self._preremove = null;
+	}
+}
 function KCmd(range) {
 	var self = this, doc = range.doc;
 	self.doc = doc;
@@ -2465,42 +2500,6 @@ KCmd.prototype = {
 			_removeAttrOrCss(this, map);
 		});
 		return self;
-	},
-	_applyPreformat : function() {
-		var self = this, range = self.range,
-			sc = range.startContainer, so = range.startOffset,
-			format = self._preformat, remove = self._preremove;
-		if (format || remove) {
-			if (format) {
-				range.setStart(format.range.startContainer, format.range.startOffset);
-			} else {
-				range.setStart(remove.range.startContainer, remove.range.startOffset);
-			}
-			if (format) {
-				if (range.collapsed && so > 0) {
-					range.setStart(sc.childNodes[so - 1], format.textLength);
-				}
-				self.wrap(format.wrapper);
-			}
-			if (remove) {
-				if (range.collapsed) {
-					self._preformat = null;
-					self._preremove = null;
-					return;
-				}
-				self.remove(remove.map);
-			}
-			sc = range.startContainer;
-			so = range.startOffset;
-			var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
-			if (node.nodeType == 3) {
-				range.setEnd(node, node.nodeValue.length);
-			}
-			range.collapse(false);
-			self.select();
-			self._preformat = null;
-			self._preremove = null;
-		}
 	},
 	commonNode : function(map) {
 		var range = this.range,
@@ -2816,7 +2815,7 @@ function _cmd(mixed) {
 			}
 		});
 		cmd.oninput(function(e) {
-			cmd._applyPreformat();
+			_applyPreformat.call(cmd);
 		});
 		cmd.oncursormove(function(e) {
 			cmd._preformat = null;
@@ -3656,7 +3655,9 @@ function _bindContextmenuEvent() {
 				width : maxWidth
 			});
 			_each(items, function() {
-				self.menu.addItem(this);
+				if (this.title) {
+					self.menu.addItem(this);
+				}
 			});
 			e.stop();
 		}
@@ -3689,12 +3690,6 @@ function KEditor(options) {
 	self.srcElement = se;
 	self._handlers = {};
 	self._contextmenus = [];
-	_each(_plugins, function(name, fn) {
-		fn.call(self, KindEditor);
-	});
-	_each(self.preloadPlugins, function(i, name) {
-		self.loadPlugin(name);
-	});
 }
 KEditor.prototype = {
 	lang : function(mixed) {
@@ -3702,16 +3697,21 @@ KEditor.prototype = {
 	},
 	loadPlugin : function(name, fn) {
 		var self = this;
-		if (!_plugins[name]) {
-			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
-				if (_plugins[name]) {
-					_plugins[name].call(self, KindEditor);
-					if (fn) {
-						fn.call(self);
-					}
-				}
-			});
+		if (_plugins[name]) {
+			_plugins[name].call(self, KindEditor);
+			if (fn) {
+				fn.call(self);
+			}
+			return self;
 		}
+		_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+			if (_plugins[name]) {
+				_plugins[name].call(self, KindEditor);
+				if (fn) {
+					fn.call(self);
+				}
+			}
+		});
 		return self;
 	},
 	handler : function(key, fn) {
@@ -3855,6 +3855,9 @@ KEditor.prototype = {
 			}
 		});
 		_bindContextmenuEvent.call(self);
+		_each(_plugins, function(name, fn) {
+			fn.call(self, KindEditor);
+		});
 		self.afterCreate();
 		return self;
 	},
@@ -4122,6 +4125,635 @@ KindEditor.plugin('core', function(K) {
 		});
 	});
 });
+KindEditor.plugin('image', function(K) {
+	var self = this, name = 'image',
+		allowUpload = K.undef(self.allowUpload, true),
+		allowFileManager = K.undef(self.allowFileManager, false),
+		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
+		imgPath = this.scriptPath + 'plugins/image/images/',
+		lang = self.lang(name + '.');
+	function getSelectedImg() {
+		var range = self.edit.cmd.range,
+			sc = range.startContainer, so = range.startOffset;
+		if (!K.WEBKIT && !range.isControl()) {
+			return null;
+		}
+		var img = K(sc.childNodes[so]);
+		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
+			return null;
+		}
+		return img;
+	}
+	var functions = {
+		edit : function() {
+			var html = [
+				'<div style="margin:10px;">',
+				'<div class="tabs"></div>',
+				'<iframe name="uploadIframe" style="display:none;"></iframe>',
+				'<form name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">',
+				'<input type="hidden" name="referMethod" value="" />',
+				'<div class="ke-dialog-row">',
+				'<div class="tab1" style="display:none;">',
+				'<label for="keUrl">' + lang.remoteUrl + '</label>',
+				'<input type="text" id="keUrl" name="url" value="" style="width:230px;" />',
+				' <input type="button" name="viewServer" value="' + lang.viewServer + '" />',
+				'</div>',
+				'<div class="tab2" style="display:none;">',
+				'<label for="keFile">' + lang.localUrl + '</label>',
+				'<input type="file" id="keFile" name="imgFile" style="width:300px;" />',
+				'</div>',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keWidth">' + lang.size + '</label>',
+				lang.width + ' <input type="text" id="keWidth" class="ke-input-number" name="width" value="" maxlength="4" /> ',
+				lang.height + ' <input type="text" class="ke-input-number" name="height" value="" maxlength="4" /> ',
+				'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label>' + lang.align + '</label>',
+				'<input type="radio" name="align" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />',
+				' <input type="radio" name="align" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />',
+				' <input type="radio" name="align" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keTitle">' + lang.imgTitle + '</label>',
+				'<input type="text" id="keTitle" name="title" value="" style="width:95%;" /></div>',
+				'</div>',
+				'</form>',
+				'</div>'
+			].join('');
+			var dialog = self.createDialog({
+				name : name,
+				width : 450,
+				height : 300,
+				title : self.lang(name),
+				body : html,
+				yesBtn : {
+					name : self.lang('yes'),
+					click : function(e) {
+						var url = urlBox.val(),
+							width = widthBox.val(),
+							height = heightBox.val(),
+							title = titleBox.val(),
+							align = '';
+						alignBox.each(function() {
+							if (this.checked) {
+								align = this.value;
+								return false;
+							}
+						});
+						if (tabs.selectedIndex === 1) {
+							var form = K('[name="uploadForm"]', div),
+								iframe = K('[name="uploadIframe"]', div);
+							form.attr('action', uploadJson);
+							iframe.bind('load', function() {
+								iframe.unbind();
+								var data = {};
+								try {
+									data = K.json(_iframeDoc(iframe).body.innerHTML);
+								} catch (e) {
+									alert(self.lang('invalidJson'));
+								}
+								if ('error' in data) {
+									if (data.error === 0) {
+										self.exec('insertimage', data.url, title, width, height, 0, align)
+											.hideDialog().focus();
+									} else {
+										alert(data.message);
+										return false;
+									}
+								}
+							});
+							form[0].submit();
+							return;
+						}
+						self.exec('insertimage', url, title, width, height, 0, align)
+							.hideDialog().focus();
+					}
+				}
+			}),
+			div = dialog.div(),
+			tabs = K.tabs({
+				parent : K('.tabs', div),
+				afterSelect : function(i) {
+				}
+			});
+			tabs.add({
+				title : lang.remoteImage,
+				panel : K('.tab1', div)
+			});
+			tabs.add({
+				title : lang.localImage,
+				panel : K('.tab2', div)
+			});
+			tabs.select(0);
+			var urlBox = K('[name="url"]', div),
+				widthBox = K('[name="width"]', div),
+				heightBox = K('[name="height"]', div),
+				titleBox = K('[name="title"]', div),
+				alignBox = K('[name="align"]');
+			var img = getSelectedImg();
+			if (img) {
+				urlBox.val(img.attr('src'));
+				widthBox.val(img.width());
+				heightBox.val(img.height());
+				titleBox.val(img.attr('title'));
+				alignBox.each(function() {
+					if (this.value === img.attr('align')) {
+						this.checked = true;
+						return false;
+					}
+				});
+			}
+		},
+		'delete' : function() {
+			getSelectedImg().remove();
+		}
+	};
+	self.clickToolbar(name, functions.edit);
+	K.each(('edit,delete').split(','), function(i, val) {
+		self.addContextmenu({
+			title : self.lang(val + 'Image'),
+			click : function() {
+				functions[val]();
+				self.hideMenu();
+			},
+			cond : getSelectedImg,
+			width : 150,
+			iconClass : val == 'edit' ? 'ke-icon-image' : undefined
+		});
+	});
+	self.addContextmenu({ title : '-' });
+});
+KindEditor.plugin('media', function(K) {
+	var self = this, name = 'media',
+		lang = self.lang(name + '.');
+	function getSelectedMedia() {
+		var range = self.edit.cmd.range,
+			sc = range.startContainer, so = range.startOffset;
+		if (!K.WEBKIT && !range.isControl()) {
+			return null;
+		}
+		var img = K(sc.childNodes[so]);
+		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
+			return null;
+		}
+		return img;
+	}
+	var functions = {
+		edit : function() {
+			var html = [
+				'<div style="margin:10px;">',
+				'<div class="ke-dialog-row">',
+				'<label for="keUrl">' + lang.url + '</label>',
+				'<input type="text" id="keUrl" name="url" value="" style="width:90%;" />',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keWidth">' + lang.width + '</label>',
+				'<input type="text" id="keWidth" class="ke-input-number" name="width" value="550" maxlength="4" />',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keHeight">' + lang.height + '</label>',
+				'<input type="text" id="keHeight" class="ke-input-number" name="height" value="400" maxlength="4" />',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keAutostart">' + lang.autostart + '</label>',
+				'<input type="checkbox" id="keAutostart" name="autostart" value="" /> ',
+				'</div>',
+				'</div>'
+			].join('');
+			var dialog = self.createDialog({
+				name : name,
+				width : 400,
+				height : 230,
+				title : self.lang(name),
+				body : html,
+				yesBtn : {
+					name : self.lang('yes'),
+					click : function(e) {
+						var url = urlBox.val(),
+							html = K.mediaImg(self.themesPath + 'common/blank.gif', {
+								src : url,
+								type : K.mediaType(url),
+								width : widthBox.val(),
+								height : heightBox.val(),
+								autostart : autostartBox[0].checked ? 'true' : 'false',
+								loop : 'true'
+							});
+						self.insertHtml(html).hideDialog().focus();
+					}
+				}
+			}),
+			div = dialog.div(),
+			urlBox = K('[name="url"]', div),
+			widthBox = K('[name="width"]', div),
+			heightBox = K('[name="height"]', div),
+			autostartBox = K('[name="autostart"]', div);
+			var img = getSelectedMedia();
+			if (img) {
+				var attrs = K.mediaAttrs(img.attr('kesrctag'));
+				urlBox.val(attrs.src);
+				widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
+				heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
+				autostartBox[0].checked = (attrs.autostart === 'true');
+			}
+		},
+		'delete' : function() {
+			getSelectedMedia().remove();
+		}
+	};
+	self.clickToolbar(name, functions.edit);
+	K.each(('edit,delete').split(','), function(i, val) {
+		self.addContextmenu({
+			title : self.lang(val + 'Media'),
+			click : function() {
+				functions[val]();
+				self.hideMenu();
+			},
+			cond : getSelectedMedia,
+			width : 150,
+			iconClass : val == 'edit' ? 'ke-icon-media' : undefined
+		});
+	});
+	self.addContextmenu({ title : '-' });
+});
+KindEditor.plugin('link', function(K) {
+	var self = this, name = 'link';
+	function getSelectedLink() {
+		return self.edit.cmd.commonNode({ a : '*' });
+	}
+	var functions = {
+		edit : function() {
+			var lang = self.lang(name + '.'),
+				html = '<div style="margin:10px;">' +
+					'<div class="ke-dialog-row">' +
+					'<label for="keUrl">' + lang.url + '</label>' +
+					'<input type="text" id="keUrl" name="url" value="" style="width:90%;" /></div>' +
+					'<div class="ke-dialog-row"">' +
+					'<label for="keType">' + lang.linkType + '</label>' +
+					'<select id="keType" name="type"></select>' +
+					'</div>' +
+					'</div>',
+				dialog = self.createDialog({
+					name : name,
+					width : 400,
+					title : self.lang(name),
+					body : html,
+					yesBtn : {
+						name : self.lang('yes'),
+						click : function(e) {
+							self.exec('createlink', urlBox.val(), typeBox.val()).hideDialog().focus();
+						}
+					}
+				}),
+				div = dialog.div(),
+				urlBox = K('input[name="url"]', div),
+				typeBox = K('select[name="type"]', div);
+			typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
+			typeBox.get().options[1] = new Option(lang.selfWindow, '');
+			var a = getSelectedLink();
+			if (a) {
+				urlBox.val(a.attr('href'));
+				typeBox.val(a.attr('target'));
+			}
+		},
+		'delete' : function() {
+			self.exec('unlink', null);
+		}
+	};
+	self.clickToolbar(name, functions.edit);
+	K.each(('edit,delete').split(','), function(i, val) {
+		self.addContextmenu({
+			title : self.lang(val + 'Link'),
+			click : function() {
+				functions[val]();
+				self.hideMenu();
+			},
+			cond : getSelectedLink,
+			width : 150,
+			iconClass : val == 'edit' ? 'ke-icon-link' : undefined
+		});
+	});
+	self.addContextmenu({ title : '-' });
+});
+KindEditor.plugin('table', function(K) {
+	var self = this, name = 'table',
+		lang = self.lang(name + '.'),
+		cmd = self.edit.cmd;
+	function getSelectedTable() {
+		return cmd.commonNode({ table : '*' });
+	}
+	function getSelectedRow() {
+		return cmd.commonNode({ tr : '*' });
+	}
+	function getSelectedCell() {
+		return cmd.commonNode({ td : '*' });
+	}
+	var functions = {
+		prop : function(isInsert) {
+			var html = [
+				'<div style="margin:10px;">',
+				'<div class="ke-dialog-row">',
+				'<label for="keRows">' + lang.cells + '</label>',
+				lang.rows + ' <input type="text" id="keRows" class="ke-input-number" name="rows" value="" maxlength="4" /> ',
+				lang.cols + ' <input type="text" class="ke-input-number" name="cols" value="" maxlength="4" /> ',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keWidth">' + lang.size + '</label>',
+				lang.width + ' <input type="text" id="keWidth" class="ke-input-number" name="width" value="" maxlength="4" /> ',
+				'<select name="widthType">',
+				'<option value="%">' + lang.percent + '</option>',
+				'<option value="px">' + lang.px + '</option>',
+				'</select> ',
+				lang.height + ' <input type="text" class="ke-input-number" name="height" value="" maxlength="4" /> ',
+				'<select name="heightType">',
+				'<option value="%">' + lang.percent + '</option>',
+				'<option value="px">' + lang.px + '</option>',
+				'</select> ',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="kePadding">' + lang.space + '</label>',
+				lang.padding + ' <input type="text" id="kePadding" class="ke-input-number" name="padding" value="" maxlength="4" /> ',
+				lang.spacing + ' <input type="text" class="ke-input-number" name="spacing" value="" maxlength="4" /> ',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keAlign">' + lang.align + '</label>',
+				'<select id="keAlign" name="align">',
+				'<option value="">' + lang.alignDefault + '</option>',
+				'<option value="left">' + lang.alignLeft + '</option>',
+				'<option value="center">' + lang.alignCenter + '</option>',
+				'<option value="right">' + lang.alignRight + '</option>',
+				'</select>',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keBorder">' + lang.border + '</label>',
+				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-number" name="border" value="" maxlength="4" /> ',
+				lang.borderColor + ' <span class="ke-inline-block ke-input-color"></span>',
+				'</div>',
+				'<div class="ke-dialog-row">',
+				'<label for="keBgColor">' + lang.backgroundColor + '</label>',
+				'<span class="ke-inline-block ke-input-color"></span> ',
+				'</div>',
+				'</div>'
+			].join('');
+			var picker, currentElement;
+			function removePicker() {
+				if (picker) {
+					picker.remove();
+					picker = null;
+					currentElement = null;
+				}
+			}
+			var dialog = self.createDialog({
+				name : name,
+				width : 400,
+				height : 300,
+				title : self.lang(name),
+				body : html,
+				beforeDrag : removePicker,
+				yesBtn : {
+					name : self.lang('yes'),
+					click : function(e) {
+						var rows = rowsBox.val(),
+							cols = colsBox.val(),
+							width = widthBox.val(),
+							height = heightBox.val(),
+							widthType = widthTypeBox.val(),
+							heightType = heightTypeBox.val(),
+							padding = paddingBox.val(),
+							spacing = spacingBox.val(),
+							align = alignBox.val(),
+							border = borderBox.val(),
+							borderColor = K(colorBox[0]).html() || '',
+							bgColor = K(colorBox[1]).html() || '';
+						if (table) {
+							if (width !== '') {
+								table.width(width + widthType);
+							} else {
+								table.css('width', '');
+							}
+							if (table[0].width !== undefined) {
+								table.removeAttr('width');
+							}
+							if (height !== '') {
+								table.height(height + heightType);
+							} else {
+								table.css('height', '');
+							}
+							if (table[0].height !== undefined) {
+								table.removeAttr('height');
+							}
+							table.css('background-color', bgColor);
+							if (table[0].bgColor !== undefined) {
+								table.removeAttr('bgColor');
+							}
+							if (padding !== '') {
+								table[0].cellPadding = padding;
+							} else {
+								table.removeAttr('cellPadding');
+							}
+							if (spacing !== '') {
+								table[0].cellSpacing = spacing;
+							} else {
+								table.removeAttr('cellSpacing');
+							}
+							if (align !== '') {
+								table[0].align = align;
+							} else {
+								table.removeAttr('align');
+							}
+							if (border !== '') {
+								table.attr('border', border);
+							} else {
+								table.removeAttr('border');
+							}
+							if (borderColor !== '') {
+								table.attr('borderColor', borderColor);
+							} else {
+								table.removeAttr('borderColor');
+							}
+							self.hideDialog().focus();
+							return;
+						}
+						var style = '';
+						if (width !== '') {
+							style += 'width:' + width + widthType + ';';
+						}
+						if (height !== '') {
+							style += 'height:' + height + heightType + ';';
+						}
+						if (bgColor !== '') {
+							style += 'background-color:' + bgColor + ';';
+						}
+						var html = '<table';
+						if (style !== '') {
+							html += ' style="' + style + '"';
+						}
+						if (padding !== '') {
+							html += ' cellpadding="' + padding + '"';
+						}
+						if (spacing !== '') {
+							html += ' cellspacing="' + spacing + '"';
+						}
+						if (align !== '') {
+							html += ' align="' + align + '"';
+						}
+						if (border !== '') {
+							html += ' border="' + border + '"';
+						}
+						if (borderColor !== '') {
+							html += ' bordercolor="' + borderColor + '"';
+						}
+						html += '>';
+						for (var i = 0; i < rows; i++) {
+							html += '<tr>';
+							for (var j = 0; j < cols; j++) {
+								html += '<td>&nbsp;</td>';
+							}
+							html += '</tr>';
+						}
+						html += '</table>';
+						self.insertHtml(html).hideDialog().focus();
+					}
+				}
+			}),
+			div = dialog.div(),
+			rowsBox = K('[name="rows"]', div).val(3),
+			colsBox = K('[name="cols"]', div).val(2),
+			widthBox = K('[name="width"]', div).val(100),
+			heightBox = K('[name="height"]', div),
+			widthTypeBox = K('[name="widthType"]', div),
+			heightTypeBox = K('[name="heightType"]', div),
+			paddingBox = K('[name="padding"]', div).val(2),
+			spacingBox = K('[name="spacing"]', div).val(0),
+			alignBox = K('[name="align"]', div),
+			borderBox = K('[name="border"]', div).val(1),
+			colorBox = K('.ke-input-color', div);
+			function setColor(box, color) {
+				color = color.toUpperCase();
+				box.css('background-color', color);
+				box.css('color', color === '#000000' ? '#FFFFFF' : '#000000');
+				box.html(color);
+			}
+			setColor(K(colorBox[0]), '#000000');
+			setColor(K(colorBox[1]), '');
+			function clickHandler(e) {
+				removePicker();
+				if (!picker || this !== currentElement) {
+					var box = K(this),
+						pos = box.pos();
+					picker = K.colorpicker({
+						x : pos.x,
+						y : pos.y + box.height(),
+						z : 811214,
+						selectedColor : K(this).html(),
+						noColor : self.lang('noColor'),
+						click : function(color) {
+							setColor(box, color);
+							removePicker();
+						}
+					});
+					currentElement = this;
+				}
+			}
+			colorBox.click(clickHandler);
+			self.beforeHideDialog(function() {
+				removePicker();
+				colorBox.unbind();
+			});
+			var table;
+			if (isInsert) {
+				return;
+			}
+			table = getSelectedTable();
+			if (table) {
+				rowsBox.val(table[0].rows.length);
+				colsBox.val(table[0].rows.length > 0 ? table[0].rows[0].cells.length : 0);
+				rowsBox.attr('disabled', true);
+				colsBox.attr('disabled', true);
+				var match,
+					tableWidth = table[0].style.width || table[0].width,
+					tableHeight = table[0].style.height || table[0].height;
+				if (tableWidth !== undefined && (match = /^(\d+)((?:px|%)*)$/.exec(tableWidth))) {
+					widthBox.val(match[1]);
+					widthTypeBox.val(match[2]);
+				} else {
+					widthBox.val('');
+				}
+				if (tableHeight !== undefined && (match = /^(\d+)((?:px|%)*)$/.exec(tableHeight))) {
+					heightBox.val(match[1]);
+					heightTypeBox.val(match[2]);
+				}
+				paddingBox.val(table[0].cellPadding || '');
+				spacingBox.val(table[0].cellSpacing || '');
+				alignBox.val(table[0].align || '');
+				borderBox.val(table[0].border === undefined ? '' : table[0].border);
+				setColor(K(colorBox[0]), K.toHex(table.attr('borderColor')) || '');
+				setColor(K(colorBox[1]), K.toHex(table[0].style.backgroundColor || table[0].bgColor || ''));
+			}
+		},
+		insert : function() {
+			this.prop(true);
+		},
+		'delete' : function() {
+			getSelectedTable().remove();
+		},
+		colinsert : function(offset) {
+			var table = getSelectedTable()[0], cell = getSelectedCell()[0],
+				index = cell.cellIndex + offset;
+			for (var i = 0, len = table.rows.length; i < len; i++) {
+				var newCell = table.rows[i].insertCell(index);
+				newCell.innerHTML = '&nbsp;';
+			}
+		},
+		colinsertleft : function() {
+			this.colinsert(0);
+		},
+		colinsertright : function() {
+			this.colinsert(1);
+		},
+		rowinsert : function(offset) {
+			var table = getSelectedTable()[0], row = getSelectedRow()[0],
+				newRow = table.insertRow(row.rowIndex + offset);
+			for (var i = 0, len = row.cells.length; i < len; i++) {
+				var cell = newRow.insertCell(i);
+				cell.innerHTML = '&nbsp;';
+			}
+		},
+		rowinsertabove : function() {
+			this.rowinsert(0);
+		},
+		rowinsertbelow : function() {
+			this.rowinsert(1);
+		},
+		coldelete : function() {
+			var table = getSelectedTable()[0], cell = getSelectedCell()[0];
+			for (var i = 0, len = table.rows.length; i < len; i++) {
+				table.rows[i].deleteCell(cell.cellIndex);
+			}
+		},
+		rowdelete : function() {
+			var table = getSelectedTable()[0], row = getSelectedRow()[0];
+			table.deleteRow(row.rowIndex);
+		}
+	};
+	self.clickToolbar(name, functions.prop);
+	K.each(('prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
+	'rowdelete,insert,delete').split(','), function(i, val) {
+		var cond = K.inArray(val, ['prop', 'delete']) < 0 ? getSelectedCell : getSelectedTable;
+		self.addContextmenu({
+			title : self.lang('table' + val),
+			click : function() {
+				functions[val]();
+				self.hideMenu();
+			},
+			cond : cond,
+			width : 170,
+			iconClass : 'ke-icon-table' + val
+		});
+	});
+	self.addContextmenu({ title : '-' });
+});
 KindEditor.lang({
 	source : 'HTML代码',
 	undo : '后退(Ctrl+Z)',
@@ -4153,8 +4785,8 @@ KindEditor.lang({
 	strikethrough : '删除线',
 	removeformat : '删除格式',
 	image : '图片',
-	flash : '插入Flash',
-	media : '插入多媒体',
+	flash : 'Flash',
+	media : '视音频',
 	table : '表格',
 	hr : '插入横线',
 	emoticons : '插入表情',
@@ -4169,6 +4801,8 @@ KindEditor.lang({
 	close : '关闭',
 	editImage : '图片属性',
 	deleteImage : '删除图片',
+	editMedia : '视音频属性',
+	deleteMedia : '删除视音频',
 	editLink : '超级链接属性',
 	deleteLink : '取消超级链接',
 	tableprop : '表格属性',

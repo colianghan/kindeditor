@@ -40,6 +40,10 @@
 			<fileset file="${src}/main.js"/>
 			<fileset file="${src}/footer.js"/>
 			<fileset file="${plugins}/core/core.js"/>
+			<fileset file="${plugins}/image/image.js"/>
+			<fileset file="${plugins}/media/media.js"/>
+			<fileset file="${plugins}/link/link.js"/>
+			<fileset file="${plugins}/table/table.js"/>
 			<fileset file="${lang}/zh_CN.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"

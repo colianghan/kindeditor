@@ -113,7 +113,9 @@ function _bindContextmenuEvent() {
 				width : maxWidth
 			});
 			_each(items, function() {
-				self.menu.addItem(this);
+				if (this.title) {
+					self.menu.addItem(this);
+				}
 			});
 			e.stop();
 		}
@@ -148,12 +150,6 @@ function KEditor(options) {
 	//private properties
 	self._handlers = {};
 	self._contextmenus = [];
-	_each(_plugins, function(name, fn) {
-		fn.call(self, KindEditor);
-	});
-	_each(self.preloadPlugins, function(i, name) {
-		self.loadPlugin(name);
-	});
 }
 
 KEditor.prototype = {
@@ -162,16 +158,21 @@ KEditor.prototype = {
 	},
 	loadPlugin : function(name, fn) {
 		var self = this;
-		if (!_plugins[name]) {
-			_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
-				if (_plugins[name]) {
-					_plugins[name].call(self, KindEditor);
-					if (fn) {
-						fn.call(self);
-					}
-				}
-			});
+		if (_plugins[name]) {
+			_plugins[name].call(self, KindEditor);
+			if (fn) {
+				fn.call(self);
+			}
+			return self;
 		}
+		_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+			if (_plugins[name]) {
+				_plugins[name].call(self, KindEditor);
+				if (fn) {
+					fn.call(self);
+				}
+			}
+		});
 		return self;
 	},
 	handler : function(key, fn) {
@@ -321,6 +322,10 @@ KEditor.prototype = {
 			}
 		});
 		_bindContextmenuEvent.call(self);
+		//preload default plugins
+		_each(_plugins, function(name, fn) {
+			fn.call(self, KindEditor);
+		});
 		//execute afterCreate event
 		self.afterCreate();
 		return self;

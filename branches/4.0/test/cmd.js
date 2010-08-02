@@ -101,7 +101,7 @@ test('cmd.wrap', function() {
 	cmd.wrap('<em></em>');
 	cmd.wrap('<span></span>');
 	range.setStart(strong.firstChild, 1).setEnd(strong.firstChild, 1);
-	cmd._applyPreformat();
+	_applyPreformat.call(cmd);
 	equals(strong.innerHTML.toLowerCase(), '<strong><em><span>e</span></em></strong>fg');
 	document.body.removeChild(cloneP);
 	//10
@@ -134,7 +134,7 @@ test('cmd.wrap', function() {
 	range.selectNode(strong);
 	cmd = K.cmd(range);
 	cmd.wrap('<div><p></p></div>');
-	equals(range.html(), '<div><p><strong>efg</strong></p>\n</div>');
+	equals(range.html().replace(/\s/g, ''), '<div><p><strong>efg</strong></p></div>');
 	document.body.removeChild(cloneP);
 	//13
 	cloneP = p.cloneNode(true);
