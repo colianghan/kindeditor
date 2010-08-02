@@ -150,6 +150,10 @@ function KEditor(options) {
 	//private properties
 	self._handlers = {};
 	self._contextmenus = [];
+	//preload default plugins
+	_each(_plugins, function(name, fn) {
+		fn.call(self, KindEditor);
+	});
 }
 
 KEditor.prototype = {
@@ -322,10 +326,6 @@ KEditor.prototype = {
 			}
 		});
 		_bindContextmenuEvent.call(self);
-		//preload default plugins
-		_each(_plugins, function(name, fn) {
-			fn.call(self, KindEditor);
-		});
 		//execute afterCreate event
 		self.afterCreate();
 		return self;

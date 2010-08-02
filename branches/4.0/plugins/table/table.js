@@ -13,16 +13,15 @@
 
 KindEditor.plugin('table', function(K) {
 	var self = this, name = 'table',
-		lang = self.lang(name + '.'),
-		cmd = self.edit.cmd;
+		lang = self.lang(name + '.');
 	function getSelectedTable() {
-		return cmd.commonNode({ table : '*' });
+		return self.edit.cmd.commonNode({ table : '*' });
 	}
 	function getSelectedRow() {
-		return cmd.commonNode({ tr : '*' });
+		return self.edit.cmd.commonNode({ tr : '*' });
 	}
 	function getSelectedCell() {
-		return cmd.commonNode({ td : '*' });
+		return self.edit.cmd.commonNode({ td : '*' });
 	}
 	var functions = {
 		//insert or modify table
