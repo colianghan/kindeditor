@@ -3690,6 +3690,9 @@ function KEditor(options) {
 	self.srcElement = se;
 	self._handlers = {};
 	self._contextmenus = [];
+	_each(_plugins, function(name, fn) {
+		fn.call(self, KindEditor);
+	});
 }
 KEditor.prototype = {
 	lang : function(mixed) {
@@ -3855,9 +3858,6 @@ KEditor.prototype = {
 			}
 		});
 		_bindContextmenuEvent.call(self);
-		_each(_plugins, function(name, fn) {
-			fn.call(self, KindEditor);
-		});
 		self.afterCreate();
 		return self;
 	},
@@ -4438,16 +4438,15 @@ KindEditor.plugin('link', function(K) {
 });
 KindEditor.plugin('table', function(K) {
 	var self = this, name = 'table',
-		lang = self.lang(name + '.'),
-		cmd = self.edit.cmd;
+		lang = self.lang(name + '.');
 	function getSelectedTable() {
-		return cmd.commonNode({ table : '*' });
+		return self.edit.cmd.commonNode({ table : '*' });
 	}
 	function getSelectedRow() {
-		return cmd.commonNode({ tr : '*' });
+		return self.edit.cmd.commonNode({ tr : '*' });
 	}
 	function getSelectedCell() {
-		return cmd.commonNode({ td : '*' });
+		return self.edit.cmd.commonNode({ td : '*' });
 	}
 	var functions = {
 		prop : function(isInsert) {
