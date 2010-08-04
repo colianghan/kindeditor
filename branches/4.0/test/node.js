@@ -99,6 +99,12 @@ test("remove",function(){
 	var node = K('<div></div><p>123</p>').addClass('abc').html('test');
 	node.remove();
 	equals(node.length, 0);
+
+	// Test preserve child nodes. 
+        var node = K('<div><p><span>123</span></p></div>');
+	K('p',node).remove(true);
+	equals(K('span',node).length, 1);
+	equals(K('p',node).length, 0);
 });
 
 test("html",function(){

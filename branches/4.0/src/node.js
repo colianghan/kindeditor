@@ -429,21 +429,32 @@ KNode.prototype = {
 		self[0] = node;
 		return self;
 	},
-	remove : function() {
-		var self = this;
-		self.each(function(i, node) {
-			_unbind(node);
-			if (node.hasChildNodes()) {
-				node.innerHTML = '';
-			}
-			if (node.parentNode) {
-				node.parentNode.removeChild(node);
-			}
-			delete self[i];
-		});
-		self.length = 0;
-		return self;
-	},
+
+        /**
+         * @param keepChilds {Boolean} Leaves child nodes in the tree.
+         */
+        remove : function( keepChilds ) {
+          var self = this;
+          self.each(function(i, node) {
+                  _unbind(node);
+                  if(keepChilds)
+                  {
+                    new KNode(node.childNodes).each(
+                      function(i,child){
+                      new KNode([node]).after(child);
+                    });
+                  }
+                  else if (node.hasChildNodes()) {
+                          node.innerHTML = '';
+                  }
+                  if (node.parentNode) {
+                          node.parentNode.removeChild(node);
+                  }
+                  delete self[i];
+          });
+          self.length = 0;
+          return self;
+        },
 	show : function(val) {
 		return this.css('display', val === undefined ? 'block' : val);
 	},
