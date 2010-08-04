@@ -415,7 +415,7 @@ KNode.prototype = {
 		if (self[0].nextSibling) {
 			self[0].parentNode.insertBefore(_get(val), self[0].nextSibling);
 		} else {
-			self[0].appendChild(_get(val));
+			self[0].parentNode.appendChild(_get(val));
 		}
 		return self;
 	},
