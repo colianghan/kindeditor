@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-08-04)
+* @version 4.0 (2010-08-05)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-08-04)',
+var _kindeditor = '4.0 (2010-08-05)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -330,26 +330,22 @@ function _event(el, event) {
 	};
 	return e;
 }
-var _elList = [], _data = {};
+function _now() {
+	return new Date().getTime();
+}
+var _expendo = 'kindeditor' + _now(), _id = 0, _data = {};
 function _getId(el) {
-	var id = _inArray(el, _elList);
-	if (id < 0) {
-		_each(_elList, function(i, val) {
-			if (!val) {
-				id = i;
-				_elList[id] = el;
-				return false;
-			}
-		});
-		if (id < 0) {
-			id = _elList.length;
-			_elList.push(el);
-		}
+	if (el[_expendo]) {
+		return el[_expendo];
 	}
-	if (!(id in _data)) {
-		_data[id] = {};
-	}
+	var id = ++_id;
+	el[_expendo] = id;
 	return id;
+}
+function _removeId(el) {
+	try {
+		delete el[_expendo];
+	} catch(e) {}
 }
 function _bind(el, type, fn) {
 	if (type.indexOf(',') >= 0) {
@@ -359,7 +355,10 @@ function _bind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
-	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id] === undefined) {
+		_data[id] = {};
+	}
+	if (_data[id][type] && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
 			if (val === undefined) {
 				_data[id][type].splice(key, 1);
@@ -368,6 +367,7 @@ function _bind(el, type, fn) {
 		_unbindEvent(el, type, _data[id][type][0]);
 	} else {
 		_data[id][type] = [];
+		_data[id].el = el;
 	}
 	if (_data[id][type].length === 0) {
 		_data[id][type][0] = function(e) {
@@ -394,16 +394,16 @@ function _unbind(el, type, fn) {
 	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
-				if (val.length > 0) {
+				if (key != 'el' && val.length > 0) {
 					_unbindEvent(el, key, val[0]);
 				}
 			});
 			delete _data[id];
-			delete _elList[id];
+			_removeId(el);
 		}
 		return;
 	}
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id][type] && _data[id][type].length > 0) {
 		if (fn === undefined) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			delete _data[id][type];
@@ -417,14 +417,14 @@ function _unbind(el, type, fn) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				delete _data[id][type];
 			}
-			var typeCount = 0;
-			_each(_data[id], function() {
-				typeCount++;
-			});
-			if (typeCount < 1) {
-				delete _data[id];
-				delete _elList[id];
-			}
+		}
+		var count = 0;
+		_each(_data[id], function() {
+			count++;
+		});
+		if (count < 2) {
+			delete _data[id];
+			_removeId(el);
 		}
 	}
 }
@@ -436,7 +436,7 @@ function _fire(el, type) {
 		return;
 	}
 	var id = _getId(el);
-	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id] && _data[id][type] && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
@@ -489,10 +489,9 @@ function _ready(fn, doc) {
 }
 if (_IE) {
 	window.attachEvent('onunload', function() {
-		var id, target;
-		_each(_elList, function(i, el) {
-			if (el) {
-				_unbind(el);
+		_each(_data, function(key, val) {
+			if (val.el) {
+				_unbind(val.el);
 			}
 		});
 	});
@@ -1089,9 +1088,9 @@ function _getScrollPos() {
 }
 function KNode(node) {
 	var self = this;
-	_each(node, function(i) {
-		self[i] = this;
-	});
+	for (var i = 0, len = node.length; i < len; i++) {
+		self[i] = node[i];
+	}
 	self.length = node.length;
 	self.doc = _getDoc(self[0]);
 	self.name = _getNodeName(self[0]);
@@ -1333,7 +1332,7 @@ KNode.prototype = {
 		if (self[0].nextSibling) {
 			self[0].parentNode.insertBefore(_get(val), self[0].nextSibling);
 		} else {
-			self[0].appendChild(_get(val));
+			self[0].parentNode.appendChild(_get(val));
 		}
 		return self;
 	},
@@ -1347,28 +1346,25 @@ KNode.prototype = {
 		self[0] = node;
 		return self;
 	},
-        remove : function( keepChilds ) {
-          var self = this;
-          self.each(function(i, node) {
-                  _unbind(node);
-                  if(keepChilds)
-                  {
-                    new KNode(node.childNodes).each(
-                      function(i,child){
-                      new KNode([node]).after(child);
-                    });
-                  }
-                  else if (node.hasChildNodes()) {
-                          node.innerHTML = '';
-                  }
-                  if (node.parentNode) {
-                          node.parentNode.removeChild(node);
-                  }
-                  delete self[i];
-          });
-          self.length = 0;
-          return self;
-        },
+	remove : function( keepChilds ) {
+		var self = this;
+		self.each(function(i, node) {
+			_unbind(node);
+			if (keepChilds) {
+				new KNode(node.childNodes).each(function(i, child) {
+					new KNode([node]).after(child);
+				});
+			} else if (node.hasChildNodes()) {
+				node.innerHTML = '';
+			}
+			if (node.parentNode) {
+				node.parentNode.removeChild(node);
+			}
+			delete self[i];
+		});
+		self.length = 0;
+		return self;
+	},
 	show : function(val) {
 		return this.css('display', val === undefined ? 'block' : val);
 	},
@@ -2136,15 +2132,6 @@ function _removeAttrOrCss(knode, map) {
 	_removeAttrOrCssByKey(knode, map, '*');
 	_removeAttrOrCssByKey(knode, map);
 }
-function _removeParent(knode) {
-	var kchild = knode.first();
-	while (kchild) {
-		var next = kchild.next();
-		knode.before(kchild);
-		kchild = next;
-	}
-	knode.remove();
-}
 function _removeAttrOrCssByKey(knode, map, mapKey) {
 	mapKey = mapKey || knode.name;
 	if (knode.type !== 1) {
@@ -2169,7 +2156,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 			}
 		}
 		if (allFlag) {
-			_removeParent(knode);
+			knode.remove(true);
 		}
 	}
 }
@@ -2742,7 +2729,7 @@ KCmd.prototype = {
 			if (_WEBKIT && K(range.startContainer).name === 'img') {
 				var parent = K(range.startContainer).parent();
 				if (parent.name === 'a') {
-					_removeParent(parent);
+					parent.remove(true);
 				}
 			}
 			return self;
@@ -3138,7 +3125,6 @@ function _edit(options) {
 		K(doc.body).unbind();
 		K(document).unbind();
 		_elementVal(srcElement, self.html());
-		srcElement.removeAttr('kindeditor');
 		srcElement.show();
 		doc.write('');
 		doc.clear();

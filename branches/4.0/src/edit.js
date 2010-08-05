@@ -156,7 +156,6 @@ function _edit(options) {
 		K(document).unbind();
 		//remove elements
 		_elementVal(srcElement, self.html());
-		srcElement.removeAttr('kindeditor');
 		srcElement.show();
 		doc.write('');
 		doc.clear();

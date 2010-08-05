@@ -145,27 +145,25 @@ function _event(el, event) {
 	return e;
 }
 
-var _elList = [], _data = {};
+function _now() {
+	return new Date().getTime();
+}
+
+var _expendo = 'kindeditor' + _now(), _id = 0, _data = {};
 
 function _getId(el) {
-	var id = _inArray(el, _elList);
-	if (id < 0) {
-		_each(_elList, function(i, val) {
-			if (!val) {
-				id = i;
-				_elList[id] = el;
-				return false;
-			}
-		});
-		if (id < 0) {
-			id = _elList.length;
-			_elList.push(el);
-		}
+	if (el[_expendo]) {
+		return el[_expendo];
 	}
-	if (!(id in _data)) {
-		_data[id] = {};
-	}
+	var id = ++_id;
+	el[_expendo] = id;
 	return id;
+}
+
+function _removeId(el) {
+	try {
+		delete el[_expendo];
+	} catch(e) {}
 }
 
 function _bind(el, type, fn) {
@@ -176,7 +174,10 @@ function _bind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
-	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id] === undefined) {
+		_data[id] = {};
+	}
+	if (_data[id][type] && _data[id][type].length > 0) {
 		_each(_data[id][type], function(key, val) {
 			if (val === undefined) {
 				_data[id][type].splice(key, 1);
@@ -185,6 +186,7 @@ function _bind(el, type, fn) {
 		_unbindEvent(el, type, _data[id][type][0]);
 	} else {
 		_data[id][type] = [];
+		_data[id].el = el;
 	}
 	if (_data[id][type].length === 0) {
 		_data[id][type][0] = function(e) {
@@ -212,16 +214,16 @@ function _unbind(el, type, fn) {
 	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
-				if (val.length > 0) {
+				if (key != 'el' && val.length > 0) {
 					_unbindEvent(el, key, val[0]);
 				}
 			});
 			delete _data[id];
-			delete _elList[id];
+			_removeId(el);
 		}
 		return;
 	}
-	if (_data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id][type] && _data[id][type].length > 0) {
 		if (fn === undefined) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			delete _data[id][type];
@@ -235,14 +237,14 @@ function _unbind(el, type, fn) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				delete _data[id][type];
 			}
-			var typeCount = 0;
-			_each(_data[id], function() {
-				typeCount++;
-			});
-			if (typeCount < 1) {
-				delete _data[id];
-				delete _elList[id];
-			}
+		}
+		var count = 0;
+		_each(_data[id], function() {
+			count++;
+		});
+		if (count < 2) {
+			delete _data[id];
+			_removeId(el);
 		}
 	}
 }
@@ -255,7 +257,7 @@ function _fire(el, type) {
 		return;
 	}
 	var id = _getId(el);
-	if (id in _data && _data[id][type] !== undefined && _data[id][type].length > 0) {
+	if (_data[id] && _data[id][type] && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
 }
@@ -318,10 +320,9 @@ function _ready(fn, doc) {
 */
 if (_IE) {
 	window.attachEvent('onunload', function() {
-		var id, target;
-		_each(_elList, function(i, el) {
-			if (el) {
-				_unbind(el);
+		_each(_data, function(key, val) {
+			if (val.el) {
+				_unbind(val.el);
 			}
 		});
 	});
