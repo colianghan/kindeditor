@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-08-02)
+* @version 4.0 (2010-08-04)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-08-02)',
+var _kindeditor = '4.0 (2010-08-04)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -1347,21 +1347,28 @@ KNode.prototype = {
 		self[0] = node;
 		return self;
 	},
-	remove : function() {
-		var self = this;
-		self.each(function(i, node) {
-			_unbind(node);
-			if (node.hasChildNodes()) {
-				node.innerHTML = '';
-			}
-			if (node.parentNode) {
-				node.parentNode.removeChild(node);
-			}
-			delete self[i];
-		});
-		self.length = 0;
-		return self;
-	},
+        remove : function( keepChilds ) {
+          var self = this;
+          self.each(function(i, node) {
+                  _unbind(node);
+                  if(keepChilds)
+                  {
+                    new KNode(node.childNodes).each(
+                      function(i,child){
+                      new KNode([node]).after(child);
+                    });
+                  }
+                  else if (node.hasChildNodes()) {
+                          node.innerHTML = '';
+                  }
+                  if (node.parentNode) {
+                          node.parentNode.removeChild(node);
+                  }
+                  delete self[i];
+          });
+          self.length = 0;
+          return self;
+        },
 	show : function(val) {
 		return this.css('display', val === undefined ? 'block' : val);
 	},

@@ -151,15 +151,6 @@ function _removeAttrOrCss(knode, map) {
 	_removeAttrOrCssByKey(knode, map, '*');
 	_removeAttrOrCssByKey(knode, map);
 }
-function _removeParent(knode) {
-	var kchild = knode.first();
-	while (kchild) {
-		var next = kchild.next();
-		knode.before(kchild);
-		kchild = next;
-	}
-	knode.remove();
-}
 function _removeAttrOrCssByKey(knode, map, mapKey) {
 	mapKey = mapKey || knode.name;
 	if (knode.type !== 1) {
@@ -184,7 +175,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 			}
 		}
 		if (allFlag) {
-			_removeParent(knode);
+			knode.remove(true);
 		}
 	}
 }
@@ -819,7 +810,7 @@ KCmd.prototype = {
 			if (_WEBKIT && K(range.startContainer).name === 'img') {
 				var parent = K(range.startContainer).parent();
 				if (parent.name === 'a') {
-					_removeParent(parent);
+					parent.remove(true);
 				}
 			}
 			return self;
