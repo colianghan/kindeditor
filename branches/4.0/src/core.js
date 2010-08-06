@@ -186,7 +186,8 @@ function _each(obj, fn) {
 	var str = K.trim(' abc '); //返回"abc"
 */
 function _trim(str) {
-	return str.replace(/^\s+|\s+$/g, '');
+  // Forgive various special whitespaces, e.g. &nbsp;(\xa0).
+  return str.replace(/(?:^[ \t\n\r]+)|(?:[ \t\n\r]+$)/g, '');
 }
 
 /**

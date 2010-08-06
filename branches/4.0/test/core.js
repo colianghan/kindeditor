@@ -78,7 +78,7 @@ test('inArray', function() {
 test('trim', function() {
 	equals(K.trim(' a '), 'a');
 	equals(K.trim(' a a '), 'a a');
-	equals(K.trim(' &nbsp; '), '&nbsp;');
+	equals(K.trim(' \xa0 '), '\xa0');
 });
 
 test('toHex', function() {
