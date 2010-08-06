@@ -266,6 +266,7 @@ KEditor.prototype = {
 						}
 					}
 					self.clickToolbar(name);
+					e.stop();
 				}
 			});
 		});

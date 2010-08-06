@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-08-05)
+* @version 4.0 (2010-08-06)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-08-05)',
+var _kindeditor = '4.0 (2010-08-06)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -54,7 +54,7 @@ function _each(obj, fn) {
 	}
 }
 function _trim(str) {
-	return str.replace(/^\s+|\s+$/g, '');
+	return str.replace(/(?:^[ \t\n\r]+)|(?:[ \t\n\r]+$)/g, '');
 }
 function _inString(val, str, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
@@ -335,9 +335,9 @@ function _now() {
 }
 var _expendo = 'kindeditor' + _now(), _id = 0, _data = {};
 function _getId(el) {
-	if (el[_expendo]) {
-		return el[_expendo];
-	}
+	return el[_expendo] || null;
+}
+function _setId(el) {
 	var id = ++_id;
 	el[_expendo] = id;
 	return id;
@@ -355,6 +355,9 @@ function _bind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
+	if (!id) {
+		id = _setId(el);
+	}
 	if (_data[id] === undefined) {
 		_data[id] = {};
 	}
@@ -391,6 +394,9 @@ function _unbind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
+	if (!id) {
+		return;
+	}
 	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
@@ -436,6 +442,9 @@ function _fire(el, type) {
 		return;
 	}
 	var id = _getId(el);
+	if (!id) {
+		return;
+	}
 	if (_data[id] && _data[id][type] && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
@@ -3193,7 +3202,6 @@ function _bindToolbarEvent(itemNode, item) {
 	})
 	.click(function(e) {
 		item.click.call(this, e);
-		e.stop();
 	});
 }
 function _toolbar(options) {
@@ -3217,7 +3225,7 @@ function _toolbar(options) {
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
-			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="#" title="' + (item.title || '') + '">' +
+			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="javascript:void(0)" title="' + (item.title || '') + '">' +
 				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
 			_bindToolbarEvent(itemNode, item);
 		}
@@ -3800,6 +3808,7 @@ KEditor.prototype = {
 						}
 					}
 					self.clickToolbar(name);
+					e.stop();
 				}
 			});
 		});

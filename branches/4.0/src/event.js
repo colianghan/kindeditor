@@ -152,9 +152,10 @@ function _now() {
 var _expendo = 'kindeditor' + _now(), _id = 0, _data = {};
 
 function _getId(el) {
-	if (el[_expendo]) {
-		return el[_expendo];
-	}
+	return el[_expendo] || null;
+}
+
+function _setId(el) {
 	var id = ++_id;
 	el[_expendo] = id;
 	return id;
@@ -174,6 +175,9 @@ function _bind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
+	if (!id) {
+		id = _setId(el);
+	}
 	if (_data[id] === undefined) {
 		_data[id] = {};
 	}
@@ -211,6 +215,9 @@ function _unbind(el, type, fn) {
 		return;
 	}
 	var id = _getId(el);
+	if (!id) {
+		return;
+	}
 	if (type === undefined) {
 		if (id in _data) {
 			_each(_data[id], function(key, val) {
@@ -257,6 +264,9 @@ function _fire(el, type) {
 		return;
 	}
 	var id = _getId(el);
+	if (!id) {
+		return;
+	}
 	if (_data[id] && _data[id][type] && _data[id][type].length > 0) {
 		_data[id][type][0]();
 	}
