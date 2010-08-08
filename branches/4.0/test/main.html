@@ -47,14 +47,15 @@
 	<body>
 		<h1 id="type">KindEditor Main Test</h1>
 		<textarea name="editor1" cols="100" rows="20" style="width:800px;height:200px;">
-<table style="width:100%;" border="1" bordercolor="#000000" cellpadding="2" cellspacing="0"><tbody><tr><td>&nbsp;</td>
-<td>&nbsp;</td>
+<table style="width:90%;" border="1" bordercolor="#000000" cellpadding="2" cellspacing="0"><tbody><tr>
+<td>a&nbsp;</td>
+<td>b&nbsp;</td>
 </tr>
-<tr><td>&nbsp;</td>
-<td>&nbsp;</td>
+<tr><td>c&nbsp;</td>
+<td>d&nbsp;</td>
 </tr>
-<tr><td>&nbsp;</td>
-<td>&nbsp;</td>
+<tr><td>e&nbsp;</td>
+<td>f&nbsp;</td>
 </tr>
 </tbody>
 </table>
@@ -70,6 +71,7 @@
 		<input type="button" id="remove1" value="Remove #1" />
 		<input type="button" id="remove2" value="Remove #2" />
 		<script>
+			//document.domain = 'kindsoft.net';
 			KindEditor.ready(function(K) {
 				var editor1 = null, editor2 = null;
 				K('#create1').click(function(e) {
@@ -102,7 +104,13 @@
 						editor2 = null;
 					}
 				});
+				
 			});
+		</script>
+		<div id="focustest"></div>
+		<script>
+			//测试IE6和IE7初始化焦点问题
+			K('#focustest')[0].innerText = 'a';
 		</script>
 	</body>
 </html>

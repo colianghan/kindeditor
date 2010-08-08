@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-08-06)
+* @version 4.0 (2010-08-08)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-08-06)',
+var _kindeditor = '4.0 (2010-08-08)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -239,16 +239,17 @@ var _options = {
 _options.themesPath = _options.scriptPath + 'themes/';
 _options.langPath = _options.scriptPath + 'lang/';
 _options.pluginsPath = _options.scriptPath + 'plugins/';
+var _useCapture = false;
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
-		el.addEventListener(type, fn, false);
+		el.addEventListener(type, fn, _useCapture);
 	} else if (el.attachEvent){
 		el.attachEvent('on' + type, fn);
 	}
 }
 function _unbindEvent(el, type, fn) {
 	if (el.removeEventListener){
-		el.removeEventListener(type, fn, false);
+		el.removeEventListener(type, fn, _useCapture);
 	} else if (el.detachEvent){
 		el.detachEvent('on' + type, fn);
 	}
@@ -2809,7 +2810,7 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 });
 function _cmd(mixed) {
 	if (mixed.nodeName) {
-		var doc = mixed.ownerDocument || mixed,
+		var doc = _getDoc(mixed),
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		cmd.onchange(function(e) {
@@ -2856,7 +2857,9 @@ function _bindDragEvent(options) {
 		listeners = [];
 	if (iframeFix) {
 		K('iframe').each(function() {
-			docs.push(_iframeDoc(this));
+			try {
+				docs.push(_iframeDoc(this));
+			} catch (e) {}
 			poss.push(K(this).pos());
 		});
 	}
@@ -3083,8 +3086,13 @@ function _edit(options) {
 		bodyClass = options.bodyClass,
 		cssPath = options.cssPath,
 		cssData = options.cssData,
-		div = self.div().addClass('ke-edit'),
-		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
+		isDocumentDomain = location.host !== document.domain,
+		div = self.div().addClass('ke-edit');
+	var srcScript = 'document.open();' +
+		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
+		'document.close();',
+		iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '',
+		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>'),
 		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>');
 	iframe.css('width', '100%');
 	textarea.css('width', '100%');
@@ -3113,23 +3121,8 @@ function _edit(options) {
 	} else {
 		iframe.hide();
 	}
-	div.append(iframe);
-	div.append(textarea);
-	srcElement.hide();
-	var doc = _iframeDoc(iframe);
-	if (!_IE) {
-		doc.designMode = 'on';
-	}
-	doc.open();
-	doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
-	doc.close();
-	if (_IE) {
-		doc.body.contentEditable = 'true';
-	}
-	self.iframe = iframe;
-	self.textarea = textarea;
-	self.doc = doc;
 	self.remove = function() {
+		var doc = self.doc;
 		K(doc).unbind();
 		K(doc.body).unbind();
 		K(document).unbind();
@@ -3143,6 +3136,7 @@ function _edit(options) {
 		return self;
 	};
 	self.html = function(val) {
+		var doc = self.doc;
 		if (designMode) {
 			var body = doc.body;
 			if (val === undefined) {
@@ -3181,14 +3175,47 @@ function _edit(options) {
 	};
 	self.focus = function() {
 		if (designMode) {
-			iframe.get().contentWindow.focus();
+			iframe[0].contentWindow.focus();
 		} else {
-			textarea.get().focus();
+			textarea[0].focus();
 		}
 		return self;
 	};
-	self.html(_elementVal(srcElement));
-	self.cmd = _cmd(doc);
+	function ready() {
+		var doc = _iframeDoc(iframe);
+		doc.open();
+		if (isDocumentDomain) {
+			doc.domain = document.domain;
+		}
+		doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
+		doc.close();
+		self.doc = doc;
+		self.html(_elementVal(srcElement));
+		if (_IE) {
+			doc.body.disabled = true;
+			doc.body.contentEditable = true;
+			doc.body.removeAttribute('disabled');
+		} else {
+			doc.body.contentEditable = true;
+		}
+		self.cmd = _cmd(doc);
+		if (options.afterCreate) {
+			options.afterCreate.call(self);
+		}
+	}
+	iframe.bind('load', function() {
+		iframe.unbind('load');
+		if (_IE) {
+			ready();
+		} else {
+			setTimeout(ready, 0);
+		}
+	});
+	div.append(iframe);
+	div.append(textarea);
+	srcElement.hide();
+	self.iframe = iframe;
+	self.textarea = textarea;
 	return self;
 }
 K.edit = _edit;
@@ -3698,7 +3725,7 @@ function KEditor(options) {
 	_each(_plugins, function(name, fn) {
 		fn.call(self, KindEditor);
 	});
-	var tempNames = self.preloadPlugins;
+	var tempNames = self.preloadPlugins.slice(0);
 	function load() {
 		if (tempNames.length > 0) {
 			self.loadPlugin(tempNames.shift(), load);
@@ -3816,62 +3843,63 @@ KEditor.prototype = {
 			toolbar.disable(true);
 		}
 		var edit = _edit({
-				parent : container,
-				srcElement : self.srcElement,
-				designMode : self.designMode,
-				themesPath : self.themesPath,
-				bodyClass : self.bodyClass,
-				cssPath : self.cssPath,
-				cssData : self.cssData
-			}),
-			doc = edit.doc, textarea = edit.textarea;
-		var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
-		container.append(statusbar);
-		if (!fullscreenMode) {
-			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-			statusbar.append(rightIcon);
-			_bindDragEvent({
-				moveEl : container,
-				clickEl : rightIcon,
-				moveFn : function(x, y, width, height, diffX, diffY) {
-					width += diffX;
-					height += diffY;
-					if (width >= self.minWidth) {
-						self.resize(width, null);
-					}
-					if (height >= self.minHeight) {
-						self.resize(null, height);
+			parent : container,
+			srcElement : self.srcElement,
+			designMode : self.designMode,
+			themesPath : self.themesPath,
+			bodyClass : self.bodyClass,
+			cssPath : self.cssPath,
+			cssData : self.cssData,
+			afterCreate : function() {
+				var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
+				container.append(statusbar);
+				if (!fullscreenMode) {
+					rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+					statusbar.append(rightIcon);
+					_bindDragEvent({
+						moveEl : container,
+						clickEl : rightIcon,
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							width += diffX;
+							height += diffY;
+							if (width >= self.minWidth) {
+								self.resize(width, null);
+							}
+							if (height >= self.minHeight) {
+								self.resize(null, height);
+							}
+						}
+					});
+				}
+				if (self._resizeListener) {
+					K(window).unbind('resize', self._resizeListener);
+					self._resizeListener = null;
+				}
+				function resizeListener(e) {
+					if (self.container) {
+						self.resize(_docElement().clientWidth, _docElement().clientHeight);
 					}
 				}
-			});
-		}
-		if (self._resizeListener) {
-			K(window).unbind('resize', self._resizeListener);
-			self._resizeListener = null;
-		}
-		function resizeListener(e) {
-			if (self.container) {
-				self.resize(_docElement().clientWidth, _docElement().clientHeight);
-			}
-		}
-		if (self.fullscreenMode) {
-			K(window).bind('resize', resizeListener);
-			self._resizeListener = resizeListener;
-		}
-		self.container = container;
-		self.toolbar = toolbar;
-		self.edit = edit;
-		self.statusbar = statusbar;
-		self.menu = self.contextmenu = self.dialog = null;
-		self._rightIcon = rightIcon;
-		self.resize(width, height);
-		K(doc, document).click(function(e) {
-			if (self.menu) {
-				self.hideMenu();
+				if (self.fullscreenMode) {
+					K(window).bind('resize', resizeListener);
+					self._resizeListener = resizeListener;
+				}
+				self.container = container;
+				self.toolbar = toolbar;
+				self.edit = this;
+				self.statusbar = statusbar;
+				self.menu = self.contextmenu = self.dialog = null;
+				self._rightIcon = rightIcon;
+				self.resize(width, height);
+				K(this.doc, document).click(function(e) {
+					if (self.menu) {
+						self.hideMenu();
+					}
+				});
+				_bindContextmenuEvent.call(self);
+				self.afterCreate();
 			}
 		});
-		_bindContextmenuEvent.call(self);
-		self.afterCreate();
 		return self;
 	},
 	remove : function() {

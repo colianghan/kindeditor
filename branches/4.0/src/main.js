@@ -154,7 +154,7 @@ function KEditor(options) {
 		fn.call(self, KindEditor);
 	});
 	//preload default plugins
-	var tempNames = self.preloadPlugins;
+	var tempNames = self.preloadPlugins.slice(0);
 	function load() {
 		if (tempNames.length > 0) {
 			self.loadPlugin(tempNames.shift(), load);
@@ -275,67 +275,68 @@ KEditor.prototype = {
 		}
 		//create edit
 		var edit = _edit({
-				parent : container,
-				srcElement : self.srcElement,
-				designMode : self.designMode,
-				themesPath : self.themesPath,
-				bodyClass : self.bodyClass,
-				cssPath : self.cssPath,
-				cssData : self.cssData
-			}),
-			doc = edit.doc, textarea = edit.textarea;
-		//create statusbar
-		var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
-		container.append(statusbar);
-		if (!fullscreenMode) {
-			rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-			statusbar.append(rightIcon);
-			_bindDragEvent({
-				moveEl : container,
-				clickEl : rightIcon,
-				moveFn : function(x, y, width, height, diffX, diffY) {
-					width += diffX;
-					height += diffY;
-					if (width >= self.minWidth) {
-						self.resize(width, null);
-					}
-					if (height >= self.minHeight) {
-						self.resize(null, height);
+			parent : container,
+			srcElement : self.srcElement,
+			designMode : self.designMode,
+			themesPath : self.themesPath,
+			bodyClass : self.bodyClass,
+			cssPath : self.cssPath,
+			cssData : self.cssData,
+			afterCreate : function() {
+				//create statusbar
+				var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
+				container.append(statusbar);
+				if (!fullscreenMode) {
+					rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+					statusbar.append(rightIcon);
+					_bindDragEvent({
+						moveEl : container,
+						clickEl : rightIcon,
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							width += diffX;
+							height += diffY;
+							if (width >= self.minWidth) {
+								self.resize(width, null);
+							}
+							if (height >= self.minHeight) {
+								self.resize(null, height);
+							}
+						}
+					});
+				}
+				if (self._resizeListener) {
+					K(window).unbind('resize', self._resizeListener);
+					self._resizeListener = null;
+				}
+				function resizeListener(e) {
+					if (self.container) {
+						self.resize(_docElement().clientWidth, _docElement().clientHeight);
 					}
 				}
-			});
-		}
-		if (self._resizeListener) {
-			K(window).unbind('resize', self._resizeListener);
-			self._resizeListener = null;
-		}
-		function resizeListener(e) {
-			if (self.container) {
-				self.resize(_docElement().clientWidth, _docElement().clientHeight);
-			}
-		}
-		if (self.fullscreenMode) {
-			K(window).bind('resize', resizeListener);
-			self._resizeListener = resizeListener;
-		}
-		//properties
-		self.container = container;
-		self.toolbar = toolbar;
-		self.edit = edit;
-		self.statusbar = statusbar;
-		self.menu = self.contextmenu = self.dialog = null;
-		self._rightIcon = rightIcon;
-		//reset size
-		self.resize(width, height);
-		//bind events
-		K(doc, document).click(function(e) {
-			if (self.menu) {
-				self.hideMenu();
+				if (self.fullscreenMode) {
+					K(window).bind('resize', resizeListener);
+					self._resizeListener = resizeListener;
+				}
+				//properties
+				self.container = container;
+				self.toolbar = toolbar;
+				self.edit = this;
+				self.statusbar = statusbar;
+				self.menu = self.contextmenu = self.dialog = null;
+				self._rightIcon = rightIcon;
+				//reset size
+				self.resize(width, height);
+				//bind events
+				K(this.doc, document).click(function(e) {
+					if (self.menu) {
+						self.hideMenu();
+					}
+				});
+				_bindContextmenuEvent.call(self);
+				//execute afterCreate event
+				self.afterCreate();
 			}
 		});
-		_bindContextmenuEvent.call(self);
-		//execute afterCreate event
-		self.afterCreate();
 		return self;
 	},
 	remove : function() {

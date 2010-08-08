@@ -99,8 +99,13 @@ function _edit(options) {
 		bodyClass = options.bodyClass,
 		cssPath = options.cssPath,
 		cssData = options.cssData,
-		div = self.div().addClass('ke-edit'),
-		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"></iframe>'),
+		isDocumentDomain = location.host !== document.domain,
+		div = self.div().addClass('ke-edit');
+	var srcScript = 'document.open();' +
+		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
+		'document.close();',
+		iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '',
+		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>'),
 		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>');
 	iframe.css('width', '100%');
 	textarea.css('width', '100%');
@@ -132,24 +137,9 @@ function _edit(options) {
 	} else {
 		iframe.hide();
 	}
-	div.append(iframe);
-	div.append(textarea);
-	srcElement.hide();
-	var doc = _iframeDoc(iframe);
-	if (!_IE) {
-		doc.designMode = 'on';
-	}
-	doc.open();
-	doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
-	doc.close();
-	if (_IE) {
-		doc.body.contentEditable = 'true';
-	}
-	self.iframe = iframe;
-	self.textarea = textarea;
-	self.doc = doc;
 	//remove edit
 	self.remove = function() {
+		var doc = self.doc;
 		//remove events
 		K(doc).unbind();
 		K(doc.body).unbind();
@@ -166,6 +156,7 @@ function _edit(options) {
 	};
 	//get or set value
 	self.html = function(val) {
+		var doc = self.doc;
 		if (designMode) {
 			var body = doc.body;
 			if (val === undefined) {
@@ -205,15 +196,48 @@ function _edit(options) {
 	};
 	self.focus = function() {
 		if (designMode) {
-			iframe.get().contentWindow.focus();
+			iframe[0].contentWindow.focus();
 		} else {
-			textarea.get().focus();
+			textarea[0].focus();
 		}
 		return self;
 	};
-	//set default value
-	self.html(_elementVal(srcElement));
-	self.cmd = _cmd(doc);
+	function ready() {
+		var doc = _iframeDoc(iframe);
+		doc.open();
+		if (isDocumentDomain) {
+			doc.domain = document.domain;
+		}
+		doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
+		doc.close();
+		self.doc = doc;
+		self.html(_elementVal(srcElement));
+		if (_IE) {
+			doc.body.disabled = true;
+			doc.body.contentEditable = true;
+			doc.body.removeAttribute('disabled');
+		} else {
+			doc.body.contentEditable = true;
+		}
+		self.cmd = _cmd(doc);
+		if (options.afterCreate) {
+			options.afterCreate.call(self);
+		}
+	}
+	// main
+	iframe.bind('load', function() {
+		iframe.unbind('load');
+		if (_IE) {
+			ready();
+		} else {
+			setTimeout(ready, 0);
+		}
+	});
+	div.append(iframe);
+	div.append(textarea);
+	srcElement.hide();
+	self.iframe = iframe;
+	self.textarea = textarea;
 	return self;
 }
 

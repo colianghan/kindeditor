@@ -15,10 +15,12 @@
 #using "core.js"
 */
 
+var _useCapture = false;
+
 //add native event
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
-		el.addEventListener(type, fn, false);
+		el.addEventListener(type, fn, _useCapture);
 	} else if (el.attachEvent){
 		el.attachEvent('on' + type, fn);
 	}
@@ -26,7 +28,7 @@ function _bindEvent(el, type, fn) {
 //remove native event
 function _unbindEvent(el, type, fn) {
 	if (el.removeEventListener){
-		el.removeEventListener(type, fn, false);
+		el.removeEventListener(type, fn, _useCapture);
 	} else if (el.detachEvent){
 		el.detachEvent('on' + type, fn);
 	}

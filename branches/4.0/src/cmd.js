@@ -7,7 +7,7 @@
 
 /**
  * @name cmd.js
- * @fileOverview 编辑命令集合，可代替execCommand、queryCommandState、queryCommandValue
+ * @fileOverview 编辑命令集合，可替代execCommand、queryCommandState、queryCommandValue
  * @author Longhao Luo
  */
 
@@ -886,9 +886,9 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 });
 
 function _cmd(mixed) {
-	//mixed is a document
+	//mixed is a node
 	if (mixed.nodeName) {
-		var doc = mixed.ownerDocument || mixed,
+		var doc = _getDoc(mixed),
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		//add events

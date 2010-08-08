@@ -196,7 +196,7 @@ KindEditor.plugin('table', function(K) {
 							html += '</tr>';
 						}
 						html += '</table>';
-						self.insertHtml(html).hideDialog().focus();
+						self.insertHtml(html).select().hideDialog().focus();
 					}
 				}
 			}),

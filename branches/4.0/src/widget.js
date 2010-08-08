@@ -27,7 +27,11 @@ function _bindDragEvent(options) {
 		listeners = [];
 	if (iframeFix) {
 		K('iframe').each(function() {
-			docs.push(_iframeDoc(this));
+			//在IE上，页面设置document.domain后，取得没做过处理的iframe document会报错
+			//此时先跳过，不做处理
+			try {
+				docs.push(_iframeDoc(this));
+			} catch (e) {}
 			poss.push(K(this).pos());
 		});
 	}
