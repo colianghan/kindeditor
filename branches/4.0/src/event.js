@@ -237,12 +237,16 @@ function _unbind(el, type, fn) {
 			_unbindEvent(el, type, _data[id][type][0]);
 			delete _data[id][type];
 		} else {
+			var undefCount = 0;
 			for (var i = 1, len = _data[id][type].length; i < len; i++) {
 				if (_data[id][type][i] === fn) {
 					delete _data[id][type][i];
 				}
+				if (_data[id][type][i] === undefined) {
+					undefCount++;
+				}
 			}
-			if (_data[id][type].length == 2 && _data[id][type][1] === undefined) {
+			if (_data[id][type].length === undefCount + 1) {
 				_unbindEvent(el, type, _data[id][type][0]);
 				delete _data[id][type];
 			}
@@ -285,42 +289,45 @@ function _ctrl(el, key, fn) {
 	});
 }
 
-function _ready(fn, doc) {
-	doc = doc || document;
-	var win = doc.parentWindow || doc.defaultView, loaded = false;
+function _ready(fn) {
+	var loaded = false;
 	function readyFunc() {
 		if (!loaded) {
 			loaded = true;
 			fn(KindEditor);
+			if (document.addEventListener) {
+				_unbind(document, 'DOMContentLoaded', readyFunc);
+			} else if (document.attachEvent) {
+				_unbind(document, 'readystatechange', ieReadyStateFunc);
+			}
+			_unbind(window, 'load', readyFunc);
 		}
-		_unbind(doc, 'DOMContentLoaded');
-		_unbind(doc, 'readystatechange');
-		_unbind(win, 'load');
 	}
 	function ieReadyFunc() {
 		if (!loaded) {
 			try {
-				doc.documentElement.doScroll('left');
+				document.documentElement.doScroll('left');
 			} catch(e) {
-				win.setTimeout(ieReadyFunc, 0);
+				setTimeout(ieReadyFunc, 0);
 				return;
 			}
 			readyFunc();
 		}
 	}
-	if (doc.addEventListener) {
-		_bind(doc, 'DOMContentLoaded', readyFunc);
-	} else if (doc.attachEvent) {
-		_bind(doc, 'readystatechange', function() {
-			if (doc.readyState === 'complete') {
-				readyFunc();
-			}
-		});
-		if (doc.documentElement.doScroll && win.frameElement === undefined) {
+	function ieReadyStateFunc() {
+		if (document.readyState === 'complete') {
+			readyFunc();
+		}
+	}
+	if (document.addEventListener) {
+		_bind(document, 'DOMContentLoaded', readyFunc);
+	} else if (document.attachEvent) {
+		_bind(document, 'readystatechange', ieReadyStateFunc);
+		if (document.documentElement.doScroll && window.frameElement === undefined) {
 			ieReadyFunc();
 		}
 	}
-	_bind(win, 'load', readyFunc);
+	_bind(window, 'load', readyFunc);
 }
 
 /**

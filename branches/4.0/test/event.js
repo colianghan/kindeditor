@@ -135,3 +135,13 @@ test('unbind(el)', function() {
 		});
 	});
 })();
+
+K.ready(function() {
+	console.log('ready1');
+});
+K.ready(function() {
+	console.log('ready2');
+});
+K.ready(function() {
+	console.log('ready3');
+});
