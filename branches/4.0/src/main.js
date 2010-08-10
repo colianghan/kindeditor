@@ -289,7 +289,7 @@ KEditor.prototype = {
 				if (!fullscreenMode) {
 					rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
 					statusbar.append(rightIcon);
-					_bindDragEvent({
+					_drag({
 						moveEl : container,
 						clickEl : rightIcon,
 						moveFn : function(x, y, width, height, diffX, diffY) {

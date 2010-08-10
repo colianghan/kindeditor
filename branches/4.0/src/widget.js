@@ -16,7 +16,7 @@
 #using "node.js"
 */
 
-function _bindDragEvent(options) {
+function _drag(options) {
 	var moveEl = options.moveEl,
 		moveFn = options.moveFn,
 		clickEl = options.clickEl || moveEl,
@@ -101,7 +101,7 @@ function _widget(options) {
 		doc = options.doc || document,
 		parent = options.parent || doc.body,
 		div = K('<div style="display:block;"></div>');
-	//set widget position
+	//set widget position by width and height
 	function resetPos(width, height) {
 		if (z && (options.x === undefined || options.y === undefined)) {
 			var w = _removeUnit(width) || 0,
@@ -182,7 +182,7 @@ function _widget(options) {
 				}
 				div.css('left', _addUnit(x)).css('top', _addUnit(y));
 			};
-			_bindDragEvent(options);
+			_drag(options);
 			return this;
 		},
 		resetPos : resetPos

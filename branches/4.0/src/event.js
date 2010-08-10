@@ -183,30 +183,27 @@ function _bind(el, type, fn) {
 	if (_data[id] === undefined) {
 		_data[id] = {};
 	}
-	if (_data[id][type] && _data[id][type].length > 0) {
-		_each(_data[id][type], function(key, val) {
-			if (val === undefined) {
-				_data[id][type].splice(key, 1);
-			}
-		});
-		_unbindEvent(el, type, _data[id][type][0]);
+	var events = _data[id][type];
+	if (events && events.length > 0) {
+		_unbindEvent(el, type, events[0]);
 	} else {
 		_data[id][type] = [];
 		_data[id].el = el;
 	}
-	if (_data[id][type].length === 0) {
-		_data[id][type][0] = function(e) {
-			_each(_data[id][type], function(key, val) {
-				if (key > 0 && val) {
-					val.call(el, _event(el, e));
+	events = _data[id][type];
+	if (events.length === 0) {
+		events[0] = function(e) {
+			_each(events, function(i, event) {
+				if (i > 0 && event) {
+					event.call(el, _event(el, e));
 				}
 			});
 		};
 	}
-	if (_inArray(fn, _data[id][type]) < 0) {
-		_data[id][type].push(fn);
+	if (_inArray(fn, events) < 0) {
+		events.push(fn);
 	}
-	_bindEvent(el, type, _data[id][type][0]);
+	_bindEvent(el, type, events[0]);
 }
 
 function _unbind(el, type, fn) {
@@ -222,9 +219,9 @@ function _unbind(el, type, fn) {
 	}
 	if (type === undefined) {
 		if (id in _data) {
-			_each(_data[id], function(key, val) {
-				if (key != 'el' && val.length > 0) {
-					_unbindEvent(el, key, val[0]);
+			_each(_data[id], function(key, events) {
+				if (key != 'el' && events.length > 0) {
+					_unbindEvent(el, key, events[0]);
 				}
 			});
 			delete _data[id];
@@ -232,22 +229,19 @@ function _unbind(el, type, fn) {
 		}
 		return;
 	}
-	if (_data[id][type] && _data[id][type].length > 0) {
+	var events = _data[id][type];
+	if (events && events.length > 0) {
 		if (fn === undefined) {
-			_unbindEvent(el, type, _data[id][type][0]);
+			_unbindEvent(el, type, events[0]);
 			delete _data[id][type];
 		} else {
-			var undefCount = 0;
-			for (var i = 1, len = _data[id][type].length; i < len; i++) {
-				if (_data[id][type][i] === fn) {
-					delete _data[id][type][i];
+			_each(events, function(i, event) {
+				if (i > 0 && event === fn) {
+					events.splice(i, 1);
 				}
-				if (_data[id][type][i] === undefined) {
-					undefCount++;
-				}
-			}
-			if (_data[id][type].length === undefCount + 1) {
-				_unbindEvent(el, type, _data[id][type][0]);
+			});
+			if (events.length == 1) {
+				_unbindEvent(el, type, events[0]);
 				delete _data[id][type];
 			}
 		}
@@ -273,8 +267,9 @@ function _fire(el, type) {
 	if (!id) {
 		return;
 	}
-	if (_data[id] && _data[id][type] && _data[id][type].length > 0) {
-		_data[id][type][0]();
+	var events = _data[id][type];
+	if (_data[id] && events && events.length > 0) {
+		events[0]();
 	}
 }
 
@@ -339,9 +334,9 @@ function _ready(fn) {
 */
 if (_IE) {
 	window.attachEvent('onunload', function() {
-		_each(_data, function(key, val) {
-			if (val.el) {
-				_unbind(val.el);
+		_each(_data, function(key, events) {
+			if (events.el) {
+				_unbind(events.el);
 			}
 		});
 	});
