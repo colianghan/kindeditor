@@ -120,7 +120,7 @@ function _edit(options) {
 		div.css('height', val);
 		iframe.css('height', val);
 		//校正IE6和IE7的textarea高度
-		if ((_IE && _VERSION < 8) || document.compatMode != 'CSS1Compat') {
+		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
 		textarea.css('height', val);

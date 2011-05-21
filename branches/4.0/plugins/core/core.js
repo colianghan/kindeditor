@@ -114,7 +114,7 @@ KindEditor.plugin('core', function(K) {
 	//about
 	self.clickToolbar('about', function() {
 		var html = '<div style="margin:20px;">' +
-			'<div>KindEditor ' + K.kindeditor + '</div>' +
+			'<div>KindEditor ' + K.VERSION + '</div>' +
 			'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 			'</div>';
 		self.createDialog({

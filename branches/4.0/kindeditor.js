@@ -1,21 +1,21 @@
 /*******************************************************************************
 * KindEditor - WYSIWYG HTML Editor for Internet
-* Copyright (C) 2006-2010 Longhao Luo
+* Copyright (C) 2006-2011 Longhao Luo
 *
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2010-08-10)
+* @version 4.0 (2011-05-21)
 *******************************************************************************/
 (function (window, undefined) {
-var _kindeditor = '4.0 (2010-08-10)',
+var _VERSION = '4.0 (2011-05-21)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
 	_WEBKIT = _ua.indexOf('applewebkit') > -1,
 	_OPERA = _ua.indexOf('opera') > -1,
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
-	_VERSION = _matches ? _matches[1] : '0';
+	_V = _matches ? _matches[1] : '0';
 function _isArray(val) {
 	if (!val) {
 		return false;
@@ -60,7 +60,8 @@ function _inString(val, str, delimiter) {
 	delimiter = delimiter === undefined ? ',' : delimiter;
 	return (delimiter + str + delimiter).indexOf(delimiter + val + delimiter) >= 0;
 }
-function _addUnit(val) {
+function _addUnit(val, unit) {
+	unit = unit || 'px';
 	return val && /^\d+$/.test(val) ? val + 'px' : val;
 }
 function _removeUnit(val) {
@@ -73,12 +74,12 @@ function _escape(val) {
 function _unescape(val) {
 	return val.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 }
-function _toHex(color) {
+function _toHex(val) {
 	function hex(d) {
 		var s = parseInt(d, 10).toString(16).toUpperCase();
 		return s.length > 1 ? s : '0' + s;
 	}
-	return color.replace(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/ig,
+	return val.replace(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/ig,
 		function($0, $1, $2, $3) {
 			return '#' + hex($1) + hex($2) + hex($3);
 		}
@@ -97,6 +98,12 @@ function _toMap(val, delimiter) {
 		}
 	});
 	return map;
+}
+function _toArray(obj, offset) {
+	return Array.prototype.slice.call(obj, offset || 0);
+}
+function _undef(val, defaultVal) {
+	return val === undefined ? defaultVal : val;
 }
 function _json(text) {
 	var match;
@@ -118,20 +125,14 @@ function _json(text) {
 	}
 	throw 'JSON parse error';
 }
-function _toArray(obj, offset) {
-	return Array.prototype.slice.call(obj, offset || 0);
-}
-function _undef(val, defaultValue) {
-	return val === undefined ? defaultValue : val;
-}
 var _round = Math.round;
 var K = {
-	kindeditor : _kindeditor,
+	VERSION : _VERSION,
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,
 	OPERA : _OPERA,
-	VERSION : _VERSION,
+	V : _V,
 	each : _each,
 	isArray : _isArray,
 	isFunction : _isFunction,
@@ -825,7 +826,7 @@ function _contains(nodeA, nodeB) {
 function _getAttr(el, key) {
 	key = key.toLowerCase();
 	var val = null;
-	if (_IE && _VERSION < 8) {
+	if (_IE && _V < 8) {
 		var div = el.ownerDocument.createElement('div');
 		div.appendChild(el.cloneNode(false));
 		var list = _getAttrList(div.innerHTML.toLowerCase());
@@ -1031,13 +1032,13 @@ function _hasClass(el, cls) {
 	return _inString(cls, el.className, ' ');
 }
 function _setAttr(el, key, val) {
-	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+	if (_IE && _V < 8 && key.toLowerCase() == 'class') {
 		key = 'className';
 	}
 	el.setAttribute(key, '' + val);
 }
 function _removeAttr(el, key) {
-	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+	if (_IE && _V < 8 && key.toLowerCase() == 'class') {
 		key = 'className';
 	}
 	_setAttr(el, key, '');
@@ -3106,7 +3107,7 @@ function _edit(options) {
 		val = _addUnit(val);
 		div.css('height', val);
 		iframe.css('height', val);
-		if ((_IE && _VERSION < 8) || document.compatMode != 'CSS1Compat') {
+		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
 		textarea.css('height', val);
@@ -4041,7 +4042,7 @@ function _create(expr, options) {
 		return new KEditor(options).create();
 	}
 }
-if (_IE && _VERSION < 7) {
+if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
 K.create = _create;
@@ -4143,7 +4144,7 @@ KindEditor.plugin('core', function(K) {
 	});
 	self.clickToolbar('about', function() {
 		var html = '<div style="margin:20px;">' +
-			'<div>KindEditor ' + K.kindeditor + '</div>' +
+			'<div>KindEditor ' + K.VERSION + '</div>' +
 			'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 			'</div>';
 		self.createDialog({

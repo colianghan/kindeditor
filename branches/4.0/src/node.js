@@ -1,22 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name node.js
- * @fileOverview Node类
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "event.js"
-#using "html.js"
-#using "selector.js"
-*/
 
 function _get(val) {
 	return val.get ? val.get() : val;
@@ -43,14 +24,14 @@ function _hasClass(el, cls) {
 }
 
 function _setAttr(el, key, val) {
-	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+	if (_IE && _V < 8 && key.toLowerCase() == 'class') {
 		key = 'className';
 	}
 	el.setAttribute(key, '' + val);
 }
 
 function _removeAttr(el, key) {
-	if (_IE && _VERSION < 8 && key.toLowerCase() == 'class') {
+	if (_IE && _V < 8 && key.toLowerCase() == 'class') {
 		key = 'className';
 	}
 	_setAttr(el, key, '');
@@ -121,41 +102,13 @@ function _getScrollPos() {
 	return {x : x, y : y};
 }
 
-/**
-	@name KNode
-	@class KNode类
-	@param {String|Node} expr DOM元素、选择器字符串、HTML
-	@param {Element} root DOM根元素，在root范围内选择DOM元素
-	@description
-	KNode类，只能通过K(expr, root)创建，不能使用new KNode()。
-	@example
-	var knode = K('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
-	knode = K('#id div'); //选择匹配的DIV NodeList
-	knode = K(document.getElementById('id')); //选择原生Node
-*/
 function KNode(node) {
 	var self = this;
 	for (var i = 0, len = node.length; i < len; i++) {
 		self[i] = node[i];
 	}
 	self.length = node.length;
-	/**
-		@name KNode#doc
-		@property
-		@public
-		@type {document}
-		@description
-		包含Node的document对象。
-	*/
 	self.doc = _getDoc(self[0]);
-	/**
-		@name KNode#name
-		@property
-		@public
-		@type {String}
-		@description
-		节点名称。
-	*/
 	self.name = _getNodeName(self[0]);
 	/**
 		@name KNode#type

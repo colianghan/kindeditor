@@ -1,7 +1,7 @@
 module('core');
 
-test('VERSION', function() {
-	ok(/^\d+$/.test(K.VERSION));
+test('V', function() {
+	ok(/^\d+$/.test(K.V));
 });
 
 test('each', function() {
@@ -81,12 +81,6 @@ test('trim', function() {
 	equals(K.trim(' \xa0 '), '\xa0');
 });
 
-test('toHex', function() {
-	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
-	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
-	equals(K.toHex(' rgb(0, 0, 0) rgb (255, 255, 255) '), ' #000000 #FFFFFF ');
-});
-
 test('addUnit', function() {
 	ok(K.addUnit() === undefined);
 	ok(K.addUnit(null) === null);
@@ -112,8 +106,25 @@ test('unescape', function() {
 	same(K.unescape('&lt;div id=&quot;abc&quot;&gt;&amp;&lt;/div&gt;'), '<div id="abc">&</div>');
 });
 
+test('toHex', function() {
+	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
+	equals(K.toHex('rgb(0, 0, 0)'), '#000000');
+	equals(K.toHex(' rgb(0, 0, 0) rgb (255, 255, 255) '), ' #000000 #FFFFFF ');
+});
+
 test('toMap', function() {
 	same(K.toMap('a,b'), {a : true, b : true});
 	same(K.toMap('a,1..3,b'), {a : true, '1' : true, '2' : true, '3' : true, b : true});
 });
 
+test('toArray', function() {
+	same(K.toArray([1, 2]), [1, 2]);
+});
+
+test('undef', function() {
+	same(K.undef(1, 0), 1);
+	var obj = {};
+	same(K.undef(obj.aaa, 0), 0);
+	obj.aaa = 1;
+	same(K.undef(obj.aaa, 0), 1);
+});

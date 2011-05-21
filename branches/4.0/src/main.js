@@ -485,7 +485,7 @@ function _create(expr, options) {
 }
 
 //解决IE6浏览器重复下载背景图片的问题
-if (_IE && _VERSION < 7) {
+if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
 

@@ -1,24 +1,4 @@
 /**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name range.js
- * @fileOverview W3C Range、W3C Range和原生Range之间转换
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "html.js"
-#using "selector.js"
-#using "node.js"
-*/
-
-/**
 	@name KindEditor.START_TO_START
 	@type {Int}
 	@description
@@ -335,63 +315,12 @@ function _getEndRange(node, offset) {
 	return range;
 }
 
-/**
-	@name KindEditor.range
-	@class KRange类
-	@param {document|Range} mixed document或原生Range
-	@description
-	KRange类，包含W3C Range所有接口，此外还有包含KRange和原生Range之间的转换功能。
-	@example
-	var krange = K.range(document); //新建KRange对象
-	krange = K.range(originalRange); //将原生Range转换成KRange
-	@see <a href="http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html" target="_blank">DOM Level 2 Range Reference</a>
-*/
 function KRange(doc) {
 	var self = this;
-	/**
-		@name KindEditor.range#startContainer
-		@property
-		@public
-		@type {Node}
-		@description
-		Range的开始节点。
-	*/
 	self.startContainer = doc;
-	/**
-		@name KindEditor.range#startOffset
-		@property
-		@public
-		@type {Int}
-		@description
-		Range的开始节点的位置。
-	*/
 	self.startOffset = 0;
-	/**
-		@name KindEditor.range#endContainer
-		@property
-		@public
-		@type {Node}
-		@description
-		Range的结束节点。
-	*/
 	self.endContainer = doc;
-	/**
-		@name KindEditor.range#endOffset
-		@property
-		@public
-		@type {Int}
-		@description
-		Range的结束节点的位置。
-	*/
 	self.endOffset = 0;
-	/**
-		@name KindEditor.range#collapsed
-		@property
-		@public
-		@type {Boolean}
-		@description
-		Range的折叠状态，当Range处于折叠状态时true，否则false。
-	*/
 	self.collapsed = true;
 	self.doc = doc;
 }

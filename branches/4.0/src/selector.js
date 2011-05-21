@@ -35,7 +35,7 @@ function _contains(nodeA, nodeB) {
 function _getAttr(el, key) {
 	key = key.toLowerCase();
 	var val = null;
-	if (_IE && _VERSION < 8) {
+	if (_IE && _V < 8) {
 		var div = el.ownerDocument.createElement('div');
 		div.appendChild(el.cloneNode(false));
 		var list = _getAttrList(div.innerHTML.toLowerCase());

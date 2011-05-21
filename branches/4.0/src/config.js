@@ -1,19 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name config.js
- * @fileOverview 配置文件
- * @author Longhao Luo
- */
-
-/**
-#using "config.js"
-*/
 
 function _getScriptPath() {
 	var els = document.getElementsByTagName('script'), src;
