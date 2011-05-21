@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'KindEditor'
-copyright = u'2005-2011, kindsoft.net'
+copyright = u'kindsoft.net'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
