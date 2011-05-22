@@ -110,14 +110,6 @@ function KNode(node) {
 	self.length = node.length;
 	self.doc = _getDoc(self[0]);
 	self.name = _getNodeName(self[0]);
-	/**
-		@name KNode#type
-		@property
-		@public
-		@type {String}
-		@description
-		节点类型。1: Element, 3: textNode
-	*/
 	self.type = self.length > 0 ? self[0].nodeType : null;
 	self.win = _getWin(self[0]);
 	//private properties
@@ -134,16 +126,6 @@ KNode.prototype = {
 		}
 		return self;
 	},
-	/**
-		@name KNode#bind
-		@function
-		@public
-		@param {String} type
-		@param {String} fn
-		@returns {KNode}
-		@description
-		绑定一个事件。
-	*/
 	bind : function(type, fn) {
 		this.each(function() {
 			_bind(this, type, fn);
@@ -385,7 +367,7 @@ KNode.prototype = {
 	/**
 	 * @param keepChilds {Boolean} Leaves child nodes in the tree.
 	 */
-	remove : function( keepChilds ) {
+	remove : function(keepChilds) {
 		var self = this;
 		self.each(function(i, node) {
 			_unbind(node);

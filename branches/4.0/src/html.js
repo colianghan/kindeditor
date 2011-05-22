@@ -1,19 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name html.js
- * @fileOverview HTML解析、过滤、格式化
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-*/
 
 function _getCssList(css) {
 	var list = {},

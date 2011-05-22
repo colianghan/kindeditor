@@ -6,6 +6,8 @@ KindEditor 4.x 文档
 
 	intro
 	core
+	event
+	selector
 	node
 	range
 

@@ -1,19 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name event.js
- * @fileOverview 添加事件、移除事件、触发事件
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-*/
 
 var _useCapture = false;
 

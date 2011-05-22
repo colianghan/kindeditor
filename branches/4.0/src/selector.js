@@ -1,21 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name selector.js
- * @fileOverview 通过CSS选择器选择DOM元素
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "config.js"
-#using "html.js"
-*/
 
 function _contains(nodeA, nodeB) {
 	// Bypass comparison on document node since
@@ -51,18 +33,6 @@ function _getAttr(el, key) {
 	return val;
 }
 
-/**
-	@name KindEditor.queryAll
-	@function
-	@param {String} expr 选择器查询语句。
-	@param {element} root
-	@returns {element[]}
-	@description
-	根据expr在root范围内查找DOM元素，并返回所有元素。没找到则返回空数组。
-	@example
-	var divArray = K.query('#id div');
-	var spanArray = K.query('span.class', div);
-*/
 function _queryAll(expr, root) {
 	root = root || document;
 	function escape(str) {
@@ -228,30 +198,6 @@ function _queryAll(expr, root) {
 	return results;
 }
 
-/**
-	@name KindEditor.query
-	@function
-	@param {String} expr 选择器查询语句。
-	@param {element} root
-	@returns {element}
-	@description
-	根据expr在root范围内查找DOM元素，并返回第一个元素。没找到则返回null。
-	@example
-	// Only support the following selector syntax.
-	// Patterns:
-	// *: any element
-	// E: an element of type E
-	// E[foo]: an E element with a "foo" attribute
-	// E[foo="bar"]: an E element whose "foo" attribute value is exactly equal to "bar"
-	// E.warning: an E element whose class is "warning" (the document language specifies how class is determined)
-	// E#myid: an E element with ID equal to "myid"
-	// E F: an F element descendant of an E element
-	// E > F: an F element child of an E element
-
-	var div = K.query('#id div');
-	var span = K.query('span.class', div);
-	@see <a href="http://www.w3.org/TR/css3-selectors/" target="_blank">Selectors Level 3</a>
-*/
 function _query(expr, root) {
 	var arr = _queryAll(expr, root);
 	return arr.length > 0 ? arr[0] : null;
