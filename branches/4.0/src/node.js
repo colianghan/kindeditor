@@ -1,6 +1,6 @@
 
 function _get(val) {
-	return val.get ? val.get() : val;
+	return K(val)[0];
 }
 
 function _toCamel(str) {
@@ -326,54 +326,47 @@ KNode.prototype = {
 		}
 		return new KNode([this[0].cloneNode(bool)]);
 	},
-	append : function(val) {
-		var self = this;
-		if (self.length < 1) {
-			return self;
-		}
-		self[0].appendChild(_get(val));
-		return self;
+	append : function(expr) {
+		this.each(function() {
+			if (this.appendChild) {
+				this.appendChild(K(expr)[0]);
+			}
+		});
+		return this;
 	},
-	before : function(val) {
-		var self = this;
-		if (self.length < 1) {
-			return self;
-		}
-		self[0].parentNode.insertBefore(_get(val), self[0]);
-		return self;
+	before : function(expr) {
+		this.each(function() {
+			this.parentNode.insertBefore(K(expr)[0], this);
+		});
+		return this;
 	},
-	after : function(val) {
-		var self = this;
-		if (self.length < 1) {
-			return self;
-		}
-		if (self[0].nextSibling) {
-			self[0].parentNode.insertBefore(_get(val), self[0].nextSibling);
-		} else {
-			self[0].parentNode.appendChild(_get(val));
-		}
-		return self;
+	after : function(expr) {
+		this.each(function() {
+			if (this.nextSibling) {
+				this.parentNode.insertBefore(K(expr)[0], this.nextSibling);
+			} else {
+				this.parentNode.appendChild(K(expr)[0]);
+			}
+		});
+		return this;
 	},
-	replaceWith : function(val) {
-		var self = this, node = _get(val);
-		if (self.length < 1) {
-			return self;
-		}
-		_unbind(self[0]);
-		self[0].parentNode.replaceChild(node, self[0]);
-		self[0] = node;
-		return self;
+	replaceWith : function(expr) {
+		var nodes = [];
+		this.each(function(i, node) {
+			_unbind(node);
+			var newNode = K(expr)[0];
+			node.parentNode.replaceChild(newNode, node);
+			nodes.push(newNode);
+		});
+		return K(nodes);
 	},
-	/**
-	 * @param keepChilds {Boolean} Leaves child nodes in the tree.
-	 */
 	remove : function(keepChilds) {
 		var self = this;
 		self.each(function(i, node) {
 			_unbind(node);
 			if (keepChilds) {
-				new KNode(node.childNodes).each(function(i, child) {
-					new KNode([node]).after(child);
+				new KNode(node.childNodes).each(function() {
+					new KNode([node]).after(this);
 				});
 			} else if (node.hasChildNodes()) {
 				node.innerHTML = '';

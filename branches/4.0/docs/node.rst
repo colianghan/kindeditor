@@ -517,3 +517,129 @@ KNode.opacity(val)
 
 	K('#id').opacity(0.5);
 
+.. index:: KNode.data, data
+
+.. _KNode.data:
+
+KNode.data(key)
+--------------------------------------------------------
+取得已绑定的自定义数据。
+
+* 参数:
+	* string key: data key
+* 返回: string
+
+示例:
+
+.. sourcecode:: js
+
+	var data = K('#id').data('data_id');
+
+KNode.data(key, val)
+--------------------------------------------------------
+绑定自定义数据。
+
+* 参数:
+	* string key: data key
+	* string val: data value
+* 返回: string
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').data('abc', 1);
+
+.. index:: KNode.pos, pos
+
+.. _KNode.pos:
+
+KNode.pos()
+--------------------------------------------------------
+取得第一个node在整个document上的x坐标和y坐标。
+
+* 参数: 无
+* 返回: string
+
+示例:
+
+.. sourcecode:: js
+
+	var pos = K('#id').pos();
+	var x = pos.x;
+	var y = pos.y;
+
+.. index:: KNode.clone, clone
+
+.. _KNode.clone:
+
+KNode.clone(bool)
+--------------------------------------------------------
+复制一个第一个node，并返回第一个node的KNode。
+
+* 参数: 
+	* boolean bool: true时复制所有子节点，false时只复制父节点
+* 返回: 新的KNode对象
+
+示例:
+
+.. sourcecode:: js
+
+	var newKNode = K('#id').clone();
+
+.. index:: KNode.append, append
+
+.. _KNode.append:
+
+KNode.append(expr)
+--------------------------------------------------------
+给所有element添加一个子节点。
+
+* 参数: 
+	*  string|node expr: DOM元素、选择器表达式、HTML代码
+* 返回: KNode对象
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').append(divNode);
+	K('#id').append('<div class="abc">def</div>');
+
+.. index:: KNode.before, before
+
+.. _KNode.before:
+
+KNode.before(expr)
+--------------------------------------------------------
+element的前面添加一个节点。
+
+* 参数: 
+	*  string|node expr: DOM元素、选择器表达式、HTML代码
+* 返回: KNode对象
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').before(divNode);
+	K('#id').before('<div class="abc">def</div>');
+
+.. index:: KNode.after, after
+
+.. _KNode.after:
+
+KNode.after(expr)
+--------------------------------------------------------
+element的后面添加一个节点。
+
+* 参数: 
+	*  string|node expr: DOM元素、选择器表达式、HTML代码
+* 返回: KNode对象
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').after(divNode);
+	K('#id').after('<div class="abc">def</div>');

@@ -92,19 +92,52 @@ test("css",function(){
 
 test("width/height",function(){
 	equals(K('#test-data-01').width(), 300);
-	ok(K('#test-data-01').height() > 120);
+	ok(K('#test-data-01').height() > 110);
+});
+
+test("append",function(){
+	var node = K('<div class="abcd"></div><p></p>').append('@abc');
+	equals(node.html(), 'abc');
+	equals(K(node[1]).html(), 'abc');
+});
+
+test("before",function(){
+	var parent = K('<div><div class="abc"></div><p class="abc"></p></div>');
+	K('.abc', parent).before('<span>def</span>');
+	var children = parent.children();
+	equals(children.length, 4);
+	equals(K(children[0]).name, 'span');
+	equals(K(children[1]).name, 'div');
+	equals(K(children[2]).name, 'span');
+	equals(K(children[3]).name, 'p');
+});
+
+test("replaceWith",function(){
+	var node = K('<div></div>').replaceWith('<p></p>');
+	equals(node.length, 1);
+	equals(node.name, 'p');
+});
+
+test("after",function(){
+	var parent = K('<div><div class="abc"></div><p class="abc"></p></div>');
+	K('.abc', parent).after('<span>def</span>');
+	var children = parent.children();
+	equals(children.length, 4);
+	equals(K(children[0]).name, 'div');
+	equals(K(children[1]).name, 'span');
+	equals(K(children[2]).name, 'p');
+	equals(K(children[3]).name, 'span');
 });
 
 test("remove",function(){
 	var node = K('<div></div><p>123</p>').addClass('abc').html('test');
 	node.remove();
 	equals(node.length, 0);
-
 	// Test preserve child nodes. 
-        var node = K('<div><p><span>123</span></p></div>');
-	K('p',node).remove(true);
-	equals(K('span',node).length, 1);
-	equals(K('p',node).length, 0);
+	var node = K('<div><p><span>123</span></p></div>');
+	K('p', node).remove(true);
+	equals(K('span', node).length, 1);
+	equals(K('p', node).length, 0);
 });
 
 test("html",function(){
