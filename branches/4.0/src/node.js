@@ -329,23 +329,23 @@ KNode.prototype = {
 	append : function(expr) {
 		this.each(function() {
 			if (this.appendChild) {
-				this.appendChild(K(expr)[0]);
+				this.appendChild(_get(expr));
 			}
 		});
 		return this;
 	},
 	before : function(expr) {
 		this.each(function() {
-			this.parentNode.insertBefore(K(expr)[0], this);
+			this.parentNode.insertBefore(_get(expr), this);
 		});
 		return this;
 	},
 	after : function(expr) {
 		this.each(function() {
 			if (this.nextSibling) {
-				this.parentNode.insertBefore(K(expr)[0], this.nextSibling);
+				this.parentNode.insertBefore(_get(expr), this.nextSibling);
 			} else {
-				this.parentNode.appendChild(K(expr)[0]);
+				this.parentNode.appendChild(_get(expr));
 			}
 		});
 		return this;
@@ -354,7 +354,7 @@ KNode.prototype = {
 		var nodes = [];
 		this.each(function(i, node) {
 			_unbind(node);
-			var newNode = K(expr)[0];
+			var newNode = _get(expr);
 			node.parentNode.replaceChild(newNode, node);
 			nodes.push(newNode);
 		});
@@ -487,7 +487,6 @@ KNode.prototype = {
 	}
 };
 
-//Inspired by jQuery
 _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +
 	'change,select,submit,keydown,keypress,keyup,error,contextmenu').split(','), function(i, type) {

@@ -112,12 +112,6 @@ test("before",function(){
 	equals(K(children[3]).name, 'p');
 });
 
-test("replaceWith",function(){
-	var node = K('<div></div>').replaceWith('<p></p>');
-	equals(node.length, 1);
-	equals(node.name, 'p');
-});
-
 test("after",function(){
 	var parent = K('<div><div class="abc"></div><p class="abc"></p></div>');
 	K('.abc', parent).after('<span>def</span>');
@@ -127,6 +121,12 @@ test("after",function(){
 	equals(K(children[1]).name, 'span');
 	equals(K(children[2]).name, 'p');
 	equals(K(children[3]).name, 'span');
+});
+
+test("replaceWith",function(){
+	var node = K('<div></div>').replaceWith('<p></p>');
+	equals(node.length, 1);
+	equals(node.name, 'p');
 });
 
 test("remove",function(){

@@ -20,8 +20,6 @@ function _unbindEvent(el, type, fn) {
 
 var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
 
-//Inspired by jQuery
-//http://github.com/jquery/jquery/blob/master/src/event.js
 function _event(el, event) {
 	if (!event) {
 		return;

@@ -1,42 +1,14 @@
-/**
-	@name KindEditor.START_TO_START
-	@type {Int}
-	@description
-	调用range.compareBoundaryPoints时使用。
-	@see KindEditor.range#compareBoundaryPoints
-*/
-/**
-	@name KindEditor.START_TO_END
-	@type {Int}
-	@description
-	调用range.compareBoundaryPoints时使用。
-	@see KindEditor.range#compareBoundaryPoints
-*/
-/**
-	@name KindEditor.END_TO_END
-	@type {Int}
-	@description
-	调用range.compareBoundaryPoints时使用。
-	@see KindEditor.range#compareBoundaryPoints
-*/
-/**
-	@name KindEditor.END_TO_START
-	@type {Int}
-	@description
-	调用range.compareBoundaryPoints时使用。
-	@see KindEditor.range#compareBoundaryPoints
-*/
+
 var _START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
 
-//更新collapsed
 function _updateCollapsed() {
 	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
 }
+
 /**
-	根据参数复制或删除KRange的内容。
 	cloneContents: _copyAndDelete.call(this, true, false)
 	extractContents: _copyAndDelete.call(this, true, true)
 	deleteContents: _copyAndDelete.call(this, false, true)

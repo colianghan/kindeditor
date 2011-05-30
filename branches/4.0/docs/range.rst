@@ -21,12 +21,44 @@ K.range(mixed)
 
 .. sourcecode:: js
 
-	var krange = K.range(document); //新建KRange对象
-	krange = K.range(originalRange); //将原生Range转换成KRange
+	range = K.range(document);
+	range = K.range(originalRange);
 
 .. note::
 
 	DOM Level 2 Range Reference: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html
+
+.. index:: START_TO_START
+
+.. _START_TO_START:
+
+K.START_TO_START
+--------------------------------------------------------
+调用 :ref:`KRange.compareBoundaryPoints` 时使用。
+
+.. index:: START_TO_END
+
+.. _START_TO_END:
+
+K.START_TO_END
+--------------------------------------------------------
+调用 :ref:`KRange.compareBoundaryPoints` 时使用。
+
+.. index:: END_TO_END
+
+.. _END_TO_END:
+
+K.END_TO_END
+--------------------------------------------------------
+调用 :ref:`KRange.compareBoundaryPoints` 时使用。
+
+.. index:: END_TO_START
+
+.. _END_TO_START:
+
+K.END_TO_START
+--------------------------------------------------------
+调用 :ref:`KRange.compareBoundaryPoints` 时使用。
 
 .. index:: KRange.startContainer, startContainer
 

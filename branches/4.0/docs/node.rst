@@ -15,16 +15,16 @@ K(expr , root)
 * 参数:
 	* string|node expr: DOM元素、选择器表达式、HTML代码
 	* element root: DOM根元素，在root范围内选择DOM元素
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
 .. sourcecode:: js
 
-	knode = K('&lt;div&gt;&lt;/div&gt;'); //根据HTML创建KNode对象
-	knode = K('#id div'); //选择匹配的DIV NodeList
-	knode = K(document.getElementById('id')); //选择原生Node
-	firstNode = knode[0]; //第一个node
+	node = K('<div>abc</div>');
+	node = K('#id div');
+	node = K(document.getElementById('id'));
+	firstNode = node[0];
 
 .. index:: KNode.length, length
 
@@ -78,7 +78,7 @@ KNode.bind(type , fn)
 * 参数:
 	* string type: 事件类型
 	* function fn: 回调函数
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -102,7 +102,7 @@ KNode.unbind([type , fn])
 * 参数:
 	* string type: 事件类型
 	* function fn: 回调函数
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -122,7 +122,7 @@ KNode.fire(type)
 
 * 参数:
 	* string type: 事件类型
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -174,7 +174,7 @@ KNode.attr(key, val)
 * 参数:
 	* string key: 属性名
 	* string val: 属性值
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -188,7 +188,7 @@ KNode.attr(obj)
 
 * 参数:
 	* object obj: key-value数组
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -209,7 +209,7 @@ KNode.removeAttr(key)
 
 * 参数:
 	* string key: 属性名
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -264,7 +264,7 @@ KNode.addClass(cls)
 
 * 参数:
 	* string cls: className
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -282,7 +282,7 @@ KNode.removeClass(cls)
 
 * 参数:
 	* string cls: className
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -313,7 +313,7 @@ KNode.html(val)
 
 * 参数: 
 	* string val: HTML字符串
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -361,7 +361,7 @@ KNode.val(val)
 设置所有node的value。
 
 * 参数: 无
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -407,7 +407,7 @@ KNode.css(key, val)
 * 参数:
 	* string key: CSS key
 	* string val: CSS value
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -421,7 +421,7 @@ KNode.css(obj)
 
 * 参数:
 	* object obj: key-value数组
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -456,7 +456,7 @@ KNode.width(val)
 
 * 参数:
 	* string val: 宽度
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -489,7 +489,7 @@ KNode.height(val)
 
 * 参数:
 	* string val: 高度
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -509,7 +509,7 @@ KNode.opacity(val)
 
 * 参数:
 	* float val: 透明度，0~1
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -575,11 +575,11 @@ KNode.pos()
 
 KNode.clone(bool)
 --------------------------------------------------------
-复制一个第一个node，并返回第一个node的KNode。
+复制第一个node，并返回第一个node的KNode。
 
 * 参数: 
 	* boolean bool: true时复制所有子节点，false时只复制父节点
-* 返回: 新的KNode对象
+* 返回: 新的KNode
 
 示例:
 
@@ -593,11 +593,11 @@ KNode.clone(bool)
 
 KNode.append(expr)
 --------------------------------------------------------
-给所有element添加一个子节点。
+element添加一个子节点。
 
 * 参数: 
 	*  string|node expr: DOM元素、选择器表达式、HTML代码
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -612,11 +612,11 @@ KNode.append(expr)
 
 KNode.before(expr)
 --------------------------------------------------------
-element的前面添加一个节点。
+node的前面添加一个节点。
 
 * 参数: 
 	*  string|node expr: DOM元素、选择器表达式、HTML代码
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -631,11 +631,11 @@ element的前面添加一个节点。
 
 KNode.after(expr)
 --------------------------------------------------------
-element的后面添加一个节点。
+node的后面添加一个节点。
 
 * 参数: 
 	*  string|node expr: DOM元素、选择器表达式、HTML代码
-* 返回: KNode对象
+* 返回: KNode
 
 示例:
 
@@ -643,3 +643,311 @@ element的后面添加一个节点。
 
 	K('#id').after(divNode);
 	K('#id').after('<div class="abc">def</div>');
+
+.. index:: KNode.replaceWith, replaceWith
+
+.. _KNode.replaceWith:
+
+KNode.replaceWith(expr)
+--------------------------------------------------------
+替换node。
+
+* 参数: 
+	*  string|node expr: DOM元素、选择器表达式、HTML代码
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').replaceWith(divNode);
+	K('#id').replaceWith('<div class="abc">def</div>');
+
+.. index:: KNode.remove, remove
+
+.. _KNode.remove:
+
+KNode.remove([keepChilds])
+--------------------------------------------------------
+删除node。
+
+* 参数: 
+	*  boolean keepChilds: 是否保留子节点，true或false，默认值为false
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').remove();
+
+.. index:: KNode.show, show
+
+.. _KNode.show:
+
+KNode.show([val])
+--------------------------------------------------------
+显示element。
+
+* 参数: 
+	*  string val: display的值，默认值为block
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').show();
+
+.. index:: KNode.hide, hide
+
+.. _KNode.hide:
+
+KNode.hide([val])
+--------------------------------------------------------
+隐藏element。
+
+* 参数: 无
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	K('#id').hide();
+
+.. index:: KNode.outer, outer
+
+.. _KNode.outer:
+
+KNode.outer()
+--------------------------------------------------------
+取得第一个element的outerHTML。
+
+* 参数: 无
+* 返回: string
+
+示例:
+
+.. sourcecode:: js
+
+	var html = K('#id').outer();
+
+.. index:: KNode.isSingle, isSingle
+
+.. _KNode.isSingle:
+
+KNode.isSingle()
+--------------------------------------------------------
+判断第一个element是否有闭合标签。
+
+* 参数: 无
+* 返回: boolean
+
+示例:
+
+.. sourcecode:: js
+
+	if (K('div').isSingle()) {
+		console.log('false');
+	}
+
+.. index:: KNode.isInline, isInline
+
+.. _KNode.isInline:
+
+KNode.isInline()
+--------------------------------------------------------
+判断第一个element是不是inline element。
+
+* 参数: 无
+* 返回: boolean
+
+示例:
+
+.. sourcecode:: js
+
+	if (K('div').isInline()) {
+		console.log('false');
+	}
+
+.. index:: KNode.isBlock, isBlock
+
+.. _KNode.isBlock:
+
+KNode.isBlock()
+--------------------------------------------------------
+判断第一个element是不是block element。
+
+* 参数: 无
+* 返回: boolean
+
+示例:
+
+.. sourcecode:: js
+
+	if (K('div').isBlock()) {
+		console.log('true');
+	}
+
+.. index:: KNode.contains, contains
+
+.. _KNode.contains:
+
+KNode.contains(otherNode)
+--------------------------------------------------------
+判断第一个element是否包含指定node。
+
+* 参数: 
+	* node otherNode: 任意节点
+* 返回: boolean
+
+示例:
+
+.. sourcecode:: js
+
+	if (K('div#id').contains(K('div#id p')[0])) {
+		console.log('true');
+	}
+
+.. index:: KNode.parent, parent
+
+.. _KNode.parent:
+
+KNode.parent()
+--------------------------------------------------------
+取得第一个node的父节点。
+
+* 参数: 无
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	var parentNode = K('#id').parent();
+
+.. index:: KNode.children, children
+
+.. _KNode.children:
+
+KNode.children()
+--------------------------------------------------------
+取得第一个node的子节点列表。
+
+* 参数: 无
+* 返回: array<KNode>
+
+示例:
+
+.. sourcecode:: js
+
+	var nodeArray = K('#id').children();
+
+.. index:: KNode.first, first
+
+.. _KNode.first:
+
+KNode.first()
+--------------------------------------------------------
+取得第一个node的第一个子节点。
+
+* 参数: 无
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	var firstNode = K('#id').first();
+
+.. index:: KNode.last, last
+
+.. _KNode.last:
+
+KNode.last()
+--------------------------------------------------------
+取得第一个node的最后一个子节点。
+
+* 参数: 无
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	var lastNode = K('#id').last();
+
+.. index:: KNode.index, index
+
+.. _KNode.index:
+
+KNode.index()
+--------------------------------------------------------
+取得第一个node在父节点中的偏移位置。
+
+* 参数: 无
+* 返回: int
+
+示例:
+
+.. sourcecode:: js
+
+	var index = K('div#id p').index();
+
+.. index:: KNode.prev, prev
+
+.. _KNode.prev:
+
+KNode.prev()
+--------------------------------------------------------
+取得第一个node的上一个节点。
+
+* 参数: 无
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	var prevNode = K('#id').prev();
+
+.. index:: KNode.next, next
+
+.. _KNode.next:
+
+KNode.next()
+--------------------------------------------------------
+取得第一个node的下一个节点。
+
+* 参数: 无
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	var nextNode = K('#id').next();
+
+.. index:: KNode.scan, scan
+
+.. _KNode.scan:
+
+KNode.scan(fn [, order])
+--------------------------------------------------------
+遍历第一个node的所有子节点。
+
+* 参数:
+	* function fn: 回调函数
+	* boolean order: 遍历方向，true为顺序，false为逆序，默认值为true
+* 返回: KNode
+
+示例:
+
+.. sourcecode:: js
+
+	K('div#id').scan(function(node) (
+		console.log(node);
+	));
+
+
