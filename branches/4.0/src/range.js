@@ -298,14 +298,6 @@ function KRange(doc) {
 }
 
 KRange.prototype = {
-	/**
-		@name KindEditor.range#commonAncestor
-		@function
-		@public
-		@returns {Element}
-		@description
-		取得KRange的共同祖先。
-	*/
 	commonAncestor : function() {
 		function getParents(node) {
 			var parents = [];
@@ -327,16 +319,6 @@ KRange.prototype = {
 		}
 		return parentsA[lenA - i + 1];
 	},
-	/**
-		@name KindEditor.range#setStart
-		@function
-		@public
-		@param {Node} node
-		@param {Int} offset
-		@returns {KRange}
-		@description
-		设置Range的开始节点和位置。
-	*/
 	setStart : function(node, offset) {
 		var self = this, doc = self.doc;
 		self.startContainer = node;
@@ -348,16 +330,6 @@ KRange.prototype = {
 		_updateCollapsed.call(this);
 		return self;
 	},
-	/**
-		@name KindEditor.range#setEnd
-		@function
-		@public
-		@param {Node} node
-		@param {Int} offset
-		@returns {KRange}
-		@description
-		设置Range的结束节点和位置。
-	*/
 	setEnd : function(node, offset) {
 		var self = this, doc = self.doc;
 		self.endContainer = node;
@@ -369,76 +341,21 @@ KRange.prototype = {
 		_updateCollapsed.call(this);
 		return self;
 	},
-	/**
-		@name KindEditor.range#setStartBefore
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		将Node的开始位置设为Range的开始位置。
-	*/
 	setStartBefore : function(node) {
 		return this.setStart(node.parentNode || this.doc, K(node).index());
 	},
-	/**
-		@name KindEditor.range#setStartAfter
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		将Node的结束位置设为Range的开始位置。
-	*/
 	setStartAfter : function(node) {
 		return this.setStart(node.parentNode || this.doc, K(node).index() + 1);
 	},
-	/**
-		@name KindEditor.range#setEndBefore
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		将Node的开始位置设为Range的结束位置。
-	*/
 	setEndBefore : function(node) {
 		return this.setEnd(node.parentNode || this.doc, K(node).index());
 	},
-	/**
-		@name KindEditor.range#setEndAfter
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		将Node的结束位置设为Range的结束位置。
-	*/
 	setEndAfter : function(node) {
 		return this.setEnd(node.parentNode || this.doc, K(node).index() + 1);
 	},
-	/**
-		@name KindEditor.range#selectNode
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		将Node的开始位置和结束位置分别设为Range的开始位置和结束位置。
-	*/
 	selectNode : function(node) {
 		return this.setStartBefore(node).setEndAfter(node);
 	},
-	/**
-		@name KindEditor.range#selectNodeContents
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		<p>将Node的子节点的开始位置和结束位置分别设为Range的开始位置和结束位置。</p>
-		<p>对于文本节点和无结束符的元素，相当于使用selectNode。</p>
-	*/
 	selectNodeContents : function(node) {
 		var knode = K(node);
 		if (knode.type == 3 || knode.isSingle()) {
@@ -450,36 +367,12 @@ KRange.prototype = {
 		}
 		return this.setStart(node, 0).setEnd(node, 0);
 	},
-	/**
-		@name KindEditor.range#collapse
-		@function
-		@public
-		@param {Boolean} toStart 折叠方向，true或false
-		@returns {KRange}
-		@description
-		折叠KRange，当toStart为true时向前折叠，false时向后折叠。
-	*/
 	collapse : function(toStart) {
 		if (toStart) {
 			return this.setEnd(this.startContainer, this.startOffset);
 		}
 		return this.setStart(this.endContainer, this.endOffset);
 	},
-	/**
-		@name KindEditor.range#compareBoundaryPoints
-		@function
-		@public
-		@param {Int} how 位置信息，可设置K.START_TO_START、K.START_TO_END、K.END_TO_END、K.END_TO_START。
-		@param {KRange} range 目标range
-		@returns {Int} 当this range在目标range的左侧时返回-1，在目标range的右侧时返回1，相同时返回0。
-		@description
-		<p>根据how参数比较2个range的边界。</p>
-		<p>how参数的方向规则：</p>
-		<p>K.START_TO_START：比较目标range的开始位置和this range的开始位置。</p>
-		<p>K.START_TO_END：比较目标range的开始位置和this range的结束位置。</p>
-		<p>K.END_TO_END：比较目标range的结束位置和this range的结束位置。</p>
-		<p>K.END_TO_START：比较目标range的结束位置和this range的开始位置。</p>
-	*/
 	compareBoundaryPoints : function(how, range) {
 		var rangeA = this.get(), rangeB = range.get();
 		if (!this.doc.createRange) {
@@ -535,73 +428,24 @@ KRange.prototype = {
 			return rangeA.compareBoundaryPoints(how, rangeB);
 		}
 	},
-	/**
-		@name KindEditor.range#cloneRange
-		@function
-		@public
-		@returns {KRange}
-		@description
-		复制KRange。
-	*/
 	cloneRange : function() {
 		return new KRange(this.doc).setStart(this.startContainer, this.startOffset).setEnd(this.endContainer, this.endOffset);
 	},
-	/**
-		@name KindEditor.range#toString
-		@function
-		@public
-		@returns {String}
-		@description
-		返回KRange的文本内容。
-	*/
 	toString : function() {
 		//TODO
 		var rng = this.get(),
 			str = this.doc.createRange ? rng.toString() : rng.text;
 		return str.replace(/\r\n|\n|\r/g, '');
 	},
-	/**
-		@name KindEditor.range#cloneContents
-		@function
-		@public
-		@returns {documentFragment}
-		@description
-		复制并返回KRange的内容。
-	*/
 	cloneContents : function() {
 		return _copyAndDelete.call(this, true, false);
 	},
-	/**
-		@name KindEditor.range#deleteContents
-		@function
-		@public
-		@returns {KRange}
-		@description
-		删除KRange的内容。
-	*/
 	deleteContents : function() {
 		return _copyAndDelete.call(this, false, true);
 	},
-	/**
-		@name KindEditor.range#extractContents
-		@function
-		@public
-		@returns {documentFragment}
-		@description
-		删除并返回KRange的内容。
-	*/
 	extractContents : function() {
 		return _copyAndDelete.call(this, true, true);
 	},
-	/**
-		@name KindEditor.range#insertNode
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		将指定Node插入到KRange的开始位置。
-	*/
 	insertNode : function(node) {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
@@ -659,27 +503,10 @@ KRange.prototype = {
 		}
 		return self.setEnd(ec, eo);
 	},
-	/**
-		@name KindEditor.range#surroundContents
-		@function
-		@public
-		@param {Node} node
-		@returns {KRange}
-		@description
-		用指定Node围住KRange的内容。
-	*/
 	surroundContents : function(node) {
 		node.appendChild(this.extractContents());
 		return this.insertNode(node).selectNode(node);
 	},
-	/**
-		@name KindEditor.range#isControl
-		@function
-		@public
-		@returns {Boolean}
-		@description
-		判断当前KRange是否可选择的Contral Range。
-	*/
 	isControl : function() {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
@@ -687,14 +514,6 @@ KRange.prototype = {
 			tags = _toMap('img,table');
 		return sc.nodeType == 1 && sc === ec && so + 1 === eo && tags[K(sc.childNodes[so]).name];
 	},
-	/**
-		@name KindEditor.range#get
-		@function
-		@public
-		@returns {Range}
-		@description
-		将KRange转换成原生Range并返回。
-	*/
 	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node,
 			sc = self.startContainer, so = self.startOffset,
@@ -720,14 +539,6 @@ KRange.prototype = {
 		rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
 		return rng;
 	},
-	/**
-		@name KindEditor.range#html
-		@function
-		@public
-		@returns {String}
-		@description
-		返回KRange内容的HTML。
-	*/
 	html : function() {
 		return K(this.cloneContents()).outer();
 	}
