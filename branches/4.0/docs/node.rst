@@ -1,10 +1,10 @@
-节点API
+Node API
 ========================================================
 
 .. contents::
 	:depth: 2
 
-.. index:: K, KNode
+.. index:: K
 
 .. _K:
 
@@ -26,11 +26,11 @@ K(expr , root)
 	node = K(document.getElementById('id'));
 	firstNode = node[0];
 
-.. index:: KNode.length, length
+.. index:: length
 
 .. _KNode.length:
 
-KNode.length
+length
 --------------------------------------------------------
 node数量
 
@@ -38,11 +38,11 @@ node数量
 
 	var length = K('#id div').length;
 
-.. index:: KNode.doc, doc
+.. index:: doc
 
 .. _KNode.doc:
 
-KNode.doc
+doc
 --------------------------------------------------------
 第一个node的document对象。
 
@@ -50,28 +50,28 @@ KNode.doc
 
 	var doc = K('#id div').doc;
 
-.. index:: KNode.name, name
+.. index:: name
 
 .. _KNode.name:
 
-KNode.name
+name
 --------------------------------------------------------
 第一个node的nodeName。
 
-.. index:: KNode.type, type
+.. index:: type
 
 .. _KNode.type:
 
-KNode.type
+type
 --------------------------------------------------------
 第一个node的nodeType。1: Element, 3: textNode
 
 
-.. index:: KNode.bind, bind
+.. index:: bind
 
 .. _KNode.bind:
 
-KNode.bind(type , fn)
+bind(type , fn)
 --------------------------------------------------------
 将指定函数绑定到所有KNode的指定事件上。
 
@@ -91,11 +91,11 @@ KNode.bind(type , fn)
 		alert(this.nodeName + ': clicked');
 	});
 
-.. index:: KNode.unbind, unbind
+.. index:: unbind
 
 .. _KNode.unbind:
 
-KNode.unbind([type , fn])
+unbind([type , fn])
 --------------------------------------------------------
 移除已绑定的事件函数。
 
@@ -112,11 +112,11 @@ KNode.unbind([type , fn])
 	K('#id').unbind('click'); //移除所有click事件函数
 	K('#id').unbind(); //移除所有事件函数
 
-.. index:: KNode.fire, fire
+.. index:: fire
 
 .. _KNode.fire:
 
-KNode.fire(type)
+fire(type)
 --------------------------------------------------------
 执行绑定在第一个node上的事件函数。
 
@@ -131,11 +131,11 @@ KNode.fire(type)
 	K('#id').fire('click');
 	K.click();
 
-.. index:: KNode.hasAttr, hasAttr
+.. index:: hasAttr
 
 .. _KNode.hasAttr:
 
-KNode.hasAttr(key)
+hasAttr(key)
 --------------------------------------------------------
 判断第一个node是否拥有指定属性。
 
@@ -149,11 +149,11 @@ KNode.hasAttr(key)
 
 	var bool = K('#id').hasAttr('border');
 
-.. index:: KNode.attr, attr
+.. index:: attr
 
 .. _KNode.attr:
 
-KNode.attr(key)
+attr(key)
 --------------------------------------------------------
 取得第一个node的指定属性.
 
@@ -167,7 +167,7 @@ KNode.attr(key)
 
 	var border = K('#id').attr('border');
 
-KNode.attr(key, val)
+attr(key, val)
 --------------------------------------------------------
 设置所有node的属性。
 
@@ -182,7 +182,7 @@ KNode.attr(key, val)
 
 	K('#id img').attr('border', 1);
 
-KNode.attr(obj)
+attr(obj)
 --------------------------------------------------------
 设置所有node的多个属性。
 
@@ -199,11 +199,11 @@ KNode.attr(obj)
 		'border' => 1
 	});
 
-.. index:: KNode.removeAttr, removeAttr
+.. index:: removeAttr
 
 .. _KNode.removeAttr:
 
-KNode.removeAttr(key)
+removeAttr(key)
 --------------------------------------------------------
 移除所有node的指定属性.
 
@@ -217,11 +217,11 @@ KNode.removeAttr(key)
 
 	K('#id img').removeAttr('border');
 
-.. index:: KNode.get, get
+.. index:: get
 
 .. _KNode.get:
 
-KNode.get([i])
+get([i])
 --------------------------------------------------------
 取得原生node，当KNode的length为0时，返回null.
 
@@ -236,11 +236,11 @@ KNode.get([i])
 	div1 = K('#id div').get(0);
 	div2 = K('#id div').get(1);
 
-.. index:: KNode.hasClass, hasClass
+.. index:: hasClass
 
 .. _KNode.hasClass:
 
-KNode.hasClass(cls)
+hasClass(cls)
 --------------------------------------------------------
 判断第一个node是否拥有指定class。
 
@@ -254,11 +254,11 @@ KNode.hasClass(cls)
 
 	var bool = K('#id').hasClass('class-name');
 
-.. index:: KNode.addClass, addClass
+.. index:: addClass
 
 .. _KNode.addClass:
 
-KNode.addClass(cls)
+addClass(cls)
 --------------------------------------------------------
 将指定className添加到所有node。
 
@@ -272,11 +272,11 @@ KNode.addClass(cls)
 
 	K('#id').addClass('class-name');
 
-.. index:: KNode.removeClass, removeClass
+.. index:: removeClass
 
 .. _KNode.removeClass:
 
-KNode.removeClass(cls)
+removeClass(cls)
 --------------------------------------------------------
 移除所有node上的指定className。
 
@@ -290,11 +290,11 @@ KNode.removeClass(cls)
 
 	K('#id').removeClass('class-name');
 
-.. index:: KNode.html, html
+.. index:: html
 
 .. _KNode.html:
 
-KNode.html()
+html()
 --------------------------------------------------------
 取得第一个node的innerHTML。
 
@@ -307,7 +307,7 @@ KNode.html()
 
 	K('#id').html(val);
 
-KNode.html(val)
+html(val)
 --------------------------------------------------------
 设置所有node的innerHTML。
 
@@ -321,11 +321,11 @@ KNode.html(val)
 
 	K('#id').html('<strong>abc</strong>');
 
-.. index:: KNode.hasVal, hasVal
+.. index:: hasVal
 
 .. _KNode.hasVal:
 
-KNode.hasVal()
+hasVal()
 --------------------------------------------------------
 判断第一个node是否拥有value属性。
 
@@ -339,11 +339,11 @@ KNode.hasVal()
 	bool = K('#textarea').hasVal(); //return true
 	bool = K('#div').hasVal(); //return false
 
-.. index:: KNode.val, val
+.. index:: val
 
 .. _KNode.val:
 
-KNode.val()
+val()
 --------------------------------------------------------
 取得第一个node的value。
 
@@ -356,7 +356,7 @@ KNode.val()
 
 	var value = K('#textarea').val();
 
-KNode.val(val)
+val(val)
 --------------------------------------------------------
 设置所有node的value。
 
@@ -369,11 +369,11 @@ KNode.val(val)
 
 	K('#textarea').val('abc');
 
-.. index:: KNode.css, css
+.. index:: css
 
 .. _KNode.css:
 
-KNode.css()
+css()
 --------------------------------------------------------
 取得第一个node的所有CSS.
 
@@ -386,7 +386,7 @@ KNode.css()
 
 	var cssList = K('#id').css(); //return key-value data
 
-KNode.css(key)
+css(key)
 --------------------------------------------------------
 取得第一个node的指定CSS.
 
@@ -400,7 +400,7 @@ KNode.css(key)
 
 	var padding = K('#id').css('padding');
 
-KNode.css(key, val)
+css(key, val)
 --------------------------------------------------------
 设置所有node的CSS。
 
@@ -415,7 +415,7 @@ KNode.css(key, val)
 
 	K('#id div').css('border', '1px solid #000');
 
-KNode.css(obj)
+css(obj)
 --------------------------------------------------------
 设置所有node的多个CSS。
 
@@ -433,11 +433,11 @@ KNode.css(obj)
 		'padding' => '10px'
 	});
 
-.. index:: KNode.width, width
+.. index:: width
 
 .. _KNode.width:
 
-KNode.width()
+width()
 --------------------------------------------------------
 取得第一个node的宽度(px).
 
@@ -450,7 +450,7 @@ KNode.width()
 
 	var width = K('#id').width();
 
-KNode.width(val)
+width(val)
 --------------------------------------------------------
 设置所有node的宽度。
 
@@ -466,11 +466,11 @@ KNode.width(val)
 	K('#id div').width('200px');
 	K('#id div').width('100%');
 
-.. index:: KNode.height, height
+.. index:: height
 
 .. _KNode.height:
 
-KNode.height()
+height()
 --------------------------------------------------------
 取得第一个node的高度(px).
 
@@ -483,7 +483,7 @@ KNode.height()
 
 	var height = K('#id').height();
 
-KNode.height(val)
+height(val)
 --------------------------------------------------------
 设置所有node的高度。
 
@@ -499,11 +499,11 @@ KNode.height(val)
 	K('#id div').height('200px');
 	K('#id div').height('100%');
 
-.. index:: KNode.opacity, opacity
+.. index:: opacity
 
 .. _KNode.opacity:
 
-KNode.opacity(val)
+opacity(val)
 --------------------------------------------------------
 设置所有node的透明度.
 
@@ -517,11 +517,11 @@ KNode.opacity(val)
 
 	K('#id').opacity(0.5);
 
-.. index:: KNode.data, data
+.. index:: data
 
 .. _KNode.data:
 
-KNode.data(key)
+data(key)
 --------------------------------------------------------
 取得已绑定的自定义数据。
 
@@ -535,7 +535,7 @@ KNode.data(key)
 
 	var data = K('#id').data('data_id');
 
-KNode.data(key, val)
+data(key, val)
 --------------------------------------------------------
 绑定自定义数据。
 
@@ -550,11 +550,11 @@ KNode.data(key, val)
 
 	K('#id').data('abc', 1);
 
-.. index:: KNode.pos, pos
+.. index:: pos
 
 .. _KNode.pos:
 
-KNode.pos()
+pos()
 --------------------------------------------------------
 取得第一个node在整个document上的x坐标和y坐标。
 
@@ -569,11 +569,11 @@ KNode.pos()
 	var x = pos.x;
 	var y = pos.y;
 
-.. index:: KNode.clone, clone
+.. index:: clone
 
 .. _KNode.clone:
 
-KNode.clone(bool)
+clone(bool)
 --------------------------------------------------------
 复制第一个node，并返回第一个node的KNode。
 
@@ -587,11 +587,11 @@ KNode.clone(bool)
 
 	var newKNode = K('#id').clone();
 
-.. index:: KNode.append, append
+.. index:: append
 
 .. _KNode.append:
 
-KNode.append(expr)
+append(expr)
 --------------------------------------------------------
 element添加一个子节点。
 
@@ -606,11 +606,11 @@ element添加一个子节点。
 	K('#id').append(divNode);
 	K('#id').append('<div class="abc">def</div>');
 
-.. index:: KNode.before, before
+.. index:: before
 
 .. _KNode.before:
 
-KNode.before(expr)
+before(expr)
 --------------------------------------------------------
 node的前面添加一个节点。
 
@@ -625,11 +625,11 @@ node的前面添加一个节点。
 	K('#id').before(divNode);
 	K('#id').before('<div class="abc">def</div>');
 
-.. index:: KNode.after, after
+.. index:: after
 
 .. _KNode.after:
 
-KNode.after(expr)
+after(expr)
 --------------------------------------------------------
 node的后面添加一个节点。
 
@@ -644,11 +644,11 @@ node的后面添加一个节点。
 	K('#id').after(divNode);
 	K('#id').after('<div class="abc">def</div>');
 
-.. index:: KNode.replaceWith, replaceWith
+.. index:: replaceWith
 
 .. _KNode.replaceWith:
 
-KNode.replaceWith(expr)
+replaceWith(expr)
 --------------------------------------------------------
 替换node。
 
@@ -663,11 +663,11 @@ KNode.replaceWith(expr)
 	K('#id').replaceWith(divNode);
 	K('#id').replaceWith('<div class="abc">def</div>');
 
-.. index:: KNode.remove, remove
+.. index:: remove
 
 .. _KNode.remove:
 
-KNode.remove([keepChilds])
+remove([keepChilds])
 --------------------------------------------------------
 删除node。
 
@@ -681,11 +681,11 @@ KNode.remove([keepChilds])
 
 	K('#id').remove();
 
-.. index:: KNode.show, show
+.. index:: show
 
 .. _KNode.show:
 
-KNode.show([val])
+show([val])
 --------------------------------------------------------
 显示element。
 
@@ -699,11 +699,11 @@ KNode.show([val])
 
 	K('#id').show();
 
-.. index:: KNode.hide, hide
+.. index:: hide
 
 .. _KNode.hide:
 
-KNode.hide([val])
+hide()
 --------------------------------------------------------
 隐藏element。
 
@@ -716,11 +716,11 @@ KNode.hide([val])
 
 	K('#id').hide();
 
-.. index:: KNode.outer, outer
+.. index:: outer
 
 .. _KNode.outer:
 
-KNode.outer()
+outer()
 --------------------------------------------------------
 取得第一个element的outerHTML。
 
@@ -733,11 +733,11 @@ KNode.outer()
 
 	var html = K('#id').outer();
 
-.. index:: KNode.isSingle, isSingle
+.. index:: isSingle
 
 .. _KNode.isSingle:
 
-KNode.isSingle()
+isSingle()
 --------------------------------------------------------
 判断第一个element是否有闭合标签。
 
@@ -752,11 +752,11 @@ KNode.isSingle()
 		console.log('false');
 	}
 
-.. index:: KNode.isInline, isInline
+.. index:: isInline
 
 .. _KNode.isInline:
 
-KNode.isInline()
+isInline()
 --------------------------------------------------------
 判断第一个element是不是inline element。
 
@@ -771,11 +771,11 @@ KNode.isInline()
 		console.log('false');
 	}
 
-.. index:: KNode.isBlock, isBlock
+.. index:: isBlock
 
 .. _KNode.isBlock:
 
-KNode.isBlock()
+isBlock()
 --------------------------------------------------------
 判断第一个element是不是block element。
 
@@ -790,11 +790,11 @@ KNode.isBlock()
 		console.log('true');
 	}
 
-.. index:: KNode.contains, contains
+.. index:: contains
 
 .. _KNode.contains:
 
-KNode.contains(otherNode)
+contains(otherNode)
 --------------------------------------------------------
 判断第一个element是否包含指定node。
 
@@ -810,11 +810,11 @@ KNode.contains(otherNode)
 		console.log('true');
 	}
 
-.. index:: KNode.parent, parent
+.. index:: parent
 
 .. _KNode.parent:
 
-KNode.parent()
+parent()
 --------------------------------------------------------
 取得第一个node的父节点。
 
@@ -827,11 +827,11 @@ KNode.parent()
 
 	var parentNode = K('#id').parent();
 
-.. index:: KNode.children, children
+.. index:: children
 
 .. _KNode.children:
 
-KNode.children()
+children()
 --------------------------------------------------------
 取得第一个node的子节点列表。
 
@@ -844,11 +844,11 @@ KNode.children()
 
 	var nodeArray = K('#id').children();
 
-.. index:: KNode.first, first
+.. index:: first
 
 .. _KNode.first:
 
-KNode.first()
+first()
 --------------------------------------------------------
 取得第一个node的第一个子节点。
 
@@ -861,11 +861,11 @@ KNode.first()
 
 	var firstNode = K('#id').first();
 
-.. index:: KNode.last, last
+.. index:: last
 
 .. _KNode.last:
 
-KNode.last()
+last()
 --------------------------------------------------------
 取得第一个node的最后一个子节点。
 
@@ -878,11 +878,11 @@ KNode.last()
 
 	var lastNode = K('#id').last();
 
-.. index:: KNode.index, index
+.. index:: index
 
 .. _KNode.index:
 
-KNode.index()
+index()
 --------------------------------------------------------
 取得第一个node在父节点中的偏移位置。
 
@@ -895,11 +895,11 @@ KNode.index()
 
 	var index = K('div#id p').index();
 
-.. index:: KNode.prev, prev
+.. index:: prev
 
 .. _KNode.prev:
 
-KNode.prev()
+prev()
 --------------------------------------------------------
 取得第一个node的上一个节点。
 
@@ -912,11 +912,11 @@ KNode.prev()
 
 	var prevNode = K('#id').prev();
 
-.. index:: KNode.next, next
+.. index:: next
 
 .. _KNode.next:
 
-KNode.next()
+next()
 --------------------------------------------------------
 取得第一个node的下一个节点。
 
@@ -929,11 +929,11 @@ KNode.next()
 
 	var nextNode = K('#id').next();
 
-.. index:: KNode.scan, scan
+.. index:: scan
 
 .. _KNode.scan:
 
-KNode.scan(fn [, order])
+scan(fn [, order])
 --------------------------------------------------------
 遍历第一个node的所有子节点。
 

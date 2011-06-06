@@ -5,17 +5,17 @@ var cmds = {
 	bold : '',
 	italic : '',
 	underline : '',
-	strikeThrough : '',
-	foreColor : '#FF0000',
-	hiliteColor : '#DDDDDD',
-	fontSize : '32px',
-	fontFamily : 'Arial Black',
-	removeFormat : ''
+	strikethrough : '',
+	forecolor : '#FF0000',
+	hilitecolor : '#DDDDDD',
+	fontsize : '32px',
+	fontfamily : 'Arial Black',
+	removeformat : ''
 };
 K.each(cmds, function(key, val) {
 	var a = K('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
 		return function(e) {
-			edit.cmd.exec(key, val);
+			edit.cmd[key](val);
 			e.stop();
 		};
 	})(key, val));

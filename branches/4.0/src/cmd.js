@@ -1,26 +1,4 @@
 /**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name cmd.js
- * @fileOverview 编辑命令集合，可替代execCommand、queryCommandState、queryCommandValue
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "event.js"
-#using "html.js"
-#using "selector.js"
-#using "node.js"
-#using "range.js"
-*/
-
-/**
 DOM_VK_BACK_SPACE : 8
 DOM_VK_TAB : 9
 DOM_VK_RETURN : 13
@@ -50,8 +28,6 @@ DOM_VK_OPEN_BRACKET : 219 ([{)
 DOM_VK_BACK_SLASH : 220 (\|)
 DOM_VK_CLOSE_BRACKET : 221 (]})
 DOM_VK_QUOTE : 222 ('")
-
-详细请参考 event.js
 */
 //输入文字的键值
 var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
@@ -256,67 +232,13 @@ function _mergeAttrs(knode, attrs, styles) {
 		knode.css(key, val);
 	});
 }
-function _applyPreformat() {
-	var self = this, range = self.range,
-		sc = range.startContainer, so = range.startOffset,
-		format = self._preformat, remove = self._preremove;
-	if (format || remove) {
-		if (format) {
-			range.setStart(format.range.startContainer, format.range.startOffset);
-		} else {
-			range.setStart(remove.range.startContainer, remove.range.startOffset);
-		}
-		if (format) {
-			if (range.collapsed && so > 0) {
-				range.setStart(sc.childNodes[so - 1], format.textLength);
-			}
-			self.wrap(format.wrapper);
-		}
-		if (remove) {
-			if (range.collapsed) {
-				self._preformat = null;
-				self._preremove = null;
-				return;
-			}
-			self.remove(remove.map);
-		}
-		// find text node
-		sc = range.startContainer;
-		so = range.startOffset;
-		var node = _getInnerNode(K(sc.nodeType == 3 ? sc : sc.childNodes[so]))[0];
-		if (node.nodeType == 3) {
-			range.setEnd(node, node.nodeValue.length);
-		}
-		range.collapse(false);
-		self.select();
-		self._preformat = null;
-		self._preremove = null;
-	}
-}
-/**
-	@name KindEditor.cmd
-	@class KCmd类
-	@param {document|KRange} mixed document or KRange
-	@description
-	KCmd类，控制可视化编辑区域的HTML。
-	@example
-	K.cmd(document).bold();
-	K.cmd(document).wrap('<span style="color:red;"></span>');
-	K.cmd(document).remove({
-		span : '*',
-		div : 'class,border'
-	});
-*/
+
 function KCmd(range) {
 	var self = this, doc = range.doc;
-	//public
 	self.doc = doc;
 	self.win = _getWin(doc);
 	self.sel = _getSel(doc);
 	self.range = range;
-	//private
-	self._preformat = null;
-	self._preremove = null;
 }
 
 KCmd.prototype = {
@@ -352,30 +274,10 @@ KCmd.prototype = {
 		var self = this, doc = self.doc, range = self.range, wrapper,
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
-		//val为HTML
-		if (typeof val == 'string') {
-			wrapper = K(val, doc);
-		//val为KNode
-		} else {
-			wrapper = val;
-		}
-		//inline标签，collapsed = true
+		wrapper = K(val, doc);
+		//inline标签，collapsed=true
 		if (range.collapsed) {
-			//预先格式存在时，合并两个wrapper
-			if (self._preformat) {
-				wrapper = _mergeWrapper(self._preformat.wrapper, wrapper);
-			}
-			var textLength = 0;
-			if (sc.nodeType == 3) {
-				textLength = sc.nodeValue.length;
-			} else if (so > 0) {
-				textLength = sc.childNodes[so - 1].nodeValue.length;
-			}
-			self._preformat = {
-				wrapper : wrapper,
-				textLength : textLength,
-				range : range.cloneRange()
-			};
+			range.insertNode(wrapper[0]).selectNode(wrapper[0]);
 			return self;
 		}
 		//非inline标签
@@ -389,7 +291,7 @@ KCmd.prototype = {
 			range.insertNode(w.get()).selectNode(w.get());
 			return self;
 		}
-		//inline标签，collapsed = false
+		//inline标签，collapsed=false
 		//split and wrap a test node
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node;
@@ -511,10 +413,6 @@ KCmd.prototype = {
 		var self = this, doc = self.doc, range = self.range;
 		//inline标签，collapsed = true
 		if (range.collapsed) {
-			self._preremove = {
-				map : map,
-				range : range.cloneRange()
-			};
 			return self;
 		}
 		//inline标签，collapsed = false
@@ -567,14 +465,6 @@ KCmd.prototype = {
 		});
 		return self;
 	},
-	/**
-		根据规则取得range的共通祖先
-		example:
-		cmd.commonNode({
-			'*' : '.font-weight',
-			'strong,b' : '*'
-		});
-	*/
 	commonNode : function(map) {
 		var range = this.range,
 			ec = range.endContainer, eo = range.endOffset,
@@ -595,7 +485,7 @@ KCmd.prototype = {
 	},
 	//Reference: document.queryCommandState
 	state : function(key) {
-		var self = this, doc = self.doc, range = self.range, bool = false;
+		var self = this, doc = self.doc, bool = false;
 		try {
 			bool = doc.queryCommandState(key);
 		} catch (e) {}
@@ -901,15 +791,6 @@ function _cmd(mixed) {
 					cmd.range.selectNodeContents(doc.body).collapse(false);
 				}
 			}
-		});
-		//输入文字后根据预先格式进行格式化
-		cmd.oninput(function(e) {
-			_applyPreformat.call(cmd);
-		});
-		//光标移动时移除预先格式
-		cmd.oncursormove(function(e) {
-			cmd._preformat = null;
-			cmd._preremove = null;
 		});
 		//WEBKIT点击图片选中
 		if (_WEBKIT) {

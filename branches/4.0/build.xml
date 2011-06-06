@@ -36,7 +36,7 @@
 			<fileset file="${src}/colorpicker.js"/>
 			<fileset file="${src}/dialog.js"/>
 			<fileset file="${src}/tabs.js"/>
-			<fileset file="${src}/net.js"/>
+			<fileset file="${src}/ajax.js"/>
 			<fileset file="${src}/main.js"/>
 			<fileset file="${src}/footer.js"/>
 			<fileset file="${plugins}/core/core.js"/>
@@ -102,12 +102,6 @@
 	<target name="check" depends="merge">
 		<exec executable="java">
 			<arg line="-jar lib/jslint/js.jar lib/jslint/jslint-check.js"/>
-		</exec>
-	</target>
-
-	<target name="docs">
-		<exec executable="java">
-			<arg line="-jar lib/jsdoc-toolkit/jsrun.jar lib/jsdoc-toolkit/app/run.js -n -e=UTF-8 -c=conf/jsdoc.conf"/>
 		</exec>
 	</target>
 

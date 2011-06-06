@@ -4,11 +4,11 @@
 *
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
-* @licence LGPL(http://www.kindsoft.net/lgpl_license.html)
-* @version 4.0 (2011-05-21)
+* @licence http://www.kindsoft.net/license.php
+* @version 4.0 (2011-06-06)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-05-21)',
+var _VERSION = '4.0 (2011-06-06)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -1012,7 +1012,7 @@ function _query(expr, root) {
 K.query = _query;
 K.queryAll = _queryAll;
 function _get(val) {
-	return val.get ? val.get() : val;
+	return K(val)[0];
 }
 function _toCamel(str) {
 	var arr = str.split('-');
@@ -1321,51 +1321,47 @@ KNode.prototype = {
 		}
 		return new KNode([this[0].cloneNode(bool)]);
 	},
-	append : function(val) {
-		var self = this;
-		if (self.length < 1) {
-			return self;
-		}
-		self[0].appendChild(_get(val));
-		return self;
+	append : function(expr) {
+		this.each(function() {
+			if (this.appendChild) {
+				this.appendChild(_get(expr));
+			}
+		});
+		return this;
 	},
-	before : function(val) {
-		var self = this;
-		if (self.length < 1) {
-			return self;
-		}
-		self[0].parentNode.insertBefore(_get(val), self[0]);
-		return self;
+	before : function(expr) {
+		this.each(function() {
+			this.parentNode.insertBefore(_get(expr), this);
+		});
+		return this;
 	},
-	after : function(val) {
-		var self = this;
-		if (self.length < 1) {
-			return self;
-		}
-		if (self[0].nextSibling) {
-			self[0].parentNode.insertBefore(_get(val), self[0].nextSibling);
-		} else {
-			self[0].parentNode.appendChild(_get(val));
-		}
-		return self;
+	after : function(expr) {
+		this.each(function() {
+			if (this.nextSibling) {
+				this.parentNode.insertBefore(_get(expr), this.nextSibling);
+			} else {
+				this.parentNode.appendChild(_get(expr));
+			}
+		});
+		return this;
 	},
-	replaceWith : function(val) {
-		var self = this, node = _get(val);
-		if (self.length < 1) {
-			return self;
-		}
-		_unbind(self[0]);
-		self[0].parentNode.replaceChild(node, self[0]);
-		self[0] = node;
-		return self;
+	replaceWith : function(expr) {
+		var nodes = [];
+		this.each(function(i, node) {
+			_unbind(node);
+			var newNode = _get(expr);
+			node.parentNode.replaceChild(newNode, node);
+			nodes.push(newNode);
+		});
+		return K(nodes);
 	},
-	remove : function( keepChilds ) {
+	remove : function(keepChilds) {
 		var self = this;
 		self.each(function(i, node) {
 			_unbind(node);
 			if (keepChilds) {
-				new KNode(node.childNodes).each(function(i, child) {
-					new KNode([node]).after(child);
+				new KNode(node.childNodes).each(function() {
+					new KNode([node]).after(this);
 				});
 			} else if (node.hasChildNodes()) {
 				node.innerHTML = '';

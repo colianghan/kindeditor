@@ -375,7 +375,7 @@ KRange.prototype = {
 	},
 	compareBoundaryPoints : function(how, range) {
 		var rangeA = this.get(), rangeB = range.get();
-		if (!this.doc.createRange) {
+		if (_IE) {
 			var arr = {};
 			arr[_START_TO_START] = 'StartToStart';
 			arr[_START_TO_END] = 'EndToStart';
@@ -434,7 +434,7 @@ KRange.prototype = {
 	toString : function() {
 		//TODO
 		var rng = this.get(),
-			str = this.doc.createRange ? rng.toString() : rng.text;
+			str = _IE ? rng.text : rng.toString();
 		return str.replace(/\r\n|\n|\r/g, '');
 	},
 	cloneContents : function() {
@@ -519,7 +519,7 @@ KRange.prototype = {
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
 		// not IE
-		if (doc.createRange) {
+		if (!_IE) {
 			rng = doc.createRange();
 			try {
 				rng.setStart(sc, so);

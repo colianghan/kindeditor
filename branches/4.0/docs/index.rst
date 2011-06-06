@@ -2,7 +2,7 @@ KindEditor 4.x 文档
 ======================================
 
 .. toctree::
-	:maxdepth: 2
+	:maxdepth: 1
 
 	intro
 	core
@@ -10,5 +10,7 @@ KindEditor 4.x 文档
 	selector
 	node
 	range
+	cmd
+	ajax
 
 * :ref:`search`

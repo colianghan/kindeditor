@@ -1,12 +1,12 @@
-范围API
+Range API
 ========================================================
 
 .. contents::
 	:depth: 2
 
-.. index:: K.range, KRange
+.. index:: K.range
 
-.. _KRange:
+.. _K.range:
 
 K.range(mixed)
 --------------------------------------------------------
@@ -60,51 +60,51 @@ K.END_TO_START
 --------------------------------------------------------
 调用 :ref:`KRange.compareBoundaryPoints` 时使用。
 
-.. index:: KRange.startContainer, startContainer
+.. index:: startContainer
 
 .. _KRange.startContainer:
 
-KRange.startContainer
+startContainer
 --------------------------------------------------------
 range的开始节点。
 
-.. index:: KRange.startOffset, startOffset
+.. index:: startOffset
 
 .. _KRange.startOffset:
 
-KRange.startOffset
+startOffset
 --------------------------------------------------------
 range的开始节点位置。
 
-.. index:: KRange.endContainer, endContainer
+.. index:: endContainer
 
 .. _KRange.endContainer:
 
-KRange.endContainer
+endContainer
 --------------------------------------------------------
 range的结束节点。
 
-.. index:: KRange.endOffset, endOffset
+.. index:: endOffset
 
 .. _KRange.endOffset:
 
-KRange.endOffset
+endOffset
 --------------------------------------------------------
 range的结束节点的位置。
 
-.. index:: KRange.collapsed, collapsed
+.. index:: collapsed
 
 .. _KRange.collapsed:
 
-KRange.collapsed
+collapsed
 --------------------------------------------------------
 range的折叠状态，当range处于折叠状态时true，否则false。。
 
-.. index:: KRange.commonAncestor, commonAncestor
+.. index:: commonAncestor
 
 .. _KRange.commonAncestor:
 
-KRange.commonAncestor()
+commonAncestor()
 --------------------------------------------------------
 取得KRange的共同祖先。
 
@@ -118,11 +118,11 @@ KRange.commonAncestor()
 	var range = K.range(document);
 	var element = range.commonAncestor();
 
-.. index:: KRange.setStart, setStart
+.. index:: setStart
 
 .. _KRange.setStart:
 
-KRange.setStart(node , offset)
+setStart(node , offset)
 --------------------------------------------------------
 设置KRange的开始节点和位置。
 
@@ -138,11 +138,11 @@ KRange.setStart(node , offset)
 	var range = K.range(document);
 	range.setStart(document.body, 1);
 
-.. index:: KRange.setEnd, setEnd
+.. index:: setEnd
 
 .. _KRange.setEnd:
 
-KRange.setEnd(node , offset)
+setEnd(node , offset)
 --------------------------------------------------------
 设置KRange的结束节点和位置。
 
@@ -158,11 +158,11 @@ KRange.setEnd(node , offset)
 	var range = K.range(document);
 	range.setEnd(document.body, 2);
 
-.. index:: KRange.setStartBefore, setStartBefore
+.. index:: setStartBefore
 
 .. _KRange.setStartBefore:
 
-KRange.setStartBefore(node)
+setStartBefore(node)
 --------------------------------------------------------
 将Node的开始位置设置成Range的开始位置。
 
@@ -177,11 +177,11 @@ KRange.setStartBefore(node)
 	var range = K.range(document);
 	range.setStartBefore(K('div#id')[0]);
 
-.. index:: KRange.setStartAfter, setStartAfter
+.. index:: setStartAfter
 
 .. _KRange.setStartAfter:
 
-KRange.setStartAfter(node)
+setStartAfter(node)
 --------------------------------------------------------
 将Node的结束位置设置成Range的开始位置。
 
@@ -196,11 +196,11 @@ KRange.setStartAfter(node)
 	var range = K.range(document);
 	range.setStartAfter(K('div#id')[0]);
 
-.. index:: KRange.setEndBefore, setEndBefore
+.. index:: setEndBefore
 
 .. _KRange.setEndBefore:
 
-KRange.setEndBefore(node)
+setEndBefore(node)
 --------------------------------------------------------
 将Node的开始位置设置成Range的结束位置。
 
@@ -215,11 +215,11 @@ KRange.setEndBefore(node)
 	var range = K.range(document);
 	range.setEndBefore(K('div#id')[0]);
 
-.. index:: KRange.setEndAfter, setEndAfter
+.. index:: setEndAfter
 
 .. _KRange.setEndAfter:
 
-KRange.setEndAfter(node)
+setEndAfter(node)
 --------------------------------------------------------
 将Node的结束位置设置成Range的结束位置。
 
@@ -234,11 +234,11 @@ KRange.setEndAfter(node)
 	var range = K.range(document);
 	range.setEndAfter(K('div#id')[0]);
 
-.. index:: KRange.selectNode, selectNode
+.. index:: selectNode
 
 .. _KRange.selectNode:
 
-KRange.selectNode(node)
+selectNode(node)
 --------------------------------------------------------
 将Node的开始位置和结束位置分别设置成Range的开始位置和结束位置。
 
@@ -253,11 +253,11 @@ KRange.selectNode(node)
 	var range = K.range(document);
 	range.selectNode(K('div#id')[0]);
 
-.. index:: KRange.selectNodeContents, selectNodeContents
+.. index:: selectNodeContents
 
 .. _KRange.selectNodeContents:
 
-KRange.selectNodeContents(node)
+selectNodeContents(node)
 --------------------------------------------------------
 将Node的子节点的开始位置和结束位置分别设置成Range的开始位置和结束位置。对于文本节点和无结束符的元素，相当于使用selectNode。
 
@@ -272,11 +272,11 @@ KRange.selectNodeContents(node)
 	var range = K.range(document);
 	range.selectNodeContents(K('div#id')[0]);
 
-.. index:: KRange.collapse, collapse
+.. index:: collapse
 
 .. _KRange.collapse:
 
-KRange.collapse(toStart)
+collapse(toStart)
 --------------------------------------------------------
 折叠KRange，当toStart为true时向前折叠，false时向后折叠。
 
@@ -292,11 +292,11 @@ KRange.collapse(toStart)
 	range.selectNodeContents(K('div#id')[0]);
 	range.collapse(true);
 
-.. index:: KRange.compareBoundaryPoints, compareBoundaryPoints
+.. index:: compareBoundaryPoints
 
 .. _KRange.compareBoundaryPoints:
 
-KRange.compareBoundaryPoints(how , range)
+compareBoundaryPoints(how , range)
 --------------------------------------------------------
 根据how参数比较2个range的边界。
 
@@ -322,11 +322,11 @@ how参数的方向规则：
 	range2.selectNode(K('div#id p')[0]);
 	var cmp = range1.compareBoundaryPoints(K.START_TO_START, range2.get());
 
-.. index:: KRange.cloneRange, cloneRange
+.. index:: cloneRange
 
 .. _KRange.cloneRange:
 
-KRange.cloneRange()
+cloneRange()
 --------------------------------------------------------
 复制KRange。
 
@@ -341,11 +341,11 @@ KRange.cloneRange()
 	range.selectNodeContents(K('div#id')[0]);
 	var newRange = range.cloneRange();
 
-.. index:: KRange.toString, toString
+.. index:: toString
 
 .. _KRange.toString:
 
-KRange.toString()
+toString()
 --------------------------------------------------------
 返回KRange的文本内容。
 
@@ -360,11 +360,11 @@ KRange.toString()
 	range.selectNodeContents(K('div#id')[0]);
 	var text = range.toString();
 
-.. index:: KRange.cloneContents, cloneContents
+.. index:: cloneContents
 
 .. _KRange.cloneContents:
 
-KRange.cloneContents()
+cloneContents()
 --------------------------------------------------------
 复制并返回KRange的内容。
 
@@ -379,11 +379,11 @@ KRange.cloneContents()
 	range.selectNodeContents(K('div#id')[0]);
 	var fragment = range.cloneContents();
 
-.. index:: KRange.deleteContents, deleteContents
+.. index:: deleteContents
 
 .. _KRange.deleteContents:
 
-KRange.deleteContents()
+deleteContents()
 --------------------------------------------------------
 删除KRange的内容。
 
@@ -398,11 +398,11 @@ KRange.deleteContents()
 	range.selectNodeContents(K('div#id')[0]);
 	range.deleteContents();
 
-.. index:: KRange.extractContents, extractContents
+.. index:: extractContents
 
 .. _KRange.extractContents:
 
-KRange.extractContents()
+extractContents()
 --------------------------------------------------------
 删除并返回KRange的内容。
 
@@ -417,11 +417,11 @@ KRange.extractContents()
 	range.selectNodeContents(K('div#id')[0]);
 	var fragment = range.extractContents();
 
-.. index:: KRange.insertNode, insertNode
+.. index:: insertNode
 
 .. _KRange.insertNode:
 
-KRange.insertNode(node)
+insertNode(node)
 --------------------------------------------------------
 将指定Node插入到KRange的开始位置。
 
@@ -437,11 +437,11 @@ KRange.insertNode(node)
 	range.selectNodeContents(K('#id1')[0]);
 	range.insertNode(K('#id2')[0]);
 
-.. index:: KRange.surroundContents, surroundContents
+.. index:: surroundContents
 
 .. _KRange.surroundContents:
 
-KRange.surroundContents(node)
+surroundContents(node)
 --------------------------------------------------------
 用指定Node围住KRange的内容。
 
@@ -457,11 +457,11 @@ KRange.surroundContents(node)
 	range.selectNodeContents(K('#id1')[0]);
 	range.surroundContents(K('#id2')[0]);
 
-.. index:: KRange.isControl, isControl
+.. index:: isControl
 
 .. _KRange.isControl:
 
-KRange.isControl()
+isControl()
 --------------------------------------------------------
 判断当前KRange是否可选择的Contral Range。
 
@@ -476,11 +476,11 @@ KRange.isControl()
 	range.selectNodeContents(K('#id1')[0]);
 	var bool = range.isControl();
 
-.. index:: KRange.get, get
+.. index:: get
 
 .. _KRange.get:
 
-KRange.get([hasControlRange])
+get([hasControlRange])
 --------------------------------------------------------
 将KRange转换成原生Range并返回。
 
@@ -496,11 +496,11 @@ KRange.get([hasControlRange])
 	range.selectNodeContents(K('#id1')[0]);
 	var originalRange = range.get();
 
-.. index:: KRange.html, html
+.. index:: html
 
 .. _KRange.html:
 
-KRange.html()
+html()
 --------------------------------------------------------
 返回KRange内容的HTML。
 
