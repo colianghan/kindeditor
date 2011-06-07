@@ -248,6 +248,9 @@ function _formatHtml(html, htmlTags, urlType) {
 		html = html.replace(/<p><br\s+\/>\n<\/p>/ig, '<p>&nbsp;</p>');
 		html = html.replace(/<br\s+\/>\n<\/p>/ig, '</p>');
 	}
+	if (_WEBKIT) {
+		html = html.replace(/\u200B/g, '');
+	}
 	return _trim(html);
 }
 

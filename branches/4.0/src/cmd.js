@@ -246,20 +246,26 @@ KCmd.prototype = {
 		var self = this, sel = self.sel, range = self.range.cloneRange(),
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset,
-			doc = sc.ownerDocument || sc, win = _getWin(doc), rng;
-		//case 1: tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
-		if (_IE && sc.nodeType == 1 && range.collapsed) {
-			var empty = K('<span>&nbsp;</span>', doc);
-			range.insertNode(empty.get());
-			rng = doc.body.createTextRange();
-			rng.moveToElementText(empty.get());
-			rng.collapse(false);
-			rng.select();
-			empty.remove();
-			win.focus();
-			return self;
+			doc = sc.ownerDocument || sc, win = self.win, rng;
+		//tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
+		if (sc.nodeType == 1 && range.collapsed) {
+			if (_IE) {
+				var empty = K('<span>&nbsp;</span>', doc);
+				range.insertNode(empty.get());
+				rng = doc.body.createTextRange();
+				rng.moveToElementText(empty.get());
+				rng.collapse(false);
+				rng.select();
+				empty.remove();
+				win.focus();
+				return self;
+			}
+			if (_WEBKIT) {
+				var empty = doc.createTextNode('\u200B');
+				range.insertNode(empty);
+			}
 		}
-		//case 2: other case
+		//other case
 		rng = range.get(true);
 		if (_IE) {
 			rng.select();
@@ -277,7 +283,7 @@ KCmd.prototype = {
 		wrapper = K(val, doc);
 		//inline标签，collapsed=true
 		if (range.collapsed) {
-			range.insertNode(wrapper[0]).selectNode(wrapper[0]);
+			range.insertNode(wrapper[0]).selectNodeContents(wrapper[0]);
 			return self;
 		}
 		//非inline标签
@@ -714,7 +720,6 @@ KCmd.prototype = {
 		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 				fn(e);
-				e.stop();
 			}
 		});
 		return self;
@@ -725,7 +730,6 @@ KCmd.prototype = {
 		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
 				fn(e);
-				e.stop();
 			}
 		});
 		K(doc).mouseup(fn);
@@ -737,7 +741,6 @@ KCmd.prototype = {
 		K(doc).keyup(function(e) {
 			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
 				fn(e);
-				e.stop();
 			}
 		});
 		K(doc).mouseup(fn).contextmenu(fn);
@@ -782,7 +785,7 @@ function _cmd(mixed) {
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		//add events
-		//重新设置selection
+		//reset selection
 		cmd.onchange(function(e) {
 			var rng = _getRng(doc);
 			if (rng) {
