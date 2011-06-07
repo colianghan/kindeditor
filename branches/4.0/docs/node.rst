@@ -153,6 +153,19 @@ hasAttr(key)
 
 .. _KNode.attr:
 
+attr()
+--------------------------------------------------------
+取得第一个node的所有属性.
+
+* 参数: 无
+* 返回: object
+
+示例:
+
+.. sourcecode:: js
+
+	var attrList = K('#id').attr(); //return key-value data
+
 attr(key)
 --------------------------------------------------------
 取得第一个node的指定属性.
