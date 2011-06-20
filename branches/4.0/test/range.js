@@ -480,7 +480,7 @@ return;
 
 test('range.extractContents', function() {
 	var p = K.query('#test-data-01 p'),
-		cloneP, strong, range, frag;
+		cloneP, strong, range, frag, div;
 	//1
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -582,6 +582,36 @@ test('range.extractContents', function() {
 	frag = range.extractContents();
 	same(K(frag).outer(), 'abcd<strong>e</strong>');
 	document.body.removeChild(cloneP);
+	//11
+	div = K('<div><strong>e</strong><strong>fg</strong></div>');
+	document.body.appendChild(div[0]);
+	range = K.range(document);
+	range.setStart(div[0], 1);
+	range.setEnd(div.last().first()[0], 1);
+	frag = range.extractContents();
+	same(div.outer().toLowerCase(), '<div><strong>e</strong><strong>g</strong></div>');
+	same(K(frag).outer().toLowerCase(), '<strong>f</strong>');
+	document.body.removeChild(div[0]);
+	//12
+	div = K('<div>abcd<strong></strong><strong>efg</strong>hijk</div>');
+	document.body.appendChild(div[0]);
+	range = K.range(document);
+	range.setStart(div[0], 2);
+	range.setEnd(div.children()[2][0], 1);
+	frag = range.extractContents();
+	same(div.outer().toLowerCase(), '<div>abcd<strong></strong><strong></strong>hijk</div>');
+	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>');
+	document.body.removeChild(div[0]);
+	//13
+	div = K('<div>abcd<strong><strong></strong></strong><strong><strong>efg</strong></strong>hijk</div>');
+	document.body.appendChild(div[0]);
+	range = K.range(document);
+	range.setStart(div[0], 2);
+	range.setEnd(div.children()[2].first()[0], 1);
+	frag = range.extractContents();
+	same(div.outer().toLowerCase(), '<div>abcd<strong><strong></strong></strong><strong><strong></strong></strong>hijk</div>');
+	same(K(frag).outer().toLowerCase(), '<strong><strong>efg</strong></strong>');
+	document.body.removeChild(div[0]);
 });
 
 test('range.deleteContents', function() {

@@ -44,6 +44,7 @@ function _copyAndDelete(isCopy, isDelete) {
 		}
 		return centerNode;
 	}
+	var start = incStart = incEnd = end = false;
 	function extractNodes(parent, frag) {
 		var textNode;
 		if (parent.nodeType == 3) {
@@ -53,8 +54,7 @@ function _copyAndDelete(isCopy, isDelete) {
 			}
 			return false;
 		}
-		var node = parent.firstChild, testRange, nextNode,
-			start = false, incStart = false, incEnd = false, end = false;
+		var node = parent.firstChild, testRange, nextNode;
 		while (node) {
 			testRange = new KRange(doc);
 			testRange.selectNode(node);
@@ -73,7 +73,6 @@ function _copyAndDelete(isCopy, isDelete) {
 			if (end) {
 				return false;
 			}
-			//下一个节点保存在nextNode，因为下面可能会分割textNode
 			nextNode = node.nextSibling;
 			if (start) {
 				if (node.nodeType == 1) {
@@ -95,9 +94,7 @@ function _copyAndDelete(isCopy, isDelete) {
 						}
 					}
 				} else if (node.nodeType == 3) {
-					if (node == sc && node == ec) {
-						textNode = splitTextNode(node, so, eo);
-					} else if (node == sc) {
+					if (node == sc) {
 						textNode = splitTextNode(node, so, node.nodeValue.length);
 					} else if (node == ec) {
 						textNode = splitTextNode(node, 0, eo);

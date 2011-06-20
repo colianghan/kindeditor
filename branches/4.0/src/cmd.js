@@ -196,8 +196,7 @@ function _wrapNode(knode, wrapper) {
 	//node为text node时
 	if (knode.type == 3) {
 		_getInnerNode(wrapper).append(knode.clone(false));
-		knode.before(wrapper);
-		knode.remove();
+		knode.replaceWith(wrapper);
 		return wrapper;
 	}
 	//node为element时
@@ -217,8 +216,7 @@ function _wrapNode(knode, wrapper) {
 	if (frag.firstChild) {
 		_getInnerNode(wrapper).append(frag);
 	}
-	nodeWrapper.before(wrapper);
-	nodeWrapper.remove();
+	nodeWrapper.replaceWith(wrapper);
 	return wrapper;
 }
 //merge attributes and styles
@@ -247,7 +245,7 @@ KCmd.prototype = {
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset,
 			doc = sc.ownerDocument || sc, win = self.win, rng;
-		//tag内部无内容时选中tag内部，比如：<tagName>[]</tagName>
+		//tag内部无内容时选中tag内部，<tagName>[]</tagName>
 		if (sc.nodeType == 1 && range.collapsed) {
 			if (_IE) {
 				var empty = K('<span>&nbsp;</span>', doc);
@@ -294,7 +292,7 @@ KCmd.prototype = {
 				child = child.first();
 			}
 			child.append(range.extractContents());
-			range.insertNode(w.get()).selectNode(w.get());
+			range.insertNode(w[0]).selectNode(w[0]);
 			return self;
 		}
 		//inline标签，collapsed=false
@@ -310,27 +308,20 @@ KCmd.prototype = {
 			if (endOffset < length) {
 				center.splitText(endOffset - startOffset);
 			}
-			var parent, knode = K(center),
-				isStart = sc == node, isEnd = ec == node;
-			//node为唯一的子节点时重新设置node
+			var parent, knode = K(center);
+			//textNode为唯一的子节点时重新设置node
 			while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
-				if (!isStart) {
-					isStart = sc == parent.get();
-				}
-				if (!isEnd) {
-					isEnd = ec == parent.get();
-				}
 				knode = parent;
 			}
-			var el = _wrapNode(knode, wrapper).get();
-			if (isStart) {
+			var el = _wrapNode(knode, wrapper)[0];
+			if (sc == node) {
 				range.setStartBefore(el);
 			}
-			if (isEnd) {
+			if (ec == node) {
 				range.setEndAfter(el);
 			}
 		}
-		//main function
+		var start = incStart = incEnd = end = false;
 		function wrapRange(parent) {
 			var node = parent.firstChild;
 			if (parent.nodeType == 3) {
@@ -341,19 +332,29 @@ KCmd.prototype = {
 			while (node) {
 				testRange = _range(doc);
 				testRange.selectNode(node);
-				if (testRange.compareBoundaryPoints(_END_TO_START, range) >= 0) {
+				if (!start) {
+					start = testRange.compareBoundaryPoints(_START_TO_END, range) > 0;
+				}
+				if (start && !incStart) {
+					incStart = testRange.compareBoundaryPoints(_START_TO_START, range) >= 0;
+				}
+				if (incStart && !incEnd) {
+					incEnd = testRange.compareBoundaryPoints(_END_TO_END, range) > 0;
+				}
+				if (incEnd && !end) {
+					end = testRange.compareBoundaryPoints(_END_TO_START, range) >= 0;
+				}
+				if (end) {
 					return false;
 				}
 				nextNode = node.nextSibling;
-				if (testRange.compareBoundaryPoints(_START_TO_END, range) > 0) {
+				if (start) {
 					if (node.nodeType == 1) {
 						if (wrapRange(node) === false) {
 							return false;
 						}
 					} else if (node.nodeType == 3) {
-						if (node == sc && node == ec) {
-							wrapTextNode(node, so, eo);
-						} else if (node == sc) {
+						if (node == sc) {
 							wrapTextNode(node, so, node.nodeValue.length);
 						} else if (node == ec) {
 							wrapTextNode(node, 0, eo);
@@ -369,9 +370,7 @@ KCmd.prototype = {
 		return self;
 	},
 	split : function(isStart, map) {
-		var range = this.range, doc = range.doc, 
-			sc = range.startContainer, so = range.startOffset,
-			ec = range.endContainer, eo = range.endOffset;
+		var range = this.range, doc = range.doc;
 		//get parent node
 		var tempRange = range.cloneRange().collapse(isStart);
 		var node = tempRange.startContainer, pos = tempRange.startOffset,
@@ -390,8 +389,8 @@ KCmd.prototype = {
 		}
 		//split parent node
 		if (needSplit) {
-			var mark = doc.createElement('span');
-			range.cloneRange().collapse(!isStart).insertNode(mark);
+			var dummy = doc.createElement('span');
+			range.cloneRange().collapse(!isStart).insertNode(dummy);
 			if (isStart) {
 				tempRange.setStartBefore(parent.firstChild).setEnd(node, pos);
 			} else {
@@ -401,30 +400,42 @@ KCmd.prototype = {
 				first = frag.firstChild, last = frag.lastChild;
 			if (isStart) {
 				tempRange.insertNode(frag);
-				range.setStartAfter(last).setEndBefore(mark);
+				range.setStartAfter(last).setEndBefore(dummy);
 			} else {
 				parent.appendChild(frag);
-				range.setStartBefore(mark).setEndBefore(first);
+				range.setStartBefore(dummy).setEndBefore(first);
 			}
-			var markParent = mark.parentNode;
-			markParent.removeChild(mark);
-			mark = null;
-			if (!isStart && markParent === range.endContainer) {
-				range.setEnd(range.endContainer, range.endOffset - 1);
+			//调整endOffset
+			var dummyParent = dummy.parentNode;
+			if (dummyParent == range.endContainer) {
+				var prev = K(dummy).prev(), next = K(dummy).next();
+				if (prev && next && prev.type == 3 && next.type == 3) {
+					//dummy元素的左右都是textNode，<strong>f<span></span>g</strong>
+					range.setEnd(prev[0], prev[0].nodeValue.length);
+				} else if (!isStart) {
+					range.setEnd(range.endContainer, range.endOffset - 1);
+				}
 			}
+			dummyParent.removeChild(dummy);
 		}
 		return this;
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
-		//inline标签，collapsed = true
+		//collapsed = true时分割后
 		if (range.collapsed) {
+			self.split(true, map);
+			range.collapse(true);
 			return self;
 		}
 		//inline标签，collapsed = false
 		//split parents
 		self.split(true, map);
 		self.split(false, map);
+		//console.log(range.startContainer,range.startOffset);
+		//console.log(range.endContainer.innerHTML,range.endOffset);
+		//console.log(range.commonAncestor().innerHTML);
+		//return;
 		//grep nodes which format will be removed
 		var nodeList = [], testRange, start = false;
 		K(range.commonAncestor()).scan(function(node) {
