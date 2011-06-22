@@ -4,27 +4,76 @@ var _START_TO_START = 0,
 	_END_TO_END = 2,
 	_END_TO_START = 3;
 
-function _updateCollapsed() {
-	this.collapsed = (this.startContainer === this.endContainer && this.startOffset === this.endOffset);
+function _updateCollapsed(range) {
+	range.collapsed = (range.startContainer === range.endContainer && range.startOffset === range.endOffset);
+	return range;
 }
-
-/**
-	cloneContents: _copyAndDelete.call(this, true, false)
-	extractContents: _copyAndDelete.call(this, true, true)
-	deleteContents: _copyAndDelete.call(this, false, true)
-*/
-function _copyAndDelete(isCopy, isDelete) {
-	var self = this, doc = self.doc,
-		sc = self.startContainer, so = self.startOffset,
-		ec = self.endContainer, eo = self.endOffset,
-		nodeList = [], selfRange = self;
-	if (isDelete) {
-		selfRange = self.cloneRange();
-		if (sc.nodeType == 3 && so === 0) {
-			self.setStart(sc.parentNode, 0);
+//<p><strong><span>123</span>|abc</strong>def</p>
+//postion(strong, 1) -> positon("abc", 0)
+//or
+//<p><strong>abc|<span>123</span></strong>def</p>
+//postion(strong, 1) -> positon("abc", 3)
+function _downRange(range) {
+	function downPos(node, pos, isStart) {
+		if (node.nodeType == 1) {
+			var children = K(node).children();
+			if (children.length == 0) {
+				return;
+			}
+			var left = pos > 0 ? children[pos - 1][0] : null,
+				right = pos < children.length ? children[pos][0] : null,
+				child = left || right;
+			if (child.nodeType == 3) {
+				offset = left ? child.nodeValue.length : 0;
+				if (isStart) {
+					range.setStart(child, offset);
+				} else {
+					range.setEnd(child, offset);
+				}
+			}
 		}
-		self.collapse(true);
 	}
+	downPos(range.startContainer, range.startOffset, true);
+	downPos(range.endContainer, range.endOffset, false);
+}
+//<p><strong><span>123</span>|abc</strong>def</p>
+//positon("abc", 0) -> postion(strong, 1)
+//or
+//<p><strong>abc|<span>123</span></strong>def</p>
+//positon("abc", 3) -> postion(strong, 1)
+function _upRange(range) {
+	function upPos(node, pos, isStart) {
+		if (node.nodeType == 3) {
+			if (pos == 0) {
+				if (isStart) {
+					range.setStartBefore(node);
+				} else {
+					range.setEndBefore(node);
+				}
+			} else if (pos == node.nodeValue.length) {
+				if (isStart) {
+					range.setStartAfter(node);
+				} else {
+					range.setEndAfter(node);
+				}
+			}
+		}
+	}
+	upPos(range.startContainer, range.startOffset, true);
+	upPos(range.endContainer, range.endOffset, false);
+}
+/**
+	cloneContents: _copyAndDelete(this, true, false)
+	extractContents: _copyAndDelete(this, true, true)
+	deleteContents: _copyAndDelete(this, false, true)
+*/
+function _copyAndDelete(range, isCopy, isDelete) {
+	var doc = range.doc, nodeList = [];
+
+	var copyRange = range.cloneRange();
+	_upRange(range);
+	_downRange(copyRange);
+
 	function splitTextNode(node, startOffset, endOffset) {
 		var length = node.nodeValue.length, centerNode;
 		if (isCopy) {
@@ -36,19 +85,21 @@ function _copyAndDelete(isCopy, isDelete) {
 			var center = node;
 			if (startOffset > 0) {
 				center = node.splitText(startOffset);
+				range.setStart(node, startOffset);
 			}
 			if (endOffset < length) {
-				center.splitText(endOffset - startOffset);
+				var right = center.splitText(endOffset - startOffset);
+				range.setEnd(right, 0);
 			}
 			nodeList.push(center);
 		}
 		return centerNode;
 	}
-	var start = incStart = incEnd = end = false;
+	var start = incStart = incEnd = end = -1;
 	function extractNodes(parent, frag) {
 		var textNode;
 		if (parent.nodeType == 3) {
-			textNode = splitTextNode(parent, so, eo);
+			textNode = splitTextNode(parent, range.startOffset, range.endOffset);
 			if (isCopy) {
 				frag.appendChild(textNode);
 			}
@@ -58,25 +109,25 @@ function _copyAndDelete(isCopy, isDelete) {
 		while (node) {
 			testRange = new KRange(doc);
 			testRange.selectNode(node);
-			if (!start) {
-				start = testRange.compareBoundaryPoints(_START_TO_END, selfRange) > 0;
+			if (start <= 0) {
+				start = testRange.compareBoundaryPoints(_START_TO_END, range);
 			}
-			if (start && !incStart) {
-				incStart = testRange.compareBoundaryPoints(_START_TO_START, selfRange) >= 0;
+			if (start >= 0 && incStart <= 0) {
+				incStart = testRange.compareBoundaryPoints(_START_TO_START, range);
 			}
-			if (incStart && !incEnd) {
-				incEnd = testRange.compareBoundaryPoints(_END_TO_END, selfRange) > 0;
+			if (incStart >= 0 && incEnd <= 0) {
+				incEnd = testRange.compareBoundaryPoints(_END_TO_END, range);
 			}
-			if (incEnd && !end) {
-				end = testRange.compareBoundaryPoints(_END_TO_START, selfRange) >= 0;
+			if (incEnd >= 0 && end <= 0) {
+				end = testRange.compareBoundaryPoints(_END_TO_START, range);
 			}
-			if (end) {
+			if (end >= 0) {
 				return false;
 			}
 			nextNode = node.nextSibling;
-			if (start) {
+			if (start > 0) {
 				if (node.nodeType == 1) {
-					if (incStart && !incEnd) {
+					if (incStart >= 0 && incEnd <= 0) {
 						if (isCopy) {
 							frag.appendChild(node.cloneNode(true));
 						}
@@ -94,10 +145,10 @@ function _copyAndDelete(isCopy, isDelete) {
 						}
 					}
 				} else if (node.nodeType == 3) {
-					if (node == sc) {
-						textNode = splitTextNode(node, so, node.nodeValue.length);
-					} else if (node == ec) {
-						textNode = splitTextNode(node, 0, eo);
+					if (node == copyRange.startContainer) {
+						textNode = splitTextNode(node, copyRange.startOffset, node.nodeValue.length);
+					} else if (node == copyRange.endContainer) {
+						textNode = splitTextNode(node, 0, copyRange.endOffset);
 					} else {
 						textNode = splitTextNode(node, 0, node.nodeValue.length);
 					}
@@ -110,15 +161,18 @@ function _copyAndDelete(isCopy, isDelete) {
 		}
 	}
 	var frag = doc.createDocumentFragment();
-	extractNodes(selfRange.commonAncestor(), frag);
-	//isDelete为true时，删除range内容
+	extractNodes(range.commonAncestor(), frag);
+
+	if (isDelete) {
+		range.collapse(true);
+	}
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
 		if (node.parentNode) {
 			node.parentNode.removeChild(node);
 		}
 	}
-	return isCopy ? frag : self;
+	return isCopy ? frag : range;
 }
 //判断一个Node是否在marquee元素里，IE专用
 function _inMarquee(node) {
@@ -324,8 +378,7 @@ KRange.prototype = {
 			self.endContainer = node;
 			self.endOffset = offset;
 		}
-		_updateCollapsed.call(this);
-		return self;
+		return _updateCollapsed(this);
 	},
 	setEnd : function(node, offset) {
 		var self = this, doc = self.doc;
@@ -335,8 +388,7 @@ KRange.prototype = {
 			self.startContainer = node;
 			self.startOffset = offset;
 		}
-		_updateCollapsed.call(this);
-		return self;
+		return _updateCollapsed(this);
 	},
 	setStartBefore : function(node) {
 		return this.setStart(node.parentNode || this.doc, K(node).index());
@@ -420,6 +472,16 @@ KRange.prototype = {
 			if (nodeC) {
 				return K(nodeC).index() >= posB ? 1 : -1;
 			}
+			//nodeB的下一个节点是nodeA的祖先
+			nodeC = K(nodeB).next();
+			if (nodeC && nodeC.contains(nodeA)) {
+				return 1;
+			}
+			//nodeA的下一个节点是nodeB的祖先
+			nodeC = K(nodeA).next();
+			if (nodeC && nodeC.contains(nodeB)) {
+				return -1;
+			}
 			//其它情况，暂时不需要
 		} else {
 			return rangeA.compareBoundaryPoints(how, rangeB);
@@ -435,13 +497,13 @@ KRange.prototype = {
 		return str.replace(/\r\n|\n|\r/g, '');
 	},
 	cloneContents : function() {
-		return _copyAndDelete.call(this, true, false);
+		return _copyAndDelete(this, true, false);
 	},
 	deleteContents : function() {
-		return _copyAndDelete.call(this, false, true);
+		return _copyAndDelete(this, false, true);
 	},
 	extractContents : function() {
-		return _copyAndDelete.call(this, true, true);
+		return _copyAndDelete(this, true, true);
 	},
 	insertNode : function(node) {
 		var self = this,
@@ -512,8 +574,8 @@ KRange.prototype = {
 		return sc.nodeType == 1 && sc === ec && so + 1 === eo && tags[K(sc.childNodes[so]).name];
 	},
 	get : function(hasControlRange) {
-		var self = this, doc = self.doc, node,
-			sc = self.startContainer, so = self.startOffset,
+		var self = this, doc = self.doc, node;
+		var sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
 		// not IE
 		if (!_IE) {

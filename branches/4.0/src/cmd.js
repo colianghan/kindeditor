@@ -275,9 +275,7 @@ KCmd.prototype = {
 		return self;
 	},
 	wrap : function(val) {
-		var self = this, doc = self.doc, range = self.range, wrapper,
-			sc = range.startContainer, so = range.startOffset,
-			ec = range.endContainer, eo = range.endOffset;
+		var self = this, doc = self.doc, range = self.range, wrapper;
 		wrapper = K(val, doc);
 		//inline标签，collapsed=true
 		if (range.collapsed) {
@@ -286,16 +284,19 @@ KCmd.prototype = {
 		}
 		//非inline标签
 		if (!wrapper.isInline()) {
-			var w = wrapper.clone(true), child = w;
+			var copyWrapper = wrapper.clone(true), child = copyWrapper;
 			//查找最里面的element
 			while (child.first()) {
 				child = child.first();
 			}
 			child.append(range.extractContents());
-			range.insertNode(w[0]).selectNode(w[0]);
+			range.insertNode(copyWrapper[0]).selectNode(copyWrapper[0]);
 			return self;
 		}
 		//inline标签，collapsed=false
+		var copyRange = range.cloneRange();
+		_upRange(range);
+		_downRange(copyRange);
 		//split and wrap a test node
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node;
@@ -306,7 +307,7 @@ KCmd.prototype = {
 				center = node.splitText(startOffset);
 			}
 			if (endOffset < length) {
-				center.splitText(endOffset - startOffset);
+				var right = center.splitText(endOffset - startOffset);
 			}
 			var parent, knode = K(center);
 			//textNode为唯一的子节点时重新设置node
@@ -314,50 +315,44 @@ KCmd.prototype = {
 				knode = parent;
 			}
 			var el = _wrapNode(knode, wrapper)[0];
-			if (sc == node) {
+			if (copyRange.startContainer == node) {
 				range.setStartBefore(el);
 			}
-			if (ec == node) {
+			if (copyRange.endContainer == node) {
 				range.setEndAfter(el);
 			}
 		}
-		var start = incStart = incEnd = end = false;
+		var start = end = -1;
 		function wrapRange(parent) {
 			var node = parent.firstChild;
 			if (parent.nodeType == 3) {
-				wrapTextNode(parent, so, eo);
+				wrapTextNode(parent, range.startOffset, range.endOffset);
 				return false;
 			}
 			var testRange, nextNode, knode;
 			while (node) {
 				testRange = _range(doc);
 				testRange.selectNode(node);
-				if (!start) {
-					start = testRange.compareBoundaryPoints(_START_TO_END, range) > 0;
+				if (start <= 0) {
+					start = testRange.compareBoundaryPoints(_START_TO_END, range);
 				}
-				if (start && !incStart) {
-					incStart = testRange.compareBoundaryPoints(_START_TO_START, range) >= 0;
+				if (start >= 0 && end <= 0) {
+					end = testRange.compareBoundaryPoints(_END_TO_START, range);
 				}
-				if (incStart && !incEnd) {
-					incEnd = testRange.compareBoundaryPoints(_END_TO_END, range) > 0;
-				}
-				if (incEnd && !end) {
-					end = testRange.compareBoundaryPoints(_END_TO_START, range) >= 0;
-				}
-				if (end) {
+				if (end >= 0) {
 					return false;
 				}
 				nextNode = node.nextSibling;
-				if (start) {
+				if (start > 0) {
 					if (node.nodeType == 1) {
 						if (wrapRange(node) === false) {
 							return false;
 						}
 					} else if (node.nodeType == 3) {
-						if (node == sc) {
-							wrapTextNode(node, so, node.nodeValue.length);
-						} else if (node == ec) {
-							wrapTextNode(node, 0, eo);
+						if (node == copyRange.startContainer) {
+							wrapTextNode(node, copyRange.startOffset, node.nodeValue.length);
+						} else if (node == copyRange.endContainer) {
+							wrapTextNode(node, 0, copyRange.endOffset);
 						} else {
 							wrapTextNode(node, 0, node.nodeValue.length);
 						}
@@ -432,10 +427,6 @@ KCmd.prototype = {
 		//split parents
 		self.split(true, map);
 		self.split(false, map);
-		//console.log(range.startContainer,range.startOffset);
-		//console.log(range.endContainer.innerHTML,range.endOffset);
-		//console.log(range.commonAncestor().innerHTML);
-		//return;
 		//grep nodes which format will be removed
 		var nodeList = [], testRange, start = false;
 		K(range.commonAncestor()).scan(function(node) {

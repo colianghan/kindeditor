@@ -172,21 +172,6 @@ test('cmd.remove', function() {
 
 	var div = K('<div></div>');
 	document.body.appendChild(div.get());
-	//11
-	cloneP = p.cloneNode(true);
-	document.body.appendChild(cloneP);
-	strong = K.query('strong', cloneP);
-	strong.innerHTML = '<strong>efg</strong>';
-	range = K.range(document);
-	range.setStart(strong.firstChild.firstChild, 0);
-	range.setEnd(strong.firstChild.firstChild, 3);
-	cmd = K.cmd(range);
-	cmd.remove({
-		'strong' : '*'
-	});
-	equals(K(cloneP).html().substr(0, 11), 'abcdefghijk');
-	document.body.removeChild(cloneP);
-	//return;
 	//1
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -342,19 +327,17 @@ test('cmd.remove', function() {
 	cmd.remove({
 		'strong' : '*'
 	});
-	var str = 'abcd<strong>efg';
+	var str = 'abcd<strong>e</strong><strong>fg';
 	equals(K(cloneP).html().substr(0, str.length), str);
 	document.body.removeChild(cloneP);
 	//13
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
 	strong = K.query('strong', cloneP);
-	strong.innerHTML = '<strong>efg</strong>';
 	range = K.range(document);
-	range.setStart(strong.firstChild.firstChild, 1);
-	range.setEnd(strong.firstChild.firstChild, 2);
+	range.setStart(strong.firstChild, 1);
+	range.setEnd(strong.firstChild, 2);
 	cmd = K.cmd(range);
-	cmd.wrap('<strong></strong>');
 	cmd.remove({
 		'strong' : '*'
 	});
