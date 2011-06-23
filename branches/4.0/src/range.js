@@ -20,7 +20,7 @@ function _downRange(range) {
 			return;
 		}
 		var children = K(node).children();
-		if (children.length == 0) {
+		if (children.length === 0) {
 			return;
 		}
 		var left, right, child, offset;
@@ -61,7 +61,7 @@ function _upRange(range) {
 		if (node.nodeType != 3) {
 			return;
 		}
-		if (pos == 0) {
+		if (pos === 0) {
 			if (isStart) {
 				range.setStartBefore(node);
 			} else {
@@ -111,7 +111,7 @@ function _copyAndDelete(range, isCopy, isDelete) {
 		}
 		return centerNode;
 	}
-	var start = incStart = incEnd = end = -1;
+	var start = -1, incStart = -1, incEnd = -1, end = -1;
 	function extractNodes(parent, frag) {
 		var textNode;
 		if (parent.nodeType == 3) {
@@ -189,22 +189,17 @@ function _copyAndDelete(range, isCopy, isDelete) {
 	}
 	return isCopy ? frag : range;
 }
-//判断一个Node是否在marquee元素里，IE专用
-function _inMarquee(node) {
-	var n = node;
-	while (n) {
-		if (K(n).name === 'marquee') {
-			return true;
-		}
-		n = n.parentNode;
-	}
-	return false;
-}
-//在marquee元素里不能使用moveToElementText，IE专用
+//在marquee、select元素里不能使用moveToElementText，IE专用
 function _moveToElementText(range, el) {
-	if (!_inMarquee(el)) {
-		range.moveToElementText(el);
+	var node = el;
+	while (node) {
+		var knode = K(node);
+		if (knode.name == 'marquee' || knode.name == 'select') {
+			return;
+		}
+		node = node.parentNode;
 	}
+	range.moveToElementText(el);
 }
 //根据原生Range，取得开始节点和结束节点的位置。IE专用
 function _getStartEnd(rng, isStart) {

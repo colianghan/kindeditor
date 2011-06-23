@@ -147,7 +147,9 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
 		key = match[2];
 		if (match[1]) {
-			knode.css(key, '');
+			if (knode[0].style[key]) {
+				knode[0].style[key] = '';
+			}
 		} else {
 			knode.removeAttr(key);
 		}
@@ -249,19 +251,18 @@ KCmd.prototype = {
 		//tag内部无内容时选中tag内部，<tagName>[]</tagName>
 		if (sc.nodeType == 1 && range.collapsed) {
 			if (_IE) {
-				var empty = K('<span>&nbsp;</span>', doc);
-				range.insertNode(empty.get());
+				var dummy = K('<span>&nbsp;</span>', doc);
+				range.insertNode(dummy[0]);
 				rng = doc.body.createTextRange();
-				rng.moveToElementText(empty.get());
+				rng.moveToElementText(dummy[0]);
 				rng.collapse(false);
 				rng.select();
-				empty.remove();
+				dummy.remove();
 				win.focus();
 				return self;
 			}
 			if (_WEBKIT) {
-				var empty = doc.createTextNode('\u200B');
-				range.insertNode(empty);
+				range.insertNode(doc.createTextNode('\u200B'));
 			}
 		}
 		//other case
@@ -295,9 +296,7 @@ KCmd.prototype = {
 			return self;
 		}
 		//collapsed=false
-		var copyRange = range.cloneRange();
-		_upRange(range);
-		_downRange(copyRange);
+		_downRange(range);
 		//split and wrap a test node
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node;
@@ -316,52 +315,40 @@ KCmd.prototype = {
 				knode = parent;
 			}
 			var el = _wrapNode(knode, wrapper)[0];
-			if (copyRange.startContainer == node) {
+			if (range.startContainer == node) {
 				range.setStartBefore(el);
 			}
-			if (copyRange.endContainer == node) {
+			if (range.endContainer == node) {
 				range.setEndAfter(el);
 			}
 		}
-		var start = end = -1;
-		function wrapRange(parent) {
-			var node = parent.firstChild;
-			if (parent.nodeType == 3) {
-				wrapTextNode(parent, range.startOffset, range.endOffset);
+		var ancestor = range.commonAncestor();
+		if (ancestor.nodeType == 3) {
+			wrapTextNode(ancestor, range.startOffset, range.endOffset);
+			return self;
+		}
+		var start = -1, end = -1;
+		K(ancestor).scan(function(node) {
+			var testRange = _range(doc).selectNode(node);
+			if (start <= 0) {
+				start = testRange.compareBoundaryPoints(_START_TO_END, range);
+			}
+			if (start >= 0 && end <= 0) {
+				end = testRange.compareBoundaryPoints(_END_TO_START, range);
+			}
+			if (end >= 0) {
 				return false;
 			}
-			var testRange, nextNode, knode;
-			while (node) {
-				testRange = _range(doc).selectNode(node);
-				if (start <= 0) {
-					start = testRange.compareBoundaryPoints(_START_TO_END, range);
+			if (start > 0 && node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
+				if (node == range.startContainer) {
+					wrapTextNode(node, range.startOffset, node.nodeValue.length);
+				} else if (node == range.endContainer) {
+					wrapTextNode(node, 0, range.endOffset);
+				} else {
+					wrapTextNode(node, 0, node.nodeValue.length);
 				}
-				if (start >= 0 && end <= 0) {
-					end = testRange.compareBoundaryPoints(_END_TO_START, range);
-				}
-				if (end >= 0) {
-					return false;
-				}
-				nextNode = node.nextSibling;
-				if (start > 0) {
-					if (node.nodeType == 1) {
-						if (wrapRange(node) === false) {
-							return false;
-						}
-					} else if (node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
-						if (node == copyRange.startContainer) {
-							wrapTextNode(node, copyRange.startOffset, node.nodeValue.length);
-						} else if (node == copyRange.endContainer) {
-							wrapTextNode(node, 0, copyRange.endOffset);
-						} else {
-							wrapTextNode(node, 0, node.nodeValue.length);
-						}
-					}
-				}
-				node = nextNode;
 			}
-		}
-		wrapRange(range.commonAncestor());
+		});
 		return self;
 	},
 	split : function(isStart, map) {
@@ -428,7 +415,7 @@ KCmd.prototype = {
 		self.split(true, map);
 		self.split(false, map);
 		//选择要删除的element
-		var nodeList = [], testRange, start = end = -1;
+		var nodeList = [], testRange, start = -1, end = -1;
 		K(range.commonAncestor()).scan(function(node) {
 			testRange = _range(doc).selectNode(node);
 			if (start <= 0) {
