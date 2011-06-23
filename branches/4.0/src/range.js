@@ -8,6 +8,7 @@ function _updateCollapsed(range) {
 	range.collapsed = (range.startContainer === range.endContainer && range.startOffset === range.endOffset);
 	return range;
 }
+//降低range的位置
 //<p><strong><span>123</span>|abc</strong>def</p>
 //postion(strong, 1) -> positon("abc", 0)
 //or
@@ -15,27 +16,41 @@ function _updateCollapsed(range) {
 //postion(strong, 1) -> positon("abc", 3)
 function _downRange(range) {
 	function downPos(node, pos, isStart) {
-		if (node.nodeType == 1) {
-			var children = K(node).children();
-			if (children.length == 0) {
-				return;
-			}
-			var left = pos > 0 ? children[pos - 1][0] : null,
-				right = pos < children.length ? children[pos][0] : null,
-				child = left || right;
-			if (child.nodeType == 3) {
-				offset = left ? child.nodeValue.length : 0;
-				if (isStart) {
-					range.setStart(child, offset);
-				} else {
-					range.setEnd(child, offset);
-				}
-			}
+		if (node.nodeType != 1) {
+			return;
+		}
+		var children = K(node).children();
+		if (children.length == 0) {
+			return;
+		}
+		var left, right, child, offset;
+		if (pos > 0) {
+			left = children[pos - 1];
+		}
+		if (pos < children.length) {
+			right = children[pos];
+		}
+		if (left && left.type == 3) {
+			child = left[0];
+			offset = child.nodeValue.length;
+		}
+		if (right && right.type == 3) {
+			child = right[0];
+			offset = 0;
+		}
+		if (!child) {
+			return;
+		}
+		if (isStart) {
+			range.setStart(child, offset);
+		} else {
+			range.setEnd(child, offset);
 		}
 	}
 	downPos(range.startContainer, range.startOffset, true);
 	downPos(range.endContainer, range.endOffset, false);
 }
+//提高range的位置
 //<p><strong><span>123</span>|abc</strong>def</p>
 //positon("abc", 0) -> postion(strong, 1)
 //or
@@ -43,19 +58,20 @@ function _downRange(range) {
 //positon("abc", 3) -> postion(strong, 1)
 function _upRange(range) {
 	function upPos(node, pos, isStart) {
-		if (node.nodeType == 3) {
-			if (pos == 0) {
-				if (isStart) {
-					range.setStartBefore(node);
-				} else {
-					range.setEndBefore(node);
-				}
-			} else if (pos == node.nodeValue.length) {
-				if (isStart) {
-					range.setStartAfter(node);
-				} else {
-					range.setEndAfter(node);
-				}
+		if (node.nodeType != 3) {
+			return;
+		}
+		if (pos == 0) {
+			if (isStart) {
+				range.setStartBefore(node);
+			} else {
+				range.setEndBefore(node);
+			}
+		} else if (pos == node.nodeValue.length) {
+			if (isStart) {
+				range.setStartAfter(node);
+			} else {
+				range.setEndAfter(node);
 			}
 		}
 	}
@@ -107,8 +123,7 @@ function _copyAndDelete(range, isCopy, isDelete) {
 		}
 		var node = parent.firstChild, testRange, nextNode;
 		while (node) {
-			testRange = new KRange(doc);
-			testRange.selectNode(node);
+			testRange = new KRange(doc).selectNode(node);
 			if (start <= 0) {
 				start = testRange.compareBoundaryPoints(_START_TO_END, range);
 			}

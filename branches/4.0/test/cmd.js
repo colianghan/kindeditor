@@ -354,11 +354,11 @@ test('cmd.remove', function() {
 	cmd.remove({
 		strong : '*'
 	});
-	equals(cmd.range.html(), 'efg');
+	equals(range.html(), 'efg');
 	document.body.removeChild(cloneP);
 });
 
-test('cmd.bold/cmd.italic', function() {
+test('cmd.bold/cmd.italic/cmd.removeformat', function() {
 	var div = K('<div></div>'), node, range;
 	document.body.appendChild(div.get());
 	//1
@@ -400,5 +400,13 @@ test('cmd.bold/cmd.italic', function() {
 	cmd = K.cmd(range);
 	cmd.bold();
 	equals(range.html(), 'def');
+	div.html('');
+	//15
+	div.html('<div>abcd<img /><strong>efg</strong><br />hijk</div>');
+	range = K.range(document);
+	range.selectNodeContents(div[0]);
+	cmd = K.cmd(range);
+	cmd.removeformat();
+	equals(range.html(), '<div>abcd<img />efg<br />hijk</div>');
 	div.html('');
 });

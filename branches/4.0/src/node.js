@@ -368,8 +368,6 @@ KNode.prototype = {
 				new KNode(node.childNodes).each(function() {
 					new KNode([node]).after(this);
 				});
-			} else if (node.hasChildNodes()) {
-				node.innerHTML = '';
 			}
 			if (node.parentNode) {
 				node.parentNode.removeChild(node);
@@ -404,6 +402,9 @@ KNode.prototype = {
 	},
 	isBlock : function() {
 		return !!_BLOCK_TAG_MAP[this.name];
+	},
+	isStyle : function() {
+		return !!_STYLE_TAG_MAP[this.name];
 	},
 	contains : function(otherNode) {
 		if (this.length < 1) {

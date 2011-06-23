@@ -100,24 +100,25 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return false;
 	}
-	var newMap = _singleKeyMap(map), arr, key, val, method;
-	if (newMap[mapKey]) {
-		arr = newMap[mapKey].split(',');
-		for (var i = 0, len = arr.length; i < len; i++) {
-			key = arr[i];
-			if (key === '*') {
-				return true;
-			}
-			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
-			method = match[1] ? 'css' : 'attr';
-			key = match[2];
-			val = match[3] || '';
-			if (val === '' && knode[method](key) !== '') {
-				return true;
-			}
-			if (val !== '' && knode[method](key) === val) {
-				return true;
-			}
+	var newMap = _singleKeyMap(map);
+	if (!newMap[mapKey]) {
+		return false;
+	}
+	var arr = newMap[mapKey].split(',');
+	for (var i = 0, len = arr.length; i < len; i++) {
+		var key = arr[i];
+		if (key === '*') {
+			return true;
+		}
+		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+		var method = match[1] ? 'css' : 'attr';
+		key = match[2];
+		var val = match[3] || '';
+		if (val === '' && knode[method](key) !== '') {
+			return true;
+		}
+		if (val !== '' && knode[method](key) === val) {
+			return true;
 		}
 	}
 	return false;
@@ -132,27 +133,27 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 	if (knode.type !== 1) {
 		return;
 	}
-	var newMap = _singleKeyMap(map), arr, key;
-	if (newMap[mapKey]) {
-		arr = newMap[mapKey].split(',');
-		allFlag = false;
-		for (var i = 0, len = arr.length; i < len; i++) {
-			key = arr[i];
-			if (key === '*') {
-				allFlag = true;
-				break;
-			}
-			var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
-			key = match[2];
-			if (match[1]) {
-				knode.css(key, '');
-			} else {
-				knode.removeAttr(key);
-			}
+	var newMap = _singleKeyMap(map);
+	if (!newMap[mapKey]) {
+		return;
+	}
+	var arr = newMap[mapKey].split(','), allFlag = false;
+	for (var i = 0, len = arr.length; i < len; i++) {
+		var key = arr[i];
+		if (key === '*') {
+			allFlag = true;
+			break;
 		}
-		if (allFlag) {
-			knode.remove(true);
+		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+		key = match[2];
+		if (match[1]) {
+			knode.css(key, '');
+		} else {
+			knode.removeAttr(key);
 		}
+	}
+	if (allFlag) {
+		knode.remove(true);
 	}
 }
 //取得最里面的element
@@ -165,7 +166,7 @@ function _getInnerNode(knode) {
 }
 //最里面的element为inline element时返回true
 function _isEmptyNode(knode) {
-	return _getInnerNode(knode).isInline();
+	return _getInnerNode(knode).isStyle();
 }
 //merge two wrapper
 //a : <span><strong></strong></span>
@@ -277,15 +278,15 @@ KCmd.prototype = {
 	wrap : function(val) {
 		var self = this, doc = self.doc, range = self.range, wrapper;
 		wrapper = K(val, doc);
-		//inline标签，collapsed=true
+		//collapsed=true
 		if (range.collapsed) {
 			range.insertNode(wrapper[0]).selectNodeContents(wrapper[0]);
 			return self;
 		}
-		//非inline标签
-		if (!wrapper.isInline()) {
+		//block tag
+		if (wrapper.isBlock()) {
 			var copyWrapper = wrapper.clone(true), child = copyWrapper;
-			//查找最里面的element
+			//find inner element
 			while (child.first()) {
 				child = child.first();
 			}
@@ -293,7 +294,7 @@ KCmd.prototype = {
 			range.insertNode(copyWrapper[0]).selectNode(copyWrapper[0]);
 			return self;
 		}
-		//inline标签，collapsed=false
+		//collapsed=false
 		var copyRange = range.cloneRange();
 		_upRange(range);
 		_downRange(copyRange);
@@ -311,7 +312,7 @@ KCmd.prototype = {
 			}
 			var parent, knode = K(center);
 			//textNode为唯一的子节点时重新设置node
-			while ((parent = knode.parent()) && parent.isInline() && parent.children().length == 1) {
+			while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 				knode = parent;
 			}
 			var el = _wrapNode(knode, wrapper)[0];
@@ -331,8 +332,7 @@ KCmd.prototype = {
 			}
 			var testRange, nextNode, knode;
 			while (node) {
-				testRange = _range(doc);
-				testRange.selectNode(node);
+				testRange = _range(doc).selectNode(node);
 				if (start <= 0) {
 					start = testRange.compareBoundaryPoints(_START_TO_END, range);
 				}
@@ -348,7 +348,7 @@ KCmd.prototype = {
 						if (wrapRange(node) === false) {
 							return false;
 						}
-					} else if (node.nodeType == 3) {
+					} else if (node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
 						if (node == copyRange.startContainer) {
 							wrapTextNode(node, copyRange.startOffset, node.nodeValue.length);
 						} else if (node == copyRange.endContainer) {
@@ -373,7 +373,7 @@ KCmd.prototype = {
 			needSplit = false, knode;
 		while (parent && parent.parentNode) {
 			knode = K(parent);
-			if (!knode.isInline()) {
+			if (!knode.isStyle()) {
 				break;
 			}
 			if (!_hasAttrOrCss(knode, map)) {
@@ -427,17 +427,20 @@ KCmd.prototype = {
 		//split parents
 		self.split(true, map);
 		self.split(false, map);
-		//grep nodes which format will be removed
-		var nodeList = [], testRange, start = false;
+		//选择要删除的element
+		var nodeList = [], testRange, start = end = -1;
 		K(range.commonAncestor()).scan(function(node) {
 			testRange = _range(doc).selectNode(node);
-			if (!start) {
-				start = testRange.compareBoundaryPoints(_START_TO_START, range) >= 0;
+			if (start <= 0) {
+				start = testRange.compareBoundaryPoints(_START_TO_START, range);
 			}
-			if (start) {
-				if (testRange.compareBoundaryPoints(_END_TO_END, range) > 0) {
-					return false;
-				}
+			if (start >= 0 && end <= 0) {
+				end = testRange.compareBoundaryPoints(_END_TO_END, range);
+			}
+			if (end > 0) {
+				return false;
+			}
+			if (start >= 0) {
 				nodeList.push(K(node));
 			}
 		});
@@ -619,9 +622,9 @@ KCmd.prototype = {
 	},
 	removeformat : function() {
 		var map = {
-			'*' : 'class,style'
+			'*' : '.font-weight,.font-style,.text-decoration,.color,.background-color,.font-size,.font-family'
 		},
-		tags = _INLINE_TAG_MAP;
+		tags = _STYLE_TAG_MAP;
 		_each(tags, function(key, val) {
 			map[key] = '*';
 		});
