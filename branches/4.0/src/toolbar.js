@@ -52,7 +52,7 @@ function _toolbar(options) {
 			itemNode = K('<br />');
 		} else {
 			var title = item.title || '';
-			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="javascript:void(' + title + ');" title="' + title + '">' +
+			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="javascript:;" title="' + title + '">' +
 				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
 			_bindToolbarEvent(itemNode, item);
 		}

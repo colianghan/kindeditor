@@ -90,8 +90,14 @@ function _copyAndDelete(range, isCopy, isDelete) {
 		var length = node.nodeValue.length, centerNode;
 		if (isCopy) {
 			var cloneNode = node.cloneNode(true);
-			centerNode = cloneNode.splitText(startOffset);
-			centerNode.splitText(endOffset - startOffset);
+			if (startOffset > 0) {
+				centerNode = cloneNode.splitText(startOffset);
+			} else {
+				centerNode = cloneNode;
+			}
+			if (endOffset < length) {
+				centerNode.splitText(endOffset - startOffset);
+			}
 		}
 		if (isDelete) {
 			var center = node;
@@ -173,7 +179,10 @@ function _copyAndDelete(range, isCopy, isDelete) {
 						textNode = splitTextNode(node, 0, node.nodeValue.length);
 					}
 					if (isCopy) {
-						frag.appendChild(textNode);
+						// TODO: IE9有时候报错
+						try {
+							frag.appendChild(textNode);
+						} catch(e) {}
 					}
 				}
 			}
@@ -405,7 +414,7 @@ KRange.prototype = {
 		}
 		var children = knode.children();
 		if (children.length > 0) {
-			return this.setStartBefore(children[0].get()).setEndAfter(children[children.length - 1].get());
+			return this.setStartBefore(children[0][0]).setEndAfter(children[children.length - 1][0]);
 		}
 		return this.setStart(node, 0).setEnd(node, 0);
 	},
@@ -536,7 +545,11 @@ KRange.prototype = {
 					sc.parentNode.appendChild(node);
 				}
 			} else {
-				c = sc.splitText(so);
+				if (so > 0) {
+					c = sc.splitText(so);
+				} else {
+					c = sc;
+				}
 				sc.parentNode.insertBefore(node, c);
 				//调整结束节点位置
 				if (sc === ec) {

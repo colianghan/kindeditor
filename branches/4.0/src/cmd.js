@@ -62,7 +62,7 @@ function _nativeCommandValue(doc, key) {
 //get current selection of a document
 function _getSel(doc) {
 	var win = _getWin(doc);
-	return win.getSelection ? win.getSelection() : doc.selection;
+	return doc.selection || win.getSelection();
 }
 //get range of current selection
 function _getRng(doc) {
@@ -268,7 +268,10 @@ KCmd.prototype = {
 		//other case
 		rng = range.get(true);
 		if (_IE) {
-			rng.select();
+			// TODO: IE9有时候报错
+			try {
+				rng.select();
+			} catch(e) {}
 		} else {
 			sel.removeAllRanges();
 			sel.addRange(rng);

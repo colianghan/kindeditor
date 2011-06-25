@@ -177,13 +177,8 @@ test('range.selectNodeContents', function() {
 	range.selectNodeContents(p);
 	ok(range.startContainer === p);
 	ok(range.endContainer === p);
-	if (K.IE) {
-		ok(range.startOffset === 0);
-		ok(range.endOffset === 7);
-	} else {
-		ok(range.startOffset === 1);
-		ok(range.endOffset === 9);
-	}
+	ok(range.startOffset === 0);
+	ok(range.endOffset === 7);
 	ok(range.collapsed === false);
 	ok(range.commonAncestor() === p);
 });
