@@ -85,11 +85,7 @@ function _upRange(range) {
 */
 function _copyAndDelete(range, isCopy, isDelete) {
 	var doc = range.doc, nodeList = [];
-
-	var copyRange = range.cloneRange();
-	_upRange(range);
-	_downRange(copyRange);
-
+	//split a textNode
 	function splitTextNode(node, startOffset, endOffset) {
 		var length = node.nodeValue.length, centerNode;
 		if (isCopy) {
@@ -111,7 +107,12 @@ function _copyAndDelete(range, isCopy, isDelete) {
 		}
 		return centerNode;
 	}
+
+	var copyRange = range.cloneRange();
+	_downRange(copyRange);
+
 	var start = -1, incStart = -1, incEnd = -1, end = -1;
+
 	function extractNodes(parent, frag) {
 		var textNode;
 		if (parent.nodeType == 3) {
@@ -121,19 +122,23 @@ function _copyAndDelete(range, isCopy, isDelete) {
 			}
 			return false;
 		}
-		var node = parent.firstChild, testRange, nextNode;
+		var node = parent.firstChild, nextNode;
 		while (node) {
-			testRange = new KRange(doc).selectNode(node);
+			var testRange;
 			if (start <= 0) {
+				testRange = new KRange(doc).selectNode(node);
 				start = testRange.compareBoundaryPoints(_START_TO_END, range);
 			}
 			if (start >= 0 && incStart <= 0) {
+				testRange = new KRange(doc).selectNode(node);
 				incStart = testRange.compareBoundaryPoints(_START_TO_START, range);
 			}
 			if (incStart >= 0 && incEnd <= 0) {
+				testRange = new KRange(doc).selectNode(node);
 				incEnd = testRange.compareBoundaryPoints(_END_TO_END, range);
 			}
 			if (incEnd >= 0 && end <= 0) {
+				testRange = new KRange(doc).selectNode(node);
 				end = testRange.compareBoundaryPoints(_END_TO_START, range);
 			}
 			if (end >= 0) {
@@ -175,10 +180,13 @@ function _copyAndDelete(range, isCopy, isDelete) {
 			node = nextNode;
 		}
 	}
-	var frag = doc.createDocumentFragment();
-	extractNodes(range.commonAncestor(), frag);
+
+	var ancestor = range.commonAncestor(), frag = doc.createDocumentFragment();
+
+	extractNodes(ancestor, frag);
 
 	if (isDelete) {
+		_upRange(range);
 		range.collapse(true);
 	}
 	for (var i = 0, len = nodeList.length; i < len; i++) {
@@ -211,15 +219,12 @@ function _getStartEnd(rng, isStart) {
 	if (nodes.length === 0) {
 		return {node: parent.parentNode, offset: K(parent).index()};
 	}
-	var startNode = doc, startPos = 0, isEnd = false;
+	var startNode = doc, startPos = 0, cmp = -1;
 	var testRange = rng.duplicate();
 	_moveToElementText(testRange, parent);
 	for (var i = 0, len = nodes.length; i < len; i++) {
 		var node = nodes[i];
-		var cmp = testRange.compareEndPoints('StartToStart', pointRange);
-		if (cmp > 0) {
-			isEnd = true;
-		}
+		cmp = testRange.compareEndPoints('StartToStart', pointRange);
 		if (cmp === 0) {
 			return {node: node.parentNode, offset: i};
 		}
@@ -227,7 +232,7 @@ function _getStartEnd(rng, isStart) {
 			var nodeRange = rng.duplicate();
 			_moveToElementText(nodeRange, node);
 			testRange.setEndPoint('StartToEnd', nodeRange);
-			if (isEnd) {
+			if (cmp > 0) {
 				startPos += nodeRange.text.replace(/\r\n|\n|\r/g, '').length;
 			} else {
 				startPos = 0;
@@ -236,12 +241,19 @@ function _getStartEnd(rng, isStart) {
 			testRange.moveStart('character', node.nodeValue.length);
 			startPos += node.nodeValue.length;
 		}
-		if (!isEnd) {
+		if (cmp < 0) {
 			startNode = node;
 		}
 	}
-	if (!isEnd && startNode.nodeType == 1) {
+	//<p>abc<img>|</p>
+	if (cmp < 0 && startNode.nodeType == 1) {
 		return {node: parent, offset: K(parent.lastChild).index() + 1};
+	}
+	//<p><table></table><img>ab|c</p>
+	if (cmp > 0) {
+		while (startNode.nodeType == 1) {
+			startNode = startNode.nextSibling;
+		}
 	}
 	testRange = rng.duplicate();
 	_moveToElementText(testRange, parent);
@@ -249,9 +261,52 @@ function _getStartEnd(rng, isStart) {
 	startPos -= testRange.text.replace(/\r\n|\n|\r/g, '').length;
 	return {node: startNode, offset: startPos};
 }
-//将原生Range转换成KRange
+//根据Node和offset，取得表示该位置的原生Range。IE专用
+function _getEndRange(node, offset) {
+	var doc = node.ownerDocument || node,
+		range = doc.body.createTextRange();
+	if (doc == node) {
+		range.collapse(true);
+		return range;
+	}
+	if (node.nodeType == 1) {
+		var children = node.childNodes, isStart, child;
+		if (offset === 0) {
+			child = children[0];
+			isStart = true;
+		} else {
+			child = children[offset - 1];
+			isStart = false;
+		}
+		if (K(child).name === 'head') {
+			if (offset === 1) {
+				isStart = true;
+			}
+			if (offset === 2) {
+				isStart = false;
+			}
+			range.collapse(isStart);
+			return range;
+		}
+		if (child.nodeType == 1) {
+			_moveToElementText(range, child);
+			range.collapse(isStart);
+			return range;
+		}
+		node = child;
+		offset = isStart ? 0 : child.nodeValue.length;
+	}
+	var dummy = doc.createElement('span');
+	K(node).before(dummy);
+	_moveToElementText(range, dummy);
+	range.moveStart('character', offset);
+	K(dummy).remove();
+	return range;
+}
+// convert native Range to KRange
 function _toRange(rng) {
 	var doc, range;
+	// IE
 	if (_IE) {
 		if (rng.item) {
 			doc = _getDoc(rng.item(0));
@@ -266,85 +321,13 @@ function _toRange(rng) {
 		range.setStart(start.node, start.offset);
 		range.setEnd(end.node, end.offset);
 		return range;
-	} else {
-		var startContainer = rng.startContainer;
-		doc = startContainer.ownerDocument || startContainer;
-		range = new KRange(doc);
-		range.setStart(startContainer, rng.startOffset);
-		range.setEnd(rng.endContainer, rng.endOffset);
-		return range;
 	}
-}
-//取得父节点里的该节点前的纯文本长度。IE专用
-function _getBeforeLength(node) {
-	var doc = node.ownerDocument,
-		len = 0,
-		sibling = node.previousSibling;
-	while (sibling) {
-		if (sibling.nodeType == 1) {
-			if (!K(sibling).isSingle()) {
-				var range = doc.body.createTextRange();
-				_moveToElementText(range, sibling);
-				len += range.text.length;
-			} else {
-				len += 1;
-			}
-		} else if (sibling.nodeType == 3) {
-			len += sibling.nodeValue.length;
-		}
-		sibling = sibling.previousSibling;
-	}
-	return len;
-}
-//根据Node和offset，取得表示该位置的原生Range。IE专用
-function _getEndRange(node, offset) {
-	var doc = node.ownerDocument || node,
-		range = doc.body.createTextRange();
-	if (doc == node) {
-		range.collapse(true);
-		return range;
-	}
-	if (node.nodeType == 1) {
-		var children = node.childNodes, isStart, child, isTemp = false, temp;
-		if (offset === 0) {
-			child = children[0];
-			isStart = true;
-		} else {
-			child = children[offset - 1];
-			isStart = false;
-		}
-		if (!child) {
-			temp = doc.createTextNode(' ');
-			node.appendChild(temp);
-			child = temp;
-			isTemp = true;
-		}
-		if (child.nodeName.toLowerCase() === 'head') {
-			if (offset === 1) {
-				isStart = true;
-			}
-			if (offset === 2) {
-				isStart = false;
-			}
-			range.collapse(isStart);
-			return range;
-		}
-		if (child.nodeType == 1) {
-			_moveToElementText(range, child);
-			range.collapse(isStart);
-		} else {
-			_moveToElementText(range, node);
-			if (isTemp) {
-				node.removeChild(temp);
-			}
-			var len = _getBeforeLength(child);
-			len = isStart ? len : len + child.nodeValue.length;
-			range.moveStart('character', len);
-		}
-	} else if (node.nodeType == 3) {
-		_moveToElementText(range, node.parentNode);
-		range.moveStart('character', offset + _getBeforeLength(node));
-	}
+	// other browser
+	var startContainer = rng.startContainer;
+	doc = startContainer.ownerDocument || startContainer;
+	range = new KRange(doc);
+	range.setStart(startContainer, rng.startOffset);
+	range.setEnd(rng.endContainer, rng.endOffset);
 	return range;
 }
 
@@ -584,28 +567,28 @@ KRange.prototype = {
 		return sc.nodeType == 1 && sc === ec && so + 1 === eo && tags[K(sc.childNodes[so]).name];
 	},
 	get : function(hasControlRange) {
-		var self = this, doc = self.doc, node;
-		var sc = self.startContainer, so = self.startOffset,
-			ec = self.endContainer, eo = self.endOffset, rng;
+		var self = this, doc = self.doc, node, rng;
 		// not IE
 		if (!_IE) {
 			rng = doc.createRange();
 			try {
-				rng.setStart(sc, so);
-				rng.setEnd(ec, eo);
+				rng.setStart(self.startContainer, self.startOffset);
+				rng.setEnd(self.endContainer, self.endOffset);
 			} catch (e) {}
 			return rng;
 		}
 		// IE control range
 		if (hasControlRange && self.isControl()) {
 			rng = doc.body.createControlRange();
-			rng.addElement(sc.childNodes[so]);
+			rng.addElement(self.startContainer.childNodes[self.startOffset]);
 			return rng;
 		}
 		// IE text range
+		var range = self.cloneRange();
+		_downRange(range);
 		rng = doc.body.createTextRange();
-		rng.setEndPoint('StartToStart', _getEndRange(sc, so));
-		rng.setEndPoint('EndToStart', _getEndRange(ec, eo));
+		rng.setEndPoint('StartToStart', _getEndRange(range.startContainer, range.startOffset));
+		rng.setEndPoint('EndToStart', _getEndRange(range.endContainer, range.endOffset));
 		return rng;
 	},
 	html : function() {

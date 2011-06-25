@@ -439,7 +439,6 @@ test('range.cloneContents', function() {
 	frag = range.cloneContents();
 	same(K(frag).outer().toLowerCase(), '<strong>efg</strong>');
 	ok(!range.collapsed);
-	return;
 	//2
 	range = K.range(document);
 	range.setStart(strong.firstChild, 1);

@@ -296,8 +296,7 @@ KCmd.prototype = {
 			return self;
 		}
 		//collapsed=false
-		_downRange(range);
-		//split and wrap a test node
+		//split and wrap a textNode
 		function wrapTextNode(node, startOffset, endOffset) {
 			var length = node.nodeValue.length, center = node;
 			if (endOffset <= startOffset) {
@@ -327,13 +326,27 @@ KCmd.prototype = {
 			wrapTextNode(ancestor, range.startOffset, range.endOffset);
 			return self;
 		}
-		var start = -1, end = -1;
+
+		var copyRange = range.cloneRange();
+		_downRange(copyRange);
+
+		var start = -1, end = -1, testRange,
+			cmpStart = (ancestor == copyRange.startContainer),
+			cmpEnd = (ancestor == copyRange.endContainer);
+
 		K(ancestor).scan(function(node) {
-			var testRange = _range(doc).selectNode(node);
-			if (start <= 0) {
+			if (!cmpStart && node == copyRange.startContainer) {
+				cmpStart = true;
+			}
+			if (!cmpEnd && node == copyRange.endContainer) {
+				cmpEnd = true;
+			}
+			if (cmpStart && start <= 0) {
+				testRange = _range(doc).selectNode(node);
 				start = testRange.compareBoundaryPoints(_START_TO_END, range);
 			}
-			if (start >= 0 && end <= 0) {
+			if (cmpEnd && start >= 0 && end <= 0) {
+				testRange = _range(doc).selectNode(node);
 				end = testRange.compareBoundaryPoints(_END_TO_START, range);
 			}
 			if (end >= 0) {
