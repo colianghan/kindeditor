@@ -401,12 +401,49 @@ test('cmd.bold/cmd.italic/cmd.removeformat', function() {
 	cmd.bold();
 	equals(range.html(), 'def');
 	div.html('');
-	//15
+	//5
 	div.html('<div>abcd<img /><strong>efg</strong><br />hijk</div>');
 	range = K.range(document);
 	range.selectNodeContents(div[0]);
 	cmd = K.cmd(range);
 	cmd.removeformat();
 	equals(range.html(), '<div>abcd<img />efg<br />hijk</div>');
+	div.html('');
+	//6
+	div.html('<p>abcd</p><p>1234</p>');
+	range = K.range(document);
+	range.selectNodeContents(div[0]);
+	cmd = K.cmd(range);
+	cmd.bold();
+	equals(range.html().replace(/\n/, ''), '<p><strong>abcd</strong></p><p><strong>1234</strong></p>');
+	cmd.removeformat();
+	equals(range.html().replace(/\n/, ''), '<p>abcd</p><p>1234</p>');
+	div.html('');
+	//7
+	div.html('<p><strong>abcd</strong></p><p><strong>1234</strong></p>');
+	range = K.range(document);
+	range.setStart(div.first().first().last()[0], 0);
+	range.setEnd(div.last().last().last()[0], 4);
+	cmd = K.cmd(range);
+	cmd.removeformat();
+	equals(range.html().replace(/\n/, ''), '<p>abcd</p><p>1234</p>');
+	div.html('');
+	//8
+	div.html('<p><strong>abcd</strong></p><p><strong>1234</strong></p>');
+	range = K.range(document);
+	range.setStart(div.first().first().first()[0], 0);
+	range.setEnd(div.last().last().last()[0], 4);
+	cmd = K.cmd(range);
+	cmd.italic();
+	equals(range.html().replace(/\n/, ''), '<p><strong><em>abcd</em></strong></p><p><strong><em>1234</em></strong></p>');
+	div.html('');
+	//9
+	div.html('<p><strong>abcd</strong></p><p><strong>1234</strong></p>');
+	range = K.range(document);
+	range.setStart(div.first().first()[0], 0);
+	range.setEnd(div.last().last()[0], 1);
+	cmd = K.cmd(range);
+	cmd.italic();
+	equals(range.html().replace(/\n/, ''), '<p><strong><em>abcd</em></strong></p><p><strong><em>1234</em></strong></p>');
 	div.html('');
 });

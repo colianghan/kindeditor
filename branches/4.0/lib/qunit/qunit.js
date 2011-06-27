@@ -98,9 +98,9 @@ Test.prototype = {
 			this.callback.call(this.testEnvironment);
 			return;
 		}
-		try {
+		//try {
 			this.callback.call(this.testEnvironment);
-		} catch(e) {
+		/*} catch(e) {
 			fail("Test " + this.testName + " died, exception and test follows", e, this.callback);
 			QUnit.ok( false, "Died on test #" + (this.assertions.length + 1) + ": " + e.message + " - " + QUnit.jsDump.parse(e) );
 			// else next test will carry the responsibility
@@ -110,7 +110,7 @@ Test.prototype = {
 			if ( config.blocking ) {
 				start();
 			}
-		}
+		}*/
 	},
 	teardown: function() {
 		try {

@@ -309,7 +309,7 @@ KCmd.prototype = {
 				center = node.splitText(startOffset);
 			}
 			if (endOffset < length) {
-				var right = center.splitText(endOffset - startOffset);
+				center.splitText(endOffset - startOffset);
 			}
 			var parent, knode = K(center);
 			//textNode为唯一的子节点时重新设置node
@@ -317,13 +317,14 @@ KCmd.prototype = {
 				knode = parent;
 			}
 			var el = _wrapNode(knode, wrapper)[0];
-			if (range.startContainer == node) {
+			if (range.startContainer == node || range.startContainer == knode[0]) {
 				range.setStartBefore(el);
 			}
-			if (range.endContainer == node) {
+			if (range.endContainer == node || range.endContainer == knode[0]) {
 				range.setEndAfter(el);
 			}
 		}
+
 		var ancestor = range.commonAncestor();
 		if (ancestor.nodeType == 3) {
 			wrapTextNode(ancestor, range.startOffset, range.endOffset);
@@ -431,19 +432,22 @@ KCmd.prototype = {
 		self.split(true, map);
 		self.split(false, map);
 		//选择要删除的element
-		var nodeList = [], testRange, start = -1, end = -1;
-		K(range.commonAncestor()).scan(function(node) {
+		var nodeList = [], testRange, start = 1, end = 1;
+		//向上遍历，为了比较range
+		_each(K(range.commonAncestor()).all(true), function() {
+			var node = this;
 			testRange = _range(doc).selectNode(node);
-			if (start <= 0) {
-				start = testRange.compareBoundaryPoints(_START_TO_START, range);
-			}
-			if (start >= 0 && end <= 0) {
+			if (end >= 0) {
 				end = testRange.compareBoundaryPoints(_END_TO_END, range);
 			}
-			if (end > 0) {
+			if (end <= 0 && start >= 0) {
+				start = testRange.compareBoundaryPoints(_START_TO_START, range);
+			}
+			//console.log(node, node.nodeType == 1 ? node.innerHTML : node.nodeValue);
+			if (start < 0) {
 				return false;
 			}
-			if (start >= 0) {
+			if (end <= 0) {
 				nodeList.push(K(node));
 			}
 		});

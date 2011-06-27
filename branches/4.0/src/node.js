@@ -485,6 +485,21 @@ KNode.prototype = {
 		}
 		walk(this[0]);
 		return this;
+	},
+	all : function(reverse) {
+		reverse = (reverse === undefined) ? false : reverse;
+		var nodes = [];
+		this.scan(function(node) {
+			nodes.push(node);
+		});
+		if (reverse) {
+			var newNodes = [];
+			for (var i = nodes.length - 1; i >= 0; i--) {
+				newNodes.push(nodes[i]);
+			}
+			nodes = newNodes;
+		}
+		return nodes;
 	}
 };
 
