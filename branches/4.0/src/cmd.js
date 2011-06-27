@@ -421,14 +421,11 @@ KCmd.prototype = {
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
-		//collapsed = true时分割后
 		if (range.collapsed) {
 			self.split(true, map);
 			range.collapse(true);
 			return self;
 		}
-		//inline标签，collapsed = false
-		//split parents
 		self.split(true, map);
 		self.split(false, map);
 		//选择要删除的element
@@ -443,43 +440,58 @@ KCmd.prototype = {
 			if (end <= 0 && start >= 0) {
 				start = testRange.compareBoundaryPoints(_START_TO_START, range);
 			}
-			//console.log(node, node.nodeType == 1 ? node.innerHTML : node.nodeValue);
 			if (start < 0) {
 				return false;
 			}
-			if (end <= 0) {
-				nodeList.push(K(node));
+			if (end <= 0 && node.nodeType == 1) {
+				nodeList.push(node);
 			}
 		});
 		//remove empty elements
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
-			var before = K(sc.childNodes[so - 1]);
-			if (before && _isEmptyNode(before)) {
-				before.remove();
+			var startBefore = K(sc.childNodes[so - 1]);
+			if (startBefore && _isEmptyNode(startBefore)) {
+				startBefore.remove();
 				range.setStart(sc, so - 1);
 				if (sc == ec) {
 					range.setEnd(ec, eo - 1);
 				}
 			}
-			//<b>abc[</b><b>def]</b><b>ghi</b>时，分割后HTML变成
+			//<b>abc[</b><b>def]</b><b>ghi</b>，分割后HTML变成
 			//<b>abc</b>[<b></b><b>def</b>]<b>ghi</b> 
-			before = K(sc.childNodes[so]);
-			if (before && _isEmptyNode(before)) {
-				before.remove();
+			var startAfter = K(sc.childNodes[so]);
+			if (startAfter && _isEmptyNode(startAfter)) {
+				startAfter.remove();
 				if (sc == ec) {
 					range.setEnd(ec, eo - 1);
 				}
 			}
 		}
-		var after = K(ec.childNodes[range.endOffset]);
-		if (after && _isEmptyNode(after)) {
-			after.remove();
+		var endAfter = K(ec.childNodes[range.endOffset]);
+		if (endAfter && _isEmptyNode(endAfter)) {
+			endAfter.remove();
 		}
+		//1234|<strong>56</strong>|789, 删除strong后重设range
+		var startNode = sc.nodeType == 3 ? sc : sc.childNodes[so],
+			endNode =  ec.nodeType == 3 || ec === 0 ? ec : ec.childNodes[eo - 1];
 		//remove attributes or styles
-		_each(nodeList, function() {
-			_removeAttrOrCss(this, map);
+		_each(nodeList, function(i, node) {
+			var knode = K(node),
+				isStartNode = (node == startNode),
+				isEndNode = (node == endNode),
+				prevNode = knode.prev(),
+				nextNode = knode.next();
+			_removeAttrOrCss(knode, map);
+			if (!knode[0]) {
+				if (isStartNode && prevNode && prevNode.type == 3) {
+					range.setStart(prevNode[0], prevNode[0].nodeValue.length);
+				}
+				if (isEndNode && nextNode && nextNode.type == 3) {
+					range.setEnd(nextNode[0], 0);
+				}
+			}
 		});
 		return self;
 	},
@@ -498,6 +510,11 @@ KCmd.prototype = {
 				return K(node);
 			}
 			node = node.parentNode;
+		}
+		//<strong>123</strong>|4567
+		var prev = K(ec).prev();
+		if (prev && ec.nodeType == 3 && eo === 0 && _hasAttrOrCss(prev, map)) {
+			return prev;
 		}
 		return null;
 	},

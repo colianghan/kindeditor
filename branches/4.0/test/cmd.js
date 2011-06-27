@@ -360,7 +360,7 @@ test('cmd.remove', function() {
 
 test('cmd.bold/cmd.italic/cmd.removeformat', function() {
 	var div = K('<div></div>'), node, range;
-	document.body.appendChild(div.get());
+	document.body.appendChild(div[0]);
 	//1
 	node = K('<strong>abcd</strong>').get();
 	div.append(node);
@@ -445,5 +445,25 @@ test('cmd.bold/cmd.italic/cmd.removeformat', function() {
 	cmd = K.cmd(range);
 	cmd.italic();
 	equals(range.html().replace(/\n/, ''), '<p><strong><em>abcd</em></strong></p><p><strong><em>1234</em></strong></p>');
+	div.html('');
+	//10
+	div.html('<table><tr><td>1</td></tr></table><img>0123456789');
+	range = K.range(document);
+	range.setStart(div.last()[0], 4);
+	range.setEnd(div.last()[0], 6);
+	cmd = K.cmd(range);
+	cmd.bold();
+	cmd.bold();
+	cmd.bold();
+	equals(range.html().replace(/\n/, ''), '<strong>45</strong>');
+	div.html('');
+	//11
+	div.html('<table><tr><td>1</td></tr></table><img>0123<strong>45</strong>6789');
+	range = K.range(document);
+	range.setStart(div.last().prev().prev()[0], 4);
+	range.setEnd(div.last()[0], 0);
+	cmd = K.cmd(range);
+	cmd.bold();
+	equals(range.html().replace(/\n/, ''), '45');
 	div.html('');
 });
