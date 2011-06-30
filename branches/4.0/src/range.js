@@ -113,22 +113,35 @@ function _copyAndDelete(range, isCopy, isDelete) {
 		}
 		return centerNode;
 	}
+	function removeNodes() {
+		if (isDelete) {
+			_upRange(range);
+			range.collapse(true);
+		}
+		for (var i = 0, len = nodeList.length; i < len; i++) {
+			var node = nodeList[i];
+			if (node.parentNode) {
+				node.parentNode.removeChild(node);
+			}
+		}
+	}
 
 	var copyRange = range.cloneRange();
 	_downRange(copyRange);
 
 	var start = -1, incStart = -1, incEnd = -1, end = -1,
 		ancestor = range.commonAncestor(), frag = doc.createDocumentFragment();
-
-	function extractNodes(parent, frag) {
-		var textNode;
-		if (parent.nodeType == 3) {
-			textNode = splitTextNode(parent, range.startOffset, range.endOffset);
-			if (isCopy) {
-				frag.appendChild(textNode);
-			}
-			return false;
+	// startContainer is textNode and startContainer == endContainer
+	if (ancestor.nodeType == 3) {
+		var textNode = splitTextNode(ancestor, range.startOffset, range.endOffset);
+		if (isCopy) {
+			frag.appendChild(textNode);
 		}
+		removeNodes();
+		return isCopy ? frag : range;
+	}
+	// other case
+	function extractNodes(parent, frag) {
 		var node = parent.firstChild, nextNode, testRange;
 		while (node) {
 			if (start <= 0) {
@@ -171,6 +184,7 @@ function _copyAndDelete(range, isCopy, isDelete) {
 						}
 					}
 				} else if (node.nodeType == 3) {
+					var textNode;
 					if (node == copyRange.startContainer) {
 						textNode = splitTextNode(node, copyRange.startOffset, node.nodeValue.length);
 					} else if (node == copyRange.endContainer) {
@@ -236,13 +250,22 @@ function _getStartEnd(rng, isStart) {
 			return {node: node.parentNode, offset: i};
 		}
 		if (node.nodeType == 1) {
-			var nodeRange = rng.duplicate();
+			var nodeRange = rng.duplicate(), dummy, knode = K(node);
+			//<table></table><img>ab[cd]ef
+			if (knode.isControl()) {
+				dummy = doc.createElement('span');
+				knode.after(dummy);
+				node = dummy;
+			}
 			_moveToElementText(nodeRange, node);
 			testRange.setEndPoint('StartToEnd', nodeRange);
 			if (cmp > 0) {
 				startPos += nodeRange.text.replace(/\r\n|\n|\r/g, '').length;
 			} else {
 				startPos = 0;
+			}
+			if (dummy) {
+				K(dummy).remove();
 			}
 		} else if (node.nodeType == 3) {
 			testRange.moveStart('character', node.nodeValue.length);
@@ -296,8 +319,21 @@ function _getEndRange(node, offset) {
 			return range;
 		}
 		if (child.nodeType == 1) {
+			var kchild = K(child), span;
+			if (kchild.isControl()) {
+				var span = doc.createElement('span');
+				if (isStart) {
+					kchild.before(span);
+				} else {
+					kchild.after(span);
+				}
+				child = span;
+			}
 			_moveToElementText(range, child);
 			range.collapse(isStart);
+			if (span) {
+				K(span).remove();
+			}
 			return range;
 		}
 		node = child;
@@ -573,9 +609,8 @@ KRange.prototype = {
 	isControl : function() {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
-			ec = self.endContainer, eo = self.endOffset, rng,
-			tags = _toMap('img,table');
-		return sc.nodeType == 1 && sc === ec && so + 1 === eo && tags[K(sc.childNodes[so]).name];
+			ec = self.endContainer, eo = self.endOffset, rng;
+		return sc.nodeType == 1 && sc === ec && so + 1 === eo && K(sc.childNodes[so]).isControl();
 	},
 	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node, rng;
@@ -607,8 +642,8 @@ KRange.prototype = {
 	},
 	dump : function() {
 		console.log('--------------------');
-		console.log(this.startContainer, this.startOffset);
-		console.log(this.endContainer, this.endOffset);
+		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
+		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
 	}
 };
 

@@ -420,6 +420,7 @@ KCmd.prototype = {
 	},
 	remove : function(map) {
 		var self = this, doc = self.doc, range = self.range;
+		//collapsed == true
 		if (range.collapsed) {
 			self.split(true, map);
 			range.collapse(true);
@@ -432,7 +433,6 @@ KCmd.prototype = {
 		var startDummy = doc.createElement('span'), endDummy = doc.createElement('span');
 		range.cloneRange().collapse(false).insertNode(endDummy);
 		range.cloneRange().collapse(true).insertNode(startDummy);
-
 		//select element
 		var nodeList = [], cmpStart = false;
 		K(range.commonAncestor()).scan(function(node) {
@@ -481,12 +481,13 @@ KCmd.prototype = {
 			endNode =  ec.nodeType == 3 || ec === 0 ? ec : ec.childNodes[eo - 1];
 		//remove attributes or styles
 		_each(nodeList, function(i, node) {
-			var knode = K(node),
-				isStartNode = (node == startNode),
-				isEndNode = (node == endNode),
-				prevNode = knode.prev(),
-				nextNode = knode.next();
+			var knode = K(node);
+			//	isStartNode = (node == startNode),
+			//	isEndNode = (node == endNode),
+			//	prevNode = knode.prev(),
+			//	nextNode = knode.next();
 			_removeAttrOrCss(knode, map);
+			/*
 			if (!knode[0]) {
 				if (isStartNode && prevNode && prevNode.type == 3) {
 					range.setStart(prevNode[0], prevNode[0].nodeValue.length);
@@ -495,6 +496,7 @@ KCmd.prototype = {
 					range.setEnd(nextNode[0], 0);
 				}
 			}
+			*/
 		});
 		return self;
 	},
@@ -502,21 +504,22 @@ KCmd.prototype = {
 		var range = this.range,
 			ec = range.endContainer, eo = range.endOffset,
 			node = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1],
-			child = node;
+			child = node, parent = node;
 		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
 			if (_hasAttrOrCss(K(child), map)) {
 				return K(child);
 			}
 		}
-		while (node) {
-			if (_hasAttrOrCss(K(node), map)) {
-				return K(node);
+		while (parent) {
+			if (_hasAttrOrCss(K(parent), map)) {
+				return K(parent);
 			}
-			node = node.parentNode;
+			parent = parent.parentNode;
 		}
 		//<strong>123</strong>|4567
-		var prev = K(ec).prev();
-		if (prev && ec.nodeType == 3 && eo === 0 && _hasAttrOrCss(prev, map)) {
+		//<strong>123</strong>|<br />
+		var prev = K(node).prev();
+		if (prev && _hasAttrOrCss(prev, map)) {
 			return prev;
 		}
 		return null;

@@ -406,6 +406,9 @@ KNode.prototype = {
 	isStyle : function() {
 		return !!_STYLE_TAG_MAP[this.name];
 	},
+	isControl : function() {
+		return !!_CONTROL_TAG_MAP[this.name];
+	},
 	contains : function(otherNode) {
 		if (this.length < 1) {
 			return false;
