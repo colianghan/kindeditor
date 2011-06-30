@@ -2,7 +2,11 @@ module('cmd');
 
 test('cmd.wrap', function() {
 	var p = K.query('#test-data-01 p'),
-		cloneP, strong, range, cmd;
+		cloneP, div, strong, range, cmd;
+	
+	var div = K('<div></div>');
+	document.body.appendChild(div.get());
+
 	//1
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -164,6 +168,15 @@ test('cmd.wrap', function() {
 	cmd.wrap('<em></em>');
 	equals(range.html(), '<strong><em>abc</em></strong>');
 	document.body.removeChild(cloneP);
+	//16
+	div.html('<p>123</p><p>456</p>');
+	range = K.range(document);
+	range.setStart(div.first().first()[0], 0);
+	range.setEnd(div.last().last()[0], 3);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	equals(div.html().replace(/\n/, ''), '<p><strong>123</strong></p><p><strong>456</strong></p>');
+	div.html('');
 });
 
 test('cmd.remove', function() {

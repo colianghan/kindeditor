@@ -117,7 +117,8 @@ function _copyAndDelete(range, isCopy, isDelete) {
 	var copyRange = range.cloneRange();
 	_downRange(copyRange);
 
-	var start = -1, incStart = -1, incEnd = -1, end = -1;
+	var start = -1, incStart = -1, incEnd = -1, end = -1,
+		ancestor = range.commonAncestor(), frag = doc.createDocumentFragment();
 
 	function extractNodes(parent, frag) {
 		var textNode;
@@ -128,9 +129,8 @@ function _copyAndDelete(range, isCopy, isDelete) {
 			}
 			return false;
 		}
-		var node = parent.firstChild, nextNode;
+		var node = parent.firstChild, nextNode, testRange;
 		while (node) {
-			var testRange;
 			if (start <= 0) {
 				testRange = new KRange(doc).selectNode(node);
 				start = testRange.compareBoundaryPoints(_START_TO_END, range);
@@ -189,8 +189,6 @@ function _copyAndDelete(range, isCopy, isDelete) {
 			node = nextNode;
 		}
 	}
-
-	var ancestor = range.commonAncestor(), frag = doc.createDocumentFragment();
 
 	extractNodes(ancestor, frag);
 
@@ -606,6 +604,11 @@ KRange.prototype = {
 	},
 	html : function() {
 		return K(this.cloneContents()).outer();
+	},
+	dump : function() {
+		console.log('--------------------');
+		console.log(this.startContainer, this.startOffset);
+		console.log(this.endContainer, this.endOffset);
 	}
 };
 

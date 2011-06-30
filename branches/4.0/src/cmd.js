@@ -316,7 +316,9 @@ KCmd.prototype = {
 			while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 				knode = parent;
 			}
+			//wrap node
 			var el = _wrapNode(knode, wrapper)[0];
+			//reset range
 			if (range.startContainer == node || range.startContainer == knode[0]) {
 				range.setStartBefore(el);
 			}
@@ -331,18 +333,15 @@ KCmd.prototype = {
 			return self;
 		}
 
-		var copyRange = range.cloneRange();
-		_downRange(copyRange);
-
 		var start = -1, end = -1, testRange,
-			cmpStart = (ancestor == copyRange.startContainer),
-			cmpEnd = (ancestor == copyRange.endContainer);
+			cmpStart = (ancestor == range.startContainer),
+			cmpEnd = (ancestor == range.endContainer);
 
 		K(ancestor).scan(function(node) {
-			if (!cmpStart && node == copyRange.startContainer) {
+			if (!cmpStart && node == range.startContainer) {
 				cmpStart = true;
 			}
-			if (!cmpEnd && node == copyRange.endContainer) {
+			if (!cmpEnd && node == range.endContainer) {
 				cmpEnd = true;
 			}
 			if (cmpStart && start <= 0) {
@@ -426,28 +425,32 @@ KCmd.prototype = {
 			range.collapse(true);
 			return self;
 		}
+		//split range
 		self.split(true, map);
 		self.split(false, map);
-		//选择要删除的element
-		var nodeList = [], testRange, start = 1, end = 1;
-		//向上遍历，为了比较range
-		_each(K(range.commonAncestor()).all(true), function() {
-			var node = this;
-			testRange = _range(doc).selectNode(node);
-			if (end >= 0) {
-				end = testRange.compareBoundaryPoints(_END_TO_END, range);
+		//insert dummy element
+		var startDummy = doc.createElement('span'), endDummy = doc.createElement('span');
+		range.cloneRange().collapse(false).insertNode(endDummy);
+		range.cloneRange().collapse(true).insertNode(startDummy);
+
+		//select element
+		var nodeList = [], cmpStart = false;
+		K(range.commonAncestor()).scan(function(node) {
+			if (!cmpStart && node == startDummy) {
+				cmpStart = true;
+				return;
 			}
-			if (end <= 0 && start >= 0) {
-				start = testRange.compareBoundaryPoints(_START_TO_START, range);
-			}
-			if (start < 0) {
+			if (node == endDummy) {
 				return false;
 			}
-			if (end <= 0 && node.nodeType == 1) {
+			if (cmpStart) {
 				nodeList.push(node);
 			}
 		});
-		//remove empty elements
+		//remove dummy element
+		K(startDummy).remove();
+		K(endDummy).remove();
+		//remove empty element
 		var sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset;
 		if (so > 0) {
