@@ -209,11 +209,10 @@ function _wrapNode(knode, wrapper) {
 		knode = child;
 	}
 	//将node的子节点纳入在一个documentFragment里
-	var next, frag = knode.doc.createDocumentFragment();
-	while ((child = knode.first())) {
-		next = child.next();
-		frag.appendChild(child.get());
-		child = next;
+	var child = knode.first(), frag = knode.doc.createDocumentFragment();
+	while (child) {
+		frag.appendChild(child[0]);
+		child = child.next();
 	}
 	wrapper = _mergeWrapper(nodeWrapper, wrapper);
 	if (frag.firstChild) {
@@ -312,7 +311,7 @@ KCmd.prototype = {
 				center.splitText(endOffset - startOffset);
 			}
 			var parent, knode = K(center);
-			//textNode为唯一的子节点时重新设置node
+			//textNode为唯一的子节点时，重新设置node
 			while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 				knode = parent;
 			}
@@ -425,6 +424,14 @@ KCmd.prototype = {
 			self.split(true, map);
 			range.collapse(true);
 			return self;
+		}
+		//<p><strong><em>[123456789]</em></strong></p>, remove strong
+		if (range.startOffset === 0) {
+			var ksc = K(range.startContainer), parent;
+			while ((parent = ksc.parent()) && parent.isStyle() && parent.children().length == 1) {
+				ksc = parent;
+			}
+			range.setStart(ksc[0], 0);
 		}
 		//split range
 		self.split(true, map);

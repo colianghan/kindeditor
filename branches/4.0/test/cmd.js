@@ -371,7 +371,7 @@ test('cmd.remove', function() {
 	document.body.removeChild(cloneP);
 });
 
-test('cmd.bold/cmd.italic/cmd.removeformat', function() {
+test('cmd.execute', function() {
 	var div = K('<div></div>'), node, range;
 	document.body.appendChild(div[0]);
 	//1
@@ -478,5 +478,23 @@ test('cmd.bold/cmd.italic/cmd.removeformat', function() {
 	cmd = K.cmd(range);
 	cmd.bold();
 	equals(range.html().replace(/\n/, ''), '45');
+	div.html('');
+	//12
+	div.html('<p><strong><em>123456789</em></strong></p>');
+	range = K.range(document);
+	range.setStart(div.first().first().first()[0], 0);
+	range.setEnd(div.first().first().first().first()[0], 9);
+	cmd = K.cmd(range);
+	cmd.underline();
+	equals(div.html().replace(/\n/, ''), '<p><strong><em><u>123456789</u></em></strong></p>');
+	div.html('');
+	//13
+	div.html('<p><strong><em>123456789</em></strong></p>');
+	range = K.range(document);
+	range.setStart(div.first().first().first()[0], 0);
+	range.setEnd(div.first().first().first().first()[0], 9);
+	cmd = K.cmd(range);
+	cmd.bold();
+	equals(div.html().replace(/\n/, ''), '<p><em>123456789</em></p>');
 	div.html('');
 });

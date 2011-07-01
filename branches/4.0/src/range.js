@@ -228,7 +228,10 @@ function _moveToElementText(range, el) {
 		}
 		node = node.parentNode;
 	}
-	range.moveToElementText(el);
+	// IE有时候报错，屏蔽错误
+	try {
+		range.moveToElementText(el);
+	} catch(e) {}
 }
 //根据原生Range，取得开始节点和结束节点的位置。IE专用
 function _getStartEnd(rng, isStart) {
@@ -299,7 +302,7 @@ function _getEndRange(node, offset) {
 		range.collapse(true);
 		return range;
 	}
-	if (node.nodeType == 1) {
+	if (node.nodeType == 1 && node.childNodes.length > 0) {
 		var children = node.childNodes, isStart, child;
 		if (offset === 0) {
 			child = children[0];
