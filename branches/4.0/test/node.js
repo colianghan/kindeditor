@@ -103,6 +103,7 @@ test("append",function(){
 
 test("before",function(){
 	var parent = K('<div><div class="abc"></div><p class="abc"></p></div>');
+	K(document.body).append(parent);
 	K('.abc', parent).before('<span>def</span>');
 	var children = parent.children();
 	equals(children.length, 4);
@@ -110,10 +111,12 @@ test("before",function(){
 	equals(K(children[1]).name, 'div');
 	equals(K(children[2]).name, 'span');
 	equals(K(children[3]).name, 'p');
+	parent.remove();
 });
 
 test("after",function(){
 	var parent = K('<div><div class="abc"></div><p class="abc"></p></div>');
+	K(document.body).append(parent);
 	K('.abc', parent).after('<span>def</span>');
 	var children = parent.children();
 	equals(children.length, 4);
@@ -121,6 +124,7 @@ test("after",function(){
 	equals(K(children[1]).name, 'span');
 	equals(K(children[2]).name, 'p');
 	equals(K(children[3]).name, 'span');
+	parent.remove();
 });
 
 test("replaceWith",function(){

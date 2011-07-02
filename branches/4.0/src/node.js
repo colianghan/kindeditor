@@ -214,7 +214,7 @@ KNode.prototype = {
 			return _formatHtml(self[0].innerHTML);
 		}
 		self.each(function() {
-			_setHtml(this, _formatHtml(val));
+			_setHtml(this, val);
 		});
 		return self;
 	},

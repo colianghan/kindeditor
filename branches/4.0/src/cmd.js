@@ -209,7 +209,8 @@ function _wrapNode(knode, wrapper) {
 		knode = child;
 	}
 	//将node的子节点纳入在一个documentFragment里
-	var child = knode.first(), frag = knode.doc.createDocumentFragment();
+	child = knode.first();
+	var frag = knode.doc.createDocumentFragment();
 	while (child) {
 		frag.appendChild(child[0]);
 		child = child.next();

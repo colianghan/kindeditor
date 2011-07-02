@@ -380,10 +380,6 @@ KEditor.prototype = {
 		this.edit.html(val);
 		return this;
 	},
-	insertHtml : function(val) {
-		this.edit.cmd.inserthtml(val);
-		return this;
-	},
 	val : function(key) {
 		return this.edit.cmd.val(key);
 	},
@@ -394,7 +390,11 @@ KEditor.prototype = {
 		var self = this, cmd = self.edit.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		self.addBookmark();
+		cmd.range.dump();
 		return self;
+	},
+	insertHtml : function(val) {
+		return this.exec('inserthtml');
 	},
 	focus : function() {
 		this.edit.focus();

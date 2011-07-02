@@ -20,6 +20,9 @@ function _nodeToPath(node) {
 }
 // get Node by path
 function _pathToNode(path, doc) {
+	if (path === '') {
+		return doc.body;
+	}
 	var list = path.split(','), node = doc.body;
 	for (var i = list.length - 1; i >= 0; i--) {
 		var child = node.childNodes[list[i]];
@@ -346,7 +349,7 @@ function _getEndRange(node, offset) {
 		if (child.nodeType == 1) {
 			var kchild = K(child), span;
 			if (kchild.isControl()) {
-				var span = doc.createElement('span');
+				span = doc.createElement('span');
 				if (isStart) {
 					kchild.before(span);
 				} else {
@@ -676,8 +679,8 @@ KRange.prototype = {
 	},
 	moveToBookmark : function(bookmark) {
 		var self = this;
-		self.setStart(_pathToNode(bookmark.startPath, self.doc), bookmark.startOffset);
-		self.setEnd(_pathToNode(bookmark.endPath, self.doc), bookmark.endOffset);
+		return self.setStart(_pathToNode(bookmark.startPath, self.doc), bookmark.startOffset).
+			setEnd(_pathToNode(bookmark.endPath, self.doc), bookmark.endOffset);
 	},
 	dump : function() {
 		console.log('--------------------');

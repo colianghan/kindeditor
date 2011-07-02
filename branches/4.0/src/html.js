@@ -101,8 +101,9 @@ function _formatUrl(url, mode, host, pathname) {
 	return url;
 }
 
-function _formatHtml(html, htmlTags, urlType) {
+function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 	urlType = urlType || '';
+	wellFormatted = (wellFormatted === undefined) ? true : wellFormatted;
 	var isFilter = htmlTags ? true : false;
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
@@ -117,7 +118,7 @@ function _formatHtml(html, htmlTags, urlType) {
 			}
 		});
 	}
-	var re = /((?:\r\n|\n|\r)*)<(\/)?([\w-:]+)((?:\s+|(?:\s+[\w-:]+)|(?:\s+[\w-:]+=[^\s"'<>]+)|(?:\s+[\w-:]+="[^"]*")|(?:\s+[\w-:]+='[^']*'))*)(\/)?>((?:\r\n|\n|\r)*)/g;
+	var re = /((?:\r\n|\n|\r)*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>((?:\r\n|\n|\r)*)/g;
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var startNewline = $1 || '',
 			startSlash = $2 || '',
@@ -125,6 +126,10 @@ function _formatHtml(html, htmlTags, urlType) {
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
+		if (!wellFormatted) {
+			startNewline = '';
+			endNewline = '';
+		}
 		if (isFilter && !htmlTagHash[tagName]) {
 			return '';
 		}
@@ -132,7 +137,7 @@ function _formatHtml(html, htmlTags, urlType) {
 			endSlash = ' /';
 		}
 		if (_BLOCK_TAG_MAP[tagName]) {
-			if (startSlash || endSlash) {
+			if (wellFormatted && (startSlash || endSlash)) {
 				endNewline = '\n';
 			}
 		} else {
