@@ -1,23 +1,11 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name wordpaste.js
- * @fileOverview Word粘贴插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('wordpaste', function(K) {
 	var self = this, name = 'wordpaste';
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px;">' +
+			html = '<div style="margin:10px 20px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
-				'<iframe style="width:415px;height:260px;border:1px solid #A0A0A0;" frameborder="0"></iframe>' +
+				'<iframe class="ke-plugin-wordpaste-iframe" frameborder="0"></iframe>' +
 				'</div>',
 			dialog = self.createDialog({
 				name : name,

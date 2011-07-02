@@ -1,20 +1,15 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
 
-/**
- * @name dialog.js
- * @fileOverview 浮动窗口
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "node.js"
-*/
+function _button(arg) {
+	arg = arg || {};
+	var name = arg.name || '',
+		span = K('<span class="ke-button-common ke-button-outer" title="' + name + '"></span>'),
+		btn = K('<input class="ke-button-common ke-button" type="button" value="' + name + '" />');
+	if (arg.click) {
+		btn.click(arg.click);
+	}
+	span.append(btn);
+	return span;
+}
 
 function _dialog(options) {
 	options.z = options.z || 811213;
@@ -38,66 +33,32 @@ function _dialog(options) {
 	div.addClass('ke-dialog').bind('click,mousedown', function(e){
 		e.stopPropagation();
 	});
-	var contentCell;
-	if (shadowMode) {
-		var table = doc.createElement('table');
-		table.className = 'ke-dialog-table';
-		table.cellPadding = 0;
-		table.cellSpacing = 0;
-		table.border = 0;
-		div.append(table);
-		var rowNames = ['t', 'm', 'b'],
-			colNames = ['l', 'c', 'r'],
-			i, j, row, cell;
-		for (i = 0, len = 3; i < len; i++) {
-			row = table.insertRow(i);
-			for (j = 0, l = 3; j < l; j++) {
-				cell = row.insertCell(j);
-				cell.className = 'ke-' + rowNames[i] + colNames[j];
-				if (i == 1 && j == 1) {
-					contentCell = K(cell);
-				} else {
-					cell.innerHTML = '<span class="ke-dialog-empty"></span>';
-				}
-			}
-		}
-		contentCell.css({
-			width : width,
-			height : height,
-			'vertical-align' : 'top' 
-		});
-	} else {
-		div.addClass('ke-dialog-no-shadow');
-		contentCell = div;
-	}
+	div.addClass('ke-dialog-' + (shadowMode ? '' : 'no-') + 'shadow');
 	var headerDiv = K('<div class="ke-dialog-header"></div>');
-	contentCell.append(headerDiv);
+	div.append(headerDiv);
 	headerDiv.html(title);
-	var span = K('<span class="ke-dialog-icon-close ke-dialog-icon-close-' +
-		(shadowMode ? '' : 'no-') + 'shadow" title="' + closeBtn.name + '"></span>')
-		.click(closeBtn.click);
+	var span = K('<span class="ke-dialog-icon-close" title="' + closeBtn.name + '"></span>').click(closeBtn.click);
 	headerDiv.append(span);
 	self.draggable({
 		clickEl : headerDiv,
 		beforeDrag : options.beforeDrag
 	});
 	var bodyDiv = K('<div class="ke-dialog-body"></div>');
-	contentCell.append(bodyDiv);
+	div.append(bodyDiv);
 	bodyDiv.append(body);
 	var footerDiv = K('<div class="ke-dialog-footer"></div>');
 	if (previewBtn || yesBtn || noBtn) {
-		contentCell.append(footerDiv);
+		div.append(footerDiv);
 	}
 	_each([
 		{ btn : previewBtn, name : 'preview' },
 		{ btn : yesBtn, name : 'yes' },
 		{ btn : noBtn, name : 'no' }
 	], function() {
-		var btn = this.btn;
-		if (btn) {
-			var button = K('<input type="button" class="ke-dialog-' + this.name + '" value="' + btn.name + '" />');
+		if (this.btn) {
+			var button = _button(this.btn);
+			button.addClass('ke-dialog-' + this.name);
 			footerDiv.append(button);
-			button.click(btn.click);
 		}
 	});
 	if (height) {
@@ -136,4 +97,5 @@ function _dialog(options) {
 	return self;
 }
 
+K.button = _button;
 K.dialog = _dialog;

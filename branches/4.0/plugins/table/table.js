@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name table.js
- * @fileOverview 表格插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('table', function(K) {
 	var self = this, name = 'table',
@@ -27,22 +15,22 @@ KindEditor.plugin('table', function(K) {
 		//insert or modify table
 		prop : function(isInsert) {
 			var html = [
-				'<div style="margin:10px;">',
+				'<div style="margin:10px 20px;">',
 				//rows, cols
 				'<div class="ke-dialog-row">',
 				'<label for="keRows">' + lang.cells + '</label>',
-				lang.rows + ' <input type="text" id="keRows" class="ke-input-number" name="rows" value="" maxlength="4" /> ',
-				lang.cols + ' <input type="text" class="ke-input-number" name="cols" value="" maxlength="4" /> ',
+				lang.rows + ' <input type="text" id="keRows" class="ke-input-text ke-input-number" name="rows" value="" maxlength="4" /> ',
+				lang.cols + ' <input type="text" class="ke-input-text ke-input-number" name="cols" value="" maxlength="4" /> ',
 				'</div>',
 				//width, height
 				'<div class="ke-dialog-row">',
 				'<label for="keWidth">' + lang.size + '</label>',
-				lang.width + ' <input type="text" id="keWidth" class="ke-input-number" name="width" value="" maxlength="4" /> ',
+				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> ',
 				'<select name="widthType">',
 				'<option value="%">' + lang.percent + '</option>',
 				'<option value="px">' + lang.px + '</option>',
 				'</select> ',
-				lang.height + ' <input type="text" class="ke-input-number" name="height" value="" maxlength="4" /> ',
+				lang.height + ' <input type="text" class="ke-input-text ke-input-number" name="height" value="" maxlength="4" /> ',
 				'<select name="heightType">',
 				'<option value="%">' + lang.percent + '</option>',
 				'<option value="px">' + lang.px + '</option>',
@@ -51,8 +39,8 @@ KindEditor.plugin('table', function(K) {
 				//space, padding
 				'<div class="ke-dialog-row">',
 				'<label for="kePadding">' + lang.space + '</label>',
-				lang.padding + ' <input type="text" id="kePadding" class="ke-input-number" name="padding" value="" maxlength="4" /> ',
-				lang.spacing + ' <input type="text" class="ke-input-number" name="spacing" value="" maxlength="4" /> ',
+				lang.padding + ' <input type="text" id="kePadding" class="ke-input-text ke-input-number" name="padding" value="" maxlength="4" /> ',
+				lang.spacing + ' <input type="text" class="ke-input-text ke-input-number" name="spacing" value="" maxlength="4" /> ',
 				'</div>',
 				//align
 				'<div class="ke-dialog-row">',
@@ -67,7 +55,7 @@ KindEditor.plugin('table', function(K) {
 				//border
 				'<div class="ke-dialog-row">',
 				'<label for="keBorder">' + lang.border + '</label>',
-				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-number" name="border" value="" maxlength="4" /> ',
+				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-text ke-input-number" name="border" value="" maxlength="4" /> ',
 				lang.borderColor + ' <span class="ke-inline-block ke-input-color"></span>',
 				'</div>',
 				//background color

@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name flash.js
- * @fileOverview Flash插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('flash', function(K) {
 	var self = this, name = 'flash',
@@ -29,21 +17,21 @@ KindEditor.plugin('flash', function(K) {
 	var functions = {
 		edit : function() {
 			var html = [
-				'<div style="margin:10px;">',
+				'<div style="margin:10px 20px;">',
 				//url
 				'<div class="ke-dialog-row">',
 				'<label for="keUrl">' + lang.url + '</label>',
-				'<input type="text" id="keUrl" name="url" value="" style="width:90%;" />',
+				'<input class="ke-input-text" type="text" id="keUrl" name="url" value="" style="width:90%;" />',
 				'</div>',
 				//width
 				'<div class="ke-dialog-row">',
 				'<label for="keWidth">' + lang.width + '</label>',
-				'<input type="text" id="keWidth" class="ke-input-number" name="width" value="550" maxlength="4" /> ',
+				'<input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="550" maxlength="4" /> ',
 				'</div>',
 				//height
 				'<div class="ke-dialog-row">',
 				'<label for="keHeight">' + lang.height + '</label>',
-				'<input type="text" id="keHeight" class="ke-input-number" name="height" value="400" maxlength="4" /> ',
+				'<input type="text" id="keHeight" class="ke-input-text ke-input-number" name="height" value="400" maxlength="4" /> ',
 				'</div>',
 				'</div>'
 			].join('');

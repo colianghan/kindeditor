@@ -1,21 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name edit.js
- * @fileOverview iframe编辑区域
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "node.js"
-#using "cmd.js"
-*/
 
 function _iframeDoc(iframe) {
 	iframe = _get(iframe);
@@ -80,14 +62,6 @@ function _elementVal(knode, val) {
 	return knode.hasVal() ? knode.val(val) : knode.html(val);
 }
 
-/**
-	@name KindEditor.edit
-	@class 可视化控件类
-	@param {String|Node} expr DOM元素、选择器字符串
-	@param {Object} options 可选配置
-	@description
-	可视化控件类。
-*/
 function _edit(options) {
 	var self = _widget(options),
 		remove = self.remove,

@@ -184,7 +184,7 @@ test('cmd.remove', function() {
 		cloneP, strong, range, cmd;
 
 	var div = K('<div></div>');
-	document.body.appendChild(div.get());
+	document.body.appendChild(div[0]);
 	//1
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);

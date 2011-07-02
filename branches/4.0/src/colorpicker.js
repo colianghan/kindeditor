@@ -1,21 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name colorpicker.js
- * @fileOverview 颜色选择器
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "node.js"
-#using "widget.js"
-*/
 
 function _colorpicker(options) {
 	options.z = options.z || 811213;

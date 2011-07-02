@@ -167,22 +167,19 @@ function _copyAndDelete(range, isCopy, isDelete) {
 	}
 	// other case
 	function extractNodes(parent, frag) {
-		var node = parent.firstChild, nextNode, testRange;
+		var node = parent.firstChild, nextNode;
 		while (node) {
+			var testRange = new KRange(doc).selectNode(node);
 			if (start <= 0) {
-				testRange = new KRange(doc).selectNode(node);
 				start = testRange.compareBoundaryPoints(_START_TO_END, range);
 			}
 			if (start >= 0 && incStart <= 0) {
-				testRange = new KRange(doc).selectNode(node);
 				incStart = testRange.compareBoundaryPoints(_START_TO_START, range);
 			}
 			if (incStart >= 0 && incEnd <= 0) {
-				testRange = new KRange(doc).selectNode(node);
 				incEnd = testRange.compareBoundaryPoints(_END_TO_END, range);
 			}
 			if (incEnd >= 0 && end <= 0) {
-				testRange = new KRange(doc).selectNode(node);
 				end = testRange.compareBoundaryPoints(_END_TO_START, range);
 			}
 			if (end >= 0) {

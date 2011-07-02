@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name link.js
- * @fileOverview 超级连接插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('link', function(K) {
 	var self = this, name = 'link';
@@ -19,11 +7,11 @@ KindEditor.plugin('link', function(K) {
 	var functions = {
 		edit : function() {
 			var lang = self.lang(name + '.'),
-				html = '<div style="margin:10px;">' +
+				html = '<div style="margin:10px 20px;">' +
 					//url
 					'<div class="ke-dialog-row">' +
 					'<label for="keUrl">' + lang.url + '</label>' +
-					'<input type="text" id="keUrl" name="url" value="" style="width:90%;" /></div>' +
+					'<input class="ke-input-text" type="text" id="keUrl" name="url" value="" style="width:90%;" /></div>' +
 					//type
 					'<div class="ke-dialog-row"">' +
 					'<label for="keType">' + lang.linkType + '</label>' +

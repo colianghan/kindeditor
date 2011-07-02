@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name emoticons.js
- * @fileOverview 编辑器表情插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('emoticons', function(K) {
 	var self = this, name = 'emoticons',

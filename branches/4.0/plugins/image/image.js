@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name image.js
- * @fileOverview 图片插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('image', function(K) {
 	var self = this, name = 'image',
@@ -33,7 +21,7 @@ KindEditor.plugin('image', function(K) {
 	var functions = {
 		edit : function() {
 			var html = [
-				'<div style="margin:10px;">',
+				'<div style="margin:10px 20px;">',
 				//tabs
 				'<div class="tabs"></div>',
 				//hidden iframe
@@ -45,8 +33,10 @@ KindEditor.plugin('image', function(K) {
 				'<div class="ke-dialog-row">',
 				'<div class="tab1" style="display:none;">',
 				'<label for="keUrl">' + lang.remoteUrl + '</label>',
-				'<input type="text" id="keUrl" name="url" value="" style="width:230px;" />',
-				' <input type="button" name="viewServer" value="' + lang.viewServer + '" />',
+				'<input type="text" id="keUrl" class="ke-input-text" name="url" value="" style="width:230px;" /> &nbsp;',
+				'<span class="ke-button-common ke-button-outer btn">',
+				'<input type="button" class="ke-button-common ke-button" name="viewServer" value="' + lang.viewServer + '" />',
+				'</span>',
 				'</div>',
 				'<div class="tab2" style="display:none;">',
 				'<label for="keFile">' + lang.localUrl + '</label>',
@@ -56,8 +46,8 @@ KindEditor.plugin('image', function(K) {
 				//size
 				'<div class="ke-dialog-row">',
 				'<label for="keWidth">' + lang.size + '</label>',
-				lang.width + ' <input type="text" id="keWidth" class="ke-input-number" name="width" value="" maxlength="4" /> ',
-				lang.height + ' <input type="text" class="ke-input-number" name="height" value="" maxlength="4" /> ',
+				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> ',
+				lang.height + ' <input type="text" class="ke-input-text ke-input-number" name="height" value="" maxlength="4" /> ',
 				'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />',
 				'</div>',
 				//align
@@ -70,7 +60,7 @@ KindEditor.plugin('image', function(K) {
 				//title
 				'<div class="ke-dialog-row">',
 				'<label for="keTitle">' + lang.imgTitle + '</label>',
-				'<input type="text" id="keTitle" name="title" value="" style="width:95%;" /></div>',
+				'<input type="text" id="keTitle" class="ke-input-text" name="title" value="" style="width:95%;" /></div>',
 				'</div>',
 				//form end
 				'</form>',
@@ -121,8 +111,7 @@ KindEditor.plugin('image', function(K) {
 							form[0].submit();
 							return;
 						}
-						self.exec('insertimage', url, title, width, height, 0, align)
-							.hideDialog().focus();
+						self.exec('insertimage', url, title, width, height, 0, align).hideDialog().focus();
 					}
 				}
 			}),
@@ -146,7 +135,7 @@ KindEditor.plugin('image', function(K) {
 				widthBox = K('[name="width"]', div),
 				heightBox = K('[name="height"]', div),
 				titleBox = K('[name="title"]', div),
-				alignBox = K('[name="align"]'); 
+				alignBox = K('[name="align"]');
 			var img = getSelectedImg();
 			if (img) {
 				urlBox.val(img.attr('src'));
