@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name core.js
- * @fileOverview 核心插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('core', function(K) {
 	var self = this;
@@ -21,6 +9,14 @@ KindEditor.plugin('core', function(K) {
 	//fullscreen
 	self.clickToolbar('fullscreen', function() {
 		self.fullscreen();
+	});
+	//undo
+	self.clickToolbar('undo', function() {
+		self.undo();
+	});
+	//redo
+	self.clickToolbar('redo', function() {
+		self.redo();
 	});
 	//formatblock
 	self.clickToolbar('formatblock', function() {

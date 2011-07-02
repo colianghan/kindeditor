@@ -721,18 +721,18 @@ KCmd.prototype = {
 			}
 			html += '>' + url + '</a>';
 			self.inserthtml(html);
-			return self;
+		} else {
+			_nativeCommand(doc, 'createlink', '__ke_temp_url__');
+			a = self.commonNode({ a : '*' });
+			K('a[href="__ke_temp_url__"]', a ? a.parent() : doc).each(function() {
+				K(this).attr('href', url);
+				if (type) {
+					K(this).attr('target', type);
+				} else {
+					K(this).removeAttr('target');
+				}
+			});
 		}
-		_nativeCommand(doc, 'createlink', '__ke_temp_url__');
-		a = self.commonNode({ a : '*' });
-		K('a[href="__ke_temp_url__"]', a ? a.parent() : doc).each(function() {
-			K(this).attr('href', url);
-			if (type) {
-				K(this).attr('target', type);
-			} else {
-				K(this).removeAttr('target');
-			}
-		});
 		return self;
 	},
 	unlink : function() {
@@ -751,9 +751,9 @@ KCmd.prototype = {
 					parent.remove(true);
 				}
 			}
-			return self;
+		} else {
+			_nativeCommand(doc, 'unlink', null);
 		}
-		_nativeCommand(doc, 'unlink', null);
 		return self;
 	},
 	//用键盘添加文字时触发oninput事件
@@ -821,13 +821,13 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 });
 
 function _cmd(mixed) {
-	//mixed is a node
+	// mixed is a node
 	if (mixed.nodeName) {
 		var doc = _getDoc(mixed),
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
-		//add events
-		//reset selection
+		// add events
+		// reset selection
 		cmd.onchange(function(e) {
 			var rng = _getRng(doc);
 			if (rng) {
@@ -837,7 +837,7 @@ function _cmd(mixed) {
 				}
 			}
 		});
-		//WEBKIT点击图片选中
+		// [WEBKIT] select an image after click the image
 		if (_WEBKIT) {
 			K(doc).click(function(e) {
 				if (K(e.target).name === 'img') {
@@ -852,7 +852,7 @@ function _cmd(mixed) {
 		}
 		return cmd;
 	}
-	//mixed is a KRange
+	// mixed is a KRange
 	return new KCmd(mixed);
 }
 

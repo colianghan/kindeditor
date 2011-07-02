@@ -1,22 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name main.js
- * @fileOverview 组装、初始化编辑器
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "config.js"
-#using "node.js"
-#using "main.js"
-*/
 
 var _plugins = {};
 
@@ -122,6 +103,17 @@ function _bindContextmenuEvent() {
 	});
 }
 
+function _addBookmarkToStack(stack, bookmark) {
+	if (stack.length === 0) {
+		stack.push(bookmark);
+		return;
+	}
+	var prev = stack[stack.length - 1];
+	if (bookmark.html !== prev.html) {
+		stack.push(bookmark);
+	}
+}
+
 function KEditor(options) {
 	var self = this;
 	_each(options, function(key, val) {
@@ -147,13 +139,15 @@ function KEditor(options) {
 	self.width = _addUnit(self.width);
 	self.height = _addUnit(self.height);
 	self.srcElement = se;
-	//private properties
+	// private properties
 	self._handlers = {};
 	self._contextmenus = [];
+	self._undoStack = [];
+	self._redoStack = [];
 	_each(_plugins, function(name, fn) {
 		fn.call(self, KindEditor);
 	});
-	//preload default plugins
+	// preload default plugins
 	var tempNames = self.preloadPlugins.slice(0);
 	function load() {
 		if (tempNames.length > 0) {
@@ -333,6 +327,11 @@ KEditor.prototype = {
 					}
 				});
 				_bindContextmenuEvent.call(self);
+				// add bookmark to undoStack
+				self.addBookmark();
+				this.cmd.oninput(function(e) {
+					self.addBookmark();
+				});
 				//execute afterCreate event
 				self.afterCreate();
 			}
@@ -392,13 +391,56 @@ KEditor.prototype = {
 		return this.edit.cmd.state(key);
 	},
 	exec : function(key) {
-		var cmd = this.edit.cmd;
+		var self = this, cmd = self.edit.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
-		return this;
+		self.addBookmark();
+		return self;
 	},
 	focus : function() {
 		this.edit.focus();
 		return this;
+	},
+	addBookmark : function() {
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var bookmark = range.getBookmark();
+		bookmark.html = body.html();
+		if (self._undoStack.length > 0) {
+			var prev = self._undoStack[self._undoStack.length - 1];
+			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
+				return self;
+			}
+		}
+		_addBookmarkToStack(self._undoStack, bookmark);
+		return self;
+	},
+	undo : function() {
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		if (self._undoStack.length === 0) {
+			return self;
+		}
+		var bookmark = range.getBookmark();
+		bookmark.html = body.html();
+		_addBookmarkToStack(self._redoStack, bookmark);
+		var prev = self._undoStack.pop();
+		if (bookmark.html === prev.html && self._undoStack.length > 0) {
+			prev = self._undoStack.pop();
+		}
+		body.html(prev.html);
+		range.moveToBookmark(prev);
+		return self.select();
+	},
+	redo : function() {
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		if (self._redoStack.length === 0) {
+			return self;
+		}
+		var bookmark = range.getBookmark();
+		bookmark.html = body.html();
+		_addBookmarkToStack(self._undoStack, bookmark);
+		var next = self._redoStack.pop();
+		body.html(next.html);
+		range.moveToBookmark(next);
+		return self.select();
 	},
 	fullscreen : function(bool) {
 		var self = this;
