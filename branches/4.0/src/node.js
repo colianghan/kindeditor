@@ -257,7 +257,7 @@ KNode.prototype = {
 			if (self.length < 1) {
 				return '';
 			}
-			return self[0].style[key] || _computedCss(self[0], key) || '';
+			return self[0].style[_toCamel(key)] || _computedCss(self[0], key) || '';
 		}
 		self.each(function() {
 			this.style[_toCamel(key)] = val;

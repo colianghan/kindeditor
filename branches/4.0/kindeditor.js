@@ -1262,7 +1262,7 @@ KNode.prototype = {
 			if (self.length < 1) {
 				return '';
 			}
-			return self[0].style[key] || _computedCss(self[0], key) || '';
+			return self[0].style[_toCamel(key)] || _computedCss(self[0], key) || '';
 		}
 		self.each(function() {
 			this.style[_toCamel(key)] = val;
@@ -2294,6 +2294,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
 		key = match[2];
 		if (match[1]) {
+			key = _toCamel(key);
 			if (knode[0].style[key]) {
 				knode[0].style[key] = '';
 			}
@@ -2546,6 +2547,14 @@ KCmd.prototype = {
 				ksc = parent;
 			}
 			range.setStart(ksc[0], 0);
+			ksc = K(range.startContainer);
+			if (ksc.isBlock()) {
+				_removeAttrOrCss(ksc, map);
+			}
+			var kscp = ksc.parent();
+			if (kscp && kscp.isBlock()) {
+				_removeAttrOrCss(kscp, map);
+			}
 		}
 		self.split(true, map);
 		self.split(false, map);
@@ -4093,7 +4102,6 @@ KEditor.prototype = {
 		var self = this, cmd = self.edit.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		self.addBookmark();
-		cmd.range.dump();
 		return self;
 	},
 	insertHtml : function(val) {

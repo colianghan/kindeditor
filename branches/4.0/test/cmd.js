@@ -497,4 +497,13 @@ test('cmd.execute', function() {
 	cmd.bold();
 	equals(div.html().replace(/\n/, ''), '<p><em>123456789</em></p>');
 	div.html('');
+	//14
+	div.html('<p style="background-color:#000000;">1234</p>');
+	range = K.range(document);
+	range.setStart(div.first().first()[0], 0);
+	range.setEnd(div.first().first()[0], 4);
+	cmd = K.cmd(range);
+	cmd.removeformat();
+	equals(div.html().replace(/\n/, ''), '<p>1234</p>');
+	div.html('');
 });

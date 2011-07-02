@@ -390,7 +390,6 @@ KEditor.prototype = {
 		var self = this, cmd = self.edit.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		self.addBookmark();
-		cmd.range.dump();
 		return self;
 	},
 	insertHtml : function(val) {
