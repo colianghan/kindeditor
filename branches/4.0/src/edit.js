@@ -9,7 +9,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
 		'<style>',
 		'html {margin:0;padding:0;}',
-		'body {margin:0;padding:0;}',
+		'body {margin:0;padding:5px;}',
 		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',

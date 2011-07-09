@@ -337,7 +337,7 @@
 }
 /* edit */
 .ke-edit {
-	padding: 5px 0 3px 5px;
+	padding: 0;
 }
 .ke-edit-iframe,
 .ke-edit-textarea {
@@ -356,16 +356,30 @@
 }
 /* statusbar */
 .ke-statusbar {
+	position: relative;
+	background-color: #F0F0EE;
+	border-top: 1px solid #CCCCCC;
 	font-size: 0;
 	line-height: 0;
+	*height: 12px;
 	overflow: hidden;
-	text-align: right;
+	text-align: center;
+	cursor: s-resize;
+}
+.ke-statusbar-center-icon {
+	background-position: -0px -754px;
+	width: 15px;
+	height: 11px;
+	background-image: url(default.gif);
 }
 .ke-statusbar-right-icon {
+	position: absolute;
+	right: 0;
+	bottom: 0;
 	cursor: se-resize;
-	background-position: -9px -745px;
-	width: 7px;
-	height: 7px;
+	background-position: -5px -741px;
+	width: 11px;
+	height: 11px;
 	background-image: url(default.gif);
 }
 /* menu */

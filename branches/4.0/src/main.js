@@ -116,34 +116,43 @@ function _addBookmarkToStack(stack, bookmark) {
 
 function KEditor(options) {
 	var self = this;
+	// save original options
+	self.config = {};
+	function setOption(key, val) {
+		self[key] = val;
+		self.config[key] = val;
+	}
+	// set options from param
 	_each(options, function(key, val) {
-		self[key] = options[key];
+		setOption(key, options[key]);
 		if (key === 'scriptPath') {
-			self.themesPath = options[key] + 'themes/';
-			self.langPath = options[key] + 'lang/';
-			self.pluginsPath = options[key] + 'plugins/';
+			setOption('themesPath', options[key] + 'themes/');
+			setOption('langPath', options[key] + 'lang/');
+			setOption('pluginsPath', options[key] + 'plugins/');
 		}
 	});
+	// set options from default setting
 	_each(_options, function(key, val) {
 		if (self[key] === undefined) {
-			self[key] = val;
+			setOption(key, val);
 		}
 	});
 	var se = K(self.srcElement);
 	if (!self.width) {
-		self.width = se.width() || self.minWidth;
+		setOption('width', se.width() || self.minWidth);
 	}
 	if (!self.height) {
-		self.height = se.height() || self.minHeight;
+		setOption('height', se.height() || self.minHeight);
 	}
-	self.width = _addUnit(self.width);
-	self.height = _addUnit(self.height);
+	setOption('width', _addUnit(self.width));
+	setOption('height', _addUnit(self.height));
 	self.srcElement = se;
 	// private properties
 	self._handlers = {};
 	self._contextmenus = [];
 	self._undoStack = [];
 	self._redoStack = [];
+	// initialize plugins
 	_each(_plugins, function(name, fn) {
 		fn.call(self, KindEditor);
 	});
@@ -277,12 +286,25 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			afterCreate : function() {
-				//create statusbar
+				// create statusbar
 				var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
 				container.append(statusbar);
 				if (!fullscreenMode) {
 					rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+					statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
 					statusbar.append(rightIcon);
+					// bind drag event
+					_drag({
+						moveEl : container,
+						clickEl : statusbar,
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							height += diffY;
+							if (height >= self.minHeight) {
+								self.resize(null, height);
+								self.height = _addUnit(height);
+							}
+						}
+					});
 					_drag({
 						moveEl : container,
 						clickEl : rightIcon,
@@ -291,13 +313,16 @@ KEditor.prototype = {
 							height += diffY;
 							if (width >= self.minWidth) {
 								self.resize(width, null);
+								self.width = _addUnit(width);
 							}
 							if (height >= self.minHeight) {
 								self.resize(null, height);
+								self.height = _addUnit(height);
 							}
 						}
 					});
 				}
+				// auto resize editor while resize window
 				if (self._resizeListener) {
 					K(window).unbind('resize', self._resizeListener);
 					self._resizeListener = null;
@@ -311,22 +336,40 @@ KEditor.prototype = {
 					K(window).bind('resize', resizeListener);
 					self._resizeListener = resizeListener;
 				}
-				//properties
+				// set properties
 				self.container = container;
 				self.toolbar = toolbar;
 				self.edit = this;
 				self.statusbar = statusbar;
 				self.menu = self.contextmenu = self.dialog = null;
 				self._rightIcon = rightIcon;
-				//reset size
+				// reset size
 				self.resize(width, height);
-				//bind events
+				// hide menu when click document
 				K(this.doc, document).click(function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}
 				});
 				_bindContextmenuEvent.call(self);
+				/*
+				var pasted = false;
+				K(this.doc.body).bind('paste', function(e){
+					if (pasted) return false;
+					pasted = true;
+					var n= K('<div id="_mcePaste">tesw</div>', self.edit.doc);
+					K(self.edit.doc.body).append(n);
+					var rng = self.edit.doc.body.createTextRange();
+					rng.moveToElementText(n[0]);
+					rng.execCommand('paste');
+					setTimeout(function() {
+						var data = K("#_mcePaste", self.edit.doc);
+						self.edit.cmd.range.insertNode(data[0]);
+					}, 0);
+					e.stop();
+					return false;
+				});
+				*/
 				// add bookmark to undoStack
 				self.addBookmark();
 				this.cmd.oninput(function(e) {
@@ -362,7 +405,7 @@ KEditor.prototype = {
 			self.container.css('width', _addUnit(width));
 		}
 		if (height !== null) {
-			height = _removeUnit(height) - self.toolbar.div().height() - self.statusbar.height() - 11;
+			height = _removeUnit(height) - self.toolbar.div().height() - self.statusbar.height();
 			if (height > 0) {
 				self.edit.height(height);
 			}

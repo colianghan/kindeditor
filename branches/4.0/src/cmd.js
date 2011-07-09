@@ -494,27 +494,13 @@ KCmd.prototype = {
 		if (endAfter && _isEmptyNode(endAfter)) {
 			endAfter.remove();
 		}
-		//1234|<strong>56</strong>|789, 删除strong后重设range
+		//1234|<strong>56</strong>|789, reset range after remove strong
 		var startNode = sc.nodeType == 3 ? sc : sc.childNodes[so],
 			endNode =  ec.nodeType == 3 || ec === 0 ? ec : ec.childNodes[eo - 1];
 		//remove attributes or styles
 		_each(nodeList, function(i, node) {
 			var knode = K(node);
-			//	isStartNode = (node == startNode),
-			//	isEndNode = (node == endNode),
-			//	prevNode = knode.prev(),
-			//	nextNode = knode.next();
 			_removeAttrOrCss(knode, map);
-			/*
-			if (!knode[0]) {
-				if (isStartNode && prevNode && prevNode.type == 3) {
-					range.setStart(prevNode[0], prevNode[0].nodeValue.length);
-				}
-				if (isEndNode && nextNode && nextNode.type == 3) {
-					range.setEnd(nextNode[0], 0);
-				}
-			}
-			*/
 		});
 		return self;
 	},
@@ -536,9 +522,11 @@ KCmd.prototype = {
 		}
 		//<strong>123</strong>|4567
 		//<strong>123</strong>|<br />
-		var prev = K(node).prev();
-		if (prev && _hasAttrOrCss(prev, map)) {
-			return prev;
+		if (node.nodeType == 1 || (ec.nodeType == 3 && eo === 0)) {
+			var prev = K(node).prev();
+			if (prev && _hasAttrOrCss(prev, map)) {
+				return prev;
+			}
 		}
 		return null;
 	},
