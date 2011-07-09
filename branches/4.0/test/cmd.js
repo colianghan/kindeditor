@@ -507,3 +507,16 @@ test('cmd.execute', function() {
 	equals(div.html().replace(/\n/, ''), '<p>1234</p>');
 	div.html('');
 });
+
+test('cmd.inserthtml', function() {
+	//1
+	var div = K('<div>1234</div>');
+	K(document.body).append(div);
+	range = K.range(document);
+	range.setStart(div.first()[0], 1);
+	range.setEnd(div.first()[0], 1);
+	cmd = K.cmd(range);
+	cmd.inserthtml('<strong>abcd</strong>');
+	equals(div.html().replace(/\n/, ''), '1<strong>abcd</strong>234');
+	div.remove();
+});

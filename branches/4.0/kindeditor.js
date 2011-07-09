@@ -2374,6 +2374,16 @@ function KCmd(range) {
 	self.range = range;
 }
 KCmd.prototype = {
+	selection : function() {
+		var self = this, doc = self.doc, rng = _getRng(doc);
+		if (rng) {
+			self.range = _range(rng);
+			if (K(self.range.startContainer).name == 'html') {
+				self.range.selectNodeContents(doc.body).collapse(false);
+			}
+		}
+		return self;
+	},
 	select : function() {
 		var self = this, sel = self.sel, range = self.range.cloneRange(),
 			sc = range.startContainer, so = range.startOffset,
@@ -2915,13 +2925,7 @@ function _cmd(mixed) {
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		cmd.onchange(function(e) {
-			var rng = _getRng(doc);
-			if (rng) {
-				cmd.range = _range(rng);
-				if (K(cmd.range.startContainer).name == 'html') {
-					cmd.range.selectNodeContents(doc.body).collapse(false);
-				}
-			}
+			cmd.selection();
 		});
 		if (_WEBKIT) {
 			K(doc).click(function(e) {
@@ -3591,7 +3595,7 @@ function _dialog(options) {
 	self.remove = function() {
 		mask.remove();
 		span.remove();
-		K('input', div.get()).remove();
+		K('input', div).remove();
 		footerDiv.remove();
 		bodyDiv.remove();
 		headerDiv.remove();
@@ -3844,7 +3848,10 @@ function KEditor(options) {
 	var tempNames = self.preloadPlugins.slice(0);
 	function load() {
 		if (tempNames.length > 0) {
-			self.loadPlugin(tempNames.shift(), load);
+			var name = tempNames.shift();
+			if (!_plugins[name]) {
+				self.loadPlugin(name, load);
+			}
 		}
 	}
 	load();
@@ -4017,6 +4024,7 @@ KEditor.prototype = {
 				self.container = container;
 				self.toolbar = toolbar;
 				self.edit = this;
+				self.cmd = this.cmd;
 				self.statusbar = statusbar;
 				self.menu = self.contextmenu = self.dialog = null;
 				self._rightIcon = rightIcon;
@@ -4039,7 +4047,7 @@ KEditor.prototype = {
 					rng.execCommand('paste');
 					setTimeout(function() {
 						var data = K("#_mcePaste", self.edit.doc);
-						self.edit.cmd.range.insertNode(data[0]);
+						self.cmd.range.insertNode(data[0]);
 					}, 0);
 					e.stop();
 					return false;
@@ -4086,7 +4094,7 @@ KEditor.prototype = {
 		return self;
 	},
 	select : function() {
-		this.edit.cmd.select();
+		this.cmd.select();
 		return this;
 	},
 	html : function(val) {
@@ -4097,26 +4105,26 @@ KEditor.prototype = {
 		return this;
 	},
 	val : function(key) {
-		return this.edit.cmd.val(key);
+		return this.cmd.val(key);
 	},
 	state : function(key) {
-		return this.edit.cmd.state(key);
+		return this.cmd.state(key);
 	},
 	exec : function(key) {
-		var self = this, cmd = self.edit.cmd;
+		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		self.addBookmark();
 		return self;
 	},
 	insertHtml : function(val) {
-		return this.exec('inserthtml');
+		return this.exec('inserthtml', val);
 	},
 	focus : function() {
 		this.edit.focus();
 		return this;
 	},
 	addBookmark : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
 		var bookmark = range.getBookmark();
 		bookmark.html = body.html();
 		if (self._undoStack.length > 0) {
@@ -4129,7 +4137,7 @@ KEditor.prototype = {
 		return self;
 	},
 	undo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
 		if (self._undoStack.length === 0) {
 			return self;
 		}
@@ -4145,7 +4153,7 @@ KEditor.prototype = {
 		return self.select();
 	},
 	redo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
 		if (self._redoStack.length === 0) {
 			return self;
 		}
@@ -4211,10 +4219,12 @@ KEditor.prototype = {
 		return (self.dialog = _dialog(options));
 	},
 	hideDialog : function() {
-		this.beforeHideDialog();
-		this.dialog.remove();
-		this.dialog = null;
-		return this;
+		var self = this;
+		self.beforeHideDialog();
+		self.dialog.remove();
+		self.dialog = null;
+		self.cmd.select();
+		return self;
 	}
 };
 function _create(expr, options) {
@@ -4480,7 +4490,7 @@ KindEditor.lang({
 	'table.cells' : '单元格数',
 	'table.rows' : '行数',
 	'table.cols' : '列数',
-	'table.size' : '表格大小',
+	'table.size' : '大小',
 	'table.width' : '宽度',
 	'table.height' : '高度',
 	'table.percent' : '%',
@@ -4493,7 +4503,7 @@ KindEditor.lang({
 	'table.alignLeft' : '左对齐',
 	'table.alignCenter' : '居中',
 	'table.alignRight' : '右对齐',
-	'table.border' : '表格边框',
+	'table.border' : '边框',
 	'table.borderWidth' : '边框',
 	'table.borderColor' : '颜色',
 	'table.backgroundColor' : '背景颜色',

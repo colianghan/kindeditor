@@ -17,7 +17,7 @@ KindEditor.plugin('media', function(K) {
 	var functions = {
 		edit : function() {
 			var html = [
-				'<div style="margin:10px 20px;">',
+				'<div style="padding:10px 20px;">',
 				//url
 				'<div class="ke-dialog-row">',
 				'<label for="keUrl">' + lang.url + '</label>',

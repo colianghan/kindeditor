@@ -78,7 +78,7 @@ function _dialog(options) {
 	self.remove = function() {
 		mask.remove();
 		span.remove();
-		K('input', div.get()).remove();
+		K('input', div).remove();
 		footerDiv.remove();
 		bodyDiv.remove();
 		headerDiv.remove();

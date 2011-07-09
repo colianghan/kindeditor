@@ -4,16 +4,7 @@
 		<meta charset="utf-8" />
 		<title>KindEditor Main Test</title>
 		<link rel="stylesheet" href="../lib/qunit/qunit.css" />
-		<style>
-			textarea {
-				display: block;
-				width: 600px;
-				height: 200px;
-			}
-			.ke-iframe {
-				border: 1px solid #A0A0A0;
-			}
-		</style>
+		<script src="../lib/firebug-lite/build/firebug-lite.js#startOpened"></script>
 		<script src="../lib/qunit/qunit.js"></script>
 		<script src="../lib/jquery.js"></script>
 		<link rel="stylesheet" href="../themes/default/default.css" />
@@ -37,6 +28,14 @@
 		<script src="../lang/zh_CN.js"></script>
 		<script src="../lang/en.js"></script>
 		<script src="../plugins/core/core.js"></script>
+		<script src="../plugins/emoticons/emoticons.js"></script>
+		<script src="../plugins/flash/flash.js"></script>
+		<script src="../plugins/image/image.js"></script>
+		<script src="../plugins/link/link.js"></script>
+		<script src="../plugins/media/media.js"></script>
+		<script src="../plugins/plainpaste/plainpaste.js"></script>
+		<script src="../plugins/table/table.js"></script>
+		<script src="../plugins/wordpaste/wordpaste.js"></script>
 	</head>
 	<body>
 		<h1 id="type">KindEditor Main Test</h1>
@@ -100,11 +99,6 @@
 				});
 				
 			});
-		</script>
-		<div id="focustest"></div>
-		<script>
-			//测试IE6和IE7初始化焦点问题
-			K('#focustest')[0].innerText = 'a';
 		</script>
 	</body>
 </html>

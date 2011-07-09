@@ -15,7 +15,7 @@ KindEditor.plugin('plainpaste', function(K) {
 	var self = this, name = 'plainpaste';
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px 20px;">' +
+			html = '<div style="padding:10px 20px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<textarea class="ke-plugin-plainpaste-textarea"></textarea>' +
 				'</div>',

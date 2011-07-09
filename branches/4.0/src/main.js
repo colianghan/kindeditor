@@ -160,7 +160,10 @@ function KEditor(options) {
 	var tempNames = self.preloadPlugins.slice(0);
 	function load() {
 		if (tempNames.length > 0) {
-			self.loadPlugin(tempNames.shift(), load);
+			var name = tempNames.shift();
+			if (!_plugins[name]) {
+				self.loadPlugin(name, load);
+			}
 		}
 	}
 	load();
@@ -340,6 +343,7 @@ KEditor.prototype = {
 				self.container = container;
 				self.toolbar = toolbar;
 				self.edit = this;
+				self.cmd = this.cmd;
 				self.statusbar = statusbar;
 				self.menu = self.contextmenu = self.dialog = null;
 				self._rightIcon = rightIcon;
@@ -364,7 +368,7 @@ KEditor.prototype = {
 					rng.execCommand('paste');
 					setTimeout(function() {
 						var data = K("#_mcePaste", self.edit.doc);
-						self.edit.cmd.range.insertNode(data[0]);
+						self.cmd.range.insertNode(data[0]);
 					}, 0);
 					e.stop();
 					return false;
@@ -413,7 +417,7 @@ KEditor.prototype = {
 		return self;
 	},
 	select : function() {
-		this.edit.cmd.select();
+		this.cmd.select();
 		return this;
 	},
 	html : function(val) {
@@ -424,26 +428,26 @@ KEditor.prototype = {
 		return this;
 	},
 	val : function(key) {
-		return this.edit.cmd.val(key);
+		return this.cmd.val(key);
 	},
 	state : function(key) {
-		return this.edit.cmd.state(key);
+		return this.cmd.state(key);
 	},
 	exec : function(key) {
-		var self = this, cmd = self.edit.cmd;
+		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		self.addBookmark();
 		return self;
 	},
 	insertHtml : function(val) {
-		return this.exec('inserthtml');
+		return this.exec('inserthtml', val);
 	},
 	focus : function() {
 		this.edit.focus();
 		return this;
 	},
 	addBookmark : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
 		var bookmark = range.getBookmark();
 		bookmark.html = body.html();
 		if (self._undoStack.length > 0) {
@@ -456,7 +460,7 @@ KEditor.prototype = {
 		return self;
 	},
 	undo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
 		if (self._undoStack.length === 0) {
 			return self;
 		}
@@ -472,7 +476,7 @@ KEditor.prototype = {
 		return self.select();
 	},
 	redo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.edit.cmd.range;
+		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
 		if (self._redoStack.length === 0) {
 			return self;
 		}
@@ -538,10 +542,12 @@ KEditor.prototype = {
 		return (self.dialog = _dialog(options));
 	},
 	hideDialog : function() {
-		this.beforeHideDialog();
-		this.dialog.remove();
-		this.dialog = null;
-		return this;
+		var self = this;
+		self.beforeHideDialog();
+		self.dialog.remove();
+		self.dialog = null;
+		self.cmd.select();
+		return self;
 	}
 };
 

@@ -15,36 +15,36 @@ KindEditor.plugin('table', function(K) {
 		//insert or modify table
 		prop : function(isInsert) {
 			var html = [
-				'<div style="margin:10px 20px;">',
+				'<div style="padding:10px 20px;">',
 				//rows, cols
 				'<div class="ke-dialog-row">',
-				'<label for="keRows">' + lang.cells + '</label>',
-				lang.rows + ' <input type="text" id="keRows" class="ke-input-text ke-input-number" name="rows" value="" maxlength="4" /> ',
-				lang.cols + ' <input type="text" class="ke-input-text ke-input-number" name="cols" value="" maxlength="4" /> ',
+				'<label for="keRows" style="width:100px;">' + lang.cells + '</label>',
+				lang.rows + ' <input type="text" id="keRows" class="ke-input-text ke-input-number" name="rows" value="" maxlength="4" /> &nbsp; ',
+				lang.cols + ' <input type="text" class="ke-input-text ke-input-number" name="cols" value="" maxlength="4" />',
 				'</div>',
 				//width, height
 				'<div class="ke-dialog-row">',
-				'<label for="keWidth">' + lang.size + '</label>',
-				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> ',
+				'<label for="keWidth" style="width:100px;">' + lang.size + '</label>',
+				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> &nbsp; ',
 				'<select name="widthType">',
 				'<option value="%">' + lang.percent + '</option>',
 				'<option value="px">' + lang.px + '</option>',
-				'</select> ',
-				lang.height + ' <input type="text" class="ke-input-text ke-input-number" name="height" value="" maxlength="4" /> ',
+				'</select> &nbsp; ',
+				lang.height + ' <input type="text" class="ke-input-text ke-input-number" name="height" value="" maxlength="4" /> &nbsp; ',
 				'<select name="heightType">',
 				'<option value="%">' + lang.percent + '</option>',
 				'<option value="px">' + lang.px + '</option>',
-				'</select> ',
+				'</select>',
 				'</div>',
 				//space, padding
 				'<div class="ke-dialog-row">',
-				'<label for="kePadding">' + lang.space + '</label>',
-				lang.padding + ' <input type="text" id="kePadding" class="ke-input-text ke-input-number" name="padding" value="" maxlength="4" /> ',
-				lang.spacing + ' <input type="text" class="ke-input-text ke-input-number" name="spacing" value="" maxlength="4" /> ',
+				'<label for="kePadding" style="width:100px;">' + lang.space + '</label>',
+				lang.padding + ' <input type="text" id="kePadding" class="ke-input-text ke-input-number" name="padding" value="" maxlength="4" /> &nbsp; ',
+				lang.spacing + ' <input type="text" class="ke-input-text ke-input-number" name="spacing" value="" maxlength="4" />',
 				'</div>',
 				//align
 				'<div class="ke-dialog-row">',
-				'<label for="keAlign">' + lang.align + '</label>',
+				'<label for="keAlign" style="width:100px;">' + lang.align + '</label>',
 				'<select id="keAlign" name="align">',
 				'<option value="">' + lang.alignDefault + '</option>',
 				'<option value="left">' + lang.alignLeft + '</option>',
@@ -54,14 +54,14 @@ KindEditor.plugin('table', function(K) {
 				'</div>',
 				//border
 				'<div class="ke-dialog-row">',
-				'<label for="keBorder">' + lang.border + '</label>',
-				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-text ke-input-number" name="border" value="" maxlength="4" /> ',
+				'<label for="keBorder" style="width:100px;">' + lang.border + '</label>',
+				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-text ke-input-number" name="border" value="" maxlength="4" /> &nbsp; ',
 				lang.borderColor + ' <span class="ke-inline-block ke-input-color"></span>',
 				'</div>',
 				//background color
 				'<div class="ke-dialog-row">',
-				'<label for="keBgColor">' + lang.backgroundColor + '</label>',
-				'<span class="ke-inline-block ke-input-color"></span> ',
+				'<label for="keBgColor" style="width:100px;">' + lang.backgroundColor + '</label>',
+				'<span class="ke-inline-block ke-input-color"></span>',
 				'</div>',
 				'</div>'
 			].join('');
@@ -75,7 +75,7 @@ KindEditor.plugin('table', function(K) {
 			}
 			var dialog = self.createDialog({
 				name : name,
-				width : 400,
+				width : 500,
 				height : 300,
 				title : self.lang(name),
 				body : html,
@@ -232,6 +232,9 @@ KindEditor.plugin('table', function(K) {
 				removePicker();
 				colorBox.unbind();
 			});
+			// foucs and select
+			rowsBox[0].focus();
+			rowsBox[0].select();
 			var table;
 			if (isInsert) {
 				return;
@@ -262,6 +265,8 @@ KindEditor.plugin('table', function(K) {
 				borderBox.val(table[0].border === undefined ? '' : table[0].border);
 				setColor(K(colorBox[0]), K.toHex(table.attr('borderColor')) || '');
 				setColor(K(colorBox[1]), K.toHex(table[0].style.backgroundColor || table[0].bgColor || ''));
+				widthBox[0].focus();
+				widthBox[0].select();
 			}
 		},
 		insert : function() {

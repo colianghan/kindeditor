@@ -7,7 +7,7 @@ KindEditor.plugin('link', function(K) {
 	var functions = {
 		edit : function() {
 			var lang = self.lang(name + '.'),
-				html = '<div style="margin:10px 20px;">' +
+				html = '<div style="padding:10px 20px;">' +
 					//url
 					'<div class="ke-dialog-row">' +
 					'<label for="keUrl">' + lang.url + '</label>' +
@@ -33,13 +33,16 @@ KindEditor.plugin('link', function(K) {
 				div = dialog.div(),
 				urlBox = K('input[name="url"]', div),
 				typeBox = K('select[name="type"]', div);
-			typeBox.get().options[0] = new Option(lang.newWindow, '_blank');
-			typeBox.get().options[1] = new Option(lang.selfWindow, '');
+			urlBox.val('http://');
+			typeBox[0].options[0] = new Option(lang.newWindow, '_blank');
+			typeBox[0].options[1] = new Option(lang.selfWindow, '');
 			var a = getSelectedLink();
 			if (a) {
 				urlBox.val(a.attr('href'));
 				typeBox.val(a.attr('target'));
 			}
+			urlBox[0].focus();
+			urlBox[0].select();
 		},
 		'delete' : function() {
 			self.exec('unlink', null);

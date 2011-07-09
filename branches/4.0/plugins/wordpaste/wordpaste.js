@@ -3,7 +3,7 @@ KindEditor.plugin('wordpaste', function(K) {
 	var self = this, name = 'wordpaste';
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),
-			html = '<div style="margin:10px 20px;">' +
+			html = '<div style="padding:10px 20px;">' +
 				'<div style="margin-bottom:10px;">' + lang.comment + '</div>' +
 				'<iframe class="ke-plugin-wordpaste-iframe" frameborder="0"></iframe>' +
 				'</div>',

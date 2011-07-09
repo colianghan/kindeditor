@@ -29,11 +29,11 @@ DOM_VK_BACK_SLASH : 220 (\|)
 DOM_VK_CLOSE_BRACKET : 221 (]})
 DOM_VK_QUOTE : 222 ('")
 */
-//输入文字的键值
+// 输入文字的键值
 var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
-//移动光标的键值
+// 移动光标的键值
 var _CURSORMOVE_KEY_MAP = _toMap('8,13,33..40,46');
-//输入文字或移动光标的键值
+// 输入文字或移动光标的键值
 var _CHANGE_KEY_MAP = {};
 _each(_INPUT_KEY_MAP, function(key, val) {
 	_CHANGE_KEY_MAP[key] = val;
@@ -42,13 +42,13 @@ _each(_CURSORMOVE_KEY_MAP, function(key, val) {
 	_CHANGE_KEY_MAP[key] = val;
 });
 
-//original execCommand
+// original execCommand
 function _nativeCommand(doc, key, val) {
 	try {
 		doc.execCommand(key, false, val);
 	} catch(e) {}
 }
-//original queryCommandValue
+// original queryCommandValue
 function _nativeCommandValue(doc, key) {
 	var val = '';
 	try {
@@ -59,12 +59,12 @@ function _nativeCommandValue(doc, key) {
 	}
 	return val;
 }
-//get current selection of a document
+// get current selection of a document
 function _getSel(doc) {
 	var win = _getWin(doc);
 	return doc.selection || win.getSelection();
 }
-//get range of current selection
+// get range of current selection
 function _getRng(doc) {
 	var sel = _getSel(doc), rng;
 	try {
@@ -244,6 +244,16 @@ function KCmd(range) {
 }
 
 KCmd.prototype = {
+	selection : function() {
+		var self = this, doc = self.doc, rng = _getRng(doc);
+		if (rng) {
+			self.range = _range(rng);
+			if (K(self.range.startContainer).name == 'html') {
+				self.range.selectNodeContents(doc.body).collapse(false);
+			}
+		}
+		return self;
+	},
 	select : function() {
 		var self = this, sel = self.sel, range = self.range.cloneRange(),
 			sc = range.startContainer, so = range.startOffset,
@@ -826,15 +836,8 @@ function _cmd(mixed) {
 			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		// add events
-		// reset selection
 		cmd.onchange(function(e) {
-			var rng = _getRng(doc);
-			if (rng) {
-				cmd.range = _range(rng);
-				if (K(cmd.range.startContainer).name == 'html') {
-					cmd.range.selectNodeContents(doc.body).collapse(false);
-				}
-			}
+			cmd.selection();
 		});
 		// [WEBKIT] select an image after click the image
 		if (_WEBKIT) {
