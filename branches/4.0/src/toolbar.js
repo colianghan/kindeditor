@@ -1,20 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name toolbar.js
- * @fileOverview 工具栏类
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "node.js"
-*/
 
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {

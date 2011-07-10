@@ -519,16 +519,16 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset,
 			node = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1],
 			child = node, parent = node;
-		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
-			if (_hasAttrOrCss(K(child), map)) {
-				return K(child);
-			}
-		}
 		while (parent) {
 			if (_hasAttrOrCss(K(parent), map)) {
 				return K(parent);
 			}
 			parent = parent.parentNode;
+		}
+		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
+			if (_hasAttrOrCss(K(child), map)) {
+				return K(child);
+			}
 		}
 		//<strong>123</strong>|4567
 		//<strong>123</strong>|<br />
@@ -537,6 +537,29 @@ KCmd.prototype = {
 			if (prev && _hasAttrOrCss(prev, map)) {
 				return prev;
 			}
+		}
+		return null;
+	},
+	commonAncestor : function(tagName) {
+		var range = this.range,
+			sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset,
+			startNode = (sc.nodeType == 3 || so === 0) ? sc : sc.childNodes[so - 1],
+			endNode = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1];
+		function find(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.tagName.toLowerCase() === tagName) {
+						return node;
+					}
+				}
+				node = node.parentNode;
+			}
+			return null;
+		}
+		var start = find(startNode), end = find(endNode);
+		if (start && end && start === end) {
+			return K(start);
 		}
 		return null;
 	},

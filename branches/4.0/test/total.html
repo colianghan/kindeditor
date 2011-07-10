@@ -3,18 +3,16 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>KindEditor Test</title>
-		<link rel="stylesheet" href="../themes/default/default.css" />
+		<link rel="stylesheet" href="../lib/qunit/qunit.css" />
 		<script src="../lib/firebug-lite/build/firebug-lite.js#startOpened"></script>
+		<script src="../lib/qunit/qunit.js"></script>
+		<script src="../lib/jquery.js"></script>
+		<link rel="stylesheet" href="../themes/default/default.css" />
 		<script src="../kindeditor.js"></script>
-		<script>
-			KindEditor.ready(function(K) {
-				K.create('#editor1');
-			});
-		</script>
 	</head>
 	<body>
-		<h1>KindEditor Test</h1>
-		<textarea id="editor1" name="editor1" cols="100" rows="20" style="width:700px;height:300px;">
+		<h1 id="type">KindEditor Test</h1>
+		<textarea name="editor1" cols="100" rows="20" style="width:800px;height:200px;">
 <table style="width:90%;" border="1" bordercolor="#000000" cellpadding="2" cellspacing="0"><tbody><tr>
 <td>a&nbsp;</td>
 <td>b&nbsp;</td>
@@ -27,9 +25,53 @@
 </tr>
 </tbody>
 </table>
-<img src="data/logo_180_30.gif" />
-测试内容1<div><a href="#">测试内容1</a><br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
-测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
+		<img src="data/logo_180_30.gif" />
+		测试内容1<div><a href="#">测试内容1</a><br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
+		测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
 		</textarea>
+		<br />
+		<textarea name="editor2" cols="100" rows="20" style="width:700px;height:100px;"></textarea>
+		<br />
+		<input type="button" id="create1" value="Create #1" />
+		<input type="button" id="create2" value="Create #2" />
+		<input type="button" id="remove1" value="Remove #1" />
+		<input type="button" id="remove2" value="Remove #2" />
+		<script>
+			//document.domain = 'kindsoft.net';
+			KindEditor.ready(function(K) {
+				var editor1 = null, editor2 = null;
+				K('#create1').click(function(e) {
+					if (!editor1) {
+						editor1 = K.create('textarea[name=editor1]', {
+							scriptPath : '../',
+							designMode : true
+						});
+					}
+				});
+				K('#create2').click(function(e) {
+					if (!editor2) {
+						editor2 = K.create(K('textarea[name=editor2]').get(), {
+							scriptPath : '../',
+							langType : 'en'
+						});
+					}
+				});
+				K('#create1').click();
+				K('#create2').click();
+				K('#remove1').click(function(e) {
+					if (editor1) {
+						editor1.remove();
+						editor1 = null;
+					}
+				});
+				K('#remove2').click(function(e) {
+					if (editor2) {
+						editor2.remove();
+						editor2 = null;
+					}
+				});
+				
+			});
+		</script>
 	</body>
 </html>

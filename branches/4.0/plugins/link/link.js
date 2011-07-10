@@ -2,7 +2,7 @@
 KindEditor.plugin('link', function(K) {
 	var self = this, name = 'link';
 	function getSelectedLink() {
-		return self.edit.cmd.commonNode({ a : '*' });
+		return self.cmd.commonAncestor('a');
 	}
 	var functions = {
 		edit : function() {
@@ -38,6 +38,8 @@ KindEditor.plugin('link', function(K) {
 			typeBox[0].options[1] = new Option(lang.selfWindow, '');
 			var a = getSelectedLink();
 			if (a) {
+				self.cmd.range.selectNode(a[0]);
+				self.cmd.select();
 				urlBox.val(a.attr('href'));
 				typeBox.val(a.attr('target'));
 			}

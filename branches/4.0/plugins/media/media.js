@@ -67,6 +67,7 @@ KindEditor.plugin('media', function(K) {
 			widthBox = K('[name="width"]', div),
 			heightBox = K('[name="height"]', div),
 			autostartBox = K('[name="autostart"]', div);
+			urlBox.val('http://');
 			var img = getSelectedMedia();
 			if (img) {
 				var attrs = K.mediaAttrs(img.attr('kesrctag'));
@@ -75,6 +76,8 @@ KindEditor.plugin('media', function(K) {
 				heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
 				autostartBox[0].checked = (attrs.autostart === 'true');
 			}
+			urlBox[0].focus();
+			urlBox[0].select();
 		},
 		'delete' : function() {
 			getSelectedMedia().remove();

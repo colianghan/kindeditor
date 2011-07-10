@@ -46,23 +46,26 @@ function _menu(options) {
 				centerDiv.css('height', height);
 			}
 		}
-		itemDiv.mouseover(function(e) {
+		itemDiv.mousedown(function(e) {
+			e.stopPropagation();
+		})
+		.mouseover(function(e) {
 			K(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
-		});
-		itemDiv.mouseout(function(e) {
+		})
+		.mouseout(function(e) {
 			K(this).removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
-		});
-		itemDiv.click(function(e) {
+		})
+		.click(function(e) {
 			item.click.call(K(this));
 			e.stop();
-		});
-		itemDiv.append(leftDiv);
+		})
+		.append(leftDiv);
 		if (centerDiv) {
 			itemDiv.append(centerDiv);
 		}

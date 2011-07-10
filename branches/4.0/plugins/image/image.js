@@ -33,14 +33,20 @@ KindEditor.plugin('image', function(K) {
 				'<div class="ke-dialog-row">',
 				'<div class="tab1" style="display:none;">',
 				'<label for="keUrl">' + lang.remoteUrl + '</label>',
-				'<input type="text" id="keUrl" class="ke-input-text" name="url" value="" style="width:230px;" /> &nbsp;',
-				'<span class="ke-button-common ke-button-outer btn">',
+				'<input type="text" id="keUrl" class="ke-input-text" name="url" value="" style="width:200px;" /> &nbsp;',
+				'<span class="ke-button-common ke-button-outer">',
 				'<input type="button" class="ke-button-common ke-button" name="viewServer" value="' + lang.viewServer + '" />',
 				'</span>',
 				'</div>',
 				'<div class="tab2" style="display:none;">',
 				'<label for="keFile">' + lang.localUrl + '</label>',
-				'<input type="file" id="keFile" name="imgFile" style="width:300px;" />',
+				'<span class="ke-inline-block ke-upload-area">',
+				'<input type="text" name="localUrl" class="ke-input-text" tabindex="-1" style="width:200px;" readonly="true" /> &nbsp;',
+				'<span class="ke-button-common ke-button-outer">',
+				'<input type="button" class="ke-button-common ke-button" id="viewLocal" value="' + lang.viewServer + '" tabindex="-1" />',
+				'</span>',
+				'<input type="file" class="ke-upload-file" id="keFile" name="imgFile" />',
+				'</span>',
 				'</div>',
 				'</div>',
 				//size
@@ -53,9 +59,9 @@ KindEditor.plugin('image', function(K) {
 				//align
 				'<div class="ke-dialog-row">',
 				'<label>' + lang.align + '</label>',
-				'<input type="radio" name="align" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />',
-				' <input type="radio" name="align" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />',
-				' <input type="radio" name="align" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />',
+				'<input type="radio" name="align" class="ke-inline-block" value="" checked="checked" /> <img name="defaultImg" src="' + imgPath + 'align_top.gif" width="23" height="25" alt="" />',
+				' <input type="radio" name="align" class="ke-inline-block" value="left" /> <img name="leftImg" src="' + imgPath + 'align_left.gif" width="23" height="25" alt="" />',
+				' <input type="radio" name="align" class="ke-inline-block" value="right" /> <img name="rightImg" src="' + imgPath + 'align_right.gif" width="23" height="25" alt="" />',
 				'</div>',
 				//title
 				'<div class="ke-dialog-row">',
@@ -132,10 +138,16 @@ KindEditor.plugin('image', function(K) {
 			});
 			tabs.select(0);
 			var urlBox = K('[name="url"]', div),
+				localUrlBox = K('[name="localUrl"]', div),
+				fileBox = K('[name="imgFile"]', div),
 				widthBox = K('[name="width"]', div),
 				heightBox = K('[name="height"]', div),
 				titleBox = K('[name="title"]', div),
 				alignBox = K('[name="align"]');
+			fileBox.change(function(e) {
+				localUrlBox.val(fileBox.val());
+			});
+			urlBox.val('http://');
 			var img = getSelectedImg();
 			if (img) {
 				urlBox.val(img.attr('src'));
@@ -149,6 +161,8 @@ KindEditor.plugin('image', function(K) {
 					}
 				});
 			}
+			urlBox[0].focus();
+			urlBox[0].select();
 		},
 		'delete' : function() {
 			getSelectedImg().remove();

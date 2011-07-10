@@ -531,6 +531,7 @@
 .ke-dialog-body textarea {
 	display: block;
 	overflow: auto;
+	padding: 0;
 	resize: none;
 }
 .ke-dialog-body textarea:focus,
@@ -539,7 +540,7 @@
 	outline: none;
 }
 .ke-dialog-body label {
-	margin-right: 5px;
+	margin-right: 10px;
 	cursor: pointer;
 	font-weight: bold;
 	display: -moz-inline-stack;
@@ -549,7 +550,13 @@
 	*display: inline;
 }
 .ke-dialog-body img {
-	vertical-align:middle;
+	display: -moz-inline-stack;
+	display: inline-block;
+	vertical-align: middle;
+	zoom: 1;
+	*display: inline;
+}
+.ke-dialog-body select {
 	display: -moz-inline-stack;
 	display: inline-block;
 	vertical-align: middle;
@@ -558,7 +565,6 @@
 }
 .ke-dialog-row {
 	margin-bottom: 10px;
-	vertical-align:middle;
 }
 .ke-dialog-footer {
 	font: 12px/1 "sans serif",tahoma,verdana,helvetica;
@@ -643,6 +649,21 @@
 	vertical-align: middle;
 	zoom: 1;
 	*display: inline;
+}
+.ke-upload-area {
+	position: relative;
+	overflow: hidden;
+}
+.ke-upload-area .ke-upload-file {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 70px;
+	height: 25px;
+	z-index: 811212;
+	border: 0 none;
+	opacity:0;
+	filter:alpha(opacity=0);
 }
 /* tabs */
 .ke-tabs {
@@ -742,7 +763,7 @@
 .ke-plugin-plainpaste-textarea,
 .ke-plugin-wordpaste-iframe {
 	display: block;
-	width: 100%;
+	width: 408px;
 	height: 260px;
 	font-family: "sans serif",tahoma,verdana,helvetica;
 	font-size: 12px;

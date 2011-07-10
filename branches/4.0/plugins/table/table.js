@@ -3,13 +3,13 @@ KindEditor.plugin('table', function(K) {
 	var self = this, name = 'table',
 		lang = self.lang(name + '.');
 	function getSelectedTable() {
-		return self.edit.cmd.commonNode({ table : '*' });
+		return self.cmd.commonAncestor('table');
 	}
 	function getSelectedRow() {
-		return self.edit.cmd.commonNode({ tr : '*' });
+		return self.cmd.commonAncestor('tr');
 	}
 	function getSelectedCell() {
-		return self.edit.cmd.commonNode({ td : '*' });
+		return self.cmd.commonAncestor('td');
 	}
 	var functions = {
 		//insert or modify table
@@ -304,9 +304,9 @@ KindEditor.plugin('table', function(K) {
 			this.rowinsert(1);
 		},
 		coldelete : function() {
-			var table = getSelectedTable()[0], cell = getSelectedCell()[0];
+			var table = getSelectedTable()[0], cell = getSelectedCell()[0], index = cell.cellIndex;
 			for (var i = 0, len = table.rows.length; i < len; i++) {
-				table.rows[i].deleteCell(cell.cellIndex);
+				table.rows[i].deleteCell(index);
 			}
 		},
 		rowdelete : function() {

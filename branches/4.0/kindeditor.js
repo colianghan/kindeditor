@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-09)
+* @version 4.0 (2011-07-10)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-09)',
+var _VERSION = '4.0 (2011-07-10)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -2619,22 +2619,45 @@ KCmd.prototype = {
 			ec = range.endContainer, eo = range.endOffset,
 			node = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1],
 			child = node, parent = node;
-		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
-			if (_hasAttrOrCss(K(child), map)) {
-				return K(child);
-			}
-		}
 		while (parent) {
 			if (_hasAttrOrCss(K(parent), map)) {
 				return K(parent);
 			}
 			parent = parent.parentNode;
 		}
+		while (child && (child = child.firstChild) && child.childNodes.length == 1) {
+			if (_hasAttrOrCss(K(child), map)) {
+				return K(child);
+			}
+		}
 		if (node.nodeType == 1 || (ec.nodeType == 3 && eo === 0)) {
 			var prev = K(node).prev();
 			if (prev && _hasAttrOrCss(prev, map)) {
 				return prev;
 			}
+		}
+		return null;
+	},
+	commonAncestor : function(tagName) {
+		var range = this.range,
+			sc = range.startContainer, so = range.startOffset,
+			ec = range.endContainer, eo = range.endOffset,
+			startNode = (sc.nodeType == 3 || so === 0) ? sc : sc.childNodes[so - 1],
+			endNode = (ec.nodeType == 3 || eo === 0) ? ec : ec.childNodes[eo - 1];
+		function find(node) {
+			while (node) {
+				if (node.nodeType == 1) {
+					if (node.tagName.toLowerCase() === tagName) {
+						return node;
+					}
+				}
+				node = node.parentNode;
+			}
+			return null;
+		}
+		var start = find(startNode), end = find(endNode);
+		if (start && end && start === end) {
+			return K(start);
 		}
 		return null;
 	},
@@ -3425,23 +3448,26 @@ function _menu(options) {
 				centerDiv.css('height', height);
 			}
 		}
-		itemDiv.mouseover(function(e) {
+		itemDiv.mousedown(function(e) {
+			e.stopPropagation();
+		})
+		.mouseover(function(e) {
 			K(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
 			}
-		});
-		itemDiv.mouseout(function(e) {
+		})
+		.mouseout(function(e) {
 			K(this).removeClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.removeClass('ke-menu-item-center-on');
 			}
-		});
-		itemDiv.click(function(e) {
+		})
+		.click(function(e) {
 			item.click.call(K(this));
 			e.stop();
-		});
-		itemDiv.append(leftDiv);
+		})
+		.append(leftDiv);
 		if (centerDiv) {
 			itemDiv.append(centerDiv);
 		}
@@ -3794,7 +3820,7 @@ function _bindContextmenuEvent() {
 					self.menu.addItem(this);
 				}
 			});
-			e.stop();
+			e.preventDefault();
 		}
 	});
 }
@@ -4029,7 +4055,7 @@ KEditor.prototype = {
 				self.menu = self.contextmenu = self.dialog = null;
 				self._rightIcon = rightIcon;
 				self.resize(width, height);
-				K(this.doc, document).click(function(e) {
+				K(this.doc, document).mousedown(function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}

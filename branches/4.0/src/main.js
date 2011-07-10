@@ -98,7 +98,7 @@ function _bindContextmenuEvent() {
 					self.menu.addItem(this);
 				}
 			});
-			e.stop();
+			e.preventDefault();
 		}
 	});
 }
@@ -350,7 +350,7 @@ KEditor.prototype = {
 				// reset size
 				self.resize(width, height);
 				// hide menu when click document
-				K(this.doc, document).click(function(e) {
+				K(this.doc, document).mousedown(function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}

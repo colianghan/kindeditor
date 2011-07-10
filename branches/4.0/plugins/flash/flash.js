@@ -60,6 +60,7 @@ KindEditor.plugin('flash', function(K) {
 			urlBox = K('[name="url"]', div),
 			widthBox = K('[name="width"]', div),
 			heightBox = K('[name="height"]', div);
+			urlBox.val('http://');
 			var img = getSelectedFlash();
 			if (img) {
 				var attrs = K.mediaAttrs(img.attr('kesrctag'));
@@ -67,6 +68,8 @@ KindEditor.plugin('flash', function(K) {
 				widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
 				heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
 			}
+			urlBox[0].focus();
+			urlBox[0].select();
 		}
 	};
 	self.clickToolbar(name, functions.edit);
