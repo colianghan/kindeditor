@@ -22,7 +22,9 @@ function _menu(options) {
 		div = self.div(),
 		remove = self.remove,
 		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
-	div.addClass('ke-menu');
+	div.addClass('ke-menu').bind('click,mousedown', function(e){
+		e.stopPropagation();
+	});
 	//add an item of menu
 	self.addItem = function(item) {
 		if (item.title === '-') {
@@ -46,10 +48,7 @@ function _menu(options) {
 				centerDiv.css('height', height);
 			}
 		}
-		itemDiv.mousedown(function(e) {
-			e.stopPropagation();
-		})
-		.mouseover(function(e) {
+		itemDiv.mouseover(function(e) {
 			K(this).addClass('ke-menu-item-on');
 			if (centerDiv) {
 				centerDiv.addClass('ke-menu-item-center-on');
