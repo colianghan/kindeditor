@@ -1,20 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name menu.js
- * @fileOverview 工具栏菜单、右键菜单
- * @author Longhao Luo
- */
-
-/**
-#using "core.js"
-#using "node.js"
-*/
 
 function _menu(options) {
 	options.z = options.z || 811213;

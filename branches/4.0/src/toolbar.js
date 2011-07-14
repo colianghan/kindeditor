@@ -34,9 +34,8 @@ function _toolbar(options) {
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
-			var title = item.title || '';
-			itemNode = K('<a class="ke-inline-block ke-toolbar-icon-outline" href="javascript:;" title="' + title + '">' +
-				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '"></span></a>');
+			itemNode = K('<span class="ke-inline-block ke-toolbar-icon-outline" title="' + (item.title || '') + '" unselectable="on">' +
+				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);

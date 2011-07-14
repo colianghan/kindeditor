@@ -293,15 +293,15 @@ KCmd.prototype = {
 	wrap : function(val) {
 		var self = this, doc = self.doc, range = self.range, wrapper;
 		wrapper = K(val, doc);
-		//collapsed=true
+		// collapsed=true
 		if (range.collapsed) {
 			range.insertNode(wrapper[0]).selectNodeContents(wrapper[0]);
 			return self;
 		}
-		//block tag
+		// block wrapper
 		if (wrapper.isBlock()) {
 			var copyWrapper = wrapper.clone(true), child = copyWrapper;
-			//find inner element
+			// find inner element
 			while (child.first()) {
 				child = child.first();
 			}
@@ -309,73 +309,29 @@ KCmd.prototype = {
 			range.insertNode(copyWrapper[0]).selectNode(copyWrapper[0]);
 			return self;
 		}
-		//collapsed=false
-		//split and wrap a textNode
-		function wrapTextNode(node, startOffset, endOffset) {
-			var length = node.nodeValue.length, center = node;
-			if (endOffset <= startOffset) {
+		// collapsed=false
+		range.enlarge();
+		var bookmark = range.createBookmark(), ancestor = range.commonAncestor(), isStart = false;
+		K(ancestor).scan(function(node) {
+			if (!isStart && node == bookmark.start) {
+				isStart = true;
 				return;
 			}
-			if (startOffset > 0) {
-				center = node.splitText(startOffset);
-			}
-			if (endOffset < length) {
-				center.splitText(endOffset - startOffset);
-			}
-			var parent, knode = K(center);
-			//textNode为唯一的子节点时，重新设置node
-			while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
-				knode = parent;
-			}
-			//wrap node
-			var el = _wrapNode(knode, wrapper)[0];
-			//reset range
-			if (range.startContainer == node || range.startContainer == knode[0]) {
-				range.setStartBefore(el);
-			}
-			if (range.endContainer == node || range.endContainer == knode[0]) {
-				range.setEndAfter(el);
-			}
-		}
-
-		var ancestor = range.commonAncestor();
-		if (ancestor.nodeType == 3) {
-			wrapTextNode(ancestor, range.startOffset, range.endOffset);
-			return self;
-		}
-
-		var start = -1, end = -1, testRange,
-			cmpStart = (ancestor == range.startContainer),
-			cmpEnd = (ancestor == range.endContainer);
-
-		K(ancestor).scan(function(node) {
-			if (!cmpStart && node == range.startContainer) {
-				cmpStart = true;
-			}
-			if (!cmpEnd && node == range.endContainer) {
-				cmpEnd = true;
-			}
-			if (cmpStart && start <= 0) {
-				testRange = _range(doc).selectNode(node);
-				start = testRange.compareBoundaryPoints(_START_TO_END, range);
-			}
-			if (cmpEnd && start >= 0 && end <= 0) {
-				testRange = _range(doc).selectNode(node);
-				end = testRange.compareBoundaryPoints(_END_TO_START, range);
-			}
-			if (end >= 0) {
-				return false;
-			}
-			if (start > 0 && node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
-				if (node == range.startContainer) {
-					wrapTextNode(node, range.startOffset, node.nodeValue.length);
-				} else if (node == range.endContainer) {
-					wrapTextNode(node, 0, range.endOffset);
-				} else {
-					wrapTextNode(node, 0, node.nodeValue.length);
+			if (isStart) {
+				if (node == bookmark.end) {
+					return false;
+				}
+				if (node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
+					var parent, knode = K(node);
+					// textNode为唯一的子节点时，重新设置node
+					while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
+						knode = parent;
+					}
+					_wrapNode(knode, wrapper)[0];
 				}
 			}
 		});
+		range.moveToBookmark(bookmark);
 		return self;
 	},
 	split : function(isStart, map) {

@@ -2,7 +2,8 @@
 var _START_TO_START = 0,
 	_START_TO_END = 1,
 	_END_TO_END = 2,
-	_END_TO_START = 3;
+	_END_TO_START = 3,
+	_BOOKMARK_ID = 0;
 
 function _updateCollapsed(range) {
 	range.collapsed = (range.startContainer === range.endContainer && range.startOffset === range.endOffset);
@@ -32,76 +33,6 @@ function _pathToNode(path, doc) {
 		node = child;
 	}
 	return node;
-}
-//降低range的位置
-//<p><strong><span>123</span>|abc</strong>def</p>
-//postion(strong, 1) -> positon("abc", 0)
-//or
-//<p><strong>abc|<span>123</span></strong>def</p>
-//postion(strong, 1) -> positon("abc", 3)
-function _downRange(range) {
-	function downPos(node, pos, isStart) {
-		if (node.nodeType != 1) {
-			return;
-		}
-		var children = K(node).children();
-		if (children.length === 0) {
-			return;
-		}
-		var left, right, child, offset;
-		if (pos > 0) {
-			left = children[pos - 1];
-		}
-		if (pos < children.length) {
-			right = children[pos];
-		}
-		if (left && left.type == 3) {
-			child = left[0];
-			offset = child.nodeValue.length;
-		}
-		if (right && right.type == 3) {
-			child = right[0];
-			offset = 0;
-		}
-		if (!child) {
-			return;
-		}
-		if (isStart) {
-			range.setStart(child, offset);
-		} else {
-			range.setEnd(child, offset);
-		}
-	}
-	downPos(range.startContainer, range.startOffset, true);
-	downPos(range.endContainer, range.endOffset, false);
-}
-//提高range的位置
-//<p><strong><span>123</span>|abc</strong>def</p>
-//positon("abc", 0) -> postion(strong, 1)
-//or
-//<p><strong>abc|<span>123</span></strong>def</p>
-//positon("abc", 3) -> postion(strong, 1)
-function _upRange(range) {
-	function upPos(node, pos, isStart) {
-		if (node.nodeType != 3) {
-			return;
-		}
-		if (pos === 0) {
-			if (isStart) {
-				range.setStartBefore(node);
-			} else {
-				range.setEndBefore(node);
-			}
-		} else if (pos == node.nodeValue.length) {
-			if (isStart) {
-				range.setStartAfter(node);
-			} else {
-				range.setEndAfter(node);
-			}
-		}
-	}
-	upPos(range.startContainer, range.startOffset, true);
-	upPos(range.endContainer, range.endOffset, false);
 }
 /**
 	cloneContents: _copyAndDelete(this, true, false)
@@ -140,8 +71,7 @@ function _copyAndDelete(range, isCopy, isDelete) {
 	}
 	function removeNodes() {
 		if (isDelete) {
-			_upRange(range);
-			range.collapse(true);
+			range.up().collapse(true);
 		}
 		for (var i = 0, len = nodeList.length; i < len; i++) {
 			var node = nodeList[i];
@@ -151,8 +81,7 @@ function _copyAndDelete(range, isCopy, isDelete) {
 		}
 	}
 
-	var copyRange = range.cloneRange();
-	_downRange(copyRange);
+	var copyRange = range.cloneRange().down();
 
 	var start = -1, incStart = -1, incEnd = -1, end = -1,
 		ancestor = range.commonAncestor(), frag = doc.createDocumentFragment();
@@ -229,8 +158,7 @@ function _copyAndDelete(range, isCopy, isDelete) {
 	extractNodes(ancestor, frag);
 
 	if (isDelete) {
-		_upRange(range);
-		range.collapse(true);
+		range.up().collapse(true);
 	}
 	for (var i = 0, len = nodeList.length; i < len; i++) {
 		var node = nodeList[i];
@@ -631,12 +559,14 @@ KRange.prototype = {
 		node.appendChild(this.extractContents());
 		return this.insertNode(node).selectNode(node);
 	},
+	// 判断range是不是control range
 	isControl : function() {
 		var self = this,
 			sc = self.startContainer, so = self.startOffset,
 			ec = self.endContainer, eo = self.endOffset, rng;
 		return sc.nodeType == 1 && sc === ec && so + 1 === eo && K(sc.childNodes[so]).isControl();
 	},
+	// get original range
 	get : function(hasControlRange) {
 		var self = this, doc = self.doc, node, rng;
 		// not IE
@@ -655,8 +585,7 @@ KRange.prototype = {
 			return rng;
 		}
 		// IE text range
-		var range = self.cloneRange();
-		_downRange(range);
+		var range = self.cloneRange().down();
 		rng = doc.body.createTextRange();
 		rng.setEndPoint('StartToStart', _getEndRange(range.startContainer, range.startOffset));
 		rng.setEndPoint('EndToStart', _getEndRange(range.endContainer, range.endOffset));
@@ -665,6 +594,123 @@ KRange.prototype = {
 	html : function() {
 		return K(this.cloneContents()).outer();
 	},
+	// 降低range的位置
+	// <p><strong><span>123</span>|abc</strong>def</p>
+	// postion(strong, 1) -> positon("abc", 0)
+	// or
+	// <p><strong>abc|<span>123</span></strong>def</p>
+	// postion(strong, 1) -> positon("abc", 3)
+	down : function() {
+		var self = this;
+		function downPos(node, pos, isStart) {
+			if (node.nodeType != 1) {
+				return;
+			}
+			var children = K(node).children();
+			if (children.length === 0) {
+				return;
+			}
+			var left, right, child, offset;
+			if (pos > 0) {
+				left = children[pos - 1];
+			}
+			if (pos < children.length) {
+				right = children[pos];
+			}
+			if (left && left.type == 3) {
+				child = left[0];
+				offset = child.nodeValue.length;
+			}
+			if (right && right.type == 3) {
+				child = right[0];
+				offset = 0;
+			}
+			if (!child) {
+				return;
+			}
+			if (isStart) {
+				self.setStart(child, offset);
+			} else {
+				self.setEnd(child, offset);
+			}
+		}
+		downPos(self.startContainer, self.startOffset, true);
+		downPos(self.endContainer, self.endOffset, false);
+		return self;
+	},
+	// 提高range的位置
+	// <p><strong><span>123</span>|abc</strong>def</p>
+	// positon("abc", 0) -> postion(strong, 1)
+	// or
+	// <p><strong>abc|<span>123</span></strong>def</p>
+	// positon("abc", 3) -> postion(strong, 1)
+	up : function() {
+		var self = this;
+		function upPos(node, pos, isStart) {
+			if (node.nodeType != 3) {
+				return;
+			}
+			if (pos === 0) {
+				if (isStart) {
+					self.setStartBefore(node);
+				} else {
+					self.setEndBefore(node);
+				}
+			} else if (pos == node.nodeValue.length) {
+				if (isStart) {
+					self.setStartAfter(node);
+				} else {
+					self.setEndAfter(node);
+				}
+			}
+		}
+		upPos(self.startContainer, self.startOffset, true);
+		upPos(self.endContainer, self.endOffset, false);
+		return self;
+	},
+	// 扩大边界
+	// <p><strong><span>[123</span>abc]</strong>def</p> to <p>[<strong><span>123</span>abc</strong>]def</p>
+	enlarge : function() {
+		var self = this;
+		self.up();
+		function enlargePos(node, pos, isStart) {
+			var knode = K(node), parent;
+			if (knode.type == 3 || knode.name == 'body' || knode.isBlock()) {
+				return;
+			}
+			if (pos === 0) {
+				while (!knode.prev() && knode.name != 'body') {
+					parent = knode.parent();
+					if (!parent || parent.isBlock()) {
+						break;
+					}
+					knode = parent;
+				}
+				if (isStart) {
+					self.setStartBefore(knode[0]);
+				} else {
+					self.setEndBefore(knode[0]);
+				}
+			} else if (pos == knode.children().length) {
+				while (!knode.next() && knode.name != 'body') {
+					parent = knode.parent();
+					if (!parent || parent.isBlock()) {
+						break;
+					}
+					knode = parent;
+				}
+				if (isStart) {
+					self.setStartAfter(knode[0]);
+				} else {
+					self.setEndAfter(knode[0]);
+				}
+			}
+		}
+		enlargePos(self.startContainer, self.startOffset, true);
+		enlargePos(self.endContainer, self.endOffset, false);
+		return self;
+	},
+	// 取得bookmark，这个bookmark不会改变DOM
 	getBookmark : function() {
 		var self = this;
 		return {
@@ -674,8 +720,41 @@ KRange.prototype = {
 			endOffset : self.endOffset
 		};
 	},
+	// 取得bookmark，通过插入临时节点定位
+	createBookmark : function(serialize) {
+		var self = this, doc = self.doc, endNode,
+			startNode = K('<span style="display:none;"></span>', doc)[0];
+		startNode.id = '__kindeditor_bookmark_start_' + (_BOOKMARK_ID++) + '__';
+		if (!self.collapsed) {
+			endNode = startNode.cloneNode(true);
+			endNode.id = '__kindeditor_bookmark_end_' + (_BOOKMARK_ID++) + '__';
+		}
+		if (endNode) {
+			self.cloneRange().collapse(false).insertNode(endNode).setEndBefore(endNode);
+		}
+		self.insertNode(startNode).setStartAfter(startNode);
+		return {
+			start : serialize ? '#' + startNode.id : startNode,
+			end : endNode ? (serialize ? '#' + endNode.id : endNode) : null
+		};
+	},
+	// 根据bookmark重新设置range
 	moveToBookmark : function(bookmark) {
 		var self = this;
+		// 通过createBookmark取得的bookmark
+		if (bookmark.start) {
+			var start = K(bookmark.start), end = bookmark.end ? K(bookmark.end) : null;
+			self.setStartBefore(start[0]);
+			start.remove();
+			if (end) {
+				self.setEndBefore(end[0]);
+				end.remove();
+			} else {
+				self.collapse(true);
+			}
+			return self;
+		}
+		// 通过getBookmark取得的bookmark
 		return self.setStart(_pathToNode(bookmark.startPath, self.doc), bookmark.startOffset).
 			setEnd(_pathToNode(bookmark.endPath, self.doc), bookmark.endOffset);
 	},

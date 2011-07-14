@@ -738,6 +738,19 @@ test('range.surroundContents', function() {
 	document.body.removeChild(cloneP);
 });
 
+test('range.enlarge', function() {
+	var div = K('<div></div>');
+	K(document.body.firstChild).before(div);
+	//1
+	div.html('<strong><span>123</span>abc</strong>def');
+	range = K.range(document);
+	range.setStart(div.first().first().first()[0], 0);
+	range.setEnd(div.first().first().next()[0], 3);
+	range.enlarge();
+	same(range.html(), '<strong><span>123</span>abc</strong>');
+	div.html('');
+});
+
 test('range.getBookmark', function() {
 	var div = K('<div></div>');
 	K(document.body.firstChild).before(div);

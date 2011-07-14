@@ -6,7 +6,6 @@ test('cmd.wrap', function() {
 	
 	var div = K('<div></div>');
 	document.body.appendChild(div.get());
-
 	//1
 	cloneP = p.cloneNode(true);
 	document.body.appendChild(cloneP);
@@ -69,7 +68,7 @@ test('cmd.wrap', function() {
 	range.setEnd(strong.firstChild, 3);
 	cmd = K.cmd(range);
 	cmd.wrap('<span class="aaa"></span>');
-	equals(range.html(), '<span class="aaa">fg</span>');
+	equals(range.html(), '<strong><span class="aaa">fg</span></strong>');
 	document.body.removeChild(cloneP);
 	//7
 	cloneP = p.cloneNode(true);
@@ -124,7 +123,7 @@ test('cmd.wrap', function() {
 	range.setEnd(strong.nextSibling, 3);
 	cmd = K.cmd(range);
 	cmd.wrap('<strong></strong>');
-	equals(cmd.range.html(), '<strong></strong><strong>hij</strong>');
+	equals(cmd.range.html(), '<strong>hij</strong>');
 	document.body.removeChild(cloneP);
 	//12
 	cloneP = p.cloneNode(true);
@@ -176,6 +175,15 @@ test('cmd.wrap', function() {
 	cmd = K.cmd(range);
 	cmd.wrap('<strong></strong>');
 	equals(div.html().replace(/\n/, ''), '<p><strong>123</strong></p><p><strong>456</strong></p>');
+	div.html('');
+	//17
+	div.html('123<strong>4</strong>56');
+	range = K.range(document);
+	range.setStart(div.first()[0], 2);
+	range.setEnd(div.first()[0], 3);
+	cmd = K.cmd(range);
+	cmd.wrap('<strong></strong>');
+	equals(range.html(), '<strong>3</strong>');
 	div.html('');
 });
 

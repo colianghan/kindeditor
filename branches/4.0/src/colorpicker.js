@@ -12,7 +12,9 @@ function _colorpicker(options) {
 		remove = self.remove,
 		cells = [];
 	//create color picker
-	self.div().addClass('ke-colorpicker');
+	self.div().addClass('ke-colorpicker').bind('click,mousedown', function(e){
+		e.stopPropagation();
+	});
 	function addAttr(cell, color, cls) {
 		cell = K(cell).addClass(cls);
 		if (selectedColor === color.toLowerCase()) {
@@ -26,8 +28,8 @@ function _colorpicker(options) {
 			K(this).removeClass('ke-colorpicker-cell-on');
 		});
 		cell.click(function(e) {
-			options.click.call(K(this), color);
 			e.stop();
+			options.click.call(K(this), color);
 		});
 		if (color) {
 			cell.append(K('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
