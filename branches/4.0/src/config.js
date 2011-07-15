@@ -17,10 +17,10 @@ var _options = {
 	shadowMode : true,
 	scriptPath : _getScriptPath(),
 	langType : 'zh_CN',
-	urlType : '', //"",relative,absolute,domain
-	newlineType : 'p', //p,br
-	resizeType : 2, //0,1,2
-	dialogAlignType : 'page', //page,editor
+	urlType : '', // "", relative, absolute, domain
+	newlineType : 'p', // p, br
+	resizeType : 2, // 0, 1, 2
+	dialogAlignType : 'page', // page, editor
 	bodyClass : 'ke-content',
 	cssPath : '', //String or Array
 	cssData : '',
@@ -28,8 +28,7 @@ var _options = {
 	minHeight : 100,
 	minChangeLength : 5,
 	shortcutKeys : {
-		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I',
-		underline : 'U', selectall : 'A', print : 'P'
+		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
 	},
 	items : [
 		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',

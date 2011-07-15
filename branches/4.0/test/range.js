@@ -751,22 +751,6 @@ test('range.enlarge', function() {
 	div.html('');
 });
 
-test('range.getBookmark', function() {
-	var div = K('<div></div>');
-	K(document.body.firstChild).before(div);
-	//1
-	div.html('<p>1234<strong>5678</strong>9</p>');
-	range = K.range(document);
-	range.setStart(div.first().first()[0], 3);
-	range.setEnd(div.first().first().next()[0], 1);
-	var bookmark = range.getBookmark();
-	same(bookmark.startPath, '0,0,0');
-	ok(bookmark.startOffset, 3);
-	same(bookmark.endPath, '1,0,0');
-	ok(bookmark.endOffset, 1);
-	div.html('');
-});
-
 test('range.moveToBookmark', function() {
 	var div = K('<div></div>');
 	K(document.body.firstChild).before(div);
@@ -775,7 +759,7 @@ test('range.moveToBookmark', function() {
 	range = K.range(document);
 	range.setStart(div.first().first()[0], 3);
 	range.setEnd(div.first().first().next()[0], 1);
-	var bookmark = range.getBookmark();
+	var bookmark = range.createBookmark();
 	range.moveToBookmark(bookmark);
 	same(range.html(), '4<strong>5678</strong>');
 	div.html('');
@@ -784,7 +768,7 @@ test('range.moveToBookmark', function() {
 	range = K.range(document);
 	range.setStart(div.first()[0], 1);
 	range.setEnd(div.first().last()[0], 0);
-	var bookmark = range.getBookmark();
+	var bookmark = range.createBookmark(true);
 	range.moveToBookmark(bookmark);
 	same(range.html(), '<strong>5678</strong>');
 	div.html('');

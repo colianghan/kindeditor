@@ -9,31 +9,6 @@ function _updateCollapsed(range) {
 	range.collapsed = (range.startContainer === range.endContainer && range.startOffset === range.endOffset);
 	return range;
 }
-// get path for node
-// path: '1,2,1'
-function _nodeToPath(node) {
-	var list = [], knode = K(node);
-	while (knode && knode.name != 'body') {
-		list.push(knode.index());
-		knode = knode.parent();
-	}
-	return list.join(',');
-}
-// get Node by path
-function _pathToNode(path, doc) {
-	if (path === '') {
-		return doc.body;
-	}
-	var list = path.split(','), node = doc.body;
-	for (var i = list.length - 1; i >= 0; i--) {
-		var child = node.childNodes[list[i]];
-		if (!child) {
-			break;
-		}
-		node = child;
-	}
-	return node;
-}
 /**
 	cloneContents: _copyAndDelete(this, true, false)
 	extractContents: _copyAndDelete(this, true, true)
@@ -710,16 +685,6 @@ KRange.prototype = {
 		enlargePos(self.endContainer, self.endOffset, false);
 		return self;
 	},
-	// 取得bookmark，这个bookmark不会改变DOM
-	getBookmark : function() {
-		var self = this;
-		return {
-			startPath : _nodeToPath(self.startContainer),
-			startOffset : self.startOffset,
-			endPath : _nodeToPath(self.endContainer),
-			endOffset : self.endOffset
-		};
-	},
 	// 取得bookmark，通过插入临时节点定位
 	createBookmark : function(serialize) {
 		var self = this, doc = self.doc, endNode,
@@ -740,23 +705,17 @@ KRange.prototype = {
 	},
 	// 根据bookmark重新设置range
 	moveToBookmark : function(bookmark) {
-		var self = this;
-		// 通过createBookmark取得的bookmark
-		if (bookmark.start) {
-			var start = K(bookmark.start), end = bookmark.end ? K(bookmark.end) : null;
-			self.setStartBefore(start[0]);
-			start.remove();
-			if (end) {
-				self.setEndBefore(end[0]);
-				end.remove();
-			} else {
-				self.collapse(true);
-			}
-			return self;
+		var self = this, doc = self.doc,
+			start = K(bookmark.start, doc), end = bookmark.end ? K(bookmark.end, doc) : null;
+		self.setStartBefore(start[0]);
+		start.remove();
+		if (end) {
+			self.setEndBefore(end[0]);
+			end.remove();
+		} else {
+			self.collapse(true);
 		}
-		// 通过getBookmark取得的bookmark
-		return self.setStart(_pathToNode(bookmark.startPath, self.doc), bookmark.startOffset).
-			setEnd(_pathToNode(bookmark.endPath, self.doc), bookmark.endOffset);
+		return self;
 	},
 	dump : function() {
 		console.log('--------------------');

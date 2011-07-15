@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-14)
+* @version 4.0 (2011-07-16)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-14)',
+var _VERSION = '4.0 (2011-07-16)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -185,8 +185,7 @@ var _options = {
 	minHeight : 100,
 	minChangeLength : 5,
 	shortcutKeys : {
-		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I',
-		underline : 'U', selectall : 'A', print : 'P'
+		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
 	},
 	items : [
 		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
@@ -1553,28 +1552,6 @@ function _updateCollapsed(range) {
 	range.collapsed = (range.startContainer === range.endContainer && range.startOffset === range.endOffset);
 	return range;
 }
-function _nodeToPath(node) {
-	var list = [], knode = K(node);
-	while (knode && knode.name != 'body') {
-		list.push(knode.index());
-		knode = knode.parent();
-	}
-	return list.join(',');
-}
-function _pathToNode(path, doc) {
-	if (path === '') {
-		return doc.body;
-	}
-	var list = path.split(','), node = doc.body;
-	for (var i = list.length - 1; i >= 0; i--) {
-		var child = node.childNodes[list[i]];
-		if (!child) {
-			break;
-		}
-		node = child;
-	}
-	return node;
-}
 function _copyAndDelete(range, isCopy, isDelete) {
 	var doc = range.doc, nodeList = [];
 	function splitTextNode(node, startOffset, endOffset) {
@@ -2194,15 +2171,6 @@ KRange.prototype = {
 		enlargePos(self.endContainer, self.endOffset, false);
 		return self;
 	},
-	getBookmark : function() {
-		var self = this;
-		return {
-			startPath : _nodeToPath(self.startContainer),
-			startOffset : self.startOffset,
-			endPath : _nodeToPath(self.endContainer),
-			endOffset : self.endOffset
-		};
-	},
 	createBookmark : function(serialize) {
 		var self = this, doc = self.doc, endNode,
 			startNode = K('<span style="display:none;"></span>', doc)[0];
@@ -2221,21 +2189,17 @@ KRange.prototype = {
 		};
 	},
 	moveToBookmark : function(bookmark) {
-		var self = this;
-		if (bookmark.start) {
-			var start = K(bookmark.start), end = bookmark.end ? K(bookmark.end) : null;
-			self.setStartBefore(start[0]);
-			start.remove();
-			if (end) {
-				self.setEndBefore(end[0]);
-				end.remove();
-			} else {
-				self.collapse(true);
-			}
-			return self;
+		var self = this, doc = self.doc,
+			start = K(bookmark.start, doc), end = bookmark.end ? K(bookmark.end, doc) : null;
+		self.setStartBefore(start[0]);
+		start.remove();
+		if (end) {
+			self.setEndBefore(end[0]);
+			end.remove();
+		} else {
+			self.collapse(true);
 		}
-		return self.setStart(_pathToNode(bookmark.startPath, self.doc), bookmark.startOffset).
-			setEnd(_pathToNode(bookmark.endPath, self.doc), bookmark.endOffset);
+		return self;
 	},
 	dump : function() {
 		console.log('--------------------');
@@ -2961,6 +2925,9 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	KCmd.prototype[name] = function(val) {
 		var self = this;
 		_nativeCommand(self.doc, name, val);
+		if (name == 'selectall') {
+			self.selection();
+		}
 		return self;
 	};
 });
@@ -3495,7 +3462,7 @@ function _menu(options) {
 		})
 		.click(function(e) {
 			item.click.call(K(this));
-			e.stop();
+			e.stopPropagation();
 		})
 		.append(leftDiv);
 		if (centerDiv) {
@@ -4015,8 +3982,8 @@ KEditor.prototype = {
 							return;
 						}
 					}
+					e.stopPropagation();
 					self.clickToolbar(name);
-					e.stop();
 				}
 			});
 		});
@@ -4171,7 +4138,9 @@ KEditor.prototype = {
 	exec : function(key) {
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
-		self.addBookmark();
+		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
+			self.addBookmark();
+		}
 		return self;
 	},
 	insertHtml : function(val) {
@@ -4183,8 +4152,10 @@ KEditor.prototype = {
 	},
 	addBookmark : function() {
 		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		var bookmark = range.getBookmark();
-		bookmark.html = body.html();
+		var bookmark = range.createBookmark(true);
+		bookmark.html = body[0].innerHTML;
+		range.moveToBookmark(bookmark);
+		self.select();
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
 			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
@@ -4199,8 +4170,8 @@ KEditor.prototype = {
 		if (self._undoStack.length === 0) {
 			return self;
 		}
-		var bookmark = range.getBookmark();
-		bookmark.html = body.html();
+		var bookmark = range.createBookmark(true);
+		bookmark.html = body[0].innerHTML;
 		_addBookmarkToStack(self._redoStack, bookmark);
 		var prev = self._undoStack.pop();
 		if (bookmark.html === prev.html && self._undoStack.length > 0) {
@@ -4215,8 +4186,8 @@ KEditor.prototype = {
 		if (self._redoStack.length === 0) {
 			return self;
 		}
-		var bookmark = range.getBookmark();
-		bookmark.html = body.html();
+		var bookmark = range.createBookmark(true);
+		bookmark.html = body[0].innerHTML;
 		_addBookmarkToStack(self._undoStack, bookmark);
 		var next = self._redoStack.pop();
 		body.html(next.html);
@@ -4314,14 +4285,18 @@ KindEditor.plugin('core', function(K) {
 		self.toolbar.disable();
 		self.edit.design();
 	});
-	self.clickToolbar('fullscreen', function() {
-		self.fullscreen();
-	});
-	self.clickToolbar('undo', function() {
-		self.undo();
-	});
-	self.clickToolbar('redo', function() {
-		self.redo();
+	K.each('fullscreen,undo,redo'.split(','), function(i, name) {
+		if (self.shortcutKeys[name]) {
+			self.afterCreate(function() {
+				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.clickToolbar(name);
+					self.cmd.selection();
+				});
+			});
+		}
+		self.clickToolbar(name, function() {
+			self[name]();
+		});
 	});
 	self.clickToolbar('formatblock', function() {
 		var blocks = self.lang('formatblock.formatBlock'),

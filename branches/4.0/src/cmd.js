@@ -793,6 +793,9 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	KCmd.prototype[name] = function(val) {
 		var self = this;
 		_nativeCommand(self.doc, name, val);
+		if (name == 'selectall') {
+			self.selection();
+		}
 		return self;
 	};
 });

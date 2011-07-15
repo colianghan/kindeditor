@@ -271,8 +271,8 @@ KEditor.prototype = {
 							return;
 						}
 					}
+					e.stopPropagation();
 					self.clickToolbar(name);
-					e.stop();
 				}
 			});
 		});
@@ -436,7 +436,9 @@ KEditor.prototype = {
 	exec : function(key) {
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
-		self.addBookmark();
+		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
+			self.addBookmark();
+		}
 		return self;
 	},
 	insertHtml : function(val) {
@@ -448,8 +450,10 @@ KEditor.prototype = {
 	},
 	addBookmark : function() {
 		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		var bookmark = range.getBookmark();
-		bookmark.html = body.html();
+		var bookmark = range.createBookmark(true);
+		bookmark.html = body[0].innerHTML;
+		range.moveToBookmark(bookmark);
+		self.select();
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
 			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
@@ -464,8 +468,8 @@ KEditor.prototype = {
 		if (self._undoStack.length === 0) {
 			return self;
 		}
-		var bookmark = range.getBookmark();
-		bookmark.html = body.html();
+		var bookmark = range.createBookmark(true);
+		bookmark.html = body[0].innerHTML;
 		_addBookmarkToStack(self._redoStack, bookmark);
 		var prev = self._undoStack.pop();
 		if (bookmark.html === prev.html && self._undoStack.length > 0) {
@@ -480,8 +484,8 @@ KEditor.prototype = {
 		if (self._redoStack.length === 0) {
 			return self;
 		}
-		var bookmark = range.getBookmark();
-		bookmark.html = body.html();
+		var bookmark = range.createBookmark(true);
+		bookmark.html = body[0].innerHTML;
 		_addBookmarkToStack(self._undoStack, bookmark);
 		var next = self._redoStack.pop();
 		body.html(next.html);

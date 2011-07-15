@@ -45,7 +45,7 @@ function _menu(options) {
 		})
 		.click(function(e) {
 			item.click.call(K(this));
-			e.stop();
+			e.stopPropagation();
 		})
 		.append(leftDiv);
 		if (centerDiv) {

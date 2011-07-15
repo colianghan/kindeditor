@@ -1,24 +1,26 @@
 
 KindEditor.plugin('core', function(K) {
 	var self = this;
-	//source
+	// source
 	self.clickToolbar('source', function() {
 		self.toolbar.disable();
 		self.edit.design();
 	});
-	//fullscreen
-	self.clickToolbar('fullscreen', function() {
-		self.fullscreen();
+	// fullscreen, undo, redo
+	K.each('fullscreen,undo,redo'.split(','), function(i, name) {
+		if (self.shortcutKeys[name]) {
+			self.afterCreate(function() {
+				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.clickToolbar(name);
+					self.cmd.selection();
+				});
+			});
+		}
+		self.clickToolbar(name, function() {
+			self[name]();
+		});
 	});
-	//undo
-	self.clickToolbar('undo', function() {
-		self.undo();
-	});
-	//redo
-	self.clickToolbar('redo', function() {
-		self.redo();
-	});
-	//formatblock
+	// formatblock
 	self.clickToolbar('formatblock', function() {
 		var blocks = self.lang('formatblock.formatBlock'),
 			heights = {
@@ -48,7 +50,7 @@ KindEditor.plugin('core', function(K) {
 			});
 		});
 	});
-	//fontname
+	// fontname
 	self.clickToolbar('fontname', function() {
 		var curVal = self.val('fontname'),
 			menu = self.createMenu({
@@ -65,7 +67,7 @@ KindEditor.plugin('core', function(K) {
 			});
 		});
 	});
-	//fontsize
+	// fontsize
 	self.clickToolbar('fontsize', function() {
 		var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
 			curVal = self.val('fontsize');
@@ -84,7 +86,7 @@ KindEditor.plugin('core', function(K) {
 			});
 		});
 	});
-	//forecolor,hilitecolor
+	// forecolor,hilitecolor
 	K.each('forecolor,hilitecolor'.split(','), function(i, name) {
 		self.clickToolbar(name, function() {
 			self.createMenu({
@@ -96,7 +98,7 @@ KindEditor.plugin('core', function(K) {
 			});
 		});
 	});
-	//cut,copy,paste
+	// cut,copy,paste
 	K.each(('cut,copy,paste').split(','), function(i, name) {
 		self.clickToolbar(name, function() {
 			self.focus();
@@ -107,7 +109,7 @@ KindEditor.plugin('core', function(K) {
 			}
 		});
 	});
-	//about
+	// about
 	self.clickToolbar('about', function() {
 		var html = '<div style="margin:20px;">' +
 			'<div>KindEditor ' + K.VERSION + '</div>' +
@@ -120,7 +122,7 @@ KindEditor.plugin('core', function(K) {
 			body : html
 		});
 	});
-	//others
+	// other
 	K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 		'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 		'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {

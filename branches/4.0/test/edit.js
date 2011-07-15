@@ -10,7 +10,8 @@ var cmds = {
 	hilitecolor : '#DDDDDD',
 	fontsize : '32px',
 	fontfamily : 'Arial Black',
-	removeformat : ''
+	removeformat : '',
+	selectall : ''
 };
 K.each(cmds, function(key, val) {
 	var a = K('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
