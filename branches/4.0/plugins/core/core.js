@@ -12,7 +12,6 @@ KindEditor.plugin('core', function(K) {
 			self.afterCreate(function() {
 				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
 					self.clickToolbar(name);
-					self.cmd.selection();
 				});
 			});
 		}

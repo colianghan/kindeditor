@@ -83,17 +83,17 @@ function _edit(options) {
 		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>');
 	iframe.css('width', '100%');
 	textarea.css('width', '100%');
-	//set width
+	// set width
 	self.width = function(val) {
 		div.css('width', _addUnit(val));
 		return self;
 	};
-	//set height
+	// set height
 	self.height = function(val) {
 		val = _addUnit(val);
 		div.css('height', val);
 		iframe.css('height', val);
-		//校正IE6和IE7的textarea高度
+		// 校正IE6和IE7的textarea高度
 		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
@@ -111,14 +111,14 @@ function _edit(options) {
 	} else {
 		iframe.hide();
 	}
-	//remove edit
+	// remove edit
 	self.remove = function() {
 		var doc = self.doc;
-		//remove events
+		// remove events
 		K(doc).unbind();
 		K(doc.body).unbind();
 		K(document).unbind();
-		//remove elements
+		// remove elements
 		_elementVal(srcElement, self.html());
 		srcElement.show();
 		doc.write('');
@@ -128,7 +128,7 @@ function _edit(options) {
 		remove.call(self);
 		return self;
 	};
-	//get or set value
+	// get or set value
 	self.html = function(val) {
 		var doc = self.doc;
 		if (designMode) {

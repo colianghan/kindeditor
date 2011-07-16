@@ -363,15 +363,16 @@ KNode.prototype = {
 	remove : function(keepChilds) {
 		var self = this;
 		self.each(function(i, node) {
+			if (!node.parentNode) {
+				return;
+			}
 			_unbind(node);
 			if (keepChilds) {
 				new KNode(node.childNodes).each(function() {
 					new KNode([node]).after(this);
 				});
 			}
-			if (node.parentNode) {
-				node.parentNode.removeChild(node);
-			}
+			node.parentNode.removeChild(node);
 			delete self[i];
 		});
 		self.length = 0;
