@@ -12,11 +12,26 @@ function _toCamel(str) {
 	return str;
 }
 
+function _getDoc(node) {
+	if (!node) {
+		return document;
+	}
+	return node.ownerDocument || node.document || node;
+}
+
+function _getWin(node) {
+	if (!node) {
+		return window;
+	}
+	var doc = _getDoc(node);
+	return doc.parentWindow || doc.defaultView;
+}
+
 function _setHtml(el, html) {
 	if (el.nodeType != 1) {
 		return;
 	}
-	el.innerHTML = '' + html;
+	el.innerHTML = html;
 }
 
 function _hasClass(el, cls) {
@@ -36,21 +51,6 @@ function _removeAttr(el, key) {
 	}
 	_setAttr(el, key, '');
 	el.removeAttribute(key);
-}
-
-function _getDoc(node) {
-	if (!node) {
-		return document;
-	}
-	return node.ownerDocument || node.document || node;
-}
-
-function _getWin(node) {
-	if (!node) {
-		return window;
-	}
-	var doc = _getDoc(node);
-	return doc.parentWindow || doc.defaultView;
 }
 
 function _getNodeName(node) {

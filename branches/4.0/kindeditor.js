@@ -1027,11 +1027,24 @@ function _toCamel(str) {
 	});
 	return str;
 }
+function _getDoc(node) {
+	if (!node) {
+		return document;
+	}
+	return node.ownerDocument || node.document || node;
+}
+function _getWin(node) {
+	if (!node) {
+		return window;
+	}
+	var doc = _getDoc(node);
+	return doc.parentWindow || doc.defaultView;
+}
 function _setHtml(el, html) {
 	if (el.nodeType != 1) {
 		return;
 	}
-	el.innerHTML = '' + html;
+	el.innerHTML = html;
 }
 function _hasClass(el, cls) {
 	return _inString(cls, el.className, ' ');
@@ -1048,19 +1061,6 @@ function _removeAttr(el, key) {
 	}
 	_setAttr(el, key, '');
 	el.removeAttribute(key);
-}
-function _getDoc(node) {
-	if (!node) {
-		return document;
-	}
-	return node.ownerDocument || node.document || node;
-}
-function _getWin(node) {
-	if (!node) {
-		return window;
-	}
-	var doc = _getDoc(node);
-	return doc.parentWindow || doc.defaultView;
 }
 function _getNodeName(node) {
 	if (!node || !node.nodeName) {
@@ -3376,12 +3376,34 @@ function _toolbar(options) {
 		itemNode.data('item', item);
 		itemNodes[item.name] = itemNode;
 		div.append(itemNode);
+		return self;
 	};
 	self.remove = function() {
 		_each(itemNodes, function(key, val) {
 			val.remove();
 		});
 		remove.call(self);
+		return self;
+	};
+	self.select = function(name) {
+		var itemNode = itemNodes[name];
+		if (itemNode) {
+			itemNode.addClass('ke-toolbar-icon-outline-selected').unbind('mouseover,mouseout');
+		}
+		return self;
+	};
+	self.unselect = function(name) {
+		var itemNode = itemNodes[name];
+		if (itemNode) {
+			itemNode.removeClass('ke-toolbar-icon-outline-selected').removeClass('ke-toolbar-icon-outline-on')
+			.mouseover(function(e) {
+				K(this).addClass('ke-toolbar-icon-outline-on');
+			})
+			.mouseout(function(e) {
+				K(this).removeClass('ke-toolbar-icon-outline-on');
+			});
+		}
+		return self;
 	};
 	self.disable = function(bool) {
 		var arr = noDisableItems, item;
@@ -3928,6 +3950,13 @@ KEditor.prototype = {
 		}
 		return self.handler(key, fn);
 	},
+	updateState : function() {
+		var self = this;
+		_each(('justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,' +
+			'indent,outdent,subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
+			self.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
+		});
+	},
 	addContextmenu : function(item) {
 		this._contextmenus.push(item);
 	},
@@ -4076,8 +4105,11 @@ KEditor.prototype = {
 				});
 				*/
 				self.addBookmark();
-				this.cmd.oninput(function(e) {
+				self.cmd.oninput(function(e) {
 					self.addBookmark();
+				})
+				.onchange(function(e) {
+					self.updateState();
 				});
 				self.afterCreate();
 			}
@@ -4136,6 +4168,7 @@ KEditor.prototype = {
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
+			self.updateState();
 			self.addBookmark();
 		}
 		return self;
@@ -4396,6 +4429,7 @@ KindEditor.plugin('core', function(K) {
 		if (self.shortcutKeys[name]) {
 			self.afterCreate(function() {
 				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.cmd.selection();
 					self.clickToolbar(name);
 				});
 			});

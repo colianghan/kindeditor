@@ -219,6 +219,13 @@ KEditor.prototype = {
 		}
 		return self.handler(key, fn);
 	},
+	updateState : function() {
+		var self = this;
+		_each(('justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,' +
+			'indent,outdent,subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
+			self.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
+		});
+	},
 	addContextmenu : function(item) {
 		this._contextmenus.push(item);
 	},
@@ -376,8 +383,11 @@ KEditor.prototype = {
 				*/
 				// add bookmark to undoStack
 				self.addBookmark();
-				this.cmd.oninput(function(e) {
+				self.cmd.oninput(function(e) {
 					self.addBookmark();
+				})
+				.onchange(function(e) {
+					self.updateState();
 				});
 				//execute afterCreate event
 				self.afterCreate();
@@ -437,6 +447,7 @@ KEditor.prototype = {
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
+			self.updateState();
 			self.addBookmark();
 		}
 		return self;
