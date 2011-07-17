@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-17)
+* @version 4.0 (2011-07-18)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-17)',
+var _VERSION = '4.0 (2011-07-18)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -3098,6 +3098,9 @@ function _widget(options) {
 	return {
 		name : name,
 		doc : doc,
+		x : x,
+		y : y,
+		z : z,
 		div : function() {
 			return div;
 		},
@@ -3114,6 +3117,7 @@ function _widget(options) {
 			return this;
 		},
 		draggable : function(options) {
+			var self = this;
 			options = options || {};
 			options.moveEl = div;
 			options.moveFn = function(x, y, width, height, diffX, diffY) {
@@ -3123,12 +3127,21 @@ function _widget(options) {
 				if ((y = y + diffY) < 0) {
 					y = 0;
 				}
-				div.css('left', _addUnit(x)).css('top', _addUnit(y));
+				x = _addUnit(x);
+				y = _addUnit(y);
+				div.css('left', x).css('top', y);
+				self.x = x;
+				self.y = y;
 			};
 			_drag(options);
-			return this;
+			return self;
 		},
-		resetPos : resetPos
+		resetPos : function(width, height) {
+			resetPos(width, height);
+			this.x = x;
+			this.y = y;
+			return this;
+		}
 	};
 }
 K.widget = _widget;
@@ -3590,7 +3603,8 @@ function _dialog(options) {
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
 		closeBtn = options.closeBtn,
-		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
+		shadowMode = _undef(options.shadowMode, true),
+		showMask = _undef(options.showMask, true),
 		docEl = doc.documentElement,
 		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
 		docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight);
@@ -3628,17 +3642,22 @@ function _dialog(options) {
 	if (height) {
 		bodyDiv.height(_removeUnit(height) - headerDiv.height() - footerDiv.height());
 	}
-	var mask = _widget({
-		x : 0,
-		y : 0,
-		z : 811212,
-		cls : 'ke-dialog-mask',
-		width : docWidth,
-		height : docHeight
-	});
+	var mask = null;
+	if (showMask) {
+		mask = _widget({
+			x : 0,
+			y : 0,
+			z : self.z - 1,
+			cls : 'ke-dialog-mask',
+			width : docWidth,
+			height : docHeight
+		});
+	}
 	self.resetPos(div.width(), div.height());
 	self.remove = function() {
-		mask.remove();
+		if (mask) {
+			mask.remove();
+		}
 		span.remove();
 		K('input', div).remove();
 		footerDiv.remove();
@@ -3646,13 +3665,8 @@ function _dialog(options) {
 		headerDiv.remove();
 		remove.call(self);
 	};
-	self.show = function() {
-		mask.show();
-		div.show();
-	};
-	self.hide = function() {
-		mask.hide();
-		div.hide();
+	self.mask = function() {
+		return mask;
 	};
 	return self;
 }
@@ -4093,7 +4107,8 @@ KEditor.prototype = {
 				self.edit = this;
 				self.cmd = this.cmd;
 				self.statusbar = statusbar;
-				self.menu = self.contextmenu = self.dialog = null;
+				self.menu = self.contextmenu = null;
+				self.dialogs = [];
 				self.resize(width, height);
 				K(this.doc, document).mousedown(function(e) {
 					if (self.menu) {
@@ -4136,15 +4151,16 @@ KEditor.prototype = {
 		if (self.menu) {
 			self.hideMenu();
 		}
-		if (self.dialog) {
+		_each(self.dialogs, function() {
 			self.hideDialog();
-		}
+		});
 		self.toolbar.remove();
 		self.edit.remove();
 		self.statusbar.last().remove();
 		self.statusbar.remove();
 		self.container.remove();
-		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
+		self.container = self.toolbar = self.edit = self.menu = null;
+		self.dialogs = [];
 		return self;
 	},
 	resize : function(width, height) {
@@ -4270,8 +4286,7 @@ KEditor.prototype = {
 		return this;
 	},
 	createDialog : function(options) {
-		var self = this,
-			name = options.name;
+		var self = this, name = options.name;
 		options.shadowMode = self.shadowMode;
 		options.closeBtn = {
 			name : self.lang('close'),
@@ -4287,14 +4302,30 @@ KEditor.prototype = {
 				self.focus();
 			}
 		};
-		return (self.dialog = _dialog(options));
+		if (self.dialogs.length > 0) {
+			var firstDialog = self.dialogs[0],
+				parentDialog = self.dialogs[self.dialogs.length - 1];
+			firstDialog.mask().div().css('z-index', parentDialog.z + 1);
+			options.z = parentDialog.z + 2;
+			options.showMask = false;
+		}
+		var dialog = _dialog(options);
+		self.dialogs.push(dialog);
+		return dialog;
 	},
 	hideDialog : function() {
 		var self = this;
-		self.beforeHideDialog();
-		self.dialog.remove();
-		self.dialog = null;
-		self.cmd.select();
+		if (self.dialogs.length > 0) {
+			self.beforeHideDialog();
+			self.dialogs.pop().remove();
+		}
+		if (self.dialogs.length > 0) {
+			var firstDialog = self.dialogs[0],
+				parentDialog = self.dialogs[self.dialogs.length - 1];
+			firstDialog.mask().div().css('z-index', parentDialog.z - 1);
+		} else {
+			self.cmd.select();
+		}
 		return self;
 	}
 };

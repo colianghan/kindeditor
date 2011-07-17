@@ -571,7 +571,14 @@ KEditor.prototype = {
 			}
 		};
 		if (self.dialogs.length > 0) {
-			options.z = self.dialogs[self.dialogs.length - 1].z + 2;
+			var firstDialog = self.dialogs[0],
+				parentDialog = self.dialogs[self.dialogs.length - 1];
+			// 提高mask的z-index
+			firstDialog.mask().div().css('z-index', parentDialog.z + 1);
+			// 提高dialog的z-index
+			options.z = parentDialog.z + 2;
+			// 不显示mask
+			options.showMask = false;
 		}
 		var dialog = _dialog(options);
 		self.dialogs.push(dialog);
@@ -581,10 +588,14 @@ KEditor.prototype = {
 		var self = this;
 		if (self.dialogs.length > 0) {
 			self.beforeHideDialog();
-			var dialog = self.dialogs.pop();
-			dialog.remove();
+			self.dialogs.pop().remove();
 		}
-		if (self.dialogs.length === 0) {
+		if (self.dialogs.length > 0) {
+			var firstDialog = self.dialogs[0],
+				parentDialog = self.dialogs[self.dialogs.length - 1];
+			// 降低mask的z-index
+			firstDialog.mask().div().css('z-index', parentDialog.z - 1);
+		} else {
 			self.cmd.select();
 		}
 		return self;

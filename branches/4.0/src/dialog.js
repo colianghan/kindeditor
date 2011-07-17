@@ -25,7 +25,8 @@ function _dialog(options) {
 		yesBtn = options.yesBtn,
 		noBtn = options.noBtn,
 		closeBtn = options.closeBtn,
-		shadowMode = options.shadowMode === undefined ? true : options.shadowMode,
+		shadowMode = _undef(options.shadowMode, true),
+		showMask = _undef(options.showMask, true),
 		docEl = doc.documentElement,
 		docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
 		docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight);
@@ -64,19 +65,24 @@ function _dialog(options) {
 	if (height) {
 		bodyDiv.height(_removeUnit(height) - headerDiv.height() - footerDiv.height());
 	}
-	var mask = _widget({
-		x : 0,
-		y : 0,
-		z : self.z - 1,
-		cls : 'ke-dialog-mask',
-		width : docWidth,
-		height : docHeight
-	});
+	var mask = null;
+	if (showMask) {
+		mask = _widget({
+			x : 0,
+			y : 0,
+			z : self.z - 1,
+			cls : 'ke-dialog-mask',
+			width : docWidth,
+			height : docHeight
+		});
+	}
 	//set dialog position
 	self.resetPos(div.width(), div.height());
 	//remove dialog
 	self.remove = function() {
-		mask.remove();
+		if (mask) {
+			mask.remove();
+		}
 		span.remove();
 		K('input', div).remove();
 		footerDiv.remove();
@@ -84,15 +90,8 @@ function _dialog(options) {
 		headerDiv.remove();
 		remove.call(self);
 	};
-	//show dialog
-	self.show = function() {
-		mask.show();
-		div.show();
-	};
-	//hide dialog
-	self.hide = function() {
-		mask.hide();
-		div.hide();
+	self.mask = function() {
+		return mask;
 	};
 	return self;
 }
