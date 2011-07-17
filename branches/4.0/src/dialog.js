@@ -67,7 +67,7 @@ function _dialog(options) {
 	var mask = _widget({
 		x : 0,
 		y : 0,
-		z : 811212,
+		z : self.z - 1,
 		cls : 'ke-dialog-mask',
 		width : docWidth,
 		height : docHeight

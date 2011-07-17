@@ -771,3 +771,53 @@
 	border-style: solid;
 	border-width: 1px;
 }
+.ke-plugin-filemanager-header {
+	width: 100%;
+	margin-bottom: 10px;
+}
+.ke-plugin-filemanager-header .left {
+	float: left;
+}
+.ke-plugin-filemanager-header .right {
+	float: right;
+}
+.ke-plugin-filemanager-body {
+	overflow: scroll;
+	background-color:#FFFFFF;
+	width: 470px;
+	height: 370px;
+	padding: 5px;
+}
+.ke-plugin-filemanager-body .item {
+	width: 100px;
+	margin: 5px;
+}
+.ke-plugin-filemanager-body .photo {
+	border: 1px solid #DDDDDD;
+	background-color:#FFFFFF;
+	padding: 10px;
+}
+.ke-plugin-filemanager-body .name {
+	width: 100px;
+	text-align: center;
+	overflow: hidden;
+}
+.ke-plugin-filemanager-body .on {
+	border: 1px solid #5690D2;
+	background-color: #E9EFF6;
+}
+.ke-plugin-filemanager-body .table {
+	width: 95%;
+}
+.ke-plugin-filemanager-body .table .name {
+	width: 55%;
+	text-align: left;
+}
+.ke-plugin-filemanager-body .table .size {
+	width: 15%;
+	text-align: left;
+}
+.ke-plugin-filemanager-body .table .datetime {
+	width: 30%;
+	text-align: center;
+}

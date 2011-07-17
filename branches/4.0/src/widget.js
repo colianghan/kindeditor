@@ -138,6 +138,9 @@ function _widget(options) {
 	return {
 		name : name,
 		doc : doc,
+		x : x,
+		y : y,
+		z : z,
 		div : function() {
 			return div;
 		},
@@ -154,6 +157,7 @@ function _widget(options) {
 			return this;
 		},
 		draggable : function(options) {
+			var self = this;
 			options = options || {};
 			options.moveEl = div;
 			options.moveFn = function(x, y, width, height, diffX, diffY) {
@@ -163,12 +167,22 @@ function _widget(options) {
 				if ((y = y + diffY) < 0) {
 					y = 0;
 				}
-				div.css('left', _addUnit(x)).css('top', _addUnit(y));
+				x = _addUnit(x);
+				y = _addUnit(y);
+				div.css('left', x).css('top', y);
+				self.x = x;
+				self.y = y;
+				
 			};
 			_drag(options);
-			return this;
+			return self;
 		},
-		resetPos : resetPos
+		resetPos : function(width, height) {
+			resetPos(width, height);
+			this.x = x;
+			this.y = y;
+			return this;
+		}
 	};
 }
 

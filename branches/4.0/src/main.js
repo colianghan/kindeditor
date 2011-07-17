@@ -371,7 +371,8 @@ KEditor.prototype = {
 				self.edit = this;
 				self.cmd = this.cmd;
 				self.statusbar = statusbar;
-				self.menu = self.contextmenu = self.dialog = null;
+				self.menu = self.contextmenu = null;
+				self.dialogs = [];
 				// reset size
 				self.resize(width, height);
 				// hide menu when click document
@@ -418,15 +419,16 @@ KEditor.prototype = {
 		if (self.menu) {
 			self.hideMenu();
 		}
-		if (self.dialog) {
+		_each(self.dialogs, function() {
 			self.hideDialog();
-		}
+		});
 		self.toolbar.remove();
 		self.edit.remove();
 		self.statusbar.last().remove();
 		self.statusbar.remove();
 		self.container.remove();
-		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
+		self.container = self.toolbar = self.edit = self.menu = null;
+		self.dialogs = [];
 		return self;
 	},
 	resize : function(width, height) {
@@ -552,8 +554,7 @@ KEditor.prototype = {
 		return this;
 	},
 	createDialog : function(options) {
-		var self = this,
-			name = options.name;
+		var self = this, name = options.name;
 		options.shadowMode = self.shadowMode;
 		options.closeBtn = {
 			name : self.lang('close'),
@@ -569,14 +570,23 @@ KEditor.prototype = {
 				self.focus();
 			}
 		};
-		return (self.dialog = _dialog(options));
+		if (self.dialogs.length > 0) {
+			options.z = self.dialogs[self.dialogs.length - 1].z + 2;
+		}
+		var dialog = _dialog(options);
+		self.dialogs.push(dialog);
+		return dialog;
 	},
 	hideDialog : function() {
 		var self = this;
-		self.beforeHideDialog();
-		self.dialog.remove();
-		self.dialog = null;
-		self.cmd.select();
+		if (self.dialogs.length > 0) {
+			self.beforeHideDialog();
+			var dialog = self.dialogs.pop();
+			dialog.remove();
+		}
+		if (self.dialogs.length === 0) {
+			self.cmd.select();
+		}
 		return self;
 	}
 };

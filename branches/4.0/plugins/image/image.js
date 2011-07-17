@@ -43,7 +43,7 @@ KindEditor.plugin('image', function(K) {
 				'<span class="ke-inline-block ke-upload-area">',
 				'<input type="text" name="localUrl" class="ke-input-text" tabindex="-1" style="width:200px;" readonly="true" /> &nbsp;',
 				'<span class="ke-button-common ke-button-outer">',
-				'<input type="button" class="ke-button-common ke-button" id="viewLocal" value="' + lang.viewServer + '" tabindex="-1" />',
+				'<input type="button" class="ke-button-common ke-button" value="' + lang.viewServer + '" tabindex="-1" />',
 				'</span>',
 				'<input type="file" class="ke-upload-file" id="keFile" name="imgFile" />',
 				'</span>',
@@ -140,12 +140,16 @@ KindEditor.plugin('image', function(K) {
 			var urlBox = K('[name="url"]', div),
 				localUrlBox = K('[name="localUrl"]', div),
 				fileBox = K('[name="imgFile"]', div),
+				viewServerBtn = K('[name="viewServer"]', div),
 				widthBox = K('[name="width"]', div),
 				heightBox = K('[name="height"]', div),
 				titleBox = K('[name="title"]', div),
 				alignBox = K('[name="align"]');
 			fileBox.change(function(e) {
 				localUrlBox.val(fileBox.val());
+			});
+			viewServerBtn.click(function(e) {
+				self.clickToolbar('filemanager');
 			});
 			urlBox.val('http://');
 			var img = getSelectedImg();
