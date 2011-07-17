@@ -222,7 +222,7 @@ KEditor.prototype = {
 	updateState : function() {
 		var self = this;
 		_each(('justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,' +
-			'indent,outdent,subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
+			'subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
 			self.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
 		});
 	},

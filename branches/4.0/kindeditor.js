@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-16)
+* @version 4.0 (2011-07-17)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-16)',
+var _VERSION = '4.0 (2011-07-17)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -2922,7 +2922,7 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	KCmd.prototype[name] = function(val) {
 		var self = this;
 		_nativeCommand(self.doc, name, val);
-		if (name == 'selectall') {
+		if (!_IE || _inArray(name, 'selectall'.split(',')) >= 0) {
 			self.selection();
 		}
 		return self;
@@ -3953,7 +3953,7 @@ KEditor.prototype = {
 	updateState : function() {
 		var self = this;
 		_each(('justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,' +
-			'indent,outdent,subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
+			'subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
 			self.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
 		});
 	},

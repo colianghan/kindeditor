@@ -793,7 +793,8 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	KCmd.prototype[name] = function(val) {
 		var self = this;
 		_nativeCommand(self.doc, name, val);
-		if (name == 'selectall') {
+		// 在webkit和firefox上需要重新选取range，否则有时候会报错
+		if (!_IE || _inArray(name, 'selectall'.split(',')) >= 0) {
 			self.selection();
 		}
 		return self;
