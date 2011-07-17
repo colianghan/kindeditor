@@ -52,7 +52,7 @@ function _toolbar(options) {
 		return self;
 	};
 	// select item
-	self.select = function(name) {
+	self.select = function(name, bool) {
 		var itemNode = itemNodes[name];
 		if (itemNode) {
 			itemNode.addClass('ke-toolbar-icon-outline-selected').unbind('mouseover,mouseout');
@@ -103,6 +103,7 @@ function _toolbar(options) {
 			});
 			disableMode = false;
 		}
+		return self;
 	};
 	return self;
 }

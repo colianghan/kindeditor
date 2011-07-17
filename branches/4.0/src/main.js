@@ -246,20 +246,40 @@ KEditor.prototype = {
 		} else {
 			_docElement().style.overflow = 'auto';
 		}
-		var width = fullscreenMode ? _docWidth() + 'px' : self.width,
-			height = fullscreenMode ? _docHeight() + 'px' : self.height,
-			container = K('<div class="ke-container"></div>').css('width', width);
+		var width = fullscreenMode ? _docElement().clientWidth + 'px' : self.width,
+			height = fullscreenMode ? _docElement().clientHeight + 'px' : self.height;
+		// 校正IE6和IE7的高度
+		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
+			height = _addUnit(_removeUnit(height) + 2);
+		}
+		var container = K('<div class="ke-container"></div>').css('width', width);
 		if (fullscreenMode) {
-			var pos = _getScrollPos();
 			container.css({
 				position : 'absolute',
-				left : _addUnit(pos.x),
-				top : _addUnit(pos.y),
+				left : 0,
+				top : 0,
 				'z-index' : 811211
 			});
 			K(document.body).append(container);
+			// 为了防止拖动偏移，把文档高度设置成0
+			self._scrollPos = _getScrollPos();
+			window.scrollTo(0, 0);
+			K(document.body).css({
+				'height' : 0,
+				'overflow' : 'hidden'
+			});
+			K(document.body.parentNode).css('overflow', 'hidden');
 		} else {
 			self.srcElement.before(container);
+			// 恢复文档高度
+			if (self._scrollPos) {
+				K(document.body).css({
+					'height' : '',
+					'overflow' : ''
+				});
+				K(document.body.parentNode).css('overflow', '');
+				window.scrollTo(self._scrollPos.x, self._scrollPos.y);
+			}
 		}
 		//create toolbar
 		var toolbar = _toolbar({
@@ -283,9 +303,6 @@ KEditor.prototype = {
 				}
 			});
 		});
-		if (!self.designMode) {
-			toolbar.disable(true);
-		}
 		//create edit
 		var edit = _edit({
 			parent : container,
@@ -297,54 +314,56 @@ KEditor.prototype = {
 			cssData : self.cssData,
 			afterCreate : function() {
 				// create statusbar
-				var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
+				var statusbar = K('<div class="ke-statusbar"></div>');
 				container.append(statusbar);
-				if (!fullscreenMode) {
-					rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-					statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
-					statusbar.append(rightIcon);
-					// bind drag event
-					_drag({
-						moveEl : container,
-						clickEl : statusbar,
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							height += diffY;
-							if (height >= self.minHeight) {
-								self.resize(null, height);
-								self.height = _addUnit(height);
-							}
-						}
-					});
-					_drag({
-						moveEl : container,
-						clickEl : rightIcon,
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							width += diffX;
-							height += diffY;
-							if (width >= self.minWidth) {
-								self.resize(width, null);
-								self.width = _addUnit(width);
-							}
-							if (height >= self.minHeight) {
-								self.resize(null, height);
-								self.height = _addUnit(height);
-							}
-						}
-					});
+				statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
+				statusbar.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+				// 为了限制宽度和高度，包装self.resize
+				function resize(width, height) {
+					if (width && width >= self.minWidth) {
+						self.resize(width, null);
+						self.width = _addUnit(width);
+					}
+					if (height && height >= self.minHeight) {
+						self.resize(null, height);
+						self.height = _addUnit(height);
+					}
 				}
 				// auto resize editor while resize window
 				if (self._resizeListener) {
 					K(window).unbind('resize', self._resizeListener);
 					self._resizeListener = null;
 				}
-				function resizeListener(e) {
+				function resizeListener() {
 					if (self.container) {
-						self.resize(_docElement().clientWidth, _docElement().clientHeight);
+						resize(_docElement().clientWidth, _docElement().clientHeight);
 					}
 				}
-				if (self.fullscreenMode) {
+				if (fullscreenMode) {
 					K(window).bind('resize', resizeListener);
 					self._resizeListener = resizeListener;
+					toolbar.select('fullscreen');
+					statusbar.first().css('visibility', 'hidden');
+					statusbar.last().css('visibility', 'hidden');
+				} else {
+					// bind drag event
+					_drag({
+						moveEl : container,
+						clickEl : statusbar,
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							height += diffY;
+							resize(null, height);
+						}
+					});
+					_drag({
+						moveEl : container,
+						clickEl : statusbar.last(),
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							width += diffX;
+							height += diffY;
+							resize(width, height);
+						}
+					});
 				}
 				// set properties
 				self.container = container;
@@ -353,7 +372,6 @@ KEditor.prototype = {
 				self.cmd = this.cmd;
 				self.statusbar = statusbar;
 				self.menu = self.contextmenu = self.dialog = null;
-				self._rightIcon = rightIcon;
 				// reset size
 				self.resize(width, height);
 				// hide menu when click document
@@ -405,9 +423,7 @@ KEditor.prototype = {
 		}
 		self.toolbar.remove();
 		self.edit.remove();
-		if (self._rightIcon) {
-			self._rightIcon.remove();
-		}
+		self.statusbar.last().remove();
 		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
@@ -506,8 +522,7 @@ KEditor.prototype = {
 	fullscreen : function(bool) {
 		var self = this;
 		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
-		self.remove();
-		return self.create();
+		return self.remove().create();
 	},
 	createMenu : function(options) {
 		var self = this,

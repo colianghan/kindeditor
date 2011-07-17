@@ -5,6 +5,19 @@ KindEditor.plugin('core', function(K) {
 	self.clickToolbar('source', function() {
 		self.toolbar.disable();
 		self.edit.design();
+		self.designMode = self.edit.designMode;
+		if (self.designMode) {
+			self.toolbar.unselect('source');
+		} else {
+			self.toolbar.select('source');
+		}
+	});
+	self.afterCreate(function() {
+		if (this.designMode) {
+			this.toolbar.unselect('source');
+		} else {
+			this.toolbar.disable(true).select('source');
+		}
 	});
 	// fullscreen, undo, redo
 	K.each('fullscreen,undo,redo'.split(','), function(i, name) {

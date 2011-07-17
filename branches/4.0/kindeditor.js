@@ -3198,13 +3198,13 @@ function _edit(options) {
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
 		srcElement = K(options.srcElement),
-		designMode = _undef(options.designMode, true),
 		themesPath = _undef(options.themesPath, ''),
 		bodyClass = options.bodyClass,
 		cssPath = options.cssPath,
 		cssData = options.cssData,
 		isDocumentDomain = location.host !== document.domain,
 		div = self.div().addClass('ke-edit');
+	self.designMode = _undef(options.designMode, true);
 	var srcScript = 'document.open();' +
 		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
 		'document.close();',
@@ -3233,7 +3233,7 @@ function _edit(options) {
 	if (height) {
 		self.height(height);
 	}
-	if (designMode) {
+	if (self.designMode) {
 		textarea.hide();
 	} else {
 		iframe.hide();
@@ -3254,7 +3254,7 @@ function _edit(options) {
 	};
 	self.html = function(val) {
 		var doc = self.doc;
-		if (designMode) {
+		if (self.designMode) {
 			var body = doc.body;
 			if (val === undefined) {
 				return K(body).html();
@@ -3270,18 +3270,18 @@ function _edit(options) {
 	};
 	self.design = function(bool) {
 		var val;
-		if (bool === undefined ? !designMode : bool) {
-			if (!designMode) {
+		if (bool === undefined ? !self.designMode : bool) {
+			if (!self.designMode) {
 				val = self.html();
-				designMode = true;
+				self.designMode = true;
 				self.html(val);
 				textarea.hide();
 				iframe.show();
 			}
 		} else {
-			if (designMode) {
+			if (self.designMode) {
 				val = self.html();
-				designMode = false;
+				self.designMode = false;
 				self.html(val);
 				iframe.hide();
 				textarea.show();
@@ -3291,7 +3291,7 @@ function _edit(options) {
 		return self;
 	};
 	self.focus = function() {
-		if (designMode) {
+		if (self.designMode) {
 			iframe[0].contentWindow.focus();
 		} else {
 			textarea[0].focus();
@@ -3385,7 +3385,7 @@ function _toolbar(options) {
 		remove.call(self);
 		return self;
 	};
-	self.select = function(name) {
+	self.select = function(name, bool) {
 		var itemNode = itemNodes[name];
 		if (itemNode) {
 			itemNode.addClass('ke-toolbar-icon-outline-selected').unbind('mouseover,mouseout');
@@ -3432,6 +3432,7 @@ function _toolbar(options) {
 			});
 			disableMode = false;
 		}
+		return self;
 	};
 	return self;
 }
@@ -3977,20 +3978,37 @@ KEditor.prototype = {
 		} else {
 			_docElement().style.overflow = 'auto';
 		}
-		var width = fullscreenMode ? _docWidth() + 'px' : self.width,
-			height = fullscreenMode ? _docHeight() + 'px' : self.height,
-			container = K('<div class="ke-container"></div>').css('width', width);
+		var width = fullscreenMode ? _docElement().clientWidth + 'px' : self.width,
+			height = fullscreenMode ? _docElement().clientHeight + 'px' : self.height;
+		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
+			height = _addUnit(_removeUnit(height) + 2);
+		}
+		var container = K('<div class="ke-container"></div>').css('width', width);
 		if (fullscreenMode) {
-			var pos = _getScrollPos();
 			container.css({
 				position : 'absolute',
-				left : _addUnit(pos.x),
-				top : _addUnit(pos.y),
+				left : 0,
+				top : 0,
 				'z-index' : 811211
 			});
 			K(document.body).append(container);
+			self._scrollPos = _getScrollPos();
+			window.scrollTo(0, 0);
+			K(document.body).css({
+				'height' : 0,
+				'overflow' : 'hidden'
+			});
+			K(document.body.parentNode).css('overflow', 'hidden');
 		} else {
 			self.srcElement.before(container);
+			if (self._scrollPos) {
+				K(document.body).css({
+					'height' : '',
+					'overflow' : ''
+				});
+				K(document.body.parentNode).css('overflow', '');
+				window.scrollTo(self._scrollPos.x, self._scrollPos.y);
+			}
 		}
 		var toolbar = _toolbar({
 				parent : container,
@@ -4013,9 +4031,6 @@ KEditor.prototype = {
 				}
 			});
 		});
-		if (!self.designMode) {
-			toolbar.disable(true);
-		}
 		var edit = _edit({
 			parent : container,
 			srcElement : self.srcElement,
@@ -4025,52 +4040,53 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			afterCreate : function() {
-				var statusbar = K('<div class="ke-statusbar"></div>'), rightIcon;
+				var statusbar = K('<div class="ke-statusbar"></div>');
 				container.append(statusbar);
-				if (!fullscreenMode) {
-					rightIcon = K('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-					statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
-					statusbar.append(rightIcon);
-					_drag({
-						moveEl : container,
-						clickEl : statusbar,
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							height += diffY;
-							if (height >= self.minHeight) {
-								self.resize(null, height);
-								self.height = _addUnit(height);
-							}
-						}
-					});
-					_drag({
-						moveEl : container,
-						clickEl : rightIcon,
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							width += diffX;
-							height += diffY;
-							if (width >= self.minWidth) {
-								self.resize(width, null);
-								self.width = _addUnit(width);
-							}
-							if (height >= self.minHeight) {
-								self.resize(null, height);
-								self.height = _addUnit(height);
-							}
-						}
-					});
+				statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
+				statusbar.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+				function resize(width, height) {
+					if (width && width >= self.minWidth) {
+						self.resize(width, null);
+						self.width = _addUnit(width);
+					}
+					if (height && height >= self.minHeight) {
+						self.resize(null, height);
+						self.height = _addUnit(height);
+					}
 				}
 				if (self._resizeListener) {
 					K(window).unbind('resize', self._resizeListener);
 					self._resizeListener = null;
 				}
-				function resizeListener(e) {
+				function resizeListener() {
 					if (self.container) {
-						self.resize(_docElement().clientWidth, _docElement().clientHeight);
+						resize(_docElement().clientWidth, _docElement().clientHeight);
 					}
 				}
-				if (self.fullscreenMode) {
+				if (fullscreenMode) {
 					K(window).bind('resize', resizeListener);
 					self._resizeListener = resizeListener;
+					toolbar.select('fullscreen');
+					statusbar.first().css('visibility', 'hidden');
+					statusbar.last().css('visibility', 'hidden');
+				} else {
+					_drag({
+						moveEl : container,
+						clickEl : statusbar,
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							height += diffY;
+							resize(null, height);
+						}
+					});
+					_drag({
+						moveEl : container,
+						clickEl : statusbar.last(),
+						moveFn : function(x, y, width, height, diffX, diffY) {
+							width += diffX;
+							height += diffY;
+							resize(width, height);
+						}
+					});
 				}
 				self.container = container;
 				self.toolbar = toolbar;
@@ -4078,7 +4094,6 @@ KEditor.prototype = {
 				self.cmd = this.cmd;
 				self.statusbar = statusbar;
 				self.menu = self.contextmenu = self.dialog = null;
-				self._rightIcon = rightIcon;
 				self.resize(width, height);
 				K(this.doc, document).mousedown(function(e) {
 					if (self.menu) {
@@ -4126,9 +4141,7 @@ KEditor.prototype = {
 		}
 		self.toolbar.remove();
 		self.edit.remove();
-		if (self._rightIcon) {
-			self._rightIcon.remove();
-		}
+		self.statusbar.last().remove();
 		self.statusbar.remove();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = self.dialog = null;
@@ -4227,8 +4240,7 @@ KEditor.prototype = {
 	fullscreen : function(bool) {
 		var self = this;
 		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
-		self.remove();
-		return self.create();
+		return self.remove().create();
 	},
 	createMenu : function(options) {
 		var self = this,
@@ -4314,6 +4326,19 @@ KindEditor.plugin('core', function(K) {
 	self.clickToolbar('source', function() {
 		self.toolbar.disable();
 		self.edit.design();
+		self.designMode = self.edit.designMode;
+		if (self.designMode) {
+			self.toolbar.unselect('source');
+		} else {
+			self.toolbar.select('source');
+		}
+	});
+	self.afterCreate(function() {
+		if (this.designMode) {
+			this.toolbar.unselect('source');
+		} else {
+			this.toolbar.disable(true).select('source');
+		}
 	});
 	K.each('fullscreen,undo,redo'.split(','), function(i, name) {
 		if (self.shortcutKeys[name]) {

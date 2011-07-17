@@ -68,13 +68,13 @@ function _edit(options) {
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
 		srcElement = K(options.srcElement),
-		designMode = _undef(options.designMode, true),
 		themesPath = _undef(options.themesPath, ''),
 		bodyClass = options.bodyClass,
 		cssPath = options.cssPath,
 		cssData = options.cssData,
 		isDocumentDomain = location.host !== document.domain,
 		div = self.div().addClass('ke-edit');
+	self.designMode = _undef(options.designMode, true);
 	var srcScript = 'document.open();' +
 		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
 		'document.close();',
@@ -106,7 +106,7 @@ function _edit(options) {
 	if (height) {
 		self.height(height);
 	}
-	if (designMode) {
+	if (self.designMode) {
 		textarea.hide();
 	} else {
 		iframe.hide();
@@ -131,7 +131,7 @@ function _edit(options) {
 	// get or set value
 	self.html = function(val) {
 		var doc = self.doc;
-		if (designMode) {
+		if (self.designMode) {
 			var body = doc.body;
 			if (val === undefined) {
 				return K(body).html();
@@ -145,21 +145,21 @@ function _edit(options) {
 		textarea.val(val);
 		return self;
 	};
-	//toggle design/source mode
+	// toggle design/source mode
 	self.design = function(bool) {
 		var val;
-		if (bool === undefined ? !designMode : bool) {
-			if (!designMode) {
+		if (bool === undefined ? !self.designMode : bool) {
+			if (!self.designMode) {
 				val = self.html();
-				designMode = true;
+				self.designMode = true;
 				self.html(val);
 				textarea.hide();
 				iframe.show();
 			}
 		} else {
-			if (designMode) {
+			if (self.designMode) {
 				val = self.html();
-				designMode = false;
+				self.designMode = false;
 				self.html(val);
 				iframe.hide();
 				textarea.show();
@@ -169,7 +169,7 @@ function _edit(options) {
 		return self;
 	};
 	self.focus = function() {
-		if (designMode) {
+		if (self.designMode) {
 			iframe[0].contentWindow.focus();
 		} else {
 			textarea[0].focus();
