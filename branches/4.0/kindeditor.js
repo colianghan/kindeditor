@@ -3319,6 +3319,7 @@ function _edit(options) {
 		}
 		doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
 		doc.close();
+		self.win = iframe[0].contentWindow;
 		self.doc = doc;
 		self.html(_elementVal(srcElement));
 		if (_IE) {
@@ -4214,7 +4215,6 @@ KEditor.prototype = {
 		var bookmark = range.createBookmark(true);
 		bookmark.html = body[0].innerHTML;
 		range.moveToBookmark(bookmark);
-		self.select();
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
 			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {

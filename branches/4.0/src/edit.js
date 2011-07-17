@@ -184,6 +184,7 @@ function _edit(options) {
 		}
 		doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
 		doc.close();
+		self.win = iframe[0].contentWindow;
 		self.doc = doc;
 		self.html(_elementVal(srcElement));
 		if (_IE) {
