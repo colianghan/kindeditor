@@ -206,6 +206,9 @@ function _unbind(el, type, fn) {
 		}
 		return;
 	}
+	if (!_eventData[id]) {
+		return;
+	}
 	var events = _eventData[id][type];
 	if (events && events.length > 0) {
 		if (fn === undefined) {

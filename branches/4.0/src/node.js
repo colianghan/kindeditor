@@ -105,7 +105,7 @@ function _getScrollPos() {
 function KNode(node) {
 	var self = this;
 	for (var i = 0, len = node.length; i < len; i++) {
-		self[i] = node[i];
+		self[i] = node[i].get ? node[i][0] : node[i];
 	}
 	self.length = node.length;
 	self.doc = _getDoc(self[0]);
@@ -517,8 +517,8 @@ K = function(expr, root) {
 		if (expr.charAt(0) === '@') {
 			expr = expr.substr(1);
 		}
-		//HTML
-		//包含HTML代码，或者第一个字符为"@"时当做HTML字符串
+		// HTML
+		// 包含HTML代码，或者第一个字符为"@"时当做HTML字符串
 		if (expr.length !== length || /<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
 				div = doc.createElement('div'), list = [];
@@ -528,18 +528,18 @@ K = function(expr, root) {
 			}
 			return newNode(list);
 		}
-		//selector
+		// selector
 		return newNode(_queryAll(expr, root));
 	}
-	//KNode
+	// KNode
 	if (expr && expr.get) {
 		return expr;
 	}
-	//NodeList
+	// Native NodeList
 	if (_isArray(expr)) {
 		return newNode(expr);
 	}
-	//Node
+	// Native Node
 	return newNode(_toArray(arguments));
 };
 

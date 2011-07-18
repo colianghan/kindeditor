@@ -34,7 +34,7 @@ KindEditor.plugin('core', function(K) {
 	});
 	var loaded = false;
 	self.afterCreate(function() {
-		K(self.edit.doc).keyup(function(e) {
+		K(self.edit.doc, self.edit.textarea).keyup(function(e) {
 			if (e.which == 27) {
 				self.clickToolbar('fullscreen');
 			}

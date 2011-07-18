@@ -270,7 +270,7 @@ KEditor.prototype = {
 				window.scrollTo(self._scrollPos.x, self._scrollPos.y);
 			}
 		}
-		//create toolbar
+		// create toolbar
 		var toolbar = _toolbar({
 				parent : container,
 				noDisableItems : self.noDisableItems
@@ -292,9 +292,9 @@ KEditor.prototype = {
 				}
 			});
 		});
-		//create edit
+		// create edit
 		var edit = _edit({
-			height : 0,
+			height : _removeUnit(height) - toolbar.div().height(),
 			parent : container,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
@@ -303,68 +303,7 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			afterCreate : function() {
-				// create statusbar
-				var statusbar = K('<div class="ke-statusbar"></div>');
-				container.append(statusbar);
-				statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
-				statusbar.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-				// 为了限制宽度和高度，包装self.resize
-				function resize(width, height) {
-					if (width && width >= self.minWidth) {
-						self.resize(width, null);
-						self.width = _addUnit(width);
-					}
-					if (height && height >= self.minHeight) {
-						self.resize(null, height);
-						self.height = _addUnit(height);
-					}
-				}
-				// auto resize editor while resize window
-				if (self._resizeListener) {
-					K(window).unbind('resize', self._resizeListener);
-					self._resizeListener = null;
-				}
-				function resizeListener() {
-					if (self.container) {
-						resize(_docElement().clientWidth, _docElement().clientHeight);
-					}
-				}
-				if (fullscreenMode) {
-					K(window).bind('resize', resizeListener);
-					self._resizeListener = resizeListener;
-					toolbar.select('fullscreen');
-					statusbar.first().css('visibility', 'hidden');
-					statusbar.last().css('visibility', 'hidden');
-				} else {
-					// bind drag event
-					_drag({
-						moveEl : container,
-						clickEl : statusbar,
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							height += diffY;
-							resize(null, height);
-						}
-					});
-					_drag({
-						moveEl : container,
-						clickEl : statusbar.last(),
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							width += diffX;
-							height += diffY;
-							resize(width, height);
-						}
-					});
-				}
-				// set properties
-				self.container = container;
-				self.toolbar = toolbar;
-				self.edit = this;
 				self.cmd = this.cmd;
-				self.statusbar = statusbar;
-				self.menu = self.contextmenu = null;
-				self.dialogs = [];
-				// reset size
-				self.resize(width, height);
 				// hide menu when click document
 				K(this.doc, document).mousedown(function(e) {
 					if (self.menu) {
@@ -398,10 +337,71 @@ KEditor.prototype = {
 				.onchange(function(e) {
 					self.updateState();
 				});
-				//execute afterCreate event
 				self.afterCreate();
 			}
 		});
+		// create statusbar
+		var statusbar = K('<div class="ke-statusbar"></div>');
+		container.append(statusbar);
+		statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
+		.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		// set properties
+		self.container = container;
+		self.toolbar = toolbar;
+		self.edit = edit;
+		self.statusbar = statusbar;
+		self.menu = self.contextmenu = null;
+		self.dialogs = [];
+		// remove resize event
+		K(window).unbind('resize');
+		// reset size
+		self.resize(width, height);
+		// 为了限制宽度和高度，包装self.resize
+		function resize(width, height, updateProp) {
+			updateProp = _undef(updateProp, true);
+			if (width && width >= self.minWidth) {
+				self.resize(width, null);
+				if (updateProp) {
+					self.width = _addUnit(width);
+				}
+			}
+			if (height && height >= self.minHeight) {
+				self.resize(null, height);
+				if (updateProp) {
+					self.height = _addUnit(height);
+				}
+			}
+		}
+		// fullscreen mode
+		if (fullscreenMode) {
+			K(window).bind('resize', function(e) {
+				if (self.container) {
+					resize(_docElement().clientWidth, _docElement().clientHeight, false);
+				}
+			});
+			toolbar.select('fullscreen');
+			statusbar.first().css('visibility', 'hidden');
+			statusbar.last().css('visibility', 'hidden');
+		} else {
+			// bind drag event
+			_drag({
+				moveEl : container,
+				clickEl : statusbar,
+				moveFn : function(x, y, width, height, diffX, diffY) {
+					height += diffY;
+					resize(null, height);
+				}
+			});
+			_drag({
+				moveEl : container,
+				clickEl : statusbar.last(),
+				moveFn : function(x, y, width, height, diffX, diffY) {
+					width += diffX;
+					height += diffY;
+					resize(width, height);
+				}
+			});
+		}
 		return self;
 	},
 	remove : function() {

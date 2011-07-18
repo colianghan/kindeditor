@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-18)
+* @version 4.0 (2011-07-19)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-18)',
+var _VERSION = '4.0 (2011-07-19)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -402,6 +402,9 @@ function _unbind(el, type, fn) {
 			delete _eventData[id];
 			_removeId(el);
 		}
+		return;
+	}
+	if (!_eventData[id]) {
 		return;
 	}
 	var events = _eventData[id][type];
@@ -1106,7 +1109,7 @@ function _getScrollPos() {
 function KNode(node) {
 	var self = this;
 	for (var i = 0, len = node.length; i < len; i++) {
-		self[i] = node[i];
+		self[i] = node[i].get ? node[i][0] : node[i];
 	}
 	self.length = node.length;
 	self.doc = _getDoc(self[0]);
@@ -4036,7 +4039,7 @@ KEditor.prototype = {
 			});
 		});
 		var edit = _edit({
-			height : 0,
+			height : _removeUnit(height) - toolbar.div().height(),
 			parent : container,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
@@ -4045,62 +4048,7 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			afterCreate : function() {
-				var statusbar = K('<div class="ke-statusbar"></div>');
-				container.append(statusbar);
-				statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>');
-				statusbar.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-				function resize(width, height) {
-					if (width && width >= self.minWidth) {
-						self.resize(width, null);
-						self.width = _addUnit(width);
-					}
-					if (height && height >= self.minHeight) {
-						self.resize(null, height);
-						self.height = _addUnit(height);
-					}
-				}
-				if (self._resizeListener) {
-					K(window).unbind('resize', self._resizeListener);
-					self._resizeListener = null;
-				}
-				function resizeListener() {
-					if (self.container) {
-						resize(_docElement().clientWidth, _docElement().clientHeight);
-					}
-				}
-				if (fullscreenMode) {
-					K(window).bind('resize', resizeListener);
-					self._resizeListener = resizeListener;
-					toolbar.select('fullscreen');
-					statusbar.first().css('visibility', 'hidden');
-					statusbar.last().css('visibility', 'hidden');
-				} else {
-					_drag({
-						moveEl : container,
-						clickEl : statusbar,
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							height += diffY;
-							resize(null, height);
-						}
-					});
-					_drag({
-						moveEl : container,
-						clickEl : statusbar.last(),
-						moveFn : function(x, y, width, height, diffX, diffY) {
-							width += diffX;
-							height += diffY;
-							resize(width, height);
-						}
-					});
-				}
-				self.container = container;
-				self.toolbar = toolbar;
-				self.edit = this;
 				self.cmd = this.cmd;
-				self.statusbar = statusbar;
-				self.menu = self.contextmenu = null;
-				self.dialogs = [];
-				self.resize(width, height);
 				K(this.doc, document).mousedown(function(e) {
 					if (self.menu) {
 						self.hideMenu();
@@ -4135,6 +4083,61 @@ KEditor.prototype = {
 				self.afterCreate();
 			}
 		});
+		var statusbar = K('<div class="ke-statusbar"></div>');
+		container.append(statusbar);
+		statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
+		.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		self.container = container;
+		self.toolbar = toolbar;
+		self.edit = edit;
+		self.statusbar = statusbar;
+		self.menu = self.contextmenu = null;
+		self.dialogs = [];
+		K(window).unbind('resize');
+		self.resize(width, height);
+		function resize(width, height, updateProp) {
+			updateProp = _undef(updateProp, true);
+			if (width && width >= self.minWidth) {
+				self.resize(width, null);
+				if (updateProp) {
+					self.width = _addUnit(width);
+				}
+			}
+			if (height && height >= self.minHeight) {
+				self.resize(null, height);
+				if (updateProp) {
+					self.height = _addUnit(height);
+				}
+			}
+		}
+		if (fullscreenMode) {
+			K(window).bind('resize', function(e) {
+				if (self.container) {
+					resize(_docElement().clientWidth, _docElement().clientHeight, false);
+				}
+			});
+			toolbar.select('fullscreen');
+			statusbar.first().css('visibility', 'hidden');
+			statusbar.last().css('visibility', 'hidden');
+		} else {
+			_drag({
+				moveEl : container,
+				clickEl : statusbar,
+				moveFn : function(x, y, width, height, diffX, diffY) {
+					height += diffY;
+					resize(null, height);
+				}
+			});
+			_drag({
+				moveEl : container,
+				clickEl : statusbar.last(),
+				moveFn : function(x, y, width, height, diffX, diffY) {
+					width += diffX;
+					height += diffY;
+					resize(width, height);
+				}
+			});
+		}
 		return self;
 	},
 	remove : function() {
@@ -4375,7 +4378,7 @@ KindEditor.plugin('core', function(K) {
 	});
 	var loaded = false;
 	self.afterCreate(function() {
-		K(self.edit.doc).keyup(function(e) {
+		K(self.edit.doc, self.edit.textarea).keyup(function(e) {
 			if (e.which == 27) {
 				self.clickToolbar('fullscreen');
 			}
