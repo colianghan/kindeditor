@@ -1,5 +1,5 @@
 
-KindEditor.plugin('file_manager', function(K) {
+KindEditor.plugin('filemanager', function(K) {
 	var self = this, name = 'filemanager',
 		fileManagerJson = K.undef(self.fileManagerJson, self.scriptPath + 'php/file_manager_json.php'),
 		imgPath = self.pluginsPath + name + '/images/',

@@ -197,7 +197,6 @@ var _options = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : 'source,fullscreen'.split(','),
-	preloadPlugins : 'image,media,link,table'.split(','),
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
@@ -3905,16 +3904,6 @@ function KEditor(options) {
 	_each(_plugins, function(name, fn) {
 		fn.call(self, KindEditor);
 	});
-	var tempNames = self.preloadPlugins.slice(0);
-	function load() {
-		if (tempNames.length > 0) {
-			var name = tempNames.shift();
-			if (!_plugins[name]) {
-				self.loadPlugin(name, load);
-			}
-		}
-	}
-	load();
 }
 KEditor.prototype = {
 	lang : function(mixed) {
@@ -4047,6 +4036,7 @@ KEditor.prototype = {
 			});
 		});
 		var edit = _edit({
+			height : 0,
 			parent : container,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
@@ -4382,6 +4372,20 @@ KindEditor.plugin('core', function(K) {
 		self.clickToolbar(name, function() {
 			self[name]();
 		});
+	});
+	var loaded = false;
+	self.afterCreate(function() {
+		K(self.edit.doc).keyup(function(e) {
+			if (e.which == 27) {
+				self.clickToolbar('fullscreen');
+			}
+		});
+		if (loaded) {
+			self.focus();
+		}
+		if (!loaded) {
+			loaded = true;
+		}
 	});
 	self.clickToolbar('formatblock', function() {
 		var blocks = self.lang('formatblock.formatBlock'),

@@ -2,7 +2,7 @@
 KindEditor.plugin('image', function(K) {
 	var self = this, name = 'image',
 		allowUpload = K.undef(self.allowUpload, true),
-		allowFileManager = K.undef(self.allowFileManager, true),
+		allowFileManager = K.undef(self.allowFileManager, false),
 		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
 		imgPath = this.scriptPath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
@@ -150,16 +150,18 @@ KindEditor.plugin('image', function(K) {
 			fileBox.change(function(e) {
 				localUrlBox.val(fileBox.val());
 			});
-			if (allowFileManager && self.filemanagerDialog) {
+			if (allowFileManager) {
 				viewServerBtn.click(function(e) {
-					self.filemanagerDialog({
-						viewType : 'VIEW',
-						clickFn : function(url, title) {
-							if (self.dialogs.length > 1) {
-								K('[name="url"]', div).val(url);
-								self.hideDialog();
+					self.loadPlugin('filemanager', function() {
+						self.filemanagerDialog({
+							viewType : 'VIEW',
+							clickFn : function(url, title) {
+								if (self.dialogs.length > 1) {
+									K('[name="url"]', div).val(url);
+									self.hideDialog();
+								}
 							}
-						}
+						});
 					});
 				});
 			} else {

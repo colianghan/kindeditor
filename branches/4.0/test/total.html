@@ -3,12 +3,9 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>KindEditor Test</title>
-		<link rel="stylesheet" href="../lib/qunit/qunit.css" />
-		<script src="../lib/firebug-lite/build/firebug-lite.js#startOpened"></script>
-		<script src="../lib/qunit/qunit.js"></script>
-		<script src="../lib/jquery.js"></script>
 		<link rel="stylesheet" href="../themes/default/default.css" />
 		<script src="../kindeditor.js"></script>
+		<script src="../lang/en.js"></script>
 	</head>
 	<body>
 		<h1 id="type">KindEditor Test</h1>
@@ -44,7 +41,8 @@
 					if (!editor1) {
 						editor1 = K.create('textarea[name=editor1]', {
 							scriptPath : '../',
-							designMode : true
+							designMode : true,
+							allowFileManager : true
 						});
 					}
 				});

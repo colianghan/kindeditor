@@ -32,6 +32,20 @@ KindEditor.plugin('core', function(K) {
 			self[name]();
 		});
 	});
+	var loaded = false;
+	self.afterCreate(function() {
+		K(self.edit.doc).keyup(function(e) {
+			if (e.which == 27) {
+				self.clickToolbar('fullscreen');
+			}
+		});
+		if (loaded) {
+			self.focus();
+		}
+		if (!loaded) {
+			loaded = true;
+		}
+	});
 	// formatblock
 	self.clickToolbar('formatblock', function() {
 		var blocks = self.lang('formatblock.formatBlock'),

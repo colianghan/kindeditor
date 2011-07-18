@@ -156,17 +156,6 @@ function KEditor(options) {
 	_each(_plugins, function(name, fn) {
 		fn.call(self, KindEditor);
 	});
-	// preload default plugins
-	var tempNames = self.preloadPlugins.slice(0);
-	function load() {
-		if (tempNames.length > 0) {
-			var name = tempNames.shift();
-			if (!_plugins[name]) {
-				self.loadPlugin(name, load);
-			}
-		}
-	}
-	load();
 }
 
 KEditor.prototype = {
@@ -305,6 +294,7 @@ KEditor.prototype = {
 		});
 		//create edit
 		var edit = _edit({
+			height : 0,
 			parent : container,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
