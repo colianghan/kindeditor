@@ -2,7 +2,7 @@
 KindEditor.plugin('image', function(K) {
 	var self = this, name = 'image',
 		allowUpload = K.undef(self.allowUpload, true),
-		allowFileManager = K.undef(self.allowFileManager, false),
+		allowFileManager = K.undef(self.allowFileManager, true),
 		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
 		imgPath = this.scriptPath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
@@ -132,10 +132,12 @@ KindEditor.plugin('image', function(K) {
 				title : lang.remoteImage,
 				panel : K('.tab1', div)
 			});
-			tabs.add({
-				title : lang.localImage,
-				panel : K('.tab2', div)
-			});
+			if (allowUpload) {
+				tabs.add({
+					title : lang.localImage,
+					panel : K('.tab2', div)
+				});
+			}
 			tabs.select(0);
 			var urlBox = K('[name="url"]', div),
 				localUrlBox = K('[name="localUrl"]', div),
@@ -148,9 +150,22 @@ KindEditor.plugin('image', function(K) {
 			fileBox.change(function(e) {
 				localUrlBox.val(fileBox.val());
 			});
-			viewServerBtn.click(function(e) {
-				self.clickToolbar('filemanager');
-			});
+			if (allowFileManager && self.filemanagerDialog) {
+				viewServerBtn.click(function(e) {
+					self.filemanagerDialog({
+						viewType : 'VIEW',
+						clickFn : function(url, title) {
+							if (self.dialogs.length > 1) {
+								K('[name="url"]', div).val(url);
+								self.hideDialog();
+							}
+						}
+					});
+				});
+			} else {
+				viewServerBtn.hide();
+				urlBox.width(300);
+			}
 			urlBox.val('http://');
 			var img = getSelectedImg();
 			if (img) {

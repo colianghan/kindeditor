@@ -4,26 +4,6 @@ KindEditor.plugin('file_manager', function(K) {
 		fileManagerJson = K.undef(self.fileManagerJson, self.scriptPath + 'php/file_manager_json.php'),
 		imgPath = self.pluginsPath + name + '/images/',
 		lang = self.lang(name + '.');
-	// define common functions
-	function insertLink(url) {
-		if (self.dialogs.length > 1) {
-			var parentDialog = self.dialogs[self.dialogs.length - 2];
-			K('[name="url"]', parentDialog.div()).val(url);
-			self.hideDialog();
-			return true;
-		}
-		return false;
-	}
-	function insertImage(url, title) {
-		if (!insertLink(url)) {
-			self.inserthtml('<img src="' + url + '" alt="' + title + '" />');
-		}
-	}
-	function insertFile(url, title) {
-		if (!insertLink(url)) {
-			self.insertHtml('<a href="' + url + '" target="_blank">' + title + '</a>');
-		}
-	}
 	function makeFileTitle(filename, filesize, datetime) {
 		return filename + ' (' + Math.ceil(filesize / 1024) + 'KB, ' + datetime + ')';
 	}
@@ -34,7 +14,11 @@ KindEditor.plugin('file_manager', function(K) {
 			el.attr('title', makeFileTitle(data.filename, data.filesize, data.datetime));
 		}
 	}
-	self.clickToolbar(name, function() {
+	self.filemanagerDialog = function(options) {
+		var width = K.undef(options.width, 520),
+			height = K.undef(options.height, 510),
+			viewType = K.undef(options.viewType, 'VIEW').toUpperCase(), // "LIST" or "VIEW"
+			clickFn = options.clickFn;
 		var html = [
 			'<div style="padding:10px 20px;">',
 			// header start
@@ -64,15 +48,10 @@ KindEditor.plugin('file_manager', function(K) {
 		].join('');
 		var dialog = self.createDialog({
 			name : name,
-			width : 520,
-			height : 510,
+			width : width,
+			height : height,
 			title : self.lang(name),
-			body : html,
-			yesBtn : {
-				name : self.lang('yes'),
-				click : function(e) {
-				}
-			}
+			body : html
 		}),
 		div = dialog.div(),
 		bodyDiv = K('.ke-plugin-filemanager-body', div),
@@ -100,11 +79,11 @@ KindEditor.plugin('file_manager', function(K) {
 				});
 			} else if (data.is_photo) {
 				el.click(function(e) {
-					insertImage(fileUrl, data.filename);
+					clickFn.call(this, fileUrl, data.filename);
 				});
 			} else {
 				el.click(function(e) {
-					insertFile(fileUrl, data.filename);
+					clickFn.call(this, fileUrl, data.filename);
 				});
 			}
 			elList.push(el);
@@ -144,35 +123,25 @@ KindEditor.plugin('file_manager', function(K) {
 			bodyDiv.append(table);
 			var fileList = result.file_list;
 			for (var i = 0, len = fileList.length; i < len; i++) {
-				var data = fileList[i];
-				var row = table.insertRow(i);
-				row.onmouseover = function () { this.className = 'on'; };
-				row.onmouseout = function () { this.className = ''; };
-				var cell0 = row.insertCell(0);
-				cell0.className = 'name';
-				var img = document.createElement('img');
-				img.src = imgPath + (data.is_dir ? 'folder-16.gif' : 'file-16.gif');
-				img.width = 16;
-				img.height = 16;
-				img.align = 'absmiddle';
-				img.alt = data.filename;
-				cell0.appendChild(img);
-				cell0.appendChild(document.createTextNode(' ' + data.filename));
+				var data = fileList[i], row = K(table.insertRow(i));
+				row.mouseover(function(e) {
+					K(this).addClass('on');
+				})
+				.mouseout(function(e) {
+					K(this).removeClass('on');
+				});
+				var iconUrl = imgPath + (data.is_dir ? 'folder-16.gif' : 'file-16.gif'),
+					img = K('<img src="' + iconUrl + '" width="16" height="16" alt="' + data.filename + '" align="absmiddle" />'),
+					cell0 = K(row[0].insertCell(0)).addClass('name').append(img).append(document.createTextNode(' ' + data.filename));
 				if (!data.is_dir || data.has_file) {
-					row.style.cursor = 'pointer';
-					img.title = data.filename;
-					cell0.title = data.filename;
-					bindEvent(K(cell0), result, data, createList);
+					row.css('cursor', 'pointer');
+					cell0.attr('title', data.filename);
+					bindEvent(cell0, result, data, createList);
 				} else {
-					img.title = lang.emptyFolder;
-					cell0.title = lang.emptyFolder;
+					cell0.attr('title', lang.emptyFolder);
 				}
-				var cell1 = row.insertCell(1);
-				cell1.className = 'size';
-				cell1.innerHTML = data.is_dir ? '-' : Math.ceil(data.filesize / 1024) + 'KB';
-				var cell2 = row.insertCell(2);
-				cell2.className = 'datetime';
-				cell2.innerHTML = data.datetime;
+				K(row[0].insertCell(1)).addClass('size').html(data.is_dir ? '-' : Math.ceil(data.filesize / 1024) + 'KB');
+				K(row[0].insertCell(2)).addClass('datetime').html(data.datetime);
 			}
 		}
 		function createView(result) {
@@ -204,8 +173,8 @@ KindEditor.plugin('file_manager', function(K) {
 				div.append('<div class="name" title="' + data.filename + '">' + data.filename + '</div>');
 			}
 		}
-		viewTypeBox.val('VIEW');
-		reloadPage('', orderTypeBox.val(), createView);
-	});
+		viewTypeBox.val(viewType);
+		reloadPage('', orderTypeBox.val(), viewType == 'VIEW' ? createView : createList);
+	}
 
 });
