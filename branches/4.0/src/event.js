@@ -129,7 +129,7 @@ function _event(el, event) {
 	return e;
 }
 
-var _eventExpendo = 'kindeditor_' + (new Date().getTime()), _eventId = 0, _eventData = {};
+var _eventExpendo = 'kindeditor_' + _TIME, _eventId = 0, _eventData = {};
 
 function _getId(el) {
 	return el[_eventExpendo] || null;

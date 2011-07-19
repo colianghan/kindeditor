@@ -66,7 +66,7 @@ KindEditor.plugin('filemanager', function(K) {
 				url += '?';
 				param = param.substr(1);
 			}
-			url += param + '&' + (new Date()).getTime();
+			url += param + '&' + new Date().getTime();
 			K.ajax(url, func);
 		}
 		var elList = [];
@@ -118,7 +118,7 @@ KindEditor.plugin('filemanager', function(K) {
 			var table = document.createElement('table');
 			table.className = 'table';
 			table.cellPadding = 0;
-			table.cellSpacing = 2;
+			table.cellSpacing = 0;
 			table.border = 0;
 			bodyDiv.append(table);
 			var fileList = result.file_list;

@@ -200,7 +200,7 @@ KNode.prototype = {
 	removeClass : function(cls) {
 		this.each(function() {
 			if (_hasClass(this, cls)) {
-				this.className = _trim(this.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+				this.className = _trim(this.className.replace(new RegExp('(^|\\s)' + cls + '(\\s|$)'), ' '));
 			}
 		});
 		return this;
@@ -547,7 +547,4 @@ _each(_K, function(key, val) {
 	K[key] = val;
 });
 
-if (window.K === undefined) {
-	window.K = K;
-}
 window.KindEditor = K;

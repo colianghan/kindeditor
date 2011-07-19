@@ -171,7 +171,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+		_getScript(self.pluginsPath + name + '/' + name + '.js?' + _TIME, function() {
 			if (_plugins[name]) {
 				_plugins[name].call(self, KindEditor);
 				if (fn) {
@@ -452,8 +452,10 @@ KEditor.prototype = {
 		return this.cmd.state(key);
 	},
 	exec : function(key) {
+		key = key.toLowerCase();
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
+		// 下面命令不改变HTML内容，所以不需要改变工具栏状态，也不需要保存bookmark
 		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
 			self.updateState();
 			self.addBookmark();

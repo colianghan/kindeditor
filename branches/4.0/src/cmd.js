@@ -327,7 +327,7 @@ KCmd.prototype = {
 					while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 						knode = parent;
 					}
-					_wrapNode(knode, wrapper)[0];
+					_wrapNode(knode, wrapper);
 				}
 			}
 		});
@@ -677,7 +677,7 @@ KCmd.prototype = {
 	insertimage : function(url, title, width, height, border, align) {
 		title = _undef(title, '');
 		border = _undef(border, 0);
-		var html = '<img src="' + url + '" ';
+		var html = '<img src="' + url + '" kesrc="' + url + '" ';
 		if (width) {
 			html += 'width="' + width + '" ';
 		}
@@ -703,17 +703,17 @@ KCmd.prototype = {
 			self.select();
 		}
 		if (range.collapsed) {
-			var html = '<a href="' + url + '"';
+			var html = '<a href="' + url + '" kesrc="' + url + '" ';
 			if (type) {
 				html += ' target="' + type + '"';
 			}
 			html += '>' + url + '</a>';
 			self.inserthtml(html);
 		} else {
-			_nativeCommand(doc, 'createlink', '__ke_temp_url__');
+			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
 			a = self.commonNode({ a : '*' });
-			K('a[href="__ke_temp_url__"]', a ? a.parent() : doc).each(function() {
-				K(this).attr('href', url);
+			K('a[href="__kindeditor_temp_url__"]', a ? a.parent() : doc).each(function() {
+				K(this).attr('href', url).attr('kesrc', url);
 				if (type) {
 					K(this).attr('target', type);
 				} else {

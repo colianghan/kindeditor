@@ -8,7 +8,8 @@ var _VERSION = '${VERSION}',
 	_WEBKIT = _ua.indexOf('applewebkit') > -1,
 	_OPERA = _ua.indexOf('opera') > -1,
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
-	_V = _matches ? _matches[1] : '0';
+	_V = _matches ? _matches[1] : '0',
+	_TIME = new Date().getTime();
 
 function _isArray(val) {
 	if (!val) {
@@ -145,6 +146,7 @@ var K = {
 	WEBKIT : _WEBKIT,
 	OPERA : _OPERA,
 	V : _V,
+	TIME : _TIME,
 	each : _each,
 	isArray : _isArray,
 	isFunction : _isFunction,

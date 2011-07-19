@@ -15,7 +15,8 @@ var _VERSION = '4.0 (2011-07-19)',
 	_WEBKIT = _ua.indexOf('applewebkit') > -1,
 	_OPERA = _ua.indexOf('opera') > -1,
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
-	_V = _matches ? _matches[1] : '0';
+	_V = _matches ? _matches[1] : '0',
+	_TIME = new Date().getTime();
 function _isArray(val) {
 	if (!val) {
 		return false;
@@ -133,6 +134,7 @@ var K = {
 	WEBKIT : _WEBKIT,
 	OPERA : _OPERA,
 	V : _V,
+	TIME : _TIME,
 	each : _each,
 	isArray : _isArray,
 	isFunction : _isFunction,
@@ -332,7 +334,7 @@ function _event(el, event) {
 	};
 	return e;
 }
-var _eventExpendo = 'kindeditor_' + (new Date().getTime()), _eventId = 0, _eventData = {};
+var _eventExpendo = 'kindeditor_' + _TIME, _eventId = 0, _eventData = {};
 function _getId(el) {
 	return el[_eventExpendo] || null;
 }
@@ -2482,7 +2484,7 @@ KCmd.prototype = {
 					while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 						knode = parent;
 					}
-					_wrapNode(knode, wrapper)[0];
+					_wrapNode(knode, wrapper);
 				}
 			}
 		});
@@ -3921,7 +3923,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_getScript(self.pluginsPath + name + '/' + name + '.js', function() {
+		_getScript(self.pluginsPath + name + '/' + name + '.js?' + _TIME, function() {
 			if (_plugins[name]) {
 				_plugins[name].call(self, KindEditor);
 				if (fn) {

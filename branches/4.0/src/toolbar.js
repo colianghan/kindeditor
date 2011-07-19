@@ -1,10 +1,10 @@
 
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		K(this).addClass('ke-toolbar-icon-outline-on');
+		K(this).addClass('on');
 	})
 	.mouseout(function(e) {
-		K(this).removeClass('ke-toolbar-icon-outline-on');
+		K(this).removeClass('on');
 	})
 	.click(function(e) {
 		item.click.call(this, e);
@@ -30,12 +30,12 @@ function _toolbar(options) {
 	self.addItem = function(item) {
 		var itemNode;
 		if (item.name == '|') {
-			itemNode = K('<span class="ke-inline-block ke-toolbar-separator"></span>');
+			itemNode = K('<span class="ke-inline-block separator"></span>');
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
-			itemNode = K('<span class="ke-inline-block ke-toolbar-icon-outline" title="' + (item.title || '') + '" unselectable="on">' +
-				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
+			itemNode = K('<span class="ke-inline-block outline" title="' + (item.title || '') + '" unselectable="on">' +
+				'<span class="ke-inline-block icon icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
@@ -52,23 +52,29 @@ function _toolbar(options) {
 		return self;
 	};
 	// select item
-	self.select = function(name, bool) {
+	self.select = function(name) {
+		if (disableMode && _inArray(name, noDisableItems) < 0) {
+			return self;
+		}
 		var itemNode = itemNodes[name];
 		if (itemNode) {
-			itemNode.addClass('ke-toolbar-icon-outline-selected').unbind('mouseover,mouseout');
+			itemNode.addClass('selected').unbind('mouseover,mouseout');
 		}
 		return self;
 	};
 	// unselect item
 	self.unselect = function(name) {
+		if (disableMode && _inArray(name, noDisableItems) < 0) {
+			return self;
+		}
 		var itemNode = itemNodes[name];
 		if (itemNode) {
-			itemNode.removeClass('ke-toolbar-icon-outline-selected').removeClass('ke-toolbar-icon-outline-on')
+			itemNode.removeClass('selected').removeClass('on')
 			.mouseover(function(e) {
-				K(this).addClass('ke-toolbar-icon-outline-on');
+				K(this).addClass('on');
 			})
 			.mouseout(function(e) {
-				K(this).removeClass('ke-toolbar-icon-outline-on');
+				K(this).removeClass('on');
 			});
 		}
 		return self;
@@ -81,7 +87,7 @@ function _toolbar(options) {
 			_each(itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.addClass('ke-toolbar-icon-outline-disabled');
+					val.removeClass('selected').addClass('disabled');
 					val.opacity(0.5);
 					if (item.name !== '|') {
 						val.unbind();
@@ -94,7 +100,7 @@ function _toolbar(options) {
 			_each(itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('ke-toolbar-icon-outline-disabled');
+					val.removeClass('disabled');
 					val.opacity(1);
 					if (item.name !== '|') {
 						_bindToolbarEvent(val, item);
