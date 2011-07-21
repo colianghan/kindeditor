@@ -300,13 +300,13 @@
 	padding: 2px 5px;
 	overflow: hidden;
 }
-.ke-toolbar .icon {
+.ke-toolbar-icon {
 	background-repeat: no-repeat;
 	font-size: 0;
 	line-height: 0;
 	overflow: hidden;
 }
-.ke-toolbar .icon-url {
+.ke-toolbar-icon-url {
 	background-image: url(default.gif);
 }
 .ke-toolbar .outline {

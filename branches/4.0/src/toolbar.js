@@ -35,7 +35,7 @@ function _toolbar(options) {
 			itemNode = K('<br />');
 		} else {
 			itemNode = K('<span class="ke-inline-block outline" title="' + (item.title || '') + '" unselectable="on">' +
-				'<span class="ke-inline-block icon icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
+				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
