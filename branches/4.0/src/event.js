@@ -28,36 +28,33 @@ function KEvent(el, event) {
 }
 _extend(KEvent, {
 	init : function(el, event) {
-		if (!event) {
-			return;
-		}
-		var e = this, doc = el.ownerDocument || el.document || el;
-		e.event = event;
+		var self = this, doc = el.ownerDocument || el.document || el;
+		self.event = event;
 		_each(_EVENT_PROPS, function(key, val) {
-			e[val] = event[val];
+			self[val] = event[val];
 		});
-		if (!e.target) {
-			e.target = e.srcElement || doc;
+		if (!self.target) {
+			self.target = self.srcElement || doc;
 		}
-		if (e.target.nodeType === 3) {
-			e.target = e.target.parentNode;
+		if (self.target.nodeType === 3) {
+			self.target = self.target.parentNode;
 		}
-		if (!e.relatedTarget && e.fromElement) {
-			e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
+		if (!self.relatedTarget && self.fromElement) {
+			self.relatedTarget = self.fromElement === self.target ? self.toElement : self.fromElement;
 		}
-		if (e.pageX == null && e.clientX != null) {
+		if (self.pageX == null && self.clientX != null) {
 			var d = doc.documentElement, body = doc.body;
-			e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
-			e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
+			self.pageX = self.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
+			self.pageY = self.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
 		}
-		if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
-			e.which = e.charCode || e.keyCode;
+		if (!self.which && ((self.charCode || self.charCode === 0) ? self.charCode : self.keyCode)) {
+			self.which = self.charCode || self.keyCode;
 		}
-		if (!e.metaKey && e.ctrlKey) {
-			e.metaKey = e.ctrlKey;
+		if (!self.metaKey && self.ctrlKey) {
+			self.metaKey = self.ctrlKey;
 		}
-		if (!e.which && e.button !== undefined) {
-			e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
+		if (!self.which && self.button !== undefined) {
+			self.which = (self.button & 1 ? 1 : (self.button & 2 ? 3 : (self.button & 4 ? 2 : 0)));
 		}
 		/**
 			DOM_VK_SEMICOLON : 59 (;:)
@@ -91,31 +88,31 @@ _extend(KEvent, {
 			https://developer.mozilla.org/en/DOM/Event/UIEvent/KeyEvent
 			http://msdn.microsoft.com/en-us/library/ms536940(v=VS.85).aspx
 		*/
-		switch (e.which) {
+		switch (self.which) {
 		case 186 :
-			e.which = 59;
+			self.which = 59;
 			break;
 		case 187 :
 		case 107 :
 		case 43 :
-			e.which = 61;
+			self.which = 61;
 			break;
 		case 189 :
 		case 45 :
-			e.which = 109;
+			self.which = 109;
 			break;
 		case 42 :
-			e.which = 106;
+			self.which = 106;
 			break;
 		case 47 :
-			e.which = 111;
+			self.which = 111;
 			break;
 		case 78 :
-			e.which = 110;
+			self.which = 110;
 			break;
 		}
-		if (e.which >= 96 && e.which <= 105) {
-			e.which -= 48;
+		if (self.which >= 96 && self.which <= 105) {
+			self.which -= 48;
 		}
 	},
 	preventDefault : function() {
@@ -179,7 +176,7 @@ function _bind(el, type, fn) {
 	events = _eventData[id][type];
 	if (events.length === 0) {
 		events[0] = function(e) {
-			var kevent = new KEvent(el, e);
+			var kevent = e ? new KEvent(el, e) : undefined;
 			_each(events, function(i, event) {
 				if (i > 0 && event) {
 					event.call(el, kevent);

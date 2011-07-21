@@ -2435,13 +2435,16 @@ function _mergeAttrs(knode, attrs, styles) {
 	});
 }
 function KCmd(range) {
-	var self = this, doc = range.doc;
-	self.doc = doc;
-	self.win = _getWin(doc);
-	self.sel = _getSel(doc);
-	self.range = range;
+	this.init(range);
 }
-KCmd.prototype = {
+_extend(KCmd, {
+	init : function() {
+		var self = this, doc = range.doc;
+		self.doc = doc;
+		self.win = _getWin(doc);
+		self.sel = _getSel(doc);
+		self.range = range;
+	},
 	selection : function() {
 		var self = this, doc = self.doc, rng = _getRng(doc);
 		if (rng) {
@@ -2953,7 +2956,7 @@ KCmd.prototype = {
 		K(body).bind('cut', timeoutHandler);
 		return self;
 	}
-};
+});
 _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
 	KCmd.prototype[name] = function(val) {
@@ -2978,7 +2981,7 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 function _cmd(mixed) {
 	if (mixed.nodeName) {
 		var doc = _getDoc(mixed),
-			range = _range(doc).selectNodeContents(doc.body).collapse(false),
+			range = _range(doc).selectNodeContents(doc.body).collapse(true),
 			cmd = new KCmd(range);
 		cmd.onchange(function(e) {
 			cmd.selection();
