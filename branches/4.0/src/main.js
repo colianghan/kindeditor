@@ -294,7 +294,7 @@ KEditor.prototype = {
 		});
 		// create edit
 		var edit = _edit({
-			height : _removeUnit(height) - toolbar.div().height(),
+			height : _removeUnit(height) - toolbar.div.height(),
 			parent : container,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
@@ -427,7 +427,7 @@ KEditor.prototype = {
 			self.container.css('width', _addUnit(width));
 		}
 		if (height !== null) {
-			height = _removeUnit(height) - self.toolbar.div().height() - self.statusbar.height();
+			height = _removeUnit(height) - self.toolbar.div.height() - self.statusbar.height();
 			if (height > 0) {
 				self.edit.height(height);
 			}
@@ -565,7 +565,7 @@ KEditor.prototype = {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
 			// 提高mask的z-index
-			firstDialog.mask().div().css('z-index', parentDialog.z + 1);
+			firstDialog.mask.div.css('z-index', parentDialog.z + 1);
 			// 提高dialog的z-index
 			options.z = parentDialog.z + 2;
 			// 不显示mask
@@ -585,7 +585,7 @@ KEditor.prototype = {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
 			// 降低mask的z-index
-			firstDialog.mask().div().css('z-index', parentDialog.z - 1);
+			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
 		} else {
 			self.cmd.select();
 		}
@@ -624,3 +624,4 @@ if (_IE && _V < 7) {
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
+

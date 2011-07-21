@@ -20,7 +20,7 @@ function _tabs(options) {
 	var self = _widget(options),
 		remove = self.remove,
 		afterSelect = options.afterSelect,
-		div = self.div(),
+		div = self.div,
 		liList = [];
 	//create tabs
 	div.addClass('ke-tabs')

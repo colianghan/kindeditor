@@ -11,24 +11,26 @@ function _bindToolbarEvent(itemNode, item) {
 	});
 }
 
-function _toolbar(options) {
-	var self = _widget(options),
-		remove = self.remove,
-		disableMode = options.disableMode === undefined ? false : options.disableMode,
-		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
-		div = self.div(),
-		itemNodes = {};
-	// create toolbar
-	div.addClass('ke-toolbar')
-		.bind('contextmenu,mousedown,mousemove', function(e) {
+// create KToolbar class
+function KToolbar(options) {
+	this.init(options);
+}
+_extend(KToolbar, KWidget, {
+	init : function(options) {
+		var self = this;
+		KToolbar.parent.init.call(self, options);
+		self.disableMode = _undef(options.disableMode, false);
+		self.noDisableItems = _undef(options.noDisableItems, []);
+		self._itemNodes = {};
+		self.div.addClass('ke-toolbar').bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
 		});
-	self.get = function(key) {
-		return itemNodes[key];
-	};
-	// add a item of toolbar
-	self.addItem = function(item) {
-		var itemNode;
+	},
+	get : function(key) {
+		return this._itemNodes[key];
+	},
+	addItem : function(item) {
+		var self = this, itemNode;
 		if (item.name == '|') {
 			itemNode = K('<span class="ke-inline-block separator"></span>');
 		} else if (item.name == '/') {
@@ -39,52 +41,49 @@ function _toolbar(options) {
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
-		itemNodes[item.name] = itemNode;
-		div.append(itemNode);
+		self._itemNodes[item.name] = itemNode;
+		self.div.append(itemNode);
 		return self;
-	};
-	// remove toolbar
-	self.remove = function() {
-		_each(itemNodes, function(key, val) {
+	},
+	remove : function() {
+		var self = this;
+		_each(self._itemNodes, function(key, val) {
 			val.remove();
 		});
-		remove.call(self);
+		KToolbar.parent.remove.call(self);
 		return self;
-	};
-	// select item
-	self.select = function(name) {
-		if (disableMode && _inArray(name, noDisableItems) < 0) {
+	},
+	select : function(name) {
+		var self = this;
+		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
 			return self;
 		}
-		var itemNode = itemNodes[name];
+		var itemNode = self._itemNodes[name];
 		if (itemNode) {
 			itemNode.addClass('selected').unbind('mouseover,mouseout');
 		}
 		return self;
-	};
-	// unselect item
-	self.unselect = function(name) {
-		if (disableMode && _inArray(name, noDisableItems) < 0) {
+	},
+	unselect : function(name) {
+		var self = this;
+		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
 			return self;
 		}
-		var itemNode = itemNodes[name];
+		var itemNode = self._itemNodes[name];
 		if (itemNode) {
-			itemNode.removeClass('selected').removeClass('on')
-			.mouseover(function(e) {
+			itemNode.removeClass('selected').removeClass('on').mouseover(function(e) {
 				K(this).addClass('on');
-			})
-			.mouseout(function(e) {
+			}).mouseout(function(e) {
 				K(this).removeClass('on');
 			});
 		}
 		return self;
-	};
-	// toggle enable/disable
-	self.disable = function(bool) {
-		var arr = noDisableItems, item;
+	},
+	disable : function(bool) {
+		var self = this, arr = self.noDisableItems, item;
 		// disable toolbar
-		if (bool === undefined ? !disableMode : bool) {
-			_each(itemNodes, function(key, val) {
+		if (bool === undefined ? !self.disableMode : bool) {
+			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
 					val.removeClass('selected').addClass('disabled');
@@ -94,10 +93,10 @@ function _toolbar(options) {
 					}
 				}
 			});
-			disableMode = true;
+			self.disableMode = true;
 		// enable toolbar
 		} else {
-			_each(itemNodes, function(key, val) {
+			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
 					val.removeClass('disabled');
@@ -107,11 +106,14 @@ function _toolbar(options) {
 					}
 				}
 			});
-			disableMode = false;
+			self.disableMode = false;
 		}
 		return self;
-	};
-	return self;
+	}
+});
+
+function _toolbar(options) {
+	return new KToolbar(options);
 }
 
 K.toolbar = _toolbar;

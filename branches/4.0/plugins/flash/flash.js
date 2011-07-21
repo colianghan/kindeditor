@@ -56,21 +56,38 @@ KindEditor.plugin('flash', function(K) {
 					}
 				}
 			}),
-			div = dialog.div(),
+			div = dialog.div,
 			urlBox = K('[name="url"]', div),
 			widthBox = K('[name="width"]', div),
 			heightBox = K('[name="height"]', div);
 			urlBox.val('http://');
 			var img = getSelectedFlash();
 			if (img) {
-				var attrs = K.mediaAttrs(img.attr('kesrctag'));
+				var attrs = K.mediaAttrs(img.attr('data-kesrctag'));
 				urlBox.val(attrs.src);
 				widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
 				heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
 			}
 			urlBox[0].focus();
 			urlBox[0].select();
+		},
+		'delete' : function() {
+			getSelectedFlash().remove();
 		}
 	};
 	self.clickToolbar(name, functions.edit);
+	// add contextmenu
+	K.each(('edit,delete').split(','), function(i, val) {
+		self.addContextmenu({
+			title : self.lang(val + 'Flash'),
+			click : function() {
+				functions[val]();
+				self.hideMenu();
+			},
+			cond : getSelectedFlash,
+			width : 150,
+			iconClass : val == 'edit' ? 'ke-icon-flash' : undefined
+		});
+	});
+	self.addContextmenu({ title : '-' });
 });

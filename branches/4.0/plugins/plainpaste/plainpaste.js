@@ -1,15 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
-
-/**
- * @name plainpaste.js
- * @fileOverview 纯文本粘贴插件
- * @author Longhao Luo
- */
 
 KindEditor.plugin('plainpaste', function(K) {
 	var self = this, name = 'plainpaste';
@@ -35,7 +23,7 @@ KindEditor.plugin('plainpaste', function(K) {
 					}
 				}
 			}),
-			textarea = K('textarea', dialog.div());
+			textarea = K('textarea', dialog.div);
 		textarea.get().focus();
 	});
 });

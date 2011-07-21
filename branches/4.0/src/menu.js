@@ -1,17 +1,22 @@
 
-function _menu(options) {
-	options.z = options.z || 811213;
-	var self = _widget(options),
-		div = self.div(),
-		remove = self.remove,
-		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
-	div.addClass('ke-menu').bind('click,mousedown', function(e){
-		e.stopPropagation();
-	});
-	//add an item of menu
-	self.addItem = function(item) {
+// create KMenu class
+function KMenu(options) {
+	this.init(options);
+}
+_extend(KMenu, KWidget, {
+	init : function(options) {
+		var self = this;
+		options.z = options.z || 811213;
+		KMenu.parent.init.call(self, options);
+		self.centerLineMode = _undef(options.centerLineMode, true);
+		self.div.addClass('ke-menu').bind('click,mousedown', function(e){
+			e.stopPropagation();
+		});
+	},
+	addItem : function(item) {
+		var self = this;
 		if (item.title === '-') {
-			div.append(K('<div class="ke-menu-separator"></div>'));
+			self.div.append(K('<div class="ke-menu-separator"></div>'));
 			return;
 		}
 		var itemDiv = K('<div class="ke-menu-item"></div>'),
@@ -19,13 +24,13 @@ function _menu(options) {
 			rightDiv = K('<div class="ke-inline-block ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
-		div.append(itemDiv);
+		self.div.append(itemDiv);
 		if (height) {
 			itemDiv.css('height', height);
 			rightDiv.css('line-height', height);
 		}
 		var centerDiv;
-		if (centerLineMode) {
+		if (self.centerLineMode) {
 			centerDiv = K('<div class="ke-inline-block ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
@@ -57,13 +62,18 @@ function _menu(options) {
 		}
 		leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
 		rightDiv.html(item.title);
-	};
-	//remove menu
-	self.remove = function() {
-		K('.ke-menu-item', div.get()).remove();
-		remove.call(self);
-	};
-	return self;
+		return self;
+	},
+	remove : function() {
+		var self = this;
+		K('.ke-menu-item', self.div[0]).remove();
+		KMenu.parent.remove.call(self);
+		return self;
+	}
+});
+
+function _menu(options) {
+	return new KMenu(options);
 }
 
 K.menu = _menu;

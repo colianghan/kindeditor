@@ -13,7 +13,7 @@ KindEditor.plugin('emoticons', function(K) {
 			menu = self.createMenu({
 				name : name
 			});
-		menu.div().append(wrapperDiv);
+		menu.div.append(wrapperDiv);
 		var previewDiv, previewImg;
 		if (allowPreview) {
 			previewDiv = K('<div class="ke-plugin-emoticons-preview"></div>').css('right', 0);

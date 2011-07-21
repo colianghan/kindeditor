@@ -121,7 +121,7 @@ KindEditor.plugin('image', function(K) {
 					}
 				}
 			}),
-			div = dialog.div(),
+			div = dialog.div,
 			tabs = K.tabs({
 				parent : K('.tabs', div),
 				afterSelect : function(i) {

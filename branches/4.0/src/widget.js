@@ -71,119 +71,116 @@ function _drag(options) {
 	});
 }
 
-function _widget(options) {
-	var name = options.name || '',
-		x = _addUnit(options.x),
-		y = _addUnit(options.y),
-		z = options.z,
-		width = _addUnit(options.width),
-		height = _addUnit(options.height),
-		cls = options.cls,
-		css = options.css,
-		html = options.html,
-		doc = options.doc || document,
-		parent = options.parent || doc.body,
-		div = K('<div style="display:block;"></div>');
-	//set widget position by width and height
-	function resetPos(width, height) {
-		if (z && (options.x === undefined || options.y === undefined)) {
-			var w = _removeUnit(width) || 0,
-				h = _removeUnit(height) || 0;
-			if (options.alignEl) {
-				var el = options.alignEl,
-					pos = K(el).pos(),
-					diffX = _round(el.clientWidth / 2 - w / 2),
-					diffY = _round(el.clientHeight / 2 - h / 2);
-				x = diffX < 0 ? pos.x : pos.x + diffX;
-				y = diffY < 0 ? pos.y : pos.y + diffY;
-			} else {
-				var docEl = _docElement(doc),
-					scrollPos = _getScrollPos();
-				x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
-				y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
-			}
-			x = x < 0 ? 0 : _addUnit(x);
-			y = y < 0 ? 0 : _addUnit(y);
-			div.css({
-				left : x,
-				top : y
+// create KWidget class
+function KWidget(options) {
+	this.init(options);
+}
+_extend(KWidget, {
+	init : function(options) {
+		var self = this;
+		// public properties
+		self.name = options.name || '';
+		self.doc = options.doc || document;
+		self.x = _addUnit(options.x);
+		self.y = _addUnit(options.y);
+		self.z = options.z;
+		self.width = _addUnit(options.width);
+		self.height = _addUnit(options.height);
+		self.div = K('<div style="display:block;"></div>');
+		self.options = options;
+		// pravate properties
+		self._alignEl = options.alignEl;
+		if (self.width) {
+			self.div.css('width', self.width);
+		}
+		if (self.height) {
+			self.div.css('height', self.height);
+		}
+		if (self.z) {
+			self.div.css({
+				position : 'absolute',
+				left : self.x,
+				top : self.y,
+				'z-index' : self.z
 			});
 		}
-	}
-	if (width) {
-		div.css('width', width);
-	}
-	if (height) {
-		div.css('height', height);
-	}
-	if (z) {
-		div.css({
-			position : 'absolute',
-			left : x,
-			top : y,
-			'z-index' : z
-		});
-	}
-	resetPos(width, height);
-	if (cls) {
-		div.addClass(cls);
-	}
-	if (css) {
-		div.css(css);
-	}
-	if (html) {
-		div.html(html);
-	}
-	K(parent).append(div);
-	return {
-		name : name,
-		doc : doc,
-		x : x,
-		y : y,
-		z : z,
-		div : function() {
-			return div;
-		},
-		remove : function() {
-			div.remove();
-			return this;
-		},
-		show : function() {
-			div.show();
-			return this;
-		},
-		hide : function() {
-			div.hide();
-			return this;
-		},
-		draggable : function(options) {
-			var self = this;
-			options = options || {};
-			options.moveEl = div;
-			options.moveFn = function(x, y, width, height, diffX, diffY) {
-				if ((x = x + diffX) < 0) {
-					x = 0;
-				}
-				if ((y = y + diffY) < 0) {
-					y = 0;
-				}
-				x = _addUnit(x);
-				y = _addUnit(y);
-				div.css('left', x).css('top', y);
-				self.x = x;
-				self.y = y;
-				
-			};
-			_drag(options);
-			return self;
-		},
-		resetPos : function(width, height) {
-			resetPos(width, height);
-			this.x = x;
-			this.y = y;
-			return this;
+		if (self.z && (self.x === undefined || self.y === undefined)) {
+			self.resetPos(self.width, self.height);
 		}
-	};
+		if (options.cls) {
+			self.div.addClass(options.cls);
+		}
+		if (options.css) {
+			self.div.css(options.css);
+		}
+		if (options.html) {
+			self.div.html(options.html);
+		}
+		K(options.parent || self.doc.body).append(self.div);
+	},
+	resetPos : function(width, height) {
+		var self = this,
+			w = _removeUnit(width) || 0,
+			h = _removeUnit(height) || 0;
+		if (self._alignEl) {
+			var el = self._alignEl,
+				pos = K(el).pos(),
+				diffX = _round(el.clientWidth / 2 - w / 2),
+				diffY = _round(el.clientHeight / 2 - h / 2);
+			x = diffX < 0 ? pos.x : pos.x + diffX;
+			y = diffY < 0 ? pos.y : pos.y + diffY;
+		} else {
+			var docEl = _docElement(self.doc),
+				scrollPos = _getScrollPos();
+			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
+			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+		}
+		x = x < 0 ? 0 : _addUnit(x);
+		y = y < 0 ? 0 : _addUnit(y);
+		self.div.css({
+			left : x,
+			top : y
+		});
+		self.x = x;
+		self.y = y;
+		return self;
+	},
+	remove : function() {
+		this.div.remove();
+		return this;
+	},
+	show : function() {
+		this.div.show();
+		return this;
+	},
+	hide : function() {
+		this.div.hide();
+		return this;
+	},
+	draggable : function(options) {
+		var self = this;
+		options = options || {};
+		options.moveEl = self.div;
+		options.moveFn = function(x, y, width, height, diffX, diffY) {
+			if ((x = x + diffX) < 0) {
+				x = 0;
+			}
+			if ((y = y + diffY) < 0) {
+				y = 0;
+			}
+			x = _addUnit(x);
+			y = _addUnit(y);
+			self.div.css('left', x).css('top', y);
+			self.x = x;
+			self.y = y;
+		};
+		_drag(options);
+		return self;
+	}
+});
+
+function _widget(options) {
+	return new KWidget(options);
 }
 
 K.widget = _widget;

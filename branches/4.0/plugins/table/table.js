@@ -188,7 +188,7 @@ KindEditor.plugin('table', function(K) {
 					}
 				}
 			}),
-			div = dialog.div(),
+			div = dialog.div,
 			rowsBox = K('[name="rows"]', div).val(3),
 			colsBox = K('[name="cols"]', div).val(2),
 			widthBox = K('[name="width"]', div).val(100),

@@ -286,62 +286,59 @@ function KEvent(el, event) {
 }
 _extend(KEvent, {
 	init : function(el, event) {
-		if (!event) {
-			return;
-		}
-		var e = this, doc = el.ownerDocument || el.document || el;
-		e.event = event;
+		var self = this, doc = el.ownerDocument || el.document || el;
+		self.event = event;
 		_each(_EVENT_PROPS, function(key, val) {
-			e[val] = event[val];
+			self[val] = event[val];
 		});
-		if (!e.target) {
-			e.target = e.srcElement || doc;
+		if (!self.target) {
+			self.target = self.srcElement || doc;
 		}
-		if (e.target.nodeType === 3) {
-			e.target = e.target.parentNode;
+		if (self.target.nodeType === 3) {
+			self.target = self.target.parentNode;
 		}
-		if (!e.relatedTarget && e.fromElement) {
-			e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
+		if (!self.relatedTarget && self.fromElement) {
+			self.relatedTarget = self.fromElement === self.target ? self.toElement : self.fromElement;
 		}
-		if (e.pageX == null && e.clientX != null) {
+		if (self.pageX == null && self.clientX != null) {
 			var d = doc.documentElement, body = doc.body;
-			e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
-			e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
+			self.pageX = self.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
+			self.pageY = self.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
 		}
-		if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
-			e.which = e.charCode || e.keyCode;
+		if (!self.which && ((self.charCode || self.charCode === 0) ? self.charCode : self.keyCode)) {
+			self.which = self.charCode || self.keyCode;
 		}
-		if (!e.metaKey && e.ctrlKey) {
-			e.metaKey = e.ctrlKey;
+		if (!self.metaKey && self.ctrlKey) {
+			self.metaKey = self.ctrlKey;
 		}
-		if (!e.which && e.button !== undefined) {
-			e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
+		if (!self.which && self.button !== undefined) {
+			self.which = (self.button & 1 ? 1 : (self.button & 2 ? 3 : (self.button & 4 ? 2 : 0)));
 		}
-		switch (e.which) {
+		switch (self.which) {
 		case 186 :
-			e.which = 59;
+			self.which = 59;
 			break;
 		case 187 :
 		case 107 :
 		case 43 :
-			e.which = 61;
+			self.which = 61;
 			break;
 		case 189 :
 		case 45 :
-			e.which = 109;
+			self.which = 109;
 			break;
 		case 42 :
-			e.which = 106;
+			self.which = 106;
 			break;
 		case 47 :
-			e.which = 111;
+			self.which = 111;
 			break;
 		case 78 :
-			e.which = 110;
+			self.which = 110;
 			break;
 		}
-		if (e.which >= 96 && e.which <= 105) {
-			e.which -= 48;
+		if (self.which >= 96 && self.which <= 105) {
+			self.which -= 48;
 		}
 	},
 	preventDefault : function() {
@@ -400,7 +397,7 @@ function _bind(el, type, fn) {
 	events = _eventData[id][type];
 	if (events.length === 0) {
 		events[0] = function(e) {
-			var kevent = new KEvent(el, e);
+			var kevent = e ? new KEvent(el, e) : undefined;
 			_each(events, function(i, event) {
 				if (i > 0 && event) {
 					event.call(el, kevent);
@@ -842,7 +839,7 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'kesrctag="' + escape(srcTag) + '" alt="" />';
+	html += 'data-kesrctag="' + escape(srcTag) + '" alt="" />';
 	return html;
 }
 K.formatUrl = _formatUrl;
@@ -2438,7 +2435,7 @@ function KCmd(range) {
 	this.init(range);
 }
 _extend(KCmd, {
-	init : function() {
+	init : function(range) {
 		var self = this, doc = range.doc;
 		self.doc = doc;
 		self.win = _getWin(doc);
@@ -2850,7 +2847,7 @@ _extend(KCmd, {
 	insertimage : function(url, title, width, height, border, align) {
 		title = _undef(title, '');
 		border = _undef(border, 0);
-		var html = '<img src="' + url + '" kesrc="' + url + '" ';
+		var html = '<img src="' + url + '" data-kesrc="' + url + '" ';
 		if (width) {
 			html += 'width="' + width + '" ';
 		}
@@ -2876,7 +2873,7 @@ _extend(KCmd, {
 			self.select();
 		}
 		if (range.collapsed) {
-			var html = '<a href="' + url + '" kesrc="' + url + '" ';
+			var html = '<a href="' + url + '" data-kesrc="' + url + '" ';
 			if (type) {
 				html += ' target="' + type + '"';
 			}
@@ -2886,7 +2883,7 @@ _extend(KCmd, {
 			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
 			a = self.commonNode({ a : '*' });
 			K('a[href="__kindeditor_temp_url__"]', a ? a.parent() : doc).each(function() {
-				K(this).attr('href', url).attr('kesrc', url);
+				K(this).attr('href', url).attr('data-kesrc', url);
 				if (type) {
 					K(this).attr('target', type);
 				} else {
@@ -3072,117 +3069,112 @@ function _drag(options) {
 		e.stop();
 	});
 }
-function _widget(options) {
-	var name = options.name || '',
-		x = _addUnit(options.x),
-		y = _addUnit(options.y),
-		z = options.z,
-		width = _addUnit(options.width),
-		height = _addUnit(options.height),
-		cls = options.cls,
-		css = options.css,
-		html = options.html,
-		doc = options.doc || document,
-		parent = options.parent || doc.body,
-		div = K('<div style="display:block;"></div>');
-	function resetPos(width, height) {
-		if (z && (options.x === undefined || options.y === undefined)) {
-			var w = _removeUnit(width) || 0,
-				h = _removeUnit(height) || 0;
-			if (options.alignEl) {
-				var el = options.alignEl,
-					pos = K(el).pos(),
-					diffX = _round(el.clientWidth / 2 - w / 2),
-					diffY = _round(el.clientHeight / 2 - h / 2);
-				x = diffX < 0 ? pos.x : pos.x + diffX;
-				y = diffY < 0 ? pos.y : pos.y + diffY;
-			} else {
-				var docEl = _docElement(doc),
-					scrollPos = _getScrollPos();
-				x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
-				y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
-			}
-			x = x < 0 ? 0 : _addUnit(x);
-			y = y < 0 ? 0 : _addUnit(y);
-			div.css({
-				left : x,
-				top : y
+function KWidget(options) {
+	this.init(options);
+}
+_extend(KWidget, {
+	init : function(options) {
+		var self = this;
+		self.name = options.name || '';
+		self.doc = options.doc || document;
+		self.x = _addUnit(options.x);
+		self.y = _addUnit(options.y);
+		self.z = options.z;
+		self.width = _addUnit(options.width);
+		self.height = _addUnit(options.height);
+		self.div = K('<div style="display:block;"></div>');
+		self.options = options;
+		self._alignEl = options.alignEl;
+		if (self.width) {
+			self.div.css('width', self.width);
+		}
+		if (self.height) {
+			self.div.css('height', self.height);
+		}
+		if (self.z) {
+			self.div.css({
+				position : 'absolute',
+				left : self.x,
+				top : self.y,
+				'z-index' : self.z
 			});
 		}
-	}
-	if (width) {
-		div.css('width', width);
-	}
-	if (height) {
-		div.css('height', height);
-	}
-	if (z) {
-		div.css({
-			position : 'absolute',
-			left : x,
-			top : y,
-			'z-index' : z
-		});
-	}
-	resetPos(width, height);
-	if (cls) {
-		div.addClass(cls);
-	}
-	if (css) {
-		div.css(css);
-	}
-	if (html) {
-		div.html(html);
-	}
-	K(parent).append(div);
-	return {
-		name : name,
-		doc : doc,
-		x : x,
-		y : y,
-		z : z,
-		div : function() {
-			return div;
-		},
-		remove : function() {
-			div.remove();
-			return this;
-		},
-		show : function() {
-			div.show();
-			return this;
-		},
-		hide : function() {
-			div.hide();
-			return this;
-		},
-		draggable : function(options) {
-			var self = this;
-			options = options || {};
-			options.moveEl = div;
-			options.moveFn = function(x, y, width, height, diffX, diffY) {
-				if ((x = x + diffX) < 0) {
-					x = 0;
-				}
-				if ((y = y + diffY) < 0) {
-					y = 0;
-				}
-				x = _addUnit(x);
-				y = _addUnit(y);
-				div.css('left', x).css('top', y);
-				self.x = x;
-				self.y = y;
-			};
-			_drag(options);
-			return self;
-		},
-		resetPos : function(width, height) {
-			resetPos(width, height);
-			this.x = x;
-			this.y = y;
-			return this;
+		if (self.z && (self.x === undefined || self.y === undefined)) {
+			self.resetPos(self.width, self.height);
 		}
-	};
+		if (options.cls) {
+			self.div.addClass(options.cls);
+		}
+		if (options.css) {
+			self.div.css(options.css);
+		}
+		if (options.html) {
+			self.div.html(options.html);
+		}
+		K(options.parent || self.doc.body).append(self.div);
+	},
+	resetPos : function(width, height) {
+		var self = this,
+			w = _removeUnit(width) || 0,
+			h = _removeUnit(height) || 0;
+		if (self._alignEl) {
+			var el = self._alignEl,
+				pos = K(el).pos(),
+				diffX = _round(el.clientWidth / 2 - w / 2),
+				diffY = _round(el.clientHeight / 2 - h / 2);
+			x = diffX < 0 ? pos.x : pos.x + diffX;
+			y = diffY < 0 ? pos.y : pos.y + diffY;
+		} else {
+			var docEl = _docElement(self.doc),
+				scrollPos = _getScrollPos();
+			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
+			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+		}
+		x = x < 0 ? 0 : _addUnit(x);
+		y = y < 0 ? 0 : _addUnit(y);
+		self.div.css({
+			left : x,
+			top : y
+		});
+		self.x = x;
+		self.y = y;
+		return self;
+	},
+	remove : function() {
+		this.div.remove();
+		return this;
+	},
+	show : function() {
+		this.div.show();
+		return this;
+	},
+	hide : function() {
+		this.div.hide();
+		return this;
+	},
+	draggable : function(options) {
+		var self = this;
+		options = options || {};
+		options.moveEl = self.div;
+		options.moveFn = function(x, y, width, height, diffX, diffY) {
+			if ((x = x + diffX) < 0) {
+				x = 0;
+			}
+			if ((y = y + diffY) < 0) {
+				y = 0;
+			}
+			x = _addUnit(x);
+			y = _addUnit(y);
+			self.div.css('left', x).css('top', y);
+			self.x = x;
+			self.y = y;
+		};
+		_drag(options);
+		return self;
+	}
+});
+function _widget(options) {
+	return new KWidget(options);
 }
 K.widget = _widget;
 function _iframeDoc(iframe) {
@@ -3256,7 +3248,7 @@ function _edit(options) {
 		cssPath = options.cssPath,
 		cssData = options.cssData,
 		isDocumentDomain = location.host !== document.domain,
-		div = self.div().addClass('ke-edit');
+		div = self.div.addClass('ke-edit');
 	self.designMode = _undef(options.designMode, true);
 	var srcScript = 'document.open();' +
 		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
@@ -3310,9 +3302,9 @@ function _edit(options) {
 		if (self.designMode) {
 			var body = doc.body;
 			if (val === undefined) {
-				return K(body).html();
+				return body.innerHTML;
 			}
-			K(body).html(val);
+			body.innerHTML = val;
 			return self;
 		}
 		if (val === undefined) {
@@ -3402,73 +3394,77 @@ function _bindToolbarEvent(itemNode, item) {
 		item.click.call(this, e);
 	});
 }
-function _toolbar(options) {
-	var self = _widget(options),
-		remove = self.remove,
-		disableMode = options.disableMode === undefined ? false : options.disableMode,
-		noDisableItems = options.noDisableItems === undefined ? [] : options.noDisableItems,
-		div = self.div(),
-		itemNodes = {};
-	div.addClass('ke-toolbar')
-		.bind('contextmenu,mousedown,mousemove', function(e) {
+function KToolbar(options) {
+	this.init(options);
+}
+_extend(KToolbar, KWidget, {
+	init : function(options) {
+		var self = this;
+		KToolbar.parent.init.call(self, options);
+		self.disableMode = _undef(options.disableMode, false);
+		self.noDisableItems = _undef(options.noDisableItems, []);
+		self._itemNodes = {};
+		self.div.addClass('ke-toolbar').bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
 		});
-	self.get = function(key) {
-		return itemNodes[key];
-	};
-	self.addItem = function(item) {
-		var itemNode;
+	},
+	get : function(key) {
+		return this._itemNodes[key];
+	},
+	addItem : function(item) {
+		var self = this, itemNode;
 		if (item.name == '|') {
 			itemNode = K('<span class="ke-inline-block separator"></span>');
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
 			itemNode = K('<span class="ke-inline-block outline" title="' + (item.title || '') + '" unselectable="on">' +
-				'<span class="ke-inline-block icon icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
+				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
-		itemNodes[item.name] = itemNode;
-		div.append(itemNode);
+		self._itemNodes[item.name] = itemNode;
+		self.div.append(itemNode);
 		return self;
-	};
-	self.remove = function() {
-		_each(itemNodes, function(key, val) {
+	},
+	remove : function() {
+		var self = this;
+		_each(self._itemNodes, function(key, val) {
 			val.remove();
 		});
-		remove.call(self);
+		KToolbar.parent.remove.call(self);
 		return self;
-	};
-	self.select = function(name) {
-		if (disableMode && _inArray(name, noDisableItems) < 0) {
+	},
+	select : function(name) {
+		var self = this;
+		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
 			return self;
 		}
-		var itemNode = itemNodes[name];
+		var itemNode = self._itemNodes[name];
 		if (itemNode) {
 			itemNode.addClass('selected').unbind('mouseover,mouseout');
 		}
 		return self;
-	};
-	self.unselect = function(name) {
-		if (disableMode && _inArray(name, noDisableItems) < 0) {
+	},
+	unselect : function(name) {
+		var self = this;
+		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
 			return self;
 		}
-		var itemNode = itemNodes[name];
+		var itemNode = self._itemNodes[name];
 		if (itemNode) {
-			itemNode.removeClass('selected').removeClass('on')
-			.mouseover(function(e) {
+			itemNode.removeClass('selected').removeClass('on').mouseover(function(e) {
 				K(this).addClass('on');
-			})
-			.mouseout(function(e) {
+			}).mouseout(function(e) {
 				K(this).removeClass('on');
 			});
 		}
 		return self;
-	};
-	self.disable = function(bool) {
-		var arr = noDisableItems, item;
-		if (bool === undefined ? !disableMode : bool) {
-			_each(itemNodes, function(key, val) {
+	},
+	disable : function(bool) {
+		var self = this, arr = self.noDisableItems, item;
+		if (bool === undefined ? !self.disableMode : bool) {
+			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
 					val.removeClass('selected').addClass('disabled');
@@ -3478,9 +3474,9 @@ function _toolbar(options) {
 					}
 				}
 			});
-			disableMode = true;
+			self.disableMode = true;
 		} else {
-			_each(itemNodes, function(key, val) {
+			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
 					val.removeClass('disabled');
@@ -3490,25 +3486,32 @@ function _toolbar(options) {
 					}
 				}
 			});
-			disableMode = false;
+			self.disableMode = false;
 		}
 		return self;
-	};
-	return self;
+	}
+});
+function _toolbar(options) {
+	return new KToolbar(options);
 }
 K.toolbar = _toolbar;
-function _menu(options) {
-	options.z = options.z || 811213;
-	var self = _widget(options),
-		div = self.div(),
-		remove = self.remove,
-		centerLineMode = options.centerLineMode === undefined ? true : options.centerLineMode;
-	div.addClass('ke-menu').bind('click,mousedown', function(e){
-		e.stopPropagation();
-	});
-	self.addItem = function(item) {
+function KMenu(options) {
+	this.init(options);
+}
+_extend(KMenu, KWidget, {
+	init : function(options) {
+		var self = this;
+		options.z = options.z || 811213;
+		KMenu.parent.init.call(self, options);
+		self.centerLineMode = _undef(options.centerLineMode, true);
+		self.div.addClass('ke-menu').bind('click,mousedown', function(e){
+			e.stopPropagation();
+		});
+	},
+	addItem : function(item) {
+		var self = this;
 		if (item.title === '-') {
-			div.append(K('<div class="ke-menu-separator"></div>'));
+			self.div.append(K('<div class="ke-menu-separator"></div>'));
 			return;
 		}
 		var itemDiv = K('<div class="ke-menu-item"></div>'),
@@ -3516,13 +3519,13 @@ function _menu(options) {
 			rightDiv = K('<div class="ke-inline-block ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
 			iconClass = item.iconClass;
-		div.append(itemDiv);
+		self.div.append(itemDiv);
 		if (height) {
 			itemDiv.css('height', height);
 			rightDiv.css('line-height', height);
 		}
 		var centerDiv;
-		if (centerLineMode) {
+		if (self.centerLineMode) {
 			centerDiv = K('<div class="ke-inline-block ke-menu-item-center"></div>');
 			if (height) {
 				centerDiv.css('height', height);
@@ -3554,35 +3557,62 @@ function _menu(options) {
 		}
 		leftDiv.html('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ' + iconClass + '"></span>');
 		rightDiv.html(item.title);
-	};
-	self.remove = function() {
-		K('.ke-menu-item', div.get()).remove();
-		remove.call(self);
-	};
-	return self;
+		return self;
+	},
+	remove : function() {
+		var self = this;
+		K('.ke-menu-item', self.div[0]).remove();
+		KMenu.parent.remove.call(self);
+		return self;
+	}
+});
+function _menu(options) {
+	return new KMenu(options);
 }
 K.menu = _menu;
-function _colorpicker(options) {
-	options.z = options.z || 811213;
-	var self = _widget(options),
-		colors = options.colors || [
+function KColorPicker(options) {
+	this.init(options);
+}
+_extend(KColorPicker, KWidget, {
+	init : function(options) {
+		var self = this;
+		options.z = options.z || 811213;
+		KColorPicker.parent.init.call(self, options);
+		var colors = options.colors || [
 			['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 			['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
 			['#337FE5', '#003399', '#4C33E5', '#9933E5', '#CC33E5', '#EE33EE'],
 			['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#333333', '#000000']
-		],
-		selectedColor = (options.selectedColor || '').toLowerCase(),
-		remove = self.remove,
-		cells = [];
-	self.div().addClass('ke-colorpicker').bind('click,mousedown', function(e){
-		e.stopPropagation();
-	});
-	function addAttr(cell, color, cls) {
+		];
+		self.selectedColor = (options.selectedColor || '').toLowerCase();
+		self._cells = [];
+		self.div.addClass('ke-colorpicker').bind('click,mousedown', function(e){
+			e.stopPropagation();
+		});
+		var table = self.doc.createElement('table');
+		self.div.append(table);
+		table.className = 'ke-colorpicker-table';
+		table.cellPadding = 0;
+		table.cellSpacing = 0;
+		table.border = 0;
+		var row = table.insertRow(0), cell = row.insertCell(0);
+		cell.colSpan = colors[0].length;
+		self._addAttr(cell, '', 'ke-colorpicker-cell-top');
+		for (var i = 0; i < colors.length; i++) {
+			row = table.insertRow(i + 1);
+			for (var j = 0; j < colors[i].length; j++) {
+				cell = row.insertCell(j);
+				self._addAttr(cell, colors[i][j], 'ke-colorpicker-cell');
+			}
+		}
+	},
+	_addAttr : function(cell, color, cls) {
+		var self = this;
 		cell = K(cell).addClass(cls);
-		if (selectedColor === color.toLowerCase()) {
+		if (self.selectedColor === color.toLowerCase()) {
 			cell.addClass('ke-colorpicker-cell-selected');
 		}
-		cell.attr('title', color || options.noColor);
+		cell.attr('title', color || self.options.noColor);
 		cell.mouseover(function(e) {
 			K(this).addClass('ke-colorpicker-cell-on');
 		});
@@ -3591,38 +3621,26 @@ function _colorpicker(options) {
 		});
 		cell.click(function(e) {
 			e.stop();
-			options.click.call(K(this), color);
+			self.options.click.call(K(this), color);
 		});
 		if (color) {
 			cell.append(K('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
 		} else {
-			cell.html(options.noColor);
+			cell.html(self.options.noColor);
 		}
-		cells.push(cell);
-	}
-	var table = self.doc.createElement('table');
-	self.div().append(table);
-	table.className = 'ke-colorpicker-table';
-	table.cellPadding = 0;
-	table.cellSpacing = 0;
-	table.border = 0;
-	var row = table.insertRow(0), cell = row.insertCell(0);
-	cell.colSpan = colors[0].length;
-	addAttr(cell, '', 'ke-colorpicker-cell-top');
-	for (var i = 0; i < colors.length; i++) {
-		row = table.insertRow(i + 1);
-		for (var j = 0; j < colors[i].length; j++) {
-			cell = row.insertCell(j);
-			addAttr(cell, colors[i][j], 'ke-colorpicker-cell');
-		}
-	}
-	self.remove = function() {
-		_each(cells, function() {
+		self._cells.push(cell);
+	},
+	remove : function() {
+		var self = this;
+		_each(self._cells, function() {
 			this.unbind();
 		});
-		remove.call(self);
-	};
-	return self;
+		KColorPicker.parent.remove.call(self);
+		return self;
+	}
+});
+function _colorpicker(options) {
+	return new KColorPicker(options);
 }
 K.colorpicker = _colorpicker;
 function _button(arg) {
@@ -3643,7 +3661,7 @@ function _dialog(options) {
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
 		doc = self.doc,
-		div = self.div(),
+		div = self.div,
 		title = options.title,
 		body = K(options.body, doc),
 		previewBtn = options.previewBtn,
@@ -3723,7 +3741,7 @@ function _tabs(options) {
 	var self = _widget(options),
 		remove = self.remove,
 		afterSelect = options.afterSelect,
-		div = self.div(),
+		div = self.div,
 		liList = [];
 	div.addClass('ke-tabs')
 		.bind('contextmenu,mousedown,mousemove', function(e) {
@@ -4083,7 +4101,7 @@ KEditor.prototype = {
 			});
 		});
 		var edit = _edit({
-			height : _removeUnit(height) - toolbar.div().height(),
+			height : _removeUnit(height) - toolbar.div.height(),
 			parent : container,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
@@ -4207,7 +4225,7 @@ KEditor.prototype = {
 			self.container.css('width', _addUnit(width));
 		}
 		if (height !== null) {
-			height = _removeUnit(height) - self.toolbar.div().height() - self.statusbar.height();
+			height = _removeUnit(height) - self.toolbar.div.height() - self.statusbar.height();
 			if (height > 0) {
 				self.edit.height(height);
 			}
@@ -4594,6 +4612,8 @@ KindEditor.lang({
 	close : '关闭',
 	editImage : '图片属性',
 	deleteImage : '删除图片',
+	editFlash : 'Flash属性',
+	deleteFlash : '删除Flash',
 	editMedia : '视音频属性',
 	deleteMedia : '删除视音频',
 	editLink : '超级链接属性',

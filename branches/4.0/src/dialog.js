@@ -18,7 +18,7 @@ function _dialog(options) {
 		width = _addUnit(options.width),
 		height = _addUnit(options.height),
 		doc = self.doc,
-		div = self.div(),
+		div = self.div,
 		title = options.title,
 		body = K(options.body, doc),
 		previewBtn = options.previewBtn,
@@ -90,9 +90,7 @@ function _dialog(options) {
 		headerDiv.remove();
 		remove.call(self);
 	};
-	self.mask = function() {
-		return mask;
-	};
+	self.mask = mask;
 	return self;
 }
 

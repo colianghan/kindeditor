@@ -12,6 +12,9 @@ KindEditor.plugin('media', function(K) {
 		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
 			return null;
 		}
+		if (img[0].className == 'ke-flash') {
+			return null;
+		}
 		return img;
 	}
 	var functions = {
@@ -62,7 +65,7 @@ KindEditor.plugin('media', function(K) {
 					}
 				}
 			}),
-			div = dialog.div(),
+			div = dialog.div,
 			urlBox = K('[name="url"]', div),
 			widthBox = K('[name="width"]', div),
 			heightBox = K('[name="height"]', div),
@@ -70,7 +73,7 @@ KindEditor.plugin('media', function(K) {
 			urlBox.val('http://');
 			var img = getSelectedMedia();
 			if (img) {
-				var attrs = K.mediaAttrs(img.attr('kesrctag'));
+				var attrs = K.mediaAttrs(img.attr('data-kesrctag'));
 				urlBox.val(attrs.src);
 				widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
 				heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
@@ -84,6 +87,7 @@ KindEditor.plugin('media', function(K) {
 		}
 	};
 	self.clickToolbar(name, functions.edit);
+	// add contextmenu
 	K.each(('edit,delete').split(','), function(i, val) {
 		self.addContextmenu({
 			title : self.lang(val + 'Media'),

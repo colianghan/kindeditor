@@ -27,7 +27,7 @@ KindEditor.plugin('wordpaste', function(K) {
 					}
 				}
 			}),
-			div = dialog.div(),
+			div = dialog.div,
 			iframe = K('iframe', div.get());
 		var doc = K.iframeDoc(iframe);
 		if (!K.IE) {

@@ -73,7 +73,7 @@ function _edit(options) {
 		cssPath = options.cssPath,
 		cssData = options.cssData,
 		isDocumentDomain = location.host !== document.domain,
-		div = self.div().addClass('ke-edit');
+		div = self.div.addClass('ke-edit');
 	self.designMode = _undef(options.designMode, true);
 	var srcScript = 'document.open();' +
 		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
@@ -131,14 +131,16 @@ function _edit(options) {
 	// get or set value
 	self.html = function(val) {
 		var doc = self.doc;
+		// design mode
 		if (self.designMode) {
 			var body = doc.body;
 			if (val === undefined) {
-				return K(body).html();
+				return body.innerHTML;
 			}
-			K(body).html(val);
+			body.innerHTML = val;
 			return self;
 		}
+		// source mode
 		if (val === undefined) {
 			return textarea.val();
 		}

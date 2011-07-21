@@ -53,7 +53,7 @@ KindEditor.plugin('filemanager', function(K) {
 			title : self.lang(name),
 			body : html
 		}),
-		div = dialog.div(),
+		div = dialog.div,
 		bodyDiv = K('.ke-plugin-filemanager-body', div),
 		moveupImg = K('[name="moveupImg"]', div),
 		moveupLink = K('[name="moveupLink"]', div),

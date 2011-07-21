@@ -308,7 +308,7 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'kesrctag="' + escape(srcTag) + '" alt="" />';
+	html += 'data-kesrctag="' + escape(srcTag) + '" alt="" />';
 	return html;
 }
 

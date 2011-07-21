@@ -1,9 +1,3 @@
-/**
- * KindEditor - WYSIWYG HTML Editor
- *
- * Copyright (c) 2010 kindsoft.net All rights reserved.
- * Released under LGPL License.
- */
 
 KindEditor.lang({
 	source : 'HTML代码',
@@ -52,6 +46,8 @@ KindEditor.lang({
 	close : '关闭',
 	editImage : '图片属性',
 	deleteImage : '删除图片',
+	editFlash : 'Flash属性',
+	deleteFlash : '删除Flash',
 	editMedia : '视音频属性',
 	deleteMedia : '删除视音频',
 	editLink : '超级链接属性',
