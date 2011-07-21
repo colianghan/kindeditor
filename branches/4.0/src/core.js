@@ -115,6 +115,27 @@ function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
 
+function _extend(child) {
+	var parent = arguments[1], proto = arguments[2];
+	if (arguments.length == 2) {
+		proto = parent;
+	}
+	if (parent) {
+		var fn = function () {};
+		fn.prototype = parent.prototype;
+		childProto = new fn();
+	} else {
+		childProto = {};
+	}
+	_each(proto, function(key, val) {
+		childProto[key] = val;
+	});
+	childProto.constructor = child;
+	child.prototype = childProto;
+	child.parent = parent ? parent.prototype : null;
+	return child;
+}
+
 //From http://www.json.org/json2.js
 function _json(text) {
 	var match;
@@ -161,6 +182,7 @@ var K = {
 	toMap : _toMap,
 	toArray : _toArray,
 	undef : _undef,
+	extend : _extend,
 	json : _json
 };
 

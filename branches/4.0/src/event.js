@@ -18,116 +18,125 @@ function _unbindEvent(el, type, fn) {
 	}
 }
 
-var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
+var _EVENT_PROPS = ('altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,' +
+	'data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,' +
+	'pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which').split(',');
 
-function _event(el, event) {
-	if (!event) {
-		return;
-	}
-	var e = {},
-		doc = el.ownerDocument || el.document || el;
-	_each(_EVENT_PROPS, function(key, val) {
-		e[val] = event[val];
-	});
-	if (!e.target) {
-		e.target = e.srcElement || doc;
-	}
-	if (e.target.nodeType === 3) {
-		e.target = e.target.parentNode;
-	}
-	if (!e.relatedTarget && e.fromElement) {
-		e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
-	}
-	if (e.pageX == null && e.clientX != null) {
-		var d = doc.documentElement, body = doc.body;
-		e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
-		e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
-	}
-	if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
-		e.which = e.charCode || e.keyCode;
-	}
-	if (!e.metaKey && e.ctrlKey) {
-		e.metaKey = e.ctrlKey;
-	}
-	if (!e.which && e.button !== undefined) {
-		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
-	}
-	/**
-		DOM_VK_SEMICOLON : 59 (;:)
-			- IE,WEBKIT: 186
-			- GECKO,OPERA : 59
-		DOM_VK_EQUALS : 61 (=+)
-			- IE,WEBKIT : 187
-			- GECKO : 107
-			- OPERA : 61
-		DOM_VK_NUMPAD0 ~ DOM_VK_NUMPAD9 : 96 ~ 105
-			- IE、WEBKIT,GECKO : 96 ~ 105
-			- OPERA : 48 ~ 57
-		DOM_VK_MULTIPLY : 106 (*)
-			- IE、WEBKIT,GECKO : 106
-			- OPERA : 42
-		DOM_VK_ADD : 107 (+)
-			- IE、WEBKIT,GECKO : 107
-			- OPERA : 43
-		DOM_VK_SUBTRACT : 109 (-_) (-)
-			- IE,WEBKIT : 189, 109
-			- GECKO : 109, 109
-			- OPERA : 109, 45
-		DOM_VK_DECIMAL : 110 (.)
-			- IE、WEBKIT,GECKO : 110
-			- OPERA : 78
-		DOM_VK_DIVIDE : 111 (/)
-			- IE、WEBKIT,GECKO : 111
-			- OPERA : 47
+// create KEvent class
+function KEvent(el, event) {
+	this.init(el, event);
+}
+_extend(KEvent, {
+	init : function(el, event) {
+		if (!event) {
+			return;
+		}
+		var e = this, doc = el.ownerDocument || el.document || el;
+		e.event = event;
+		_each(_EVENT_PROPS, function(key, val) {
+			e[val] = event[val];
+		});
+		if (!e.target) {
+			e.target = e.srcElement || doc;
+		}
+		if (e.target.nodeType === 3) {
+			e.target = e.target.parentNode;
+		}
+		if (!e.relatedTarget && e.fromElement) {
+			e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
+		}
+		if (e.pageX == null && e.clientX != null) {
+			var d = doc.documentElement, body = doc.body;
+			e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
+			e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
+		}
+		if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
+			e.which = e.charCode || e.keyCode;
+		}
+		if (!e.metaKey && e.ctrlKey) {
+			e.metaKey = e.ctrlKey;
+		}
+		if (!e.which && e.button !== undefined) {
+			e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
+		}
+		/**
+			DOM_VK_SEMICOLON : 59 (;:)
+				- IE,WEBKIT: 186
+				- GECKO,OPERA : 59
+			DOM_VK_EQUALS : 61 (=+)
+				- IE,WEBKIT : 187
+				- GECKO : 107
+				- OPERA : 61
+			DOM_VK_NUMPAD0 ~ DOM_VK_NUMPAD9 : 96 ~ 105
+				- IE、WEBKIT,GECKO : 96 ~ 105
+				- OPERA : 48 ~ 57
+			DOM_VK_MULTIPLY : 106 (*)
+				- IE、WEBKIT,GECKO : 106
+				- OPERA : 42
+			DOM_VK_ADD : 107 (+)
+				- IE、WEBKIT,GECKO : 107
+				- OPERA : 43
+			DOM_VK_SUBTRACT : 109 (-_) (-)
+				- IE,WEBKIT : 189, 109
+				- GECKO : 109, 109
+				- OPERA : 109, 45
+			DOM_VK_DECIMAL : 110 (.)
+				- IE、WEBKIT,GECKO : 110
+				- OPERA : 78
+			DOM_VK_DIVIDE : 111 (/)
+				- IE、WEBKIT,GECKO : 111
+				- OPERA : 47
 
-		Reference:
-		https://developer.mozilla.org/en/DOM/Event/UIEvent/KeyEvent
-		http://msdn.microsoft.com/en-us/library/ms536940(v=VS.85).aspx
-	*/
-	switch (e.which) {
-	case 186 :
-		e.which = 59;
-		break;
-	case 187 :
-	case 107 :
-	case 43 :
-		e.which = 61;
-		break;
-	case 189 :
-	case 45 :
-		e.which = 109;
-		break;
-	case 42 :
-		e.which = 106;
-		break;
-	case 47 :
-		e.which = 111;
-		break;
-	case 78 :
-		e.which = 110;
-		break;
-	}
-	if (e.which >= 96 && e.which <= 105) {
-		e.which -= 48;
-	}
-	e.preventDefault = function() {
-		if (event.preventDefault) {
-			event.preventDefault();
+			Reference:
+			https://developer.mozilla.org/en/DOM/Event/UIEvent/KeyEvent
+			http://msdn.microsoft.com/en-us/library/ms536940(v=VS.85).aspx
+		*/
+		switch (e.which) {
+		case 186 :
+			e.which = 59;
+			break;
+		case 187 :
+		case 107 :
+		case 43 :
+			e.which = 61;
+			break;
+		case 189 :
+		case 45 :
+			e.which = 109;
+			break;
+		case 42 :
+			e.which = 106;
+			break;
+		case 47 :
+			e.which = 111;
+			break;
+		case 78 :
+			e.which = 110;
+			break;
 		}
-		event.returnValue = false;
-	};
-	e.stopPropagation = function() {
-		if (event.stopPropagation) {
-			event.stopPropagation();
+		if (e.which >= 96 && e.which <= 105) {
+			e.which -= 48;
 		}
-		event.cancelBubble = true;
-	};
-	e.stop = function() {
+	},
+	preventDefault : function() {
+		var ev = this.event;
+		if (ev.preventDefault) {
+			ev.preventDefault();
+		}
+		ev.returnValue = false;
+	},
+	stopPropagation : function() {
+		var ev = this.event;
+		if (ev.stopPropagation) {
+			ev.stopPropagation();
+		}
+		ev.cancelBubble = true;
+	},
+	stop : function() {
 		this.preventDefault();
 		this.stopPropagation();
-	};
-	return e;
-}
+	}
+});
 
 var _eventExpendo = 'kindeditor_' + _TIME, _eventId = 0, _eventData = {};
 
@@ -170,9 +179,10 @@ function _bind(el, type, fn) {
 	events = _eventData[id][type];
 	if (events.length === 0) {
 		events[0] = function(e) {
+			var kevent = new KEvent(el, e);
 			_each(events, function(i, event) {
 				if (i > 0 && event) {
-					event.call(el, _event(el, e));
+					event.call(el, kevent);
 				}
 			});
 		};

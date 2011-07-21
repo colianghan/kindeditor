@@ -302,17 +302,20 @@ function _toRange(rng) {
 	return range;
 }
 
+// create KRange class
 function KRange(doc) {
-	var self = this;
-	self.startContainer = doc;
-	self.startOffset = 0;
-	self.endContainer = doc;
-	self.endOffset = 0;
-	self.collapsed = true;
-	self.doc = doc;
+	this.init(doc);
 }
-
-KRange.prototype = {
+_extend(KRange, {
+	init : function(doc) {
+		var self = this;
+		self.startContainer = doc;
+		self.startOffset = 0;
+		self.endContainer = doc;
+		self.endOffset = 0;
+		self.collapsed = true;
+		self.doc = doc;
+	},
 	commonAncestor : function() {
 		function getParents(node) {
 			var parents = [];
@@ -722,7 +725,7 @@ KRange.prototype = {
 		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
 		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
 	}
-};
+});
 
 function _range(mixed) {
 	if (!mixed.nodeName) {

@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-19)
+* @version 4.0 (2011-07-21)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-19)',
+var _VERSION = '4.0 (2011-07-21)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -106,6 +106,26 @@ function _toArray(obj, offset) {
 function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
+function _extend(child) {
+	var parent = arguments[1], proto = arguments[2];
+	if (arguments.length == 2) {
+		proto = parent;
+	}
+	if (parent) {
+		var fn = function () {};
+		fn.prototype = parent.prototype;
+		childProto = new fn();
+	} else {
+		childProto = {};
+	}
+	_each(proto, function(key, val) {
+		childProto[key] = val;
+	});
+	childProto.constructor = child;
+	child.prototype = childProto;
+	child.parent = parent ? parent.prototype : null;
+	return child;
+}
 function _json(text) {
 	var match;
 	if ((match = /\{[\s\S]*\}|\[[\s\S]*\]/.exec(text))) {
@@ -149,6 +169,7 @@ var K = {
 	toMap : _toMap,
 	toArray : _toArray,
 	undef : _undef,
+	extend : _extend,
 	json : _json
 };
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
@@ -257,83 +278,91 @@ function _unbindEvent(el, type, fn) {
 		el.detachEvent('on' + type, fn);
 	}
 }
-var _EVENT_PROPS = 'altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which'.split(',');
-function _event(el, event) {
-	if (!event) {
-		return;
-	}
-	var e = {},
-		doc = el.ownerDocument || el.document || el;
-	_each(_EVENT_PROPS, function(key, val) {
-		e[val] = event[val];
-	});
-	if (!e.target) {
-		e.target = e.srcElement || doc;
-	}
-	if (e.target.nodeType === 3) {
-		e.target = e.target.parentNode;
-	}
-	if (!e.relatedTarget && e.fromElement) {
-		e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
-	}
-	if (e.pageX == null && e.clientX != null) {
-		var d = doc.documentElement, body = doc.body;
-		e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
-		e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
-	}
-	if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
-		e.which = e.charCode || e.keyCode;
-	}
-	if (!e.metaKey && e.ctrlKey) {
-		e.metaKey = e.ctrlKey;
-	}
-	if (!e.which && e.button !== undefined) {
-		e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
-	}
-	switch (e.which) {
-	case 186 :
-		e.which = 59;
-		break;
-	case 187 :
-	case 107 :
-	case 43 :
-		e.which = 61;
-		break;
-	case 189 :
-	case 45 :
-		e.which = 109;
-		break;
-	case 42 :
-		e.which = 106;
-		break;
-	case 47 :
-		e.which = 111;
-		break;
-	case 78 :
-		e.which = 110;
-		break;
-	}
-	if (e.which >= 96 && e.which <= 105) {
-		e.which -= 48;
-	}
-	e.preventDefault = function() {
-		if (event.preventDefault) {
-			event.preventDefault();
+var _EVENT_PROPS = ('altKey,attrChange,attrName,bubbles,button,cancelable,charCode,clientX,clientY,ctrlKey,currentTarget,' +
+	'data,detail,eventPhase,fromElement,handler,keyCode,layerX,layerY,metaKey,newValue,offsetX,offsetY,originalTarget,pageX,' +
+	'pageY,prevValue,relatedNode,relatedTarget,screenX,screenY,shiftKey,srcElement,target,toElement,view,wheelDelta,which').split(',');
+function KEvent(el, event) {
+	this.init(el, event);
+}
+_extend(KEvent, {
+	init : function(el, event) {
+		if (!event) {
+			return;
 		}
-		event.returnValue = false;
-	};
-	e.stopPropagation = function() {
-		if (event.stopPropagation) {
-			event.stopPropagation();
+		var e = this, doc = el.ownerDocument || el.document || el;
+		e.event = event;
+		_each(_EVENT_PROPS, function(key, val) {
+			e[val] = event[val];
+		});
+		if (!e.target) {
+			e.target = e.srcElement || doc;
 		}
-		event.cancelBubble = true;
-	};
-	e.stop = function() {
+		if (e.target.nodeType === 3) {
+			e.target = e.target.parentNode;
+		}
+		if (!e.relatedTarget && e.fromElement) {
+			e.relatedTarget = e.fromElement === e.target ? e.toElement : e.fromElement;
+		}
+		if (e.pageX == null && e.clientX != null) {
+			var d = doc.documentElement, body = doc.body;
+			e.pageX = e.clientX + (d && d.scrollLeft || body && body.scrollLeft || 0) - (d && d.clientLeft || body && body.clientLeft || 0);
+			e.pageY = e.clientY + (d && d.scrollTop  || body && body.scrollTop  || 0) - (d && d.clientTop  || body && body.clientTop  || 0);
+		}
+		if (!e.which && ((e.charCode || e.charCode === 0) ? e.charCode : e.keyCode)) {
+			e.which = e.charCode || e.keyCode;
+		}
+		if (!e.metaKey && e.ctrlKey) {
+			e.metaKey = e.ctrlKey;
+		}
+		if (!e.which && e.button !== undefined) {
+			e.which = (e.button & 1 ? 1 : (e.button & 2 ? 3 : (e.button & 4 ? 2 : 0)));
+		}
+		switch (e.which) {
+		case 186 :
+			e.which = 59;
+			break;
+		case 187 :
+		case 107 :
+		case 43 :
+			e.which = 61;
+			break;
+		case 189 :
+		case 45 :
+			e.which = 109;
+			break;
+		case 42 :
+			e.which = 106;
+			break;
+		case 47 :
+			e.which = 111;
+			break;
+		case 78 :
+			e.which = 110;
+			break;
+		}
+		if (e.which >= 96 && e.which <= 105) {
+			e.which -= 48;
+		}
+	},
+	preventDefault : function() {
+		var ev = this.event;
+		if (ev.preventDefault) {
+			ev.preventDefault();
+		}
+		ev.returnValue = false;
+	},
+	stopPropagation : function() {
+		var ev = this.event;
+		if (ev.stopPropagation) {
+			ev.stopPropagation();
+		}
+		ev.cancelBubble = true;
+	},
+	stop : function() {
 		this.preventDefault();
 		this.stopPropagation();
-	};
-	return e;
-}
+	}
+});
 var _eventExpendo = 'kindeditor_' + _TIME, _eventId = 0, _eventData = {};
 function _getId(el) {
 	return el[_eventExpendo] || null;
@@ -371,9 +400,10 @@ function _bind(el, type, fn) {
 	events = _eventData[id][type];
 	if (events.length === 0) {
 		events[0] = function(e) {
+			var kevent = new KEvent(el, e);
 			_each(events, function(i, event) {
 				if (i > 0 && event) {
-					event.call(el, _event(el, e));
+					event.call(el, kevent);
 				}
 			});
 		};
@@ -1109,18 +1139,21 @@ function _getScrollPos() {
 	return {x : x, y : y};
 }
 function KNode(node) {
-	var self = this;
-	for (var i = 0, len = node.length; i < len; i++) {
-		self[i] = node[i].get ? node[i][0] : node[i];
-	}
-	self.length = node.length;
-	self.doc = _getDoc(self[0]);
-	self.name = _getNodeName(self[0]);
-	self.type = self.length > 0 ? self[0].nodeType : null;
-	self.win = _getWin(self[0]);
-	self._data = {};
+	this.init(node);
 }
-KNode.prototype = {
+_extend(KNode, {
+	init : function(node) {
+		var self = this;
+		for (var i = 0, len = node.length; i < len; i++) {
+			self[i] = node[i].get ? node[i][0] : node[i];
+		}
+		self.length = node.length;
+		self.doc = _getDoc(self[0]);
+		self.name = _getNodeName(self[0]);
+		self.type = self.length > 0 ? self[0].nodeType : null;
+		self.win = _getWin(self[0]);
+		self._data = {};
+	},
 	each : function(fn) {
 		var self = this;
 		for (var i = 0; i < self.length; i++) {
@@ -1204,7 +1237,7 @@ KNode.prototype = {
 	removeClass : function(cls) {
 		this.each(function() {
 			if (_hasClass(this, cls)) {
-				this.className = _trim(this.className.replace(new RegExp('\\s*' + cls + '\\s*'), ''));
+				this.className = _trim(this.className.replace(new RegExp('(^|\\s)' + cls + '(\\s|$)'), ' '));
 			}
 		});
 		return this;
@@ -1494,7 +1527,7 @@ KNode.prototype = {
 		walk(this[0]);
 		return this;
 	}
-};
+});
 _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +
 	'change,select,submit,keydown,keypress,keyup,error,contextmenu').split(','), function(i, type) {
@@ -1540,9 +1573,6 @@ K = function(expr, root) {
 _each(_K, function(key, val) {
 	K[key] = val;
 });
-if (window.K === undefined) {
-	window.K = K;
-}
 window.KindEditor = K;
 var _START_TO_START = 0,
 	_START_TO_END = 1,
@@ -1823,15 +1853,18 @@ function _toRange(rng) {
 	return range;
 }
 function KRange(doc) {
-	var self = this;
-	self.startContainer = doc;
-	self.startOffset = 0;
-	self.endContainer = doc;
-	self.endOffset = 0;
-	self.collapsed = true;
-	self.doc = doc;
+	this.init(doc);
 }
-KRange.prototype = {
+_extend(KRange, {
+	init : function(doc) {
+		var self = this;
+		self.startContainer = doc;
+		self.startOffset = 0;
+		self.endContainer = doc;
+		self.endOffset = 0;
+		self.collapsed = true;
+		self.doc = doc;
+	},
 	commonAncestor : function() {
 		function getParents(node) {
 			var parents = [];
@@ -2207,7 +2240,7 @@ KRange.prototype = {
 		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
 		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
 	}
-};
+});
 function _range(mixed) {
 	if (!mixed.nodeName) {
 		return mixed.get ? mixed : _toRange(mixed);
@@ -2814,7 +2847,7 @@ KCmd.prototype = {
 	insertimage : function(url, title, width, height, border, align) {
 		title = _undef(title, '');
 		border = _undef(border, 0);
-		var html = '<img src="' + url + '" ';
+		var html = '<img src="' + url + '" kesrc="' + url + '" ';
 		if (width) {
 			html += 'width="' + width + '" ';
 		}
@@ -2840,17 +2873,17 @@ KCmd.prototype = {
 			self.select();
 		}
 		if (range.collapsed) {
-			var html = '<a href="' + url + '"';
+			var html = '<a href="' + url + '" kesrc="' + url + '" ';
 			if (type) {
 				html += ' target="' + type + '"';
 			}
 			html += '>' + url + '</a>';
 			self.inserthtml(html);
 		} else {
-			_nativeCommand(doc, 'createlink', '__ke_temp_url__');
+			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
 			a = self.commonNode({ a : '*' });
-			K('a[href="__ke_temp_url__"]', a ? a.parent() : doc).each(function() {
-				K(this).attr('href', url);
+			K('a[href="__kindeditor_temp_url__"]', a ? a.parent() : doc).each(function() {
+				K(this).attr('href', url).attr('kesrc', url);
 				if (type) {
 					K(this).attr('target', type);
 				} else {
@@ -3357,10 +3390,10 @@ K.edit = _edit;
 K.iframeDoc = _iframeDoc;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		K(this).addClass('ke-toolbar-icon-outline-on');
+		K(this).addClass('on');
 	})
 	.mouseout(function(e) {
-		K(this).removeClass('ke-toolbar-icon-outline-on');
+		K(this).removeClass('on');
 	})
 	.click(function(e) {
 		item.click.call(this, e);
@@ -3383,12 +3416,12 @@ function _toolbar(options) {
 	self.addItem = function(item) {
 		var itemNode;
 		if (item.name == '|') {
-			itemNode = K('<span class="ke-inline-block ke-toolbar-separator"></span>');
+			itemNode = K('<span class="ke-inline-block separator"></span>');
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
-			itemNode = K('<span class="ke-inline-block ke-toolbar-icon-outline" title="' + (item.title || '') + '" unselectable="on">' +
-				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
+			itemNode = K('<span class="ke-inline-block outline" title="' + (item.title || '') + '" unselectable="on">' +
+				'<span class="ke-inline-block icon icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
 		itemNode.data('item', item);
@@ -3403,22 +3436,28 @@ function _toolbar(options) {
 		remove.call(self);
 		return self;
 	};
-	self.select = function(name, bool) {
+	self.select = function(name) {
+		if (disableMode && _inArray(name, noDisableItems) < 0) {
+			return self;
+		}
 		var itemNode = itemNodes[name];
 		if (itemNode) {
-			itemNode.addClass('ke-toolbar-icon-outline-selected').unbind('mouseover,mouseout');
+			itemNode.addClass('selected').unbind('mouseover,mouseout');
 		}
 		return self;
 	};
 	self.unselect = function(name) {
+		if (disableMode && _inArray(name, noDisableItems) < 0) {
+			return self;
+		}
 		var itemNode = itemNodes[name];
 		if (itemNode) {
-			itemNode.removeClass('ke-toolbar-icon-outline-selected').removeClass('ke-toolbar-icon-outline-on')
+			itemNode.removeClass('selected').removeClass('on')
 			.mouseover(function(e) {
-				K(this).addClass('ke-toolbar-icon-outline-on');
+				K(this).addClass('on');
 			})
 			.mouseout(function(e) {
-				K(this).removeClass('ke-toolbar-icon-outline-on');
+				K(this).removeClass('on');
 			});
 		}
 		return self;
@@ -3429,7 +3468,7 @@ function _toolbar(options) {
 			_each(itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.addClass('ke-toolbar-icon-outline-disabled');
+					val.removeClass('selected').addClass('disabled');
 					val.opacity(0.5);
 					if (item.name !== '|') {
 						val.unbind();
@@ -3441,7 +3480,7 @@ function _toolbar(options) {
 			_each(itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('ke-toolbar-icon-outline-disabled');
+					val.removeClass('disabled');
 					val.opacity(1);
 					if (item.name !== '|') {
 						_bindToolbarEvent(val, item);
@@ -4190,6 +4229,7 @@ KEditor.prototype = {
 		return this.cmd.state(key);
 	},
 	exec : function(key) {
+		key = key.toLowerCase();
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {

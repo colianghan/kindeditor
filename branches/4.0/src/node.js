@@ -102,21 +102,24 @@ function _getScrollPos() {
 	return {x : x, y : y};
 }
 
+// create KNode class
 function KNode(node) {
-	var self = this;
-	for (var i = 0, len = node.length; i < len; i++) {
-		self[i] = node[i].get ? node[i][0] : node[i];
-	}
-	self.length = node.length;
-	self.doc = _getDoc(self[0]);
-	self.name = _getNodeName(self[0]);
-	self.type = self.length > 0 ? self[0].nodeType : null;
-	self.win = _getWin(self[0]);
-	//private properties
-	self._data = {};
+	this.init(node);
 }
-
-KNode.prototype = {
+_extend(KNode, {
+	init : function(node) {
+		var self = this;
+		for (var i = 0, len = node.length; i < len; i++) {
+			self[i] = node[i].get ? node[i][0] : node[i];
+		}
+		self.length = node.length;
+		self.doc = _getDoc(self[0]);
+		self.name = _getNodeName(self[0]);
+		self.type = self.length > 0 ? self[0].nodeType : null;
+		self.win = _getWin(self[0]);
+		//private properties
+		self._data = {};
+	},
 	each : function(fn) {
 		var self = this;
 		for (var i = 0; i < self.length; i++) {
@@ -490,7 +493,7 @@ KNode.prototype = {
 		walk(this[0]);
 		return this;
 	}
-};
+});
 
 _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 	'mousedown,mouseup,mousemove,mouseover,mouseout,mouseenter,mouseleave,' +

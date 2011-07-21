@@ -3,7 +3,6 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>KindEditor Event Test</title>
-		<link rel="stylesheet" href="../lib/firebug/firebug-lite.css" />
 		<link rel="stylesheet" href="../lib/qunit/qunit.css" />
 		<style>
 			textarea {
@@ -15,9 +14,8 @@
 				border: 1px solid #A0A0A0;
 			}
 		</style>
-		<script src="../lib/firebug/firebug-lite.js"></script>
+		<script src="../lib/firebug-lite/build/firebug-lite.js#startOpened"></script>
 		<script src="../lib/qunit/qunit.js"></script>
-		<script src="../lib/jquery.js"></script>
 		<!-- include src files -->
 		<script src="../src/core.js"></script>
 		<script src="../src/config.js"></script>
@@ -25,10 +23,6 @@
 		<script src="../src/html.js"></script>
 		<script src="../src/selector.js"></script>
 		<script src="../src/node.js"></script>
-		<script>
-			firebug.env.css = '../lib/firebug/firebug-lite.css';
-			firebug.env.height = 160;
-		</script>
 	</head>
 	<body>
 		<h1 id="qunit-header">KindEditor Event Test</h1>

@@ -128,3 +128,56 @@ test('undef', function() {
 	obj.aaa = 1;
 	same(K.undef(obj.aaa, 0), 1);
 });
+
+test('extend', function() {
+	function Parent() {
+		this.init();
+	}
+	K.extend(Parent, {
+		sex : 'sex',
+		type : 'person',
+		init : function() {
+			this.name = 'parent';
+			console.log(this.name + ': constructor');
+		},
+		getSex : function() {
+			return this.name + ': ' + this.sex;
+		},
+		getType : function() {
+			return this.type;
+		},
+		say : function() {
+			return this.name + ': say()';
+		},
+		run : function() {
+			return this.name + ': run()';
+		}
+	});
+	function Child() {
+		this.init();
+	}
+	K.extend(Child, Parent, {
+		init : function() {
+			this.name = 'child';
+			Child.parent.init();
+			console.log(this.name + ': constructor');
+		},
+		run : function() {
+			return this.name + ': run()';
+		},
+		walk : function() {
+			return this.name + ': walk()';
+		}
+	});
+	var child = new Child();
+	console.log(Parent.prototype.constructor.valueOf());
+	console.log(Child.prototype.constructor.valueOf());
+	equals(child.sex, 'sex');
+	equals(child.name, 'child');
+	equals(child.type, 'person');
+	equals(child.getSex(), 'child: sex');
+	equals(child.getType(), 'person');
+	equals(child.say(), 'child: say()');
+	equals(child.run(), 'child: run()');
+	equals(child.walk(), 'child: walk()');
+});
