@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-21)
+* @version 4.0 (2011-07-25)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-21)',
+var _VERSION = '4.0 (2011-07-25)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -839,11 +839,12 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'data-kesrctag="' + escape(srcTag) + '" alt="" />';
+	html += 'data-ke-tag="' + escape(srcTag) + '" alt="" />';
 	return html;
 }
 K.formatUrl = _formatUrl;
 K.formatHtml = _formatHtml;
+K.getAttrList = _getAttrList;
 K.mediaType = _mediaType;
 K.mediaAttrs = _mediaAttrs;
 K.mediaEmbed = _mediaEmbed;
@@ -1998,8 +1999,7 @@ _extend(KRange, {
 		return new KRange(this.doc).setStart(this.startContainer, this.startOffset).setEnd(this.endContainer, this.endOffset);
 	},
 	toString : function() {
-		var rng = this.get(),
-			str = _IE ? rng.text : rng.toString();
+		var rng = this.get(), str = _IE ? rng.text : rng.toString();
 		return str.replace(/\r\n|\n|\r/g, '');
 	},
 	cloneContents : function() {
@@ -2222,6 +2222,9 @@ _extend(KRange, {
 	moveToBookmark : function(bookmark) {
 		var self = this, doc = self.doc,
 			start = K(bookmark.start, doc), end = bookmark.end ? K(bookmark.end, doc) : null;
+		if (!start) {
+			return self;
+		}
 		self.setStartBefore(start[0]);
 		start.remove();
 		if (end) {
@@ -2847,7 +2850,7 @@ _extend(KCmd, {
 	insertimage : function(url, title, width, height, border, align) {
 		title = _undef(title, '');
 		border = _undef(border, 0);
-		var html = '<img src="' + url + '" data-kesrc="' + url + '" ';
+		var html = '<img src="' + url + '" data-ke-src="' + url + '" ';
 		if (width) {
 			html += 'width="' + width + '" ';
 		}
@@ -2873,7 +2876,7 @@ _extend(KCmd, {
 			self.select();
 		}
 		if (range.collapsed) {
-			var html = '<a href="' + url + '" data-kesrc="' + url + '" ';
+			var html = '<a href="' + url + '" data-ke-src="' + url + '" ';
 			if (type) {
 				html += ' target="' + type + '"';
 			}
@@ -2883,7 +2886,7 @@ _extend(KCmd, {
 			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
 			a = self.commonNode({ a : '*' });
 			K('a[href="__kindeditor_temp_url__"]', a ? a.parent() : doc).each(function() {
-				K(this).attr('href', url).attr('data-kesrc', url);
+				K(this).attr('href', url).attr('data-ke-src', url);
 				if (type) {
 					K(this).attr('target', type);
 				} else {
@@ -3237,149 +3240,178 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 function _elementVal(knode, val) {
 	return knode.hasVal() ? knode.val(val) : knode.html(val);
 }
-function _edit(options) {
-	var self = _widget(options),
-		remove = self.remove,
-		width = _addUnit(options.width),
-		height = _addUnit(options.height),
-		srcElement = K(options.srcElement),
-		themesPath = _undef(options.themesPath, ''),
-		bodyClass = options.bodyClass,
-		cssPath = options.cssPath,
-		cssData = options.cssData,
-		isDocumentDomain = location.host !== document.domain,
-		div = self.div.addClass('ke-edit');
-	self.designMode = _undef(options.designMode, true);
-	var srcScript = 'document.open();' +
-		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
-		'document.close();',
-		iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '',
-		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>'),
-		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>');
-	iframe.css('width', '100%');
-	textarea.css('width', '100%');
-	self.width = function(val) {
-		div.css('width', _addUnit(val));
-		return self;
-	};
-	self.height = function(val) {
+function KEdit(options) {
+	this.init(options);
+}
+_extend(KEdit, KWidget, {
+	init : function(options) {
+		var self = this;
+		KEdit.parent.init.call(self, options);
+		self.srcElement = K(options.srcElement);
+		self.div.addClass('ke-edit');
+		self.designMode = _undef(options.designMode, true);
+		self.afterGetHtml = options.afterGetHtml;
+		self.beforeSetHtml = options.beforeSetHtml;
+		var themesPath = _undef(options.themesPath, ''),
+			bodyClass = options.bodyClass,
+			cssPath = options.cssPath,
+			cssData = options.cssData,
+			isDocumentDomain = location.host !== document.domain,
+			srcScript = ('document.open();' +
+				(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
+				'document.close();'),
+			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
+		self.iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
+		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>').css('width', '100%');
+		if (self.width) {
+			self.setWidth(self.width);
+		}
+		if (self.height) {
+			self.setHeight(self.height);
+		}
+		if (self.designMode) {
+			self.textarea.hide();
+		} else {
+			self.iframe.hide();
+		}
+		function ready() {
+			var doc = _iframeDoc(self.iframe);
+			doc.open();
+			if (isDocumentDomain) {
+				doc.domain = document.domain;
+			}
+			doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
+			doc.close();
+			self.win = self.iframe[0].contentWindow;
+			self.doc = doc;
+			self.html(_elementVal(self.srcElement));
+			if (_IE) {
+				doc.body.disabled = true;
+				doc.body.contentEditable = true;
+				doc.body.removeAttribute('disabled');
+			} else {
+				doc.body.contentEditable = true;
+			}
+			self.cmd = _cmd(doc);
+			if (options.afterCreate) {
+				options.afterCreate.call(self);
+			}
+		}
+		self.iframe.bind('load', function() {
+			self.iframe.unbind('load');
+			if (_IE) {
+				ready();
+			} else {
+				setTimeout(ready, 0);
+			}
+		});
+		self.div.append(self.iframe);
+		self.div.append(self.textarea);
+		self.srcElement.hide();
+	},
+	setWidth : function(val) {
+		this.div.css('width', _addUnit(val));
+		return this;
+	},
+	setHeight : function(val) {
+		var self = this;
 		val = _addUnit(val);
-		div.css('height', val);
-		iframe.css('height', val);
+		self.div.css('height', val);
+		self.iframe.css('height', val);
 		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
-		textarea.css('height', val);
+		self.textarea.css('height', val);
 		return self;
-	};
-	if (width) {
-		self.width(width);
-	}
-	if (height) {
-		self.height(height);
-	}
-	if (self.designMode) {
-		textarea.hide();
-	} else {
-		iframe.hide();
-	}
-	self.remove = function() {
-		var doc = self.doc;
+	},
+	remove : function() {
+		var self = this, doc = self.doc;
 		K(doc).unbind();
 		K(doc.body).unbind();
 		K(document).unbind();
-		_elementVal(srcElement, self.html());
-		srcElement.show();
+		_elementVal(self.srcElement, self.html());
+		self.srcElement.show();
 		doc.write('');
 		doc.clear();
-		iframe.remove();
-		textarea.remove();
-		remove.call(self);
+		self.iframe.remove();
+		self.textarea.remove();
+		KEdit.parent.remove.call(self);
 		return self;
-	};
-	self.html = function(val) {
-		var doc = self.doc;
+	},
+	html : function(val) {
+		var self = this, doc = self.doc;
 		if (self.designMode) {
 			var body = doc.body;
 			if (val === undefined) {
-				return body.innerHTML;
+				val = body.innerHTML;
+				val = val.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
+					full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
+					full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
+					return full;
+				});
+				val = val.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+					return start + end;
+				});
+				if (self.afterGetHtml) {
+					val = self.afterGetHtml(val);
+				}
+				return val;
+			}
+			val = val.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
+				if (full.match(/\sdata-ke-src="[^"]+"/i)) {
+					return full;
+				}
+				full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
+				return full;
+			});
+			val = val.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+				return start + 'data-ke-' + end;
+			});
+			if (self.beforeSetHtml) {
+				val = self.beforeSetHtml(val);
 			}
 			body.innerHTML = val;
 			return self;
 		}
 		if (val === undefined) {
-			return textarea.val();
+			return self.textarea.val();
 		}
-		textarea.val(val);
+		self.textarea.val(val);
 		return self;
-	};
-	self.design = function(bool) {
-		var val;
+	},
+	design : function(bool) {
+		var self = this, val;
 		if (bool === undefined ? !self.designMode : bool) {
 			if (!self.designMode) {
 				val = self.html();
 				self.designMode = true;
 				self.html(val);
-				textarea.hide();
-				iframe.show();
+				self.textarea.hide();
+				self.iframe.show();
 			}
 		} else {
 			if (self.designMode) {
 				val = self.html();
 				self.designMode = false;
 				self.html(val);
-				iframe.hide();
-				textarea.show();
+				self.iframe.hide();
+				self.textarea.show();
 			}
 		}
-		self.focus();
-		return self;
-	};
-	self.focus = function() {
+		return self.focus();
+	},
+	focus : function() {
+		var self = this;
 		if (self.designMode) {
-			iframe[0].contentWindow.focus();
+			self.win.focus();
 		} else {
-			textarea[0].focus();
+			self.textarea[0].focus();
 		}
 		return self;
-	};
-	function ready() {
-		var doc = _iframeDoc(iframe);
-		doc.open();
-		if (isDocumentDomain) {
-			doc.domain = document.domain;
-		}
-		doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
-		doc.close();
-		self.win = iframe[0].contentWindow;
-		self.doc = doc;
-		self.html(_elementVal(srcElement));
-		if (_IE) {
-			doc.body.disabled = true;
-			doc.body.contentEditable = true;
-			doc.body.removeAttribute('disabled');
-		} else {
-			doc.body.contentEditable = true;
-		}
-		self.cmd = _cmd(doc);
-		if (options.afterCreate) {
-			options.afterCreate.call(self);
-		}
 	}
-	iframe.bind('load', function() {
-		iframe.unbind('load');
-		if (_IE) {
-			ready();
-		} else {
-			setTimeout(ready, 0);
-		}
-	});
-	div.append(iframe);
-	div.append(textarea);
-	srcElement.hide();
-	self.iframe = iframe;
-	self.textarea = textarea;
-	return self;
+});
+function _edit(options) {
+	return new KEdit(options);
 }
 K.edit = _edit;
 K.iframeDoc = _iframeDoc;
@@ -3730,9 +3762,7 @@ function _dialog(options) {
 		headerDiv.remove();
 		remove.call(self);
 	};
-	self.mask = function() {
-		return mask;
-	};
+	self.mask = mask;
 	return self;
 }
 K.button = _button;
@@ -3922,15 +3952,48 @@ function _bindContextmenuEvent() {
 		}
 	});
 }
+function _removeBookmarkTag(html) {
+	return html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, '');
+}
 function _addBookmarkToStack(stack, bookmark) {
 	if (stack.length === 0) {
 		stack.push(bookmark);
 		return;
 	}
 	var prev = stack[stack.length - 1];
-	if (bookmark.html !== prev.html) {
+	if (_removeBookmarkTag(bookmark.html) !== _removeBookmarkTag(prev.html)) {
 		stack.push(bookmark);
 	}
+}
+function _undoToRedo(fromStack, toStack) {
+	var self = this, edit = self.edit, range, bookmark;
+	if (fromStack.length === 0) {
+		return self;
+	}
+	if (edit.designMode) {
+		range = self.cmd.range;
+		bookmark = range.createBookmark(true);
+		bookmark.html = edit.html();
+	} else {
+		bookmark = {
+			html : edit.html()
+		};
+	}
+	_addBookmarkToStack(toStack, bookmark);
+	var prev = fromStack.pop();
+	if (_removeBookmarkTag(bookmark.html) === _removeBookmarkTag(prev.html) && fromStack.length > 0) {
+		prev = fromStack.pop();
+	}
+	if (edit.designMode) {
+		edit.html(prev.html);
+		if (prev.start) {
+			range.moveToBookmark(prev);
+			self.select();
+		}
+	} else {
+		edit.html(_removeBookmarkTag(prev.html));
+	}
+	return self;
 }
 function KEditor(options) {
 	var self = this;
@@ -3998,14 +4061,14 @@ KEditor.prototype = {
 		if (!self._handlers[key]) {
 			self._handlers[key] = [];
 		}
-		if (fn === undefined) {
-			_each(self._handlers[key], function() {
-				this.call(self);
-			});
+		if (_isFunction(fn)) {
+			self._handlers[key].push(fn);
 			return self;
 		}
-		self._handlers[key].push(fn);
-		return self;
+		_each(self._handlers[key], function() {
+			fn = this.call(self, fn);
+		});
+		return fn;
 	},
 	clickToolbar : function(name, fn) {
 		var self = this, key = 'clickToolbar' + name;
@@ -4038,6 +4101,12 @@ KEditor.prototype = {
 	},
 	beforeHideDialog : function(fn) {
 		return this.handler('beforeHideDialog', fn);
+	},
+	afterGetHtml : function(fn) {
+		return this.handler('afterGetHtml', fn);
+	},
+	beforeSetHtml : function(fn) {
+		return this.handler('beforeSetHtml', fn);
 	},
 	create : function() {
 		var self = this,
@@ -4109,6 +4178,14 @@ KEditor.prototype = {
 			bodyClass : self.bodyClass,
 			cssPath : self.cssPath,
 			cssData : self.cssData,
+			afterGetHtml : function(html) {
+				html = self.afterGetHtml(html);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType);
+			},
+			beforeSetHtml : function(html) {
+				html = self.beforeSetHtml(html);
+				return html;
+			},
 			afterCreate : function() {
 				self.cmd = this.cmd;
 				K(this.doc, document).mousedown(function(e) {
@@ -4141,6 +4218,9 @@ KEditor.prototype = {
 				})
 				.onchange(function(e) {
 					self.updateState();
+				});
+				this.textarea.change(function(e) {
+					self.addBookmark();
 				});
 				self.afterCreate();
 			}
@@ -4227,7 +4307,7 @@ KEditor.prototype = {
 		if (height !== null) {
 			height = _removeUnit(height) - self.toolbar.div.height() - self.statusbar.height();
 			if (height > 0) {
-				self.edit.height(height);
+				self.edit.setHeight(height);
 			}
 		}
 		return self;
@@ -4267,10 +4347,17 @@ KEditor.prototype = {
 		return this;
 	},
 	addBookmark : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		var bookmark = range.createBookmark(true);
-		bookmark.html = body[0].innerHTML;
-		range.moveToBookmark(bookmark);
+		var self = this, edit = self.edit, bookmark;
+		if (edit.designMode) {
+			var range = self.cmd.range;
+			bookmark = range.createBookmark(true);
+			bookmark.html = edit.html();
+			range.moveToBookmark(bookmark);
+		} else {
+			bookmark = {
+				html : edit.html()
+			};
+		}
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
 			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
@@ -4281,33 +4368,10 @@ KEditor.prototype = {
 		return self;
 	},
 	undo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		if (self._undoStack.length === 0) {
-			return self;
-		}
-		var bookmark = range.createBookmark(true);
-		bookmark.html = body[0].innerHTML;
-		_addBookmarkToStack(self._redoStack, bookmark);
-		var prev = self._undoStack.pop();
-		if (bookmark.html === prev.html && self._undoStack.length > 0) {
-			prev = self._undoStack.pop();
-		}
-		body.html(prev.html);
-		range.moveToBookmark(prev);
-		return self.select();
+		return _undoToRedo.call(this, this._undoStack, this._redoStack);
 	},
 	redo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		if (self._redoStack.length === 0) {
-			return self;
-		}
-		var bookmark = range.createBookmark(true);
-		bookmark.html = body[0].innerHTML;
-		_addBookmarkToStack(self._undoStack, bookmark);
-		var next = self._redoStack.pop();
-		body.html(next.html);
-		range.moveToBookmark(next);
-		return self.select();
+		return _undoToRedo.call(this, this._redoStack, this._undoStack);
 	},
 	fullscreen : function(bool) {
 		var self = this;
@@ -4361,7 +4425,7 @@ KEditor.prototype = {
 		if (self.dialogs.length > 0) {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
-			firstDialog.mask().div().css('z-index', parentDialog.z + 1);
+			firstDialog.mask.div.css('z-index', parentDialog.z + 1);
 			options.z = parentDialog.z + 2;
 			options.showMask = false;
 		}
@@ -4378,7 +4442,7 @@ KEditor.prototype = {
 		if (self.dialogs.length > 0) {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
-			firstDialog.mask().div().css('z-index', parentDialog.z - 1);
+			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
 		} else {
 			self.cmd.select();
 		}
@@ -4411,12 +4475,14 @@ K.lang = _lang;
 KindEditor.plugin('core', function(K) {
 	var self = this;
 	self.clickToolbar('source', function() {
-		self.toolbar.disable();
-		self.edit.design();
 		self.designMode = self.edit.designMode;
 		if (self.designMode) {
+			self.toolbar.disable(true);
+			self.edit.design(false);
 			self.toolbar.unselect('source');
 		} else {
+			self.toolbar.disable(false);
+			self.edit.design(true);
 			self.toolbar.select('source');
 		}
 	});
@@ -4431,6 +4497,9 @@ KindEditor.plugin('core', function(K) {
 		if (self.shortcutKeys[name]) {
 			self.afterCreate(function() {
 				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.clickToolbar(name);
+				});
+				K.ctrl(this.edit.textarea[0], self.shortcutKeys[name], function() {
 					self.clickToolbar(name);
 				});
 			});

@@ -459,8 +459,7 @@ _extend(KRange, {
 	},
 	toString : function() {
 		//TODO
-		var rng = this.get(),
-			str = _IE ? rng.text : rng.toString();
+		var rng = this.get(), str = _IE ? rng.text : rng.toString();
 		return str.replace(/\r\n|\n|\r/g, '');
 	},
 	cloneContents : function() {
@@ -710,6 +709,9 @@ _extend(KRange, {
 	moveToBookmark : function(bookmark) {
 		var self = this, doc = self.doc,
 			start = K(bookmark.start, doc), end = bookmark.end ? K(bookmark.end, doc) : null;
+		if (!start) {
+			return self;
+		}
 		self.setStartBefore(start[0]);
 		start.remove();
 		if (end) {

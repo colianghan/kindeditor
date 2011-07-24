@@ -103,15 +103,52 @@ function _bindContextmenuEvent() {
 	});
 }
 
+function _removeBookmarkTag(html) {
+	return html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, '');
+}
+
 function _addBookmarkToStack(stack, bookmark) {
 	if (stack.length === 0) {
 		stack.push(bookmark);
 		return;
 	}
 	var prev = stack[stack.length - 1];
-	if (bookmark.html !== prev.html) {
+	if (_removeBookmarkTag(bookmark.html) !== _removeBookmarkTag(prev.html)) {
 		stack.push(bookmark);
 	}
+}
+
+// undo: _undoToRedo.call(this, undoStack, redoStack);
+// redo: _undoToRedo.call(this, redoStack, undoStack);
+function _undoToRedo(fromStack, toStack) {
+	var self = this, edit = self.edit, range, bookmark;
+	if (fromStack.length === 0) {
+		return self;
+	}
+	if (edit.designMode) {
+		range = self.cmd.range;
+		bookmark = range.createBookmark(true);
+		bookmark.html = edit.html();
+	} else {
+		bookmark = {
+			html : edit.html()
+		};
+	}
+	_addBookmarkToStack(toStack, bookmark);
+	var prev = fromStack.pop();
+	if (_removeBookmarkTag(bookmark.html) === _removeBookmarkTag(prev.html) && fromStack.length > 0) {
+		prev = fromStack.pop();
+	}
+	if (edit.designMode) {
+		edit.html(prev.html);
+		if (prev.start) {
+			range.moveToBookmark(prev);
+			self.select();
+		}
+	} else {
+		edit.html(_removeBookmarkTag(prev.html));
+	}
+	return self;
 }
 
 function KEditor(options) {
@@ -186,14 +223,14 @@ KEditor.prototype = {
 		if (!self._handlers[key]) {
 			self._handlers[key] = [];
 		}
-		if (fn === undefined) {
-			_each(self._handlers[key], function() {
-				this.call(self);
-			});
+		if (_isFunction(fn)) {
+			self._handlers[key].push(fn);
 			return self;
 		}
-		self._handlers[key].push(fn);
-		return self;
+		_each(self._handlers[key], function() {
+			fn = this.call(self, fn);
+		});
+		return fn;
 	},
 	clickToolbar : function(name, fn) {
 		var self = this, key = 'clickToolbar' + name;
@@ -226,6 +263,12 @@ KEditor.prototype = {
 	},
 	beforeHideDialog : function(fn) {
 		return this.handler('beforeHideDialog', fn);
+	},
+	afterGetHtml : function(fn) {
+		return this.handler('afterGetHtml', fn);
+	},
+	beforeSetHtml : function(fn) {
+		return this.handler('beforeSetHtml', fn);
 	},
 	create : function() {
 		var self = this,
@@ -302,6 +345,14 @@ KEditor.prototype = {
 			bodyClass : self.bodyClass,
 			cssPath : self.cssPath,
 			cssData : self.cssData,
+			afterGetHtml : function(html) {
+				html = self.afterGetHtml(html);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType);
+			},
+			beforeSetHtml : function(html) {
+				html = self.beforeSetHtml(html);
+				return html;
+			},
 			afterCreate : function() {
 				self.cmd = this.cmd;
 				// hide menu when click document
@@ -336,6 +387,9 @@ KEditor.prototype = {
 				})
 				.onchange(function(e) {
 					self.updateState();
+				});
+				this.textarea.change(function(e) {
+					self.addBookmark();
 				});
 				self.afterCreate();
 			}
@@ -429,7 +483,7 @@ KEditor.prototype = {
 		if (height !== null) {
 			height = _removeUnit(height) - self.toolbar.div.height() - self.statusbar.height();
 			if (height > 0) {
-				self.edit.height(height);
+				self.edit.setHeight(height);
 			}
 		}
 		return self;
@@ -470,10 +524,17 @@ KEditor.prototype = {
 		return this;
 	},
 	addBookmark : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		var bookmark = range.createBookmark(true);
-		bookmark.html = body[0].innerHTML;
-		range.moveToBookmark(bookmark);
+		var self = this, edit = self.edit, bookmark;
+		if (edit.designMode) {
+			var range = self.cmd.range;
+			bookmark = range.createBookmark(true);
+			bookmark.html = edit.html();
+			range.moveToBookmark(bookmark);
+		} else {
+			bookmark = {
+				html : edit.html()
+			};
+		}
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
 			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
@@ -484,33 +545,10 @@ KEditor.prototype = {
 		return self;
 	},
 	undo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		if (self._undoStack.length === 0) {
-			return self;
-		}
-		var bookmark = range.createBookmark(true);
-		bookmark.html = body[0].innerHTML;
-		_addBookmarkToStack(self._redoStack, bookmark);
-		var prev = self._undoStack.pop();
-		if (bookmark.html === prev.html && self._undoStack.length > 0) {
-			prev = self._undoStack.pop();
-		}
-		body.html(prev.html);
-		range.moveToBookmark(prev);
-		return self.select();
+		return _undoToRedo.call(this, this._undoStack, this._redoStack);
 	},
 	redo : function() {
-		var self = this, doc = self.edit.doc, body = K(doc.body), range = self.cmd.range;
-		if (self._redoStack.length === 0) {
-			return self;
-		}
-		var bookmark = range.createBookmark(true);
-		bookmark.html = body[0].innerHTML;
-		_addBookmarkToStack(self._undoStack, bookmark);
-		var next = self._redoStack.pop();
-		body.html(next.html);
-		range.moveToBookmark(next);
-		return self.select();
+		return _undoToRedo.call(this, this._redoStack, this._undoStack);
 	},
 	fullscreen : function(bool) {
 		var self = this;

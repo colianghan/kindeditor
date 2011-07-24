@@ -171,7 +171,7 @@ KindEditor.plugin('image', function(K) {
 			urlBox.val('http://');
 			var img = getSelectedImg();
 			if (img) {
-				urlBox.val(img.attr('src'));
+				urlBox.val(img.attr('data-ke-src'));
 				widthBox.val(img.width());
 				heightBox.val(img.height());
 				titleBox.val(img.attr('title'));

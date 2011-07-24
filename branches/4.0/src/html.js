@@ -258,7 +258,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 	}
 	return _trim(html);
 }
-
+// 根据URL判断 media type
 function _mediaType(src) {
 	if (/\.(rm|rmvb)(\?|$)/i.test(src)) {
 		return 'audio/x-pn-realaudio-plugin';
@@ -268,7 +268,7 @@ function _mediaType(src) {
 	}
 	return 'video/x-ms-asf-plugin';
 }
-
+// 根据 media type取得className
 function _mediaClass(type) {
 	if (/realaudio/i.test(type)) {
 		return 'ke-rm';
@@ -308,12 +308,13 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'data-kesrctag="' + escape(srcTag) + '" alt="" />';
+	html += 'data-ke-tag="' + escape(srcTag) + '" alt="" />';
 	return html;
 }
 
 K.formatUrl = _formatUrl;
 K.formatHtml = _formatHtml;
+K.getAttrList = _getAttrList;
 K.mediaType = _mediaType;
 K.mediaAttrs = _mediaAttrs;
 K.mediaEmbed = _mediaEmbed;

@@ -73,7 +73,7 @@ KindEditor.plugin('media', function(K) {
 			urlBox.val('http://');
 			var img = getSelectedMedia();
 			if (img) {
-				var attrs = K.mediaAttrs(img.attr('data-kesrctag'));
+				var attrs = K.mediaAttrs(img.attr('data-ke-tag'));
 				urlBox.val(attrs.src);
 				widthBox.val(K.removeUnit(img.css('width')) || attrs.width || 0);
 				heightBox.val(K.removeUnit(img.css('height')) || attrs.height || 0);
@@ -101,4 +101,22 @@ KindEditor.plugin('media', function(K) {
 		});
 	});
 	self.addContextmenu({ title : '-' });
+	// add HTML hooks
+	self.afterGetHtml(function(html) {
+		return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(full) {
+			var attrs = K.mediaAttrs(full);
+			delete attrs['data-ke-src'];
+			return K.mediaEmbed(attrs);
+		});
+	});
+	self.beforeSetHtml(function(html) {
+		return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>(?:<\/embed>)?/ig, function(full) {
+			var attrs = K.getAttrList(full);
+			attrs.src = K.undef(attrs.src, '');
+			attrs.type = K.mediaType(attrs.src);
+			attrs.width = K.undef(attrs.width, 0);
+			attrs.height = K.undef(attrs.height, 0);
+			return K.mediaImg(self.themesPath + 'common/blank.gif', attrs);
+		});
+	});
 });

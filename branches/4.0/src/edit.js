@@ -62,160 +62,191 @@ function _elementVal(knode, val) {
 	return knode.hasVal() ? knode.val(val) : knode.html(val);
 }
 
-function _edit(options) {
-	var self = _widget(options),
-		remove = self.remove,
-		width = _addUnit(options.width),
-		height = _addUnit(options.height),
-		srcElement = K(options.srcElement),
-		themesPath = _undef(options.themesPath, ''),
-		bodyClass = options.bodyClass,
-		cssPath = options.cssPath,
-		cssData = options.cssData,
-		isDocumentDomain = location.host !== document.domain,
-		div = self.div.addClass('ke-edit');
-	self.designMode = _undef(options.designMode, true);
-	var srcScript = 'document.open();' +
-		(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
-		'document.close();',
-		iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '',
-		iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>'),
-		textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>');
-	iframe.css('width', '100%');
-	textarea.css('width', '100%');
-	// set width
-	self.width = function(val) {
-		div.css('width', _addUnit(val));
-		return self;
-	};
-	// set height
-	self.height = function(val) {
+// create KEdit class
+function KEdit(options) {
+	this.init(options);
+}
+_extend(KEdit, KWidget, {
+	init : function(options) {
+		var self = this;
+		KEdit.parent.init.call(self, options);
+
+		self.srcElement = K(options.srcElement);
+		self.div.addClass('ke-edit');
+		self.designMode = _undef(options.designMode, true);
+		self.afterGetHtml = options.afterGetHtml;
+		self.beforeSetHtml = options.beforeSetHtml;
+
+		var themesPath = _undef(options.themesPath, ''),
+			bodyClass = options.bodyClass,
+			cssPath = options.cssPath,
+			cssData = options.cssData,
+			isDocumentDomain = location.host !== document.domain,
+			srcScript = ('document.open();' +
+				(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
+				'document.close();'),
+			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
+
+		self.iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
+		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>').css('width', '100%');
+
+		if (self.width) {
+			self.setWidth(self.width);
+		}
+		if (self.height) {
+			self.setHeight(self.height);
+		}
+		if (self.designMode) {
+			self.textarea.hide();
+		} else {
+			self.iframe.hide();
+		}
+		function ready() {
+			var doc = _iframeDoc(self.iframe);
+			doc.open();
+			if (isDocumentDomain) {
+				doc.domain = document.domain;
+			}
+			doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
+			doc.close();
+			self.win = self.iframe[0].contentWindow;
+			self.doc = doc;
+			self.html(_elementVal(self.srcElement));
+			if (_IE) {
+				doc.body.disabled = true;
+				doc.body.contentEditable = true;
+				doc.body.removeAttribute('disabled');
+			} else {
+				doc.body.contentEditable = true;
+			}
+			self.cmd = _cmd(doc);
+			if (options.afterCreate) {
+				options.afterCreate.call(self);
+			}
+		}
+		self.iframe.bind('load', function() {
+			self.iframe.unbind('load');
+			if (_IE) {
+				ready();
+			} else {
+				setTimeout(ready, 0);
+			}
+		});
+		self.div.append(self.iframe);
+		self.div.append(self.textarea);
+		self.srcElement.hide();
+	},
+	setWidth : function(val) {
+		this.div.css('width', _addUnit(val));
+		return this;
+	},
+	setHeight : function(val) {
+		var self = this;
 		val = _addUnit(val);
-		div.css('height', val);
-		iframe.css('height', val);
+		self.div.css('height', val);
+		self.iframe.css('height', val);
 		// 校正IE6和IE7的textarea高度
 		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
-		textarea.css('height', val);
+		self.textarea.css('height', val);
 		return self;
-	};
-	if (width) {
-		self.width(width);
-	}
-	if (height) {
-		self.height(height);
-	}
-	if (self.designMode) {
-		textarea.hide();
-	} else {
-		iframe.hide();
-	}
-	// remove edit
-	self.remove = function() {
-		var doc = self.doc;
+	},
+	remove : function() {
+		var self = this, doc = self.doc;
 		// remove events
 		K(doc).unbind();
 		K(doc.body).unbind();
 		K(document).unbind();
 		// remove elements
-		_elementVal(srcElement, self.html());
-		srcElement.show();
+		_elementVal(self.srcElement, self.html());
+		self.srcElement.show();
 		doc.write('');
 		doc.clear();
-		iframe.remove();
-		textarea.remove();
-		remove.call(self);
+		self.iframe.remove();
+		self.textarea.remove();
+		KEdit.parent.remove.call(self);
 		return self;
-	};
-	// get or set value
-	self.html = function(val) {
-		var doc = self.doc;
+	},
+	html : function(val) {
+		var self = this, doc = self.doc;
 		// design mode
 		if (self.designMode) {
 			var body = doc.body;
+			// get
 			if (val === undefined) {
-				return body.innerHTML;
+				val = body.innerHTML;
+				val = val.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
+					full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
+					full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
+					return full;
+				});
+				val = val.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+					return start + end;
+				});
+				if (self.afterGetHtml) {
+					val = self.afterGetHtml(val);
+				}
+				return val;
+			}
+			// set
+			val = val.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
+				if (full.match(/\sdata-ke-src="[^"]+"/i)) {
+					return full;
+				}
+				full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
+				return full;
+			});
+			val = val.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+				return start + 'data-ke-' + end;
+			});
+			if (self.beforeSetHtml) {
+				val = self.beforeSetHtml(val);
 			}
 			body.innerHTML = val;
 			return self;
 		}
 		// source mode
 		if (val === undefined) {
-			return textarea.val();
+			return self.textarea.val();
 		}
-		textarea.val(val);
+		self.textarea.val(val);
 		return self;
-	};
-	// toggle design/source mode
-	self.design = function(bool) {
-		var val;
+	},
+	design : function(bool) {
+		var self = this, val;
 		if (bool === undefined ? !self.designMode : bool) {
 			if (!self.designMode) {
 				val = self.html();
 				self.designMode = true;
 				self.html(val);
-				textarea.hide();
-				iframe.show();
+				self.textarea.hide();
+				self.iframe.show();
 			}
 		} else {
 			if (self.designMode) {
 				val = self.html();
 				self.designMode = false;
 				self.html(val);
-				iframe.hide();
-				textarea.show();
+				self.iframe.hide();
+				self.textarea.show();
 			}
 		}
-		self.focus();
-		return self;
-	};
-	self.focus = function() {
+		return self.focus();
+	},
+	focus : function() {
+		var self = this;
 		if (self.designMode) {
-			iframe[0].contentWindow.focus();
+			self.win.focus();
 		} else {
-			textarea[0].focus();
+			self.textarea[0].focus();
 		}
 		return self;
-	};
-	function ready() {
-		var doc = _iframeDoc(iframe);
-		doc.open();
-		if (isDocumentDomain) {
-			doc.domain = document.domain;
-		}
-		doc.write(_getInitHtml(themesPath, bodyClass, cssPath, cssData));
-		doc.close();
-		self.win = iframe[0].contentWindow;
-		self.doc = doc;
-		self.html(_elementVal(srcElement));
-		if (_IE) {
-			doc.body.disabled = true;
-			doc.body.contentEditable = true;
-			doc.body.removeAttribute('disabled');
-		} else {
-			doc.body.contentEditable = true;
-		}
-		self.cmd = _cmd(doc);
-		if (options.afterCreate) {
-			options.afterCreate.call(self);
-		}
 	}
-	// main
-	iframe.bind('load', function() {
-		iframe.unbind('load');
-		if (_IE) {
-			ready();
-		} else {
-			setTimeout(ready, 0);
-		}
-	});
-	div.append(iframe);
-	div.append(textarea);
-	srcElement.hide();
-	self.iframe = iframe;
-	self.textarea = textarea;
-	return self;
+});
+
+function _edit(options) {
+	return new KEdit(options);
 }
 
 K.edit = _edit;

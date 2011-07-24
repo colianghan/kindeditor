@@ -40,7 +40,7 @@ KindEditor.plugin('link', function(K) {
 			if (a) {
 				self.cmd.range.selectNode(a[0]);
 				self.cmd.select();
-				urlBox.val(a.attr('href'));
+				urlBox.val(a.attr('data-ke-src'));
 				typeBox.val(a.attr('target'));
 			}
 			urlBox[0].focus();

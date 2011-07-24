@@ -680,7 +680,7 @@ _extend(KCmd, {
 	insertimage : function(url, title, width, height, border, align) {
 		title = _undef(title, '');
 		border = _undef(border, 0);
-		var html = '<img src="' + url + '" data-kesrc="' + url + '" ';
+		var html = '<img src="' + url + '" data-ke-src="' + url + '" ';
 		if (width) {
 			html += 'width="' + width + '" ';
 		}
@@ -706,7 +706,7 @@ _extend(KCmd, {
 			self.select();
 		}
 		if (range.collapsed) {
-			var html = '<a href="' + url + '" data-kesrc="' + url + '" ';
+			var html = '<a href="' + url + '" data-ke-src="' + url + '" ';
 			if (type) {
 				html += ' target="' + type + '"';
 			}
@@ -716,7 +716,7 @@ _extend(KCmd, {
 			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
 			a = self.commonNode({ a : '*' });
 			K('a[href="__kindeditor_temp_url__"]', a ? a.parent() : doc).each(function() {
-				K(this).attr('href', url).attr('data-kesrc', url);
+				K(this).attr('href', url).attr('data-ke-src', url);
 				if (type) {
 					K(this).attr('target', type);
 				} else {

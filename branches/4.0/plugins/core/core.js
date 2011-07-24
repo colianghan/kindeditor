@@ -3,12 +3,14 @@ KindEditor.plugin('core', function(K) {
 	var self = this;
 	// source
 	self.clickToolbar('source', function() {
-		self.toolbar.disable();
-		self.edit.design();
 		self.designMode = self.edit.designMode;
 		if (self.designMode) {
+			self.toolbar.disable(true);
+			self.edit.design(false);
 			self.toolbar.unselect('source');
 		} else {
+			self.toolbar.disable(false);
+			self.edit.design(true);
 			self.toolbar.select('source');
 		}
 	});
@@ -24,6 +26,9 @@ KindEditor.plugin('core', function(K) {
 		if (self.shortcutKeys[name]) {
 			self.afterCreate(function() {
 				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.clickToolbar(name);
+				});
+				K.ctrl(this.edit.textarea[0], self.shortcutKeys[name], function() {
 					self.clickToolbar(name);
 				});
 			});
