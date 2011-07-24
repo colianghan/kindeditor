@@ -93,8 +93,8 @@ KindEditor.plugin('flash', function(K) {
 	// add HTML hooks
 	self.afterGetHtml(function(html) {
 		return html.replace(/<img[^>]*class="?ke-flash"?[^>]*>/ig, function(full) {
-			var attrs = K.mediaAttrs(full);
-			delete attrs['data-ke-src'];
+			var imgAttrs = K.getAttrList(full),
+				attrs = K.mediaAttrs(imgAttrs['data-ke-tag']);
 			return K.mediaEmbed(attrs);
 		});
 	});

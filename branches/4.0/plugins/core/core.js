@@ -3,16 +3,16 @@ KindEditor.plugin('core', function(K) {
 	var self = this;
 	// source
 	self.clickToolbar('source', function() {
-		self.designMode = self.edit.designMode;
-		if (self.designMode) {
+		if (self.edit.designMode) {
 			self.toolbar.disable(true);
 			self.edit.design(false);
-			self.toolbar.unselect('source');
+			self.toolbar.select('source');
 		} else {
 			self.toolbar.disable(false);
 			self.edit.design(true);
-			self.toolbar.select('source');
+			self.toolbar.unselect('source');
 		}
+		self.designMode = self.edit.designMode;
 	});
 	self.afterCreate(function() {
 		if (this.designMode) {

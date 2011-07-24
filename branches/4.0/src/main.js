@@ -208,7 +208,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_getScript(self.pluginsPath + name + '/' + name + '.js?' + _TIME, function() {
+		_getScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
 			if (_plugins[name]) {
 				_plugins[name].call(self, KindEditor);
 				if (fn) {
@@ -631,6 +631,7 @@ KEditor.prototype = {
 	}
 };
 
+var _editors = [];
 /**
 	@example
 	K.create('textarea');
@@ -650,7 +651,9 @@ function _create(expr, options) {
 		if (!options.height) {
 			options.height = knode.height();
 		}
-		return new KEditor(options).create();
+		var editor = new KEditor(options).create();
+		_editors.push(editor);
+		return editor;
 	}
 }
 
@@ -658,6 +661,21 @@ function _create(expr, options) {
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
+
+// 加载插件
+_ready(function() {
+	setTimeout(function() {
+		_each('emoticons,flash,image,link,media,plainpaste,table,wordpaste'.split(','), function(i, name) {
+			if (!_plugins[name]) {
+				_getScript(_getScriptPath() + 'plugins/' + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+					_each(_editors, function() {
+						_plugins[name].call(this, KindEditor);
+					});
+				});
+			}
+		});
+	}, 1000);
+});
 
 K.create = _create;
 K.plugin = _plugin;

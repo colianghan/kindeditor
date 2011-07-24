@@ -813,7 +813,7 @@ function _mediaClass(type) {
 	return 'ke-media';
 }
 function _mediaAttrs(srcTag) {
-	return _getAttrList(unescape(srcTag));
+	return _getAttrList(_unescape(srcTag));
 }
 function _mediaEmbed(attrs) {
 	var html = '<embed ';
@@ -839,7 +839,7 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'data-ke-tag="' + escape(srcTag) + '" alt="" />';
+	html += 'data-ke-tag="' + _escape(srcTag) + '" alt="" />';
 	return html;
 }
 K.formatUrl = _formatUrl;
@@ -4046,7 +4046,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_getScript(self.pluginsPath + name + '/' + name + '.js?' + _TIME, function() {
+		_getScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
 			if (_plugins[name]) {
 				_plugins[name].call(self, KindEditor);
 				if (fn) {
@@ -4449,6 +4449,7 @@ KEditor.prototype = {
 		return self;
 	}
 };
+var _editors = [];
 function _create(expr, options) {
 	if (!options) {
 		options = {};
@@ -4462,12 +4463,27 @@ function _create(expr, options) {
 		if (!options.height) {
 			options.height = knode.height();
 		}
-		return new KEditor(options).create();
+		var editor = new KEditor(options).create();
+		_editors.push(editor);
+		return editor;
 	}
 }
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
+_ready(function() {
+	setTimeout(function() {
+		_each('emoticons,flash,image,link,media,plainpaste,table,wordpaste'.split(','), function(i, name) {
+			if (!_plugins[name]) {
+				_getScript(_getScriptPath() + 'plugins/' + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+					_each(_editors, function() {
+						_plugins[name].call(this, KindEditor);
+					});
+				});
+			}
+		});
+	}, 1000);
+});
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
@@ -4475,16 +4491,16 @@ K.lang = _lang;
 KindEditor.plugin('core', function(K) {
 	var self = this;
 	self.clickToolbar('source', function() {
-		self.designMode = self.edit.designMode;
-		if (self.designMode) {
+		if (self.edit.designMode) {
 			self.toolbar.disable(true);
 			self.edit.design(false);
-			self.toolbar.unselect('source');
+			self.toolbar.select('source');
 		} else {
 			self.toolbar.disable(false);
 			self.edit.design(true);
-			self.toolbar.select('source');
+			self.toolbar.unselect('source');
 		}
+		self.designMode = self.edit.designMode;
 	});
 	self.afterCreate(function() {
 		if (this.designMode) {
