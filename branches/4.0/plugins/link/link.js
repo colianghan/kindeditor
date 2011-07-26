@@ -1,10 +1,7 @@
 
 KindEditor.plugin('link', function(K) {
 	var self = this, name = 'link';
-	function getSelectedLink() {
-		return self.cmd.commonAncestor('a');
-	}
-	var functions = {
+	self.plugin.link = {
 		edit : function() {
 			var lang = self.lang(name + '.'),
 				html = '<div style="padding:10px 20px;">' +
@@ -36,7 +33,7 @@ KindEditor.plugin('link', function(K) {
 			urlBox.val('http://');
 			typeBox[0].options[0] = new Option(lang.newWindow, '_blank');
 			typeBox[0].options[1] = new Option(lang.selfWindow, '');
-			var a = getSelectedLink();
+			var a = self.plugin.getSelectedLink();
 			if (a) {
 				self.cmd.range.selectNode(a[0]);
 				self.cmd.select();
@@ -50,18 +47,5 @@ KindEditor.plugin('link', function(K) {
 			self.exec('unlink', null);
 		}
 	};
-	self.clickToolbar(name, functions.edit);
-	K.each(('edit,delete').split(','), function(i, val) {
-		self.addContextmenu({
-			title : self.lang(val + 'Link'),
-			click : function() {
-				functions[val]();
-				self.hideMenu();
-			},
-			cond : getSelectedLink,
-			width : 150,
-			iconClass : val == 'edit' ? 'ke-icon-link' : undefined
-		});
-	});
-	self.addContextmenu({ title : '-' });
+	self.clickToolbar(name, self.plugin.link.edit);
 });

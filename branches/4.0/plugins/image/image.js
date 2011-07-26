@@ -6,19 +6,7 @@ KindEditor.plugin('image', function(K) {
 		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
 		imgPath = this.scriptPath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
-	function getSelectedImg() {
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
-			return null;
-		}
-		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
-			return null;
-		}
-		return img;
-	}
-	var functions = {
+	self.plugin.image = {
 		edit : function() {
 			var html = [
 				'<div style="padding:10px 20px;">',
@@ -153,7 +141,7 @@ KindEditor.plugin('image', function(K) {
 			if (allowFileManager) {
 				viewServerBtn.click(function(e) {
 					self.loadPlugin('filemanager', function() {
-						self.filemanagerDialog({
+						self.plugin.filemanagerDialog({
 							viewType : 'VIEW',
 							clickFn : function(url, title) {
 								if (self.dialogs.length > 1) {
@@ -169,7 +157,7 @@ KindEditor.plugin('image', function(K) {
 				urlBox.width(300);
 			}
 			urlBox.val('http://');
-			var img = getSelectedImg();
+			var img = self.plugin.getSelectedImage();
 			if (img) {
 				urlBox.val(img.attr('data-ke-src'));
 				widthBox.val(img.width());
@@ -186,21 +174,8 @@ KindEditor.plugin('image', function(K) {
 			urlBox[0].select();
 		},
 		'delete' : function() {
-			getSelectedImg().remove();
+			self.plugin.getSelectedImage().remove();
 		}
 	};
-	self.clickToolbar(name, functions.edit);
-	K.each(('edit,delete').split(','), function(i, val) {
-		self.addContextmenu({
-			title : self.lang(val + 'Image'),
-			click : function() {
-				functions[val]();
-				self.hideMenu();
-			},
-			cond : getSelectedImg,
-			width : 150,
-			iconClass : val == 'edit' ? 'ke-icon-image' : undefined
-		});
-	});
-	self.addContextmenu({ title : '-' });
+	self.clickToolbar(name, self.plugin.image.edit);
 });

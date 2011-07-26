@@ -1,23 +1,7 @@
 
 KindEditor.plugin('media', function(K) {
-	var self = this, name = 'media',
-		lang = self.lang(name + '.');
-	function getSelectedMedia() {
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
-			return null;
-		}
-		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
-			return null;
-		}
-		if (img[0].className == 'ke-flash') {
-			return null;
-		}
-		return img;
-	}
-	var functions = {
+	var self = this, name = 'media', lang = self.lang(name + '.');
+	self.plugin.media = {
 		edit : function() {
 			var html = [
 				'<div style="padding:10px 20px;">',
@@ -71,7 +55,7 @@ KindEditor.plugin('media', function(K) {
 			heightBox = K('[name="height"]', div),
 			autostartBox = K('[name="autostart"]', div);
 			urlBox.val('http://');
-			var img = getSelectedMedia();
+			var img = self.plugin.getSelectedMedia();
 			if (img) {
 				var attrs = K.mediaAttrs(img.attr('data-ke-tag'));
 				urlBox.val(attrs.src);
@@ -83,40 +67,8 @@ KindEditor.plugin('media', function(K) {
 			urlBox[0].select();
 		},
 		'delete' : function() {
-			getSelectedMedia().remove();
+			self.plugin.getSelectedMedia().remove();
 		}
 	};
-	self.clickToolbar(name, functions.edit);
-	// add contextmenu
-	K.each(('edit,delete').split(','), function(i, val) {
-		self.addContextmenu({
-			title : self.lang(val + 'Media'),
-			click : function() {
-				functions[val]();
-				self.hideMenu();
-			},
-			cond : getSelectedMedia,
-			width : 150,
-			iconClass : val == 'edit' ? 'ke-icon-media' : undefined
-		});
-	});
-	self.addContextmenu({ title : '-' });
-	// add HTML hooks
-	self.afterGetHtml(function(html) {
-		return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(full) {
-			var imgAttrs = K.getAttrList(full),
-				attrs = K.mediaAttrs(imgAttrs['data-ke-tag']);
-			return K.mediaEmbed(attrs);
-		});
-	});
-	self.beforeSetHtml(function(html) {
-		return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>(?:<\/embed>)?/ig, function(full) {
-			var attrs = K.getAttrList(full);
-			attrs.src = K.undef(attrs.src, '');
-			attrs.type = K.mediaType(attrs.src);
-			attrs.width = K.undef(attrs.width, 0);
-			attrs.height = K.undef(attrs.height, 0);
-			return K.mediaImg(self.themesPath + 'common/blank.gif', attrs);
-		});
-	});
+	self.clickToolbar(name, self.plugin.media.edit);
 });

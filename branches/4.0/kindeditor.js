@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-25)
+* @version 4.0 (2011-07-26)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-25)',
+var _VERSION = '4.0 (2011-07-26)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -4025,6 +4025,7 @@ function KEditor(options) {
 	setOption('width', _addUnit(self.width));
 	setOption('height', _addUnit(self.height));
 	self.srcElement = se;
+	self.plugin = {};
 	self._handlers = {};
 	self._contextmenus = [];
 	self._undoStack = [];
@@ -4449,7 +4450,6 @@ KEditor.prototype = {
 		return self;
 	}
 };
-var _editors = [];
 function _create(expr, options) {
 	if (!options) {
 		options = {};
@@ -4463,27 +4463,12 @@ function _create(expr, options) {
 		if (!options.height) {
 			options.height = knode.height();
 		}
-		var editor = new KEditor(options).create();
-		_editors.push(editor);
-		return editor;
+		return new KEditor(options).create();
 	}
 }
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
-_ready(function() {
-	setTimeout(function() {
-		_each('emoticons,flash,image,link,media,plainpaste,table,wordpaste'.split(','), function(i, name) {
-			if (!_plugins[name]) {
-				_getScript(_getScriptPath() + 'plugins/' + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
-					_each(_editors, function() {
-						_plugins[name].call(this, KindEditor);
-					});
-				});
-			}
-		});
-	}, 1000);
-});
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
@@ -4634,6 +4619,108 @@ KindEditor.plugin('core', function(K) {
 			body : html
 		});
 	});
+	self.plugin.getSelectedLink = function() {
+		return self.cmd.commonAncestor('a');
+	};
+	self.plugin.getSelectedImage = function() {
+		var range = self.edit.cmd.range,
+			sc = range.startContainer, so = range.startOffset;
+		if (!K.WEBKIT && !range.isControl()) {
+			return null;
+		}
+		var img = K(sc.childNodes[so]);
+		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
+			return null;
+		}
+		return img;
+	};
+	self.plugin.getSelectedFlash = function() {
+		var range = self.edit.cmd.range,
+			sc = range.startContainer, so = range.startOffset;
+		if (!K.WEBKIT && !range.isControl()) {
+			return null;
+		}
+		var img = K(sc.childNodes[so]);
+		if (img.name !== 'img' || img[0].className !== 'ke-flash') {
+			return null;
+		}
+		return img;
+	};
+	self.plugin.getSelectedMedia = function() {
+		var range = self.edit.cmd.range,
+			sc = range.startContainer, so = range.startOffset;
+		if (!K.WEBKIT && !range.isControl()) {
+			return null;
+		}
+		var img = K(sc.childNodes[so]);
+		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
+			return null;
+		}
+		if (img[0].className == 'ke-flash') {
+			return null;
+		}
+		return img;
+	};
+	K.each('link,image,flash,media'.split(','), function(i, name) {
+		var uName = name.charAt(0).toUpperCase() + name.substr(1);
+		K.each('edit,delete'.split(','), function(j, val) {
+			self.addContextmenu({
+				title : self.lang(val + uName),
+				click : function() {
+					self.loadPlugin(name, function() {
+						self.plugin[name][val]();
+						self.hideMenu();
+					});
+				},
+				cond : self.plugin['getSelected' + uName],
+				width : 150,
+				iconClass : val == 'edit' ? 'ke-icon-' + name : undefined
+			});
+		});
+		self.addContextmenu({ title : '-' });
+	});
+	self.afterGetHtml(function(html) {
+		return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(full) {
+			var imgAttrs = K.getAttrList(full),
+				attrs = K.mediaAttrs(imgAttrs['data-ke-tag']);
+			return K.mediaEmbed(attrs);
+		});
+	});
+	self.beforeSetHtml(function(html) {
+		return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>(?:<\/embed>)?/ig, function(full) {
+			var attrs = K.getAttrList(full);
+			attrs.src = K.undef(attrs.src, '');
+			attrs.width = K.undef(attrs.width, 0);
+			attrs.height = K.undef(attrs.height, 0);
+			return K.mediaImg(self.themesPath + 'common/blank.gif', attrs);
+		});
+	});
+	self.plugin.getSelectedTable = function() {
+		return self.cmd.commonAncestor('table');
+	};
+	self.plugin.getSelectedRow = function() {
+		return self.cmd.commonAncestor('tr');
+	};
+	self.plugin.getSelectedCell = function() {
+		return self.cmd.commonAncestor('td');
+	};
+	K.each(('prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
+	'rowdelete,insert,delete').split(','), function(i, val) {
+		var cond = K.inArray(val, ['prop', 'delete']) < 0 ? self.plugin.getSelectedCell : self.plugin.getSelectedTable;
+		self.addContextmenu({
+			title : self.lang('table' + val),
+			click : function() {
+				self.loadPlugin('table', function() {
+					self.plugin.table[val]();
+					self.hideMenu();
+				});
+			},
+			cond : cond,
+			width : 170,
+			iconClass : 'ke-icon-table' + val
+		});
+	});
+	self.addContextmenu({ title : '-' });
 	K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 		'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 		'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {

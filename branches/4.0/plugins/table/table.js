@@ -1,17 +1,7 @@
 
 KindEditor.plugin('table', function(K) {
-	var self = this, name = 'table',
-		lang = self.lang(name + '.');
-	function getSelectedTable() {
-		return self.cmd.commonAncestor('table');
-	}
-	function getSelectedRow() {
-		return self.cmd.commonAncestor('tr');
-	}
-	function getSelectedCell() {
-		return self.cmd.commonAncestor('td');
-	}
-	var functions = {
+	var self = this, name = 'table', lang = self.lang(name + '.');
+	self.plugin.table = {
 		//insert or modify table
 		prop : function(isInsert) {
 			var html = [
@@ -240,7 +230,7 @@ KindEditor.plugin('table', function(K) {
 				return;
 			}
 			//get selected table node
-			table = getSelectedTable();
+			table = self.plugin.getSelectedTable();
 			if (table) {
 				rowsBox.val(table[0].rows.length);
 				colsBox.val(table[0].rows.length > 0 ? table[0].rows[0].cells.length : 0);
@@ -273,10 +263,10 @@ KindEditor.plugin('table', function(K) {
 			this.prop(true);
 		},
 		'delete' : function() {
-			getSelectedTable().remove();
+			self.plugin.getSelectedTable().remove();
 		},
 		colinsert : function(offset) {
-			var table = getSelectedTable()[0], cell = getSelectedCell()[0],
+			var table = self.plugin.getSelectedTable()[0], cell = self.plugin.getSelectedCell()[0],
 				index = cell.cellIndex + offset;
 			for (var i = 0, len = table.rows.length; i < len; i++) {
 				var newCell = table.rows[i].insertCell(index);
@@ -290,7 +280,7 @@ KindEditor.plugin('table', function(K) {
 			this.colinsert(1);
 		},
 		rowinsert : function(offset) {
-			var table = getSelectedTable()[0], row = getSelectedRow()[0],
+			var table = self.plugin.getSelectedTable()[0], row = self.plugin.getSelectedRow()[0],
 				newRow = table.insertRow(row.rowIndex + offset);
 			for (var i = 0, len = row.cells.length; i < len; i++) {
 				var cell = newRow.insertCell(i);
@@ -304,30 +294,15 @@ KindEditor.plugin('table', function(K) {
 			this.rowinsert(1);
 		},
 		coldelete : function() {
-			var table = getSelectedTable()[0], cell = getSelectedCell()[0], index = cell.cellIndex;
+			var table = self.plugin.getSelectedTable()[0], cell = self.plugin.getSelectedCell()[0], index = cell.cellIndex;
 			for (var i = 0, len = table.rows.length; i < len; i++) {
 				table.rows[i].deleteCell(index);
 			}
 		},
 		rowdelete : function() {
-			var table = getSelectedTable()[0], row = getSelectedRow()[0];
+			var table = self.plugin.getSelectedTable()[0], row = self.plugin.getSelectedRow()[0];
 			table.deleteRow(row.rowIndex);
 		}
 	};
-	self.clickToolbar(name, functions.prop);
-	K.each(('prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
-	'rowdelete,insert,delete').split(','), function(i, val) {
-		var cond = K.inArray(val, ['prop', 'delete']) < 0 ? getSelectedCell : getSelectedTable;
-		self.addContextmenu({
-			title : self.lang('table' + val),
-			click : function() {
-				functions[val]();
-				self.hideMenu();
-			},
-			cond : cond,
-			width : 170,
-			iconClass : 'ke-icon-table' + val
-		});
-	});
-	self.addContextmenu({ title : '-' });
+	self.clickToolbar(name, self.plugin.table.prop);
 });

@@ -14,7 +14,7 @@ KindEditor.plugin('filemanager', function(K) {
 			el.attr('title', makeFileTitle(data.filename, data.filesize, data.datetime));
 		}
 	}
-	self.filemanagerDialog = function(options) {
+	self.plugin.filemanagerDialog = function(options) {
 		var width = K.undef(options.width, 520),
 			height = K.undef(options.height, 510),
 			viewType = K.undef(options.viewType, 'VIEW').toUpperCase(), // "LIST" or "VIEW"

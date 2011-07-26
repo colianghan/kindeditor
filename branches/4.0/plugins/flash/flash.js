@@ -1,20 +1,7 @@
 
 KindEditor.plugin('flash', function(K) {
-	var self = this, name = 'flash',
-		lang = self.lang(name + '.');
-	function getSelectedFlash() {
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
-			return null;
-		}
-		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || img[0].className !== 'ke-flash') {
-			return null;
-		}
-		return img;
-	}
-	var functions = {
+	var self = this, name = 'flash', lang = self.lang(name + '.');
+	self.plugin.flash = {
 		edit : function() {
 			var html = [
 				'<div style="padding:10px 20px;">',
@@ -61,7 +48,7 @@ KindEditor.plugin('flash', function(K) {
 			widthBox = K('[name="width"]', div),
 			heightBox = K('[name="height"]', div);
 			urlBox.val('http://');
-			var img = getSelectedFlash();
+			var img = self.plugin.getSelectedFlash();
 			if (img) {
 				var attrs = K.mediaAttrs(img.attr('data-ke-tag'));
 				urlBox.val(attrs.src);
@@ -72,40 +59,8 @@ KindEditor.plugin('flash', function(K) {
 			urlBox[0].select();
 		},
 		'delete' : function() {
-			getSelectedFlash().remove();
+			self.plugin.getSelectedFlash().remove();
 		}
 	};
-	self.clickToolbar(name, functions.edit);
-	// add contextmenu
-	K.each(('edit,delete').split(','), function(i, val) {
-		self.addContextmenu({
-			title : self.lang(val + 'Flash'),
-			click : function() {
-				functions[val]();
-				self.hideMenu();
-			},
-			cond : getSelectedFlash,
-			width : 150,
-			iconClass : val == 'edit' ? 'ke-icon-flash' : undefined
-		});
-	});
-	self.addContextmenu({ title : '-' });
-	// add HTML hooks
-	self.afterGetHtml(function(html) {
-		return html.replace(/<img[^>]*class="?ke-flash"?[^>]*>/ig, function(full) {
-			var imgAttrs = K.getAttrList(full),
-				attrs = K.mediaAttrs(imgAttrs['data-ke-tag']);
-			return K.mediaEmbed(attrs);
-		});
-	});
-	self.beforeSetHtml(function(html) {
-		return html.replace(/<embed[^>]*type="application\/x-shockwave-flash"[^>]*>(?:<\/embed>)?/ig, function(full) {
-			var attrs = K.getAttrList(full);
-			attrs.src = K.undef(attrs.src, '');
-			attrs.type = 'application/x-shockwave-flash';
-			attrs.width = K.undef(attrs.width, 0);
-			attrs.height = K.undef(attrs.height, 0);
-			return K.mediaImg(self.themesPath + 'common/blank.gif', attrs);
-		});
-	});
+	self.clickToolbar(name, self.plugin.flash.edit);
 });
