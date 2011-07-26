@@ -8,13 +8,13 @@ KindEditor.plugin('table', function(K) {
 				'<div style="padding:10px 20px;">',
 				//rows, cols
 				'<div class="ke-dialog-row">',
-				'<label for="keRows" style="width:100px;">' + lang.cells + '</label>',
+				'<label for="keRows" style="width:90px;">' + lang.cells + '</label>',
 				lang.rows + ' <input type="text" id="keRows" class="ke-input-text ke-input-number" name="rows" value="" maxlength="4" /> &nbsp; ',
 				lang.cols + ' <input type="text" class="ke-input-text ke-input-number" name="cols" value="" maxlength="4" />',
 				'</div>',
 				//width, height
 				'<div class="ke-dialog-row">',
-				'<label for="keWidth" style="width:100px;">' + lang.size + '</label>',
+				'<label for="keWidth" style="width:90px;">' + lang.size + '</label>',
 				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> &nbsp; ',
 				'<select name="widthType">',
 				'<option value="%">' + lang.percent + '</option>',
@@ -28,13 +28,13 @@ KindEditor.plugin('table', function(K) {
 				'</div>',
 				//space, padding
 				'<div class="ke-dialog-row">',
-				'<label for="kePadding" style="width:100px;">' + lang.space + '</label>',
+				'<label for="kePadding" style="width:90px;">' + lang.space + '</label>',
 				lang.padding + ' <input type="text" id="kePadding" class="ke-input-text ke-input-number" name="padding" value="" maxlength="4" /> &nbsp; ',
 				lang.spacing + ' <input type="text" class="ke-input-text ke-input-number" name="spacing" value="" maxlength="4" />',
 				'</div>',
 				//align
 				'<div class="ke-dialog-row">',
-				'<label for="keAlign" style="width:100px;">' + lang.align + '</label>',
+				'<label for="keAlign" style="width:90px;">' + lang.align + '</label>',
 				'<select id="keAlign" name="align">',
 				'<option value="">' + lang.alignDefault + '</option>',
 				'<option value="left">' + lang.alignLeft + '</option>',
@@ -44,13 +44,13 @@ KindEditor.plugin('table', function(K) {
 				'</div>',
 				//border
 				'<div class="ke-dialog-row">',
-				'<label for="keBorder" style="width:100px;">' + lang.border + '</label>',
+				'<label for="keBorder" style="width:90px;">' + lang.border + '</label>',
 				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-text ke-input-number" name="border" value="" maxlength="4" /> &nbsp; ',
 				lang.borderColor + ' <span class="ke-inline-block ke-input-color"></span>',
 				'</div>',
 				//background color
 				'<div class="ke-dialog-row">',
-				'<label for="keBgColor" style="width:100px;">' + lang.backgroundColor + '</label>',
+				'<label for="keBgColor" style="width:90px;">' + lang.backgroundColor + '</label>',
 				'<span class="ke-inline-block ke-input-color"></span>',
 				'</div>',
 				'</div>'
@@ -253,11 +253,175 @@ KindEditor.plugin('table', function(K) {
 				spacingBox.val(table[0].cellSpacing || '');
 				alignBox.val(table[0].align || '');
 				borderBox.val(table[0].border === undefined ? '' : table[0].border);
-				setColor(K(colorBox[0]), K.toHex(table.attr('borderColor')) || '');
+				setColor(K(colorBox[0]), K.toHex(table.attr('borderColor') || ''));
 				setColor(K(colorBox[1]), K.toHex(table[0].style.backgroundColor || table[0].bgColor || ''));
 				widthBox[0].focus();
 				widthBox[0].select();
 			}
+		},
+		//modify cell
+		cellprop : function() {
+			var html = [
+				'<div style="padding:10px 20px;">',
+				//width, height
+				'<div class="ke-dialog-row">',
+				'<label for="keWidth" style="width:90px;">' + lang.size + '</label>',
+				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> &nbsp; ',
+				'<select name="widthType">',
+				'<option value="%">' + lang.percent + '</option>',
+				'<option value="px">' + lang.px + '</option>',
+				'</select> &nbsp; ',
+				lang.height + ' <input type="text" class="ke-input-text ke-input-number" name="height" value="" maxlength="4" /> &nbsp; ',
+				'<select name="heightType">',
+				'<option value="%">' + lang.percent + '</option>',
+				'<option value="px">' + lang.px + '</option>',
+				'</select>',
+				'</div>',
+				//align
+				'<div class="ke-dialog-row">',
+				'<label for="keAlign" style="width:90px;">' + lang.align + '</label>',
+				lang.textAlign + ' <select id="keAlign" name="textAlign">',
+				'<option value="">' + lang.alignDefault + '</option>',
+				'<option value="left">' + lang.alignLeft + '</option>',
+				'<option value="center">' + lang.alignCenter + '</option>',
+				'<option value="right">' + lang.alignRight + '</option>',
+				'</select> ',
+				lang.verticalAlign + ' <select name="verticalAlign">',
+				'<option value="">' + lang.alignDefault + '</option>',
+				'<option value="top">' + lang.alignTop + '</option>',
+				'<option value="middle">' + lang.alignMiddle + '</option>',
+				'<option value="bottom">' + lang.alignBottom + '</option>',
+				'<option value="baseline">' + lang.alignBaseline + '</option>',
+				'</select>',
+				'</div>',
+				//border
+				'<div class="ke-dialog-row">',
+				'<label for="keBorder" style="width:90px;">' + lang.border + '</label>',
+				lang.borderWidth + ' <input type="text" id="keBorder" class="ke-input-text ke-input-number" name="border" value="" maxlength="4" /> &nbsp; ',
+				lang.borderColor + ' <span class="ke-inline-block ke-input-color"></span>',
+				'</div>',
+				//background color
+				'<div class="ke-dialog-row">',
+				'<label for="keBgColor" style="width:90px;">' + lang.backgroundColor + '</label>',
+				'<span class="ke-inline-block ke-input-color"></span>',
+				'</div>',
+				'</div>'
+			].join('');
+			var picker, currentElement;
+			function removePicker() {
+				if (picker) {
+					picker.remove();
+					picker = null;
+					currentElement = null;
+				}
+			}
+			var dialog = self.createDialog({
+				name : name,
+				width : 500,
+				height : 220,
+				title : self.lang('tablecell'),
+				body : html,
+				beforeDrag : removePicker,
+				yesBtn : {
+					name : self.lang('yes'),
+					click : function(e) {
+						var width = widthBox.val(),
+							height = heightBox.val(),
+							widthType = widthTypeBox.val(),
+							heightType = heightTypeBox.val(),
+							padding = paddingBox.val(),
+							spacing = spacingBox.val(),
+							textAlign = textAlignBox.val(),
+							verticalAlign = verticalAlignBox.val(),
+							border = borderBox.val(),
+							borderColor = K(colorBox[0]).html() || '',
+							bgColor = K(colorBox[1]).html() || '';
+						cell.css({
+							width : width !== '' ? (width + widthType) : '',
+							height : height !== '' ? (height + heightType) : '',
+							'background-color' : bgColor,
+							'text-align' : textAlign,
+							'vertical-align' : verticalAlign,
+							'border-width' : border,
+							'border-style' : border !== '' ? 'solid' : '',
+							'border-color' : borderColor
+						});
+						self.hideDialog().focus();
+					}
+				}
+			}),
+			div = dialog.div,
+			widthBox = K('[name="width"]', div).val(100),
+			heightBox = K('[name="height"]', div),
+			widthTypeBox = K('[name="widthType"]', div),
+			heightTypeBox = K('[name="heightType"]', div),
+			paddingBox = K('[name="padding"]', div).val(2),
+			spacingBox = K('[name="spacing"]', div).val(0),
+			textAlignBox = K('[name="textAlign"]', div),
+			verticalAlignBox = K('[name="verticalAlign"]', div),
+			borderBox = K('[name="border"]', div).val(1),
+			colorBox = K('.ke-input-color', div);
+			function setColor(box, color) {
+				color = color.toUpperCase();
+				box.css('background-color', color);
+				box.css('color', color === '#000000' ? '#FFFFFF' : '#000000');
+				box.html(color);
+			}
+			setColor(K(colorBox[0]), '#000000');
+			setColor(K(colorBox[1]), '');
+			function clickHandler(e) {
+				removePicker();
+				if (!picker || this !== currentElement) {
+					var box = K(this),
+						pos = box.pos();
+					picker = K.colorpicker({
+						x : pos.x,
+						y : pos.y + box.height(),
+						z : 811214,
+						selectedColor : K(this).html(),
+						noColor : self.lang('noColor'),
+						click : function(color) {
+							setColor(box, color);
+							removePicker();
+						}
+					});
+					currentElement = this;
+				}
+			}
+			colorBox.click(clickHandler);
+			self.beforeHideDialog(function() {
+				removePicker();
+				colorBox.unbind();
+			});
+			// foucs and select
+			widthBox[0].focus();
+			widthBox[0].select();
+			//get selected cell
+			var cell = self.plugin.getSelectedCell();
+			var match,
+				cellWidth = cell[0].style.width || cell[0].width || '',
+				cellHeight = cell[0].style.height || cell[0].height || '';
+			if ((match = /^(\d+)((?:px|%)*)$/.exec(cellWidth))) {
+				widthBox.val(match[1]);
+				widthTypeBox.val(match[2]);
+			} else {
+				widthBox.val('');
+			}
+			if ((match = /^(\d+)((?:px|%)*)$/.exec(cellHeight))) {
+				heightBox.val(match[1]);
+				heightTypeBox.val(match[2]);
+			}
+			textAlignBox.val(cell[0].style.textAlign || '');
+			verticalAlignBox.val(cell[0].style.verticalAlign || '');
+			var border = cell[0].style.borderWidth || '';
+			if (border) {
+				border = parseInt(border);
+			}
+			borderBox.val(border);
+			setColor(K(colorBox[0]), K.toHex(cell[0].style.borderColor || ''));
+			setColor(K(colorBox[1]), K.toHex(cell[0].style.backgroundColor || ''));
+			widthBox[0].focus();
+			widthBox[0].select();
 		},
 		insert : function() {
 			this.prop(true);

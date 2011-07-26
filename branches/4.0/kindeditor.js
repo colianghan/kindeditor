@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-26)
+* @version 4.0 (2011-07-27)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-26)',
+var _VERSION = '4.0 (2011-07-27)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -4704,7 +4704,7 @@ KindEditor.plugin('core', function(K) {
 	self.plugin.getSelectedCell = function() {
 		return self.cmd.commonAncestor('td');
 	};
-	K.each(('prop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
+	K.each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
 	'rowdelete,insert,delete').split(','), function(i, val) {
 		var cond = K.inArray(val, ['prop', 'delete']) < 0 ? self.plugin.getSelectedCell : self.plugin.getSelectedTable;
 		self.addContextmenu({
@@ -4771,6 +4771,7 @@ KindEditor.lang({
 	flash : 'Flash',
 	media : '视音频',
 	table : '表格',
+	tablecell : '单元格',
 	hr : '插入横线',
 	emoticons : '插入表情',
 	link : '超级链接',
@@ -4791,6 +4792,7 @@ KindEditor.lang({
 	editLink : '超级链接属性',
 	deleteLink : '取消超级链接',
 	tableprop : '表格属性',
+	tablecellprop : '单元格属性',
 	tableinsert : '插入表格',
 	tabledelete : '删除表格',
 	tablecolinsertleft : '左侧插入列',
@@ -4862,10 +4864,16 @@ KindEditor.lang({
 	'table.padding' : '边距',
 	'table.spacing' : '间距',
 	'table.align' : '对齐方式',
+	'table.textAlign' : '水平对齐',
+	'table.verticalAlign' : '垂直对齐',
 	'table.alignDefault' : '默认',
 	'table.alignLeft' : '左对齐',
 	'table.alignCenter' : '居中',
 	'table.alignRight' : '右对齐',
+	'table.alignTop' : '顶部',
+	'table.alignMiddle' : '中部',
+	'table.alignBottom' : '底部',
+	'table.alignBaseline' : '基线',
 	'table.border' : '边框',
 	'table.borderWidth' : '边框',
 	'table.borderColor' : '颜色',
