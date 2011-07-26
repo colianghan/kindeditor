@@ -190,10 +190,6 @@ function KEditor(options) {
 	self._contextmenus = [];
 	self._undoStack = [];
 	self._redoStack = [];
-	// initialize plugins
-	_each(_plugins, function(name, fn) {
-		fn.call(self, KindEditor);
-	});
 }
 
 KEditor.prototype = {
@@ -211,10 +207,7 @@ KEditor.prototype = {
 		}
 		_getScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
 			if (_plugins[name]) {
-				_plugins[name].call(self, KindEditor);
-				if (fn) {
-					fn.call(self);
-				}
+				self.loadPlugin(name, fn);
 			}
 		});
 		return self;
@@ -651,7 +644,22 @@ function _create(expr, options) {
 		if (!options.height) {
 			options.height = knode.height();
 		}
-		return new KEditor(options).create();
+		var editor = new KEditor(options);
+		// create editor
+		if (_language[editor.langType]) {
+			_each(_plugins, function(name, fn) {
+				fn.call(editor, KindEditor);
+			});
+			return editor.create();
+		}
+		// create editor after load lang file
+		_getScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+			_each(_plugins, function(name, fn) {
+				fn.call(editor, KindEditor);
+			});
+			editor.create();
+		});
+		return editor;
 	}
 }
 

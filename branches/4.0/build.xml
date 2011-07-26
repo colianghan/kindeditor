@@ -40,7 +40,6 @@
 			<fileset file="${src}/main.js"/>
 			<fileset file="${src}/footer.js"/>
 			<fileset file="${plugins}/core/core.js"/>
-			<fileset file="${lang}/zh_CN.js"/>
 		</concat>
 		<replaceregexp file="${filename}.js"
 			match="\$\{VERSION\}"
