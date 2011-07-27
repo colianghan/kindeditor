@@ -341,7 +341,7 @@ KEditor.prototype = {
 			cssData : self.cssData,
 			afterGetHtml : function(html) {
 				html = self.afterGetHtml(html);
-				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode);
 			},
 			beforeSetHtml : function(html) {
 				html = self.beforeSetHtml(html);

@@ -46,11 +46,11 @@ test("formatHtml", function() {
 	equals(K.formatHtml(K.query("#test11").innerHTML, {span:["style"]}).toLowerCase(), '<span style="color:#ff0000;">test</span>');
 	equals(K.formatHtml(K.query("#test11").innerHTML, {span:[]}), '<span>test</span>');
 
-	equals(K.formatHtml(K.query("#test12").innerHTML).toLowerCase(), '123<div style="color:#ff0000;background-color:#00ff00;font-size:18px;font-weight:bold;" class="spanclass">test</div>\n123');
+	equals(K.formatHtml(K.query("#test12").innerHTML).toLowerCase(), '123<div style="color:#ff0000;background-color:#00ff00;font-size:18px;font-weight:bold;" class="spanclass">test</div>123');
 	equals(K.formatHtml(K.query("#test12").innerHTML, {span:[".color"]}), '123test123');
-	equals(K.formatHtml(K.query("#test12").innerHTML, {div:[".font-size", "class"]}), '123<div style="font-size:18px;" class="spanclass">test</div>\n123');
-	equals(K.formatHtml(K.query("#test12").innerHTML, {div:[".color"]}).toLowerCase(), '123<div style="color:#ff0000;">test</div>\n123');
-	equals(K.formatHtml(K.query("#test12").innerHTML, {div:[".color", ".font-weight"]}).toLowerCase(), '123<div style="color:#ff0000;font-weight:bold;">test</div>\n123');
+	equals(K.formatHtml(K.query("#test12").innerHTML, {div:[".font-size", "class"]}), '123<div style="font-size:18px;" class="spanclass">test</div>123');
+	equals(K.formatHtml(K.query("#test12").innerHTML, {div:[".color"]}).toLowerCase(), '123<div style="color:#ff0000;">test</div>123');
+	equals(K.formatHtml(K.query("#test12").innerHTML, {div:[".color", ".font-weight"]}).toLowerCase(), '123<div style="color:#ff0000;font-weight:bold;">test</div>123');
 
 	equals(K.formatHtml(K.query("#test13").innerHTML), '<input type="checkbox" id="chk" value="1" checked="checked" /> <label for="chk"><strong>checkbox</strong></label>');
 	equals(K.formatHtml(K.query("#test13").innerHTML, {input:["type", "value"]}), '<input type="checkbox" value="1" /> checkbox');

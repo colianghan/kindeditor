@@ -14,6 +14,7 @@ var _options = {
 	designMode : true,
 	fullscreenMode : false,
 	filterMode : false,
+	wellFormatMode : true,
 	shadowMode : true,
 	scriptPath : _getScriptPath(),
 	langType : 'zh_CN',
@@ -39,7 +40,7 @@ var _options = {
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
-	noDisableItems : 'source,fullscreen'.split(','),
+	noDisableItems : ['source', 'fullscreen'],
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
@@ -69,15 +70,13 @@ var _options = {
 			'.font-style', '.text-decoration', '.vertical-align', '.background'
 		],
 		a : ['href', 'target', 'name'],
-		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess', '/'],
-		img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
-		hr : ['/'],
-		br : ['/'],
+		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess'],
+		img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height'],
 		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
 			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.background',
 			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
 		],
-		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
+		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
 

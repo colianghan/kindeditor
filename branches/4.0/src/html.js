@@ -13,10 +13,10 @@ function _getCssList(css) {
 
 function _getAttrList(tag) {
 	var list = {},
-		reg = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
+		reg = /\s+(?:([\w\-:]+)|(?:([\w\-:]+)=([^\s"'<>]+))|(?:([\w\-:]+)="([^"]*)")|(?:([\w\-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
 	while ((match = reg.exec(tag))) {
-		var key = match[1] || match[2] || match[4] || match[6],
+		var key = (match[1] || match[2] || match[4] || match[6]).toLowerCase(),
 			val = (match[2] ? match[3] : (match[4] ? match[5] : match[7])) || '';
 		list[key] = val;
 	}
@@ -32,10 +32,7 @@ function _formatCss(css) {
 }
 
 function _formatUrl(url, mode, host, pathname) {
-	if (!mode) {
-		return url;
-	}
-	mode = mode.toLowerCase();
+	mode = _undef(mode, '').toLowerCase();
 	if (_inArray(mode, ['absolute', 'relative', 'domain']) < 0) {
 		return url;
 	}
@@ -103,155 +100,148 @@ function _formatUrl(url, mode, host, pathname) {
 
 function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 	urlType = urlType || '';
-	wellFormatted = (wellFormatted === undefined) ? true : wellFormatted;
-	var isFilter = htmlTags ? true : false;
+	wellFormatted = _undef(wellFormatted, false);
+	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
+	// 将pre里的br转换成\n
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	});
-	var htmlTagHash = {};
-	var fontSizeHash = ['xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'];
-	if (isFilter) {
+	var htmlTagMap = {};
+	if (htmlTags) {
+		// 展开htmlTags里的key
 		_each(htmlTags, function(key, val) {
 			var arr = key.split(',');
 			for (var i = 0, len = arr.length; i < len; i++) {
-				htmlTagHash[arr[i]] = _toMap(val);
+				htmlTagMap[arr[i]] = _toMap(val);
 			}
 		});
 	}
-	var re = /((?:\r\n|\n|\r)*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>((?:\r\n|\n|\r)*)/g;
+	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>(\s*)/g;
+	var tagStack = [];
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
-		var startNewline = $1 || '',
+		var full = $0,
+			startNewline = $1 || '',
 			startSlash = $2 || '',
 			tagName = $3.toLowerCase(),
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
-		if (!wellFormatted) {
-			startNewline = '';
-			endNewline = '';
-		}
-		if (isFilter && !htmlTagHash[tagName]) {
+		if (htmlTags && !htmlTagMap[tagName]) {
 			return '';
 		}
 		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) {
 			endSlash = ' /';
 		}
+		if (startNewline) {
+			startNewline = ' ';
+		}
+		if (endNewline) {
+			endNewline = ' ';
+		}
 		if (_BLOCK_TAG_MAP[tagName]) {
-			if (wellFormatted && (startSlash || endSlash)) {
+			if (wellFormatted) {
+				if (startSlash && tagStack.length > 0 && tagStack[tagStack.length - 1] === tagName) {
+					tagStack.pop();
+				} else {
+					tagStack.push(tagName);
+				}
+				startNewline = '\n';
 				endNewline = '\n';
-			}
-		} else {
-			if (endNewline) {
-				endNewline = ' ';
+				for (var i = 0, len = startSlash ? tagStack.length : tagStack.length - 1; i < len; i++) {
+					startNewline += '\t';
+					if (!startSlash) {
+						endNewline += '\t';
+					}
+				}
+				if (!startSlash) {
+					endNewline += '\t';
+				}
+			} else {
+				startNewline = endNewline = '';
 			}
 		}
-		if (tagName !== 'script' && tagName !== 'style') {
-			startNewline = '';
-		}
-		if (tagName === 'font') {
-			var style = {}, styleStr = '';
-			attr = attr.replace(/\s*([\w-:]+)=([^\s"'<>]+|"[^"]*"|'[^']*')/g, function($0, $1, $2) {
-				var key = $1.toLowerCase(), val = $2 || '';
-				val = val.replace(/^["']|["']$/g, '');
-				if (key === 'color') {
-					style.color = val;
-					return ' ';
+		if (attr !== '') {
+			var attrMap = _getAttrList(full);
+			// 将font tag转换成span tag
+			if (tagName === 'font') {
+				var fontStyleMap = {}, fontStyle = '';
+				_each(attrMap, function(key, val) {
+					if (key === 'color') {
+						fontStyleMap.color = val;
+						delete attrMap[key];
+					}
+					if (key === 'size') {
+						fontStyleMap['font-size'] = fontSizeList[parseInt(val, 10) - 1] || '';
+						delete attrMap[key];
+					}
+					if (key === 'face') {
+						fontStyleMap['font-family'] = val;
+						delete attrMap[key];
+					}
+					if (key === 'style') {
+						fontStyle = val;
+					}
+				});
+				if (fontStyle && !/;$/.test(fontStyle)) {
+					fontStyle += ';';
 				}
-				if (key === 'size') {
-					style['font-size'] = fontSizeHash[parseInt(val, 10) - 1] || '';
-					return ' ';
-				}
-				if (key === 'face') {
-					style['font-family'] = val;
-					return ' ';
-				}
-				if (key === 'style') {
-					styleStr = val;
-					return ' ';
-				}
-				return $0;
-			});
-			if (styleStr && !/;$/.test(styleStr)) {
-				styleStr += ';';
-			}
-			_each(style, function(key, val) {
-				if (val !== '') { 
+				_each(fontStyleMap, function(key, val) {
+					if (val === '') {
+						return;
+					}
 					if (/\s/.test(val)) {
 						val = "'" + val + "'";
 					}
-					styleStr += key + ':' + val + ';';
+					fontStyle += key + ':' + val + ';';
+				});
+				attrMap.style = fontStyle;
+			}
+			// 处理attribute和style
+			_each(attrMap, function(key, val) {
+				// 补全单独属性
+				if (_FILL_ATTR_MAP[key]) {
+					attrMap[key] = key;
+				}
+				// 过滤属性
+				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key]) {
+					delete attrMap[key];
+				}
+				if (key === 'style' && val !== '') {
+					var styleMap = _getCssList(val);
+					_each(styleMap, function(k, v) {
+						// 过滤样式
+						if (htmlTags && !htmlTagMap[tagName].style && !htmlTagMap[tagName]['.' + k]) {
+							delete styleMap[k];
+						}
+					});
+					var style = '';
+					_each(styleMap, function(k, v) {
+						style += k + ':' + v + ';';
+					});
+					attrMap.style = style;
+				}
+				// 处理URL
+				if (_inArray(key, ['src', 'href']) >= 0) {
+					attrMap[key] = _formatUrl(val, urlType);
 				}
 			});
-			if (styleStr) {
-				attr += ' style="' + styleStr + '"';
-			}
+			attr = '';
+			_each(attrMap, function(key, val) {
+				if (key === 'style' && val === '') {
+					return;
+				}
+				attr += ' ' + key + '="' + val + '"';
+			});
+		}
+		if (tagName === 'font') {
 			tagName = 'span';
 		}
-		if (attr !== '') {
-			attr = attr.replace(/\s*([\w-:]+)=([^\s"'<>]+|"[^"]*"|'[^']*')/g, function($0, $1, $2) {
-				var key = $1.toLowerCase();
-				var val = $2 || '';
-				if (isFilter) {
-					if (key.charAt(0) === "." || (key !== "style" && !htmlTagHash[tagName][key])) {
-						return ' ';
-					}
-				}
-				if (val === '') {
-					val = '""';
-				} else {
-					if (key === "style") {
-						val = val.substr(1, val.length - 2);
-						val = val.replace(/\s*([^\s]+?)\s*:(.*?)(;|$)/g, function($0, $1, $2) {
-							var k = $1.toLowerCase();
-							if (isFilter) {
-								if (!htmlTagHash[tagName].style && !htmlTagHash[tagName]['.' + k]) {
-									return '';
-								}
-							}
-							var v = _trim($2);
-							v = _toHex(v);
-							return k + ':' + v + ';';
-						});
-						val = _trim(val);
-						if (val === '') {
-							return '';
-						}
-						val = '"' + val + '"';
-					}
-					if (_inArray(key, ['src', 'href']) >= 0) {
-						if (val.charAt(0) === '"') {
-							val = val.substr(1, val.length - 2);
-						}
-						val = _formatUrl(val, urlType);
-					}
-					if (val.charAt(0) !== '"') {
-						val = '"' + val + '"';
-					}
-				}
-				return ' ' + key + '=' + val + ' ';
-			});
-			attr = attr.replace(/\s+(checked|selected|disabled|readonly)(\s+|$)/ig, function($0, $1) {
-				var key = $1.toLowerCase();
-				if (isFilter) {
-					if (key.charAt(0) === "." || !htmlTagHash[tagName][key]) {
-						return ' ';
-					}
-				}
-				return ' ' + key + '="' + key + '"' + ' ';
-			});
-			attr = _trim(attr);
-			attr = attr.replace(/\s+/g, ' ');
-			if (attr) {
-				attr = ' ' + attr;
-			}
-			return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
-		} else {
-			return startNewline + '<' + startSlash + tagName + endSlash + '>' + endNewline;
-		}
+		return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 	});
+	html = html.replace(/\n\t*\n/g, '\n');
 	if (!_IE) {
-		html = html.replace(/<p><br\s+\/>\n<\/p>/ig, '<p>&nbsp;</p>');
-		html = html.replace(/<br\s+\/>\n<\/p>/ig, '</p>');
+		html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
+		html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
 	}
 	if (_WEBKIT) {
 		html = html.replace(/\u200B/g, '');
