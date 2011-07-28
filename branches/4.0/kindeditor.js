@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-27)
+* @version 4.0 (2011-07-28)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-27)',
+var _VERSION = '4.0 (2011-07-28)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -172,11 +172,12 @@ var K = {
 	extend : _extend,
 	json : _json
 };
-var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,script,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
-	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul'),
+var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,img,input,ins,kbd,label,map,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,tr,ul'),
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),
+	_PRE_TAG_MAP = _toMap('pre,style,script'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
@@ -194,6 +195,7 @@ var _options = {
 	designMode : true,
 	fullscreenMode : false,
 	filterMode : false,
+	wellFormatMode : true,
 	shadowMode : true,
 	scriptPath : _getScriptPath(),
 	langType : 'zh_CN',
@@ -219,7 +221,7 @@ var _options = {
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
-	noDisableItems : 'source,fullscreen'.split(','),
+	noDisableItems : ['source', 'fullscreen'],
 	colors : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
@@ -249,15 +251,13 @@ var _options = {
 			'.font-style', '.text-decoration', '.vertical-align', '.background'
 		],
 		a : ['href', 'target', 'name'],
-		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess', '/'],
-		img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height', '/'],
-		hr : ['/'],
-		br : ['/'],
+		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess'],
+		img : ['src', 'width', 'height', 'border', 'alt', 'title', '.width', '.height'],
 		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
 			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.background',
 			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
 		],
-		'tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
+		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
 _options.themesPath = _options.scriptPath + 'themes/';
@@ -552,10 +552,10 @@ function _getCssList(css) {
 }
 function _getAttrList(tag) {
 	var list = {},
-		reg = /\s+(?:([\w-:]+)|(?:([\w-:]+)=([^\s"'<>]+))|(?:([\w-:]+)="([^"]*)")|(?:([\w-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
+		reg = /\s+(?:([\w\-:]+)|(?:([\w\-:]+)=([^\s"'<>]+))|(?:([\w\-:]+)="([^"]*)")|(?:([\w\-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
 	while ((match = reg.exec(tag))) {
-		var key = match[1] || match[2] || match[4] || match[6],
+		var key = (match[1] || match[2] || match[4] || match[6]).toLowerCase(),
 			val = (match[2] ? match[3] : (match[4] ? match[5] : match[7])) || '';
 		list[key] = val;
 	}
@@ -569,10 +569,7 @@ function _formatCss(css) {
 	return str;
 }
 function _formatUrl(url, mode, host, pathname) {
-	if (!mode) {
-		return url;
-	}
-	mode = mode.toLowerCase();
+	mode = _undef(mode, '').toLowerCase();
 	if (_inArray(mode, ['absolute', 'relative', 'domain']) < 0) {
 		return url;
 	}
@@ -639,155 +636,149 @@ function _formatUrl(url, mode, host, pathname) {
 }
 function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 	urlType = urlType || '';
-	wellFormatted = (wellFormatted === undefined) ? true : wellFormatted;
-	var isFilter = htmlTags ? true : false;
+	wellFormatted = _undef(wellFormatted, false);
+	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	});
-	var htmlTagHash = {};
-	var fontSizeHash = ['xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large'];
-	if (isFilter) {
+	var htmlTagMap = {};
+	if (htmlTags) {
 		_each(htmlTags, function(key, val) {
 			var arr = key.split(',');
 			for (var i = 0, len = arr.length; i < len; i++) {
-				htmlTagHash[arr[i]] = _toMap(val);
+				htmlTagMap[arr[i]] = _toMap(val);
 			}
 		});
 	}
-	var re = /((?:\r\n|\n|\r)*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>((?:\r\n|\n|\r)*)/g;
+	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>(\s*)/g;
+	var tagStack = [];
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
-		var startNewline = $1 || '',
+		var full = $0,
+			startNewline = $1 || '',
 			startSlash = $2 || '',
 			tagName = $3.toLowerCase(),
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
-		if (!wellFormatted) {
-			startNewline = '';
-			endNewline = '';
-		}
-		if (isFilter && !htmlTagHash[tagName]) {
+		if (htmlTags && !htmlTagMap[tagName]) {
 			return '';
 		}
 		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) {
 			endSlash = ' /';
 		}
-		if (_BLOCK_TAG_MAP[tagName]) {
-			if (wellFormatted && (startSlash || endSlash)) {
-				endNewline = '\n';
+		if (_INLINE_TAG_MAP[tagName]) {
+			if (startNewline) {
+				startNewline = ' ';
 			}
-		} else {
 			if (endNewline) {
 				endNewline = ' ';
 			}
 		}
-		if (tagName !== 'script' && tagName !== 'style') {
-			startNewline = '';
-		}
-		if (tagName === 'font') {
-			var style = {}, styleStr = '';
-			attr = attr.replace(/\s*([\w-:]+)=([^\s"'<>]+|"[^"]*"|'[^']*')/g, function($0, $1, $2) {
-				var key = $1.toLowerCase(), val = $2 || '';
-				val = val.replace(/^["']|["']$/g, '');
-				if (key === 'color') {
-					style.color = val;
-					return ' ';
-				}
-				if (key === 'size') {
-					style['font-size'] = fontSizeHash[parseInt(val, 10) - 1] || '';
-					return ' ';
-				}
-				if (key === 'face') {
-					style['font-family'] = val;
-					return ' ';
-				}
-				if (key === 'style') {
-					styleStr = val;
-					return ' ';
-				}
-				return $0;
-			});
-			if (styleStr && !/;$/.test(styleStr)) {
-				styleStr += ';';
+		if (_PRE_TAG_MAP[tagName]) {
+			if (startSlash) {
+				endNewline = '\n';
+			} else {
+				startNewline = '\n';
 			}
-			_each(style, function(key, val) {
-				if (val !== '') {
+		}
+		if (_BLOCK_TAG_MAP[tagName] && !_PRE_TAG_MAP[tagName]) {
+			if (wellFormatted) {
+				if (startSlash && tagStack.length > 0 && tagStack[tagStack.length - 1] === tagName) {
+					tagStack.pop();
+				} else {
+					tagStack.push(tagName);
+				}
+				startNewline = '\n';
+				endNewline = '\n';
+				for (var i = 0, len = startSlash ? tagStack.length : tagStack.length - 1; i < len; i++) {
+					startNewline += '\t';
+					if (!startSlash) {
+						endNewline += '\t';
+					}
+				}
+				if (!startSlash) {
+					endNewline += '\t';
+				}
+			} else {
+				startNewline = endNewline = '';
+			}
+		}
+		if (attr !== '') {
+			var attrMap = _getAttrList(full);
+			if (tagName === 'font') {
+				var fontStyleMap = {}, fontStyle = '';
+				_each(attrMap, function(key, val) {
+					if (key === 'color') {
+						fontStyleMap.color = val;
+						delete attrMap[key];
+					}
+					if (key === 'size') {
+						fontStyleMap['font-size'] = fontSizeList[parseInt(val, 10) - 1] || '';
+						delete attrMap[key];
+					}
+					if (key === 'face') {
+						fontStyleMap['font-family'] = val;
+						delete attrMap[key];
+					}
+					if (key === 'style') {
+						fontStyle = val;
+					}
+				});
+				if (fontStyle && !/;$/.test(fontStyle)) {
+					fontStyle += ';';
+				}
+				_each(fontStyleMap, function(key, val) {
+					if (val === '') {
+						return;
+					}
 					if (/\s/.test(val)) {
 						val = "'" + val + "'";
 					}
-					styleStr += key + ':' + val + ';';
+					fontStyle += key + ':' + val + ';';
+				});
+				attrMap.style = fontStyle;
+			}
+			_each(attrMap, function(key, val) {
+				if (_FILL_ATTR_MAP[key]) {
+					attrMap[key] = key;
+				}
+				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key]) {
+					delete attrMap[key];
+				}
+				if (key === 'style' && val !== '') {
+					var styleMap = _getCssList(val);
+					_each(styleMap, function(k, v) {
+						if (htmlTags && !htmlTagMap[tagName].style && !htmlTagMap[tagName]['.' + k]) {
+							delete styleMap[k];
+						}
+					});
+					var style = '';
+					_each(styleMap, function(k, v) {
+						style += k + ':' + v + ';';
+					});
+					attrMap.style = style;
+				}
+				if (_inArray(key, ['src', 'href']) >= 0) {
+					attrMap[key] = _formatUrl(val, urlType);
 				}
 			});
-			if (styleStr) {
-				attr += ' style="' + styleStr + '"';
-			}
+			attr = '';
+			_each(attrMap, function(key, val) {
+				if (key === 'style' && val === '') {
+					return;
+				}
+				attr += ' ' + key + '="' + val + '"';
+			});
+		}
+		if (tagName === 'font') {
 			tagName = 'span';
 		}
-		if (attr !== '') {
-			attr = attr.replace(/\s*([\w-:]+)=([^\s"'<>]+|"[^"]*"|'[^']*')/g, function($0, $1, $2) {
-				var key = $1.toLowerCase();
-				var val = $2 || '';
-				if (isFilter) {
-					if (key.charAt(0) === "." || (key !== "style" && !htmlTagHash[tagName][key])) {
-						return ' ';
-					}
-				}
-				if (val === '') {
-					val = '""';
-				} else {
-					if (key === "style") {
-						val = val.substr(1, val.length - 2);
-						val = val.replace(/\s*([^\s]+?)\s*:(.*?)(;|$)/g, function($0, $1, $2) {
-							var k = $1.toLowerCase();
-							if (isFilter) {
-								if (!htmlTagHash[tagName].style && !htmlTagHash[tagName]['.' + k]) {
-									return '';
-								}
-							}
-							var v = _trim($2);
-							v = _toHex(v);
-							return k + ':' + v + ';';
-						});
-						val = _trim(val);
-						if (val === '') {
-							return '';
-						}
-						val = '"' + val + '"';
-					}
-					if (_inArray(key, ['src', 'href']) >= 0) {
-						if (val.charAt(0) === '"') {
-							val = val.substr(1, val.length - 2);
-						}
-						val = _formatUrl(val, urlType);
-					}
-					if (val.charAt(0) !== '"') {
-						val = '"' + val + '"';
-					}
-				}
-				return ' ' + key + '=' + val + ' ';
-			});
-			attr = attr.replace(/\s+(checked|selected|disabled|readonly)(\s+|$)/ig, function($0, $1) {
-				var key = $1.toLowerCase();
-				if (isFilter) {
-					if (key.charAt(0) === "." || !htmlTagHash[tagName][key]) {
-						return ' ';
-					}
-				}
-				return ' ' + key + '="' + key + '"' + ' ';
-			});
-			attr = _trim(attr);
-			attr = attr.replace(/\s+/g, ' ');
-			if (attr) {
-				attr = ' ' + attr;
-			}
-			return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
-		} else {
-			return startNewline + '<' + startSlash + tagName + endSlash + '>' + endNewline;
-		}
+		return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 	});
+	html = html.replace(/\n\t*\n/g, '\n');
 	if (!_IE) {
-		html = html.replace(/<p><br\s+\/>\n<\/p>/ig, '<p>&nbsp;</p>');
-		html = html.replace(/<br\s+\/>\n<\/p>/ig, '</p>');
+		html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
+		html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
 	}
 	if (_WEBKIT) {
 		html = html.replace(/\u200B/g, '');
@@ -3370,7 +3361,15 @@ _extend(KEdit, KWidget, {
 			if (self.beforeSetHtml) {
 				val = self.beforeSetHtml(val);
 			}
-			body.innerHTML = val;
+			if (_IE) {
+				body.innerHTML = '<img id="__kindeditor_temp_tag__" width="0" height="0" />' + val;
+				var img = K('#__kindeditor_temp_tag__', doc);
+				if (img) {
+					img.remove();
+				}
+			} else {
+				body.innerHTML = val;
+			}
 			return self;
 		}
 		if (val === undefined) {
@@ -3417,10 +3416,10 @@ K.edit = _edit;
 K.iframeDoc = _iframeDoc;
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		K(this).addClass('on');
+		K(this).addClass('ke-on');
 	})
 	.mouseout(function(e) {
-		K(this).removeClass('on');
+		K(this).removeClass('ke-on');
 	})
 	.click(function(e) {
 		item.click.call(this, e);
@@ -3446,11 +3445,11 @@ _extend(KToolbar, KWidget, {
 	addItem : function(item) {
 		var self = this, itemNode;
 		if (item.name == '|') {
-			itemNode = K('<span class="ke-inline-block separator"></span>');
+			itemNode = K('<span class="ke-inline-block ke-separator"></span>');
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
-			itemNode = K('<span class="ke-inline-block outline" title="' + (item.title || '') + '" unselectable="on">' +
+			itemNode = K('<span class="ke-inline-block ke-outline" title="' + (item.title || '') + '" unselectable="on">' +
 				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
@@ -3474,7 +3473,7 @@ _extend(KToolbar, KWidget, {
 		}
 		var itemNode = self._itemNodes[name];
 		if (itemNode) {
-			itemNode.addClass('selected').unbind('mouseover,mouseout');
+			itemNode.addClass('ke-selected').unbind('mouseover,mouseout');
 		}
 		return self;
 	},
@@ -3485,10 +3484,10 @@ _extend(KToolbar, KWidget, {
 		}
 		var itemNode = self._itemNodes[name];
 		if (itemNode) {
-			itemNode.removeClass('selected').removeClass('on').mouseover(function(e) {
-				K(this).addClass('on');
+			itemNode.removeClass('ke-selected').removeClass('ke-on').mouseover(function(e) {
+				K(this).addClass('ke-on');
 			}).mouseout(function(e) {
-				K(this).removeClass('on');
+				K(this).removeClass('ke-on');
 			});
 		}
 		return self;
@@ -3499,7 +3498,7 @@ _extend(KToolbar, KWidget, {
 			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('selected').addClass('disabled');
+					val.removeClass('ke-selected').addClass('ke-disabled');
 					val.opacity(0.5);
 					if (item.name !== '|') {
 						val.unbind();
@@ -3511,7 +3510,7 @@ _extend(KToolbar, KWidget, {
 			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('disabled');
+					val.removeClass('ke-disabled');
 					val.opacity(1);
 					if (item.name !== '|') {
 						_bindToolbarEvent(val, item);
@@ -3953,7 +3952,7 @@ function _bindContextmenuEvent() {
 	});
 }
 function _removeBookmarkTag(html) {
-	return html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, '');
+	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
 }
 function _addBookmarkToStack(stack, bookmark) {
 	if (stack.length === 0) {
@@ -4175,7 +4174,7 @@ KEditor.prototype = {
 			cssData : self.cssData,
 			afterGetHtml : function(html) {
 				html = self.afterGetHtml(html);
-				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode);
 			},
 			beforeSetHtml : function(html) {
 				html = self.beforeSetHtml(html);
@@ -4210,12 +4209,8 @@ KEditor.prototype = {
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
 					self.addBookmark();
-				})
-				.onchange(function(e) {
+				}).onchange(function(e) {
 					self.updateState();
-				});
-				this.textarea.change(function(e) {
-					self.addBookmark();
 				});
 				self.afterCreate();
 			}
@@ -4501,20 +4496,8 @@ KindEditor.plugin('core', function(K) {
 			this.toolbar.disable(true).select('source');
 		}
 	});
-	K.each('fullscreen,undo,redo'.split(','), function(i, name) {
-		if (self.shortcutKeys[name]) {
-			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
-					self.clickToolbar(name);
-				});
-				K.ctrl(this.edit.textarea[0], self.shortcutKeys[name], function() {
-					self.clickToolbar(name);
-				});
-			});
-		}
-		self.clickToolbar(name, function() {
-			self[name]();
-		});
+	self.clickToolbar('fullscreen', function() {
+		self.fullscreen();
 	});
 	var loaded = false;
 	self.afterCreate(function() {
@@ -4529,6 +4512,18 @@ KindEditor.plugin('core', function(K) {
 		if (!loaded) {
 			loaded = true;
 		}
+	});
+	K.each('undo,redo'.split(','), function(i, name) {
+		if (self.shortcutKeys[name]) {
+			self.afterCreate(function() {
+				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.clickToolbar(name);
+				});
+			});
+		}
+		self.clickToolbar(name, function() {
+			self[name]();
+		});
 	});
 	self.clickToolbar('formatblock', function() {
 		var blocks = self.lang('formatblock.formatBlock'),

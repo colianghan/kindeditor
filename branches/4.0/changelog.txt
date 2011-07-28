@@ -10,6 +10,7 @@ ver 4.0 alpha
 * 新增: ESC键切换全屏模式。
 * 改善: 后退时保持选中状态。
 * 改善: 大部分组件实现模块化，可以单独调用。
+* 改善: 改进了HTML格式化功能。
 * BUG: 修复了在页面上设置document.domain时发生错误的问题。
 * BUG: 修复了跨域调用编辑器时无法使用dialog的问题。
 * BUG: 修复了range的collapsed为true时删除格式不起作用的问题。

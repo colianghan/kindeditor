@@ -203,7 +203,15 @@ _extend(KEdit, KWidget, {
 			if (self.beforeSetHtml) {
 				val = self.beforeSetHtml(val);
 			}
-			body.innerHTML = val;
+			if (_IE) {
+				body.innerHTML = '<img id="__kindeditor_temp_tag__" width="0" height="0" />' + val;
+				var img = K('#__kindeditor_temp_tag__', doc);
+				if (img) {
+					img.remove();
+				}
+			} else {
+				body.innerHTML = val;
+			}
 			return self;
 		}
 		// source mode

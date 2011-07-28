@@ -21,21 +21,9 @@ KindEditor.plugin('core', function(K) {
 			this.toolbar.disable(true).select('source');
 		}
 	});
-	// fullscreen, undo, redo
-	K.each('fullscreen,undo,redo'.split(','), function(i, name) {
-		if (self.shortcutKeys[name]) {
-			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
-					self.clickToolbar(name);
-				});
-				K.ctrl(this.edit.textarea[0], self.shortcutKeys[name], function() {
-					self.clickToolbar(name);
-				});
-			});
-		}
-		self.clickToolbar(name, function() {
-			self[name]();
-		});
+	// fullscreen
+	self.clickToolbar('fullscreen', function() {
+		self.fullscreen();
 	});
 	var loaded = false;
 	self.afterCreate(function() {
@@ -50,6 +38,19 @@ KindEditor.plugin('core', function(K) {
 		if (!loaded) {
 			loaded = true;
 		}
+	});
+	// undo, redo
+	K.each('undo,redo'.split(','), function(i, name) {
+		if (self.shortcutKeys[name]) {
+			self.afterCreate(function() {
+				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+					self.clickToolbar(name);
+				});
+			});
+		}
+		self.clickToolbar(name, function() {
+			self[name]();
+		});
 	});
 	// formatblock
 	self.clickToolbar('formatblock', function() {

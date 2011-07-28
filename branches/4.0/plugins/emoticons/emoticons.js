@@ -8,7 +8,7 @@ KindEditor.plugin('emoticons', function(K) {
 		var rows = 5, cols = 9, total = 135, startNum = 0,
 			cells = rows * cols, pages = Math.ceil(total / cells),
 			colsHalf = Math.floor(cols / 2),
-			wrapperDiv = K('<div class="ke-plugin-emoticons-wrapper"></div>'),
+			wrapperDiv = K('<div class="ke-plugin-emoticons"></div>'),
 			elements = [],
 			menu = self.createMenu({
 				name : name
@@ -16,8 +16,8 @@ KindEditor.plugin('emoticons', function(K) {
 		menu.div.append(wrapperDiv);
 		var previewDiv, previewImg;
 		if (allowPreview) {
-			previewDiv = K('<div class="ke-plugin-emoticons-preview"></div>').css('right', 0);
-			previewImg = K('<img class="ke-plugin-emoticons-preview-img" src="' + path + startNum + '.gif" />');
+			previewDiv = K('<div class="ke-preview"></div>').css('right', 0);
+			previewImg = K('<img class="ke-preview-img" src="' + path + startNum + '.gif" />');
 			wrapperDiv.append(previewDiv);
 			previewDiv.append(previewImg);
 		}
@@ -32,15 +32,15 @@ KindEditor.plugin('emoticons', function(K) {
 						previewDiv.css('right', 0);
 					}
 					previewImg.attr('src', path + num + '.gif');
-					K(this).addClass('ke-plugin-emoticons-cell-on');
+					K(this).addClass('ke-on');
 				});
 			} else {
 				cell.mouseover(function() {
-					K(this).addClass('ke-plugin-emoticons-cell-on');
+					K(this).addClass('ke-on');
 				});
 			}
 			cell.mouseout(function() {
-				K(this).removeClass('ke-plugin-emoticons-cell-on');
+				K(this).removeClass('ke-on');
 			});
 			cell.click(function(e) {
 				self.insertHtml('<img src="' + path + num + '.gif" border="0" alt="" />').hideMenu().focus();
@@ -59,7 +59,7 @@ KindEditor.plugin('emoticons', function(K) {
 				});
 				elements.push(K(table));
 			}
-			table.className = 'ke-plugin-emoticons-table';
+			table.className = 'ke-table';
 			table.cellPadding = 0;
 			table.cellSpacing = 0;
 			table.border = 0;
@@ -68,9 +68,9 @@ KindEditor.plugin('emoticons', function(K) {
 				var row = table.insertRow(i);
 				for (var j = 0; j < cols; j++) {
 					var cell = K(row.insertCell(j));
-					cell.addClass('ke-plugin-emoticons-cell');
+					cell.addClass('ke-cell');
 					bindCellEvent(cell, j, num);
-					var span = K('<span class="ke-plugin-emoticons-img"></span>')
+					var span = K('<span class="ke-img"></span>')
 						.css('background-position', '-' + (24 * num) + 'px 0px')
 						.css('background-image', 'url(' + path + 'static.gif)');
 					cell.append(span);
@@ -99,7 +99,7 @@ KindEditor.plugin('emoticons', function(K) {
 			});
 		}
 		function createPageTable(currentPageNum) {
-			pageDiv = K('<div class="ke-plugin-emoticons-page"></div>');
+			pageDiv = K('<div class="ke-page"></div>');
 			wrapperDiv.append(pageDiv);
 			for (var pageNum = 1; pageNum <= pages; pageNum++) {
 				if (currentPageNum !== pageNum) {

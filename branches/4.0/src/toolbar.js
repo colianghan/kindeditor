@@ -1,10 +1,10 @@
 
 function _bindToolbarEvent(itemNode, item) {
 	itemNode.mouseover(function(e) {
-		K(this).addClass('on');
+		K(this).addClass('ke-on');
 	})
 	.mouseout(function(e) {
-		K(this).removeClass('on');
+		K(this).removeClass('ke-on');
 	})
 	.click(function(e) {
 		item.click.call(this, e);
@@ -32,11 +32,11 @@ _extend(KToolbar, KWidget, {
 	addItem : function(item) {
 		var self = this, itemNode;
 		if (item.name == '|') {
-			itemNode = K('<span class="ke-inline-block separator"></span>');
+			itemNode = K('<span class="ke-inline-block ke-separator"></span>');
 		} else if (item.name == '/') {
 			itemNode = K('<br />');
 		} else {
-			itemNode = K('<span class="ke-inline-block outline" title="' + (item.title || '') + '" unselectable="on">' +
+			itemNode = K('<span class="ke-inline-block ke-outline" title="' + (item.title || '') + '" unselectable="on">' +
 				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
 			_bindToolbarEvent(itemNode, item);
 		}
@@ -60,7 +60,7 @@ _extend(KToolbar, KWidget, {
 		}
 		var itemNode = self._itemNodes[name];
 		if (itemNode) {
-			itemNode.addClass('selected').unbind('mouseover,mouseout');
+			itemNode.addClass('ke-selected').unbind('mouseover,mouseout');
 		}
 		return self;
 	},
@@ -71,10 +71,10 @@ _extend(KToolbar, KWidget, {
 		}
 		var itemNode = self._itemNodes[name];
 		if (itemNode) {
-			itemNode.removeClass('selected').removeClass('on').mouseover(function(e) {
-				K(this).addClass('on');
+			itemNode.removeClass('ke-selected').removeClass('ke-on').mouseover(function(e) {
+				K(this).addClass('ke-on');
 			}).mouseout(function(e) {
-				K(this).removeClass('on');
+				K(this).removeClass('ke-on');
 			});
 		}
 		return self;
@@ -86,7 +86,7 @@ _extend(KToolbar, KWidget, {
 			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('selected').addClass('disabled');
+					val.removeClass('ke-selected').addClass('ke-disabled');
 					val.opacity(0.5);
 					if (item.name !== '|') {
 						val.unbind();
@@ -99,7 +99,7 @@ _extend(KToolbar, KWidget, {
 			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
 				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('disabled');
+					val.removeClass('ke-disabled');
 					val.opacity(1);
 					if (item.name !== '|') {
 						_bindToolbarEvent(val, item);

@@ -309,7 +309,7 @@
 .ke-toolbar-icon-url {
 	background-image: url(default.gif);
 }
-.ke-toolbar .outline {
+.ke-toolbar .ke-outline {
 	border: 1px solid #F0F0EE;
 	background-color: transparent;
 	margin: 1px;
@@ -319,17 +319,17 @@
 	overflow: hidden;
 	cursor: pointer;
 }
-.ke-toolbar .on {
+.ke-toolbar .ke-on {
 	border: 1px solid #5690D2;
 }
-.ke-toolbar .selected {
+.ke-toolbar .ke-selected {
 	border: 1px solid #5690D2;
 	background-color: #E9EFF6;
 }
-.ke-toolbar .disabled {
+.ke-toolbar .ke-disabled {
 	cursor: default;
 }
-.ke-toolbar .separator {
+.ke-toolbar .ke-separator {
 	height: 16px;
 	margin: 2px 3px;
 	border-left: 1px solid #A0A0A0;
@@ -708,10 +708,10 @@
 	color: #000;
 }
 /* emoticons */
-.ke-plugin-emoticons-wrapper {
+.ke-plugin-emoticons {
 	position: relative;
 }
-.ke-plugin-emoticons-preview {
+.ke-plugin-emoticons .ke-preview {
 	position: absolute;
 	text-align: center;
 	margin: 2px;
@@ -721,28 +721,28 @@
 	background-color: #FFFFFF;
 	display: none;
 }
-.ke-plugin-emoticons-preview-img {
+.ke-plugin-emoticons .ke-preview-img {
 	border:0;
 	margin:0;
 	padding:0;
 }
-.ke-plugin-emoticons-table {
+.ke-plugin-emoticons .ke-table {
 	border:0;
 	margin:0;
 	padding:0;
 	border-collapse:separate;
 }
-.ke-plugin-emoticons-cell {
+.ke-plugin-emoticons .ke-cell {
 	margin:0;
 	padding:1px;
 	border:1px solid #F0F0EE;
 	cursor:pointer;
 }
-.ke-plugin-emoticons-cell-on {
+.ke-plugin-emoticons .ke-on {
 	border: 1px solid #5690D2;
 	background-color: #E9EFF6;
 }
-.ke-plugin-emoticons-img {
+.ke-plugin-emoticons .ke-img {
 	display:block;
 	background-repeat:no-repeat;
 	overflow:hidden;
@@ -753,7 +753,7 @@
 	padding: 0;
 	border: 0;
 }
-.ke-plugin-emoticons-page {
+.ke-plugin-emoticons .ke-page {
 	text-align: right;
 	margin: 5px;
 	padding: 0;
@@ -777,10 +777,10 @@
 	width: 100%;
 	margin-bottom: 10px;
 }
-.ke-plugin-filemanager-header .left {
+.ke-plugin-filemanager-header .ke-left {
 	float: left;
 }
-.ke-plugin-filemanager-header .right {
+.ke-plugin-filemanager-header .ke-right {
 	float: right;
 }
 .ke-plugin-filemanager-body {
@@ -790,45 +790,45 @@
 	height: 370px;
 	padding: 5px;
 }
-.ke-plugin-filemanager-body .item {
+.ke-plugin-filemanager-body .ke-item {
 	width: 100px;
 	margin: 5px;
 }
-.ke-plugin-filemanager-body .photo {
+.ke-plugin-filemanager-body .ke-photo {
 	border: 1px solid #DDDDDD;
 	background-color:#FFFFFF;
 	padding: 10px;
 }
-.ke-plugin-filemanager-body .name {
+.ke-plugin-filemanager-body .ke-name {
 	width: 100px;
 	text-align: center;
 	overflow: hidden;
 }
-.ke-plugin-filemanager-body .on {
+.ke-plugin-filemanager-body .ke-on {
 	border: 1px solid #5690D2;
 	background-color: #E9EFF6;
 }
-.ke-plugin-filemanager-body .table {
+.ke-plugin-filemanager-body .ke-table {
 	width: 95%;
 	border: 0;
 	margin: 0;
 	padding: 0;
 	border-collapse: separate;
 }
-.ke-plugin-filemanager-body .table td {
+.ke-plugin-filemanager-body .ke-table .ke-cell {
 	margin: 0;
 	padding: 0;
 	border: 0;
 }
-.ke-plugin-filemanager-body .table .name {
+.ke-plugin-filemanager-body .ke-table .ke-name {
 	width: 55%;
 	text-align: left;
 }
-.ke-plugin-filemanager-body .table .size {
+.ke-plugin-filemanager-body .ke-table .ke-size {
 	width: 15%;
 	text-align: left;
 }
-.ke-plugin-filemanager-body .table .datetime {
+.ke-plugin-filemanager-body .ke-table .ke-datetime {
 	width: 30%;
 	text-align: center;
 }

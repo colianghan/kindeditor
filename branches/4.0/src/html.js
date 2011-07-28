@@ -132,13 +132,22 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) {
 			endSlash = ' /';
 		}
-		if (startNewline) {
-			startNewline = ' ';
+		if (_INLINE_TAG_MAP[tagName]) {
+			if (startNewline) {
+				startNewline = ' ';
+			}
+			if (endNewline) {
+				endNewline = ' ';
+			}
 		}
-		if (endNewline) {
-			endNewline = ' ';
+		if (_PRE_TAG_MAP[tagName]) {
+			if (startSlash) {
+				endNewline = '\n';
+			} else {
+				startNewline = '\n';
+			}
 		}
-		if (_BLOCK_TAG_MAP[tagName]) {
+		if (_BLOCK_TAG_MAP[tagName] && !_PRE_TAG_MAP[tagName]) {
 			if (wellFormatted) {
 				if (startSlash && tagStack.length > 0 && tagStack[tagStack.length - 1] === tagName) {
 					tagStack.pop();

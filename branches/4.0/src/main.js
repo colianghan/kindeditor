@@ -104,7 +104,7 @@ function _bindContextmenuEvent() {
 }
 
 function _removeBookmarkTag(html) {
-	return html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, '');
+	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
 }
 
 function _addBookmarkToStack(stack, bookmark) {
@@ -378,12 +378,8 @@ KEditor.prototype = {
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
 					self.addBookmark();
-				})
-				.onchange(function(e) {
+				}).onchange(function(e) {
 					self.updateState();
-				});
-				this.textarea.change(function(e) {
-					self.addBookmark();
 				});
 				self.afterCreate();
 			}

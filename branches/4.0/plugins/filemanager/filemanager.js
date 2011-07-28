@@ -24,12 +24,12 @@ KindEditor.plugin('filemanager', function(K) {
 			// header start
 			'<div class="ke-plugin-filemanager-header">',
 			// left start
-			'<div class="left">',
+			'<div class="ke-left">',
 			'<img class="ke-inline-block" name="moveupImg" src="' + imgPath + 'go-up.gif" width="16" height="16" border="0" alt="" /> ',
 			'<a class="ke-inline-block" name="moveupLink" href="javascript:;">' + lang.moveup + '</a>',
 			'</div>',
 			// right start
-			'<div class="right">',
+			'<div class="ke-right">',
 			lang.viewType + ' <select class="ke-inline-block" name="viewType">',
 			'<option value="VIEW">' + lang.viewImage + '</option>',
 			'<option value="LIST">' + lang.listImage + '</option>',
@@ -116,7 +116,7 @@ KindEditor.plugin('filemanager', function(K) {
 		function createList(result) {
 			createCommon(result, createList);
 			var table = document.createElement('table');
-			table.className = 'table';
+			table.className = 'ke-table';
 			table.cellPadding = 0;
 			table.cellSpacing = 0;
 			table.border = 0;
@@ -125,14 +125,14 @@ KindEditor.plugin('filemanager', function(K) {
 			for (var i = 0, len = fileList.length; i < len; i++) {
 				var data = fileList[i], row = K(table.insertRow(i));
 				row.mouseover(function(e) {
-					K(this).addClass('on');
+					K(this).addClass('ke-on');
 				})
 				.mouseout(function(e) {
-					K(this).removeClass('on');
+					K(this).removeClass('ke-on');
 				});
 				var iconUrl = imgPath + (data.is_dir ? 'folder-16.gif' : 'file-16.gif'),
 					img = K('<img src="' + iconUrl + '" width="16" height="16" alt="' + data.filename + '" align="absmiddle" />'),
-					cell0 = K(row[0].insertCell(0)).addClass('name').append(img).append(document.createTextNode(' ' + data.filename));
+					cell0 = K(row[0].insertCell(0)).addClass('ke-cell ke-name').append(img).append(document.createTextNode(' ' + data.filename));
 				if (!data.is_dir || data.has_file) {
 					row.css('cursor', 'pointer');
 					cell0.attr('title', data.filename);
@@ -140,8 +140,8 @@ KindEditor.plugin('filemanager', function(K) {
 				} else {
 					cell0.attr('title', lang.emptyFolder);
 				}
-				K(row[0].insertCell(1)).addClass('size').html(data.is_dir ? '-' : Math.ceil(data.filesize / 1024) + 'KB');
-				K(row[0].insertCell(2)).addClass('datetime').html(data.datetime);
+				K(row[0].insertCell(1)).addClass('ke-cell ke-size').html(data.is_dir ? '-' : Math.ceil(data.filesize / 1024) + 'KB');
+				K(row[0].insertCell(2)).addClass('ke-cell ke-datetime').html(data.datetime);
 			}
 		}
 		function createView(result) {
@@ -149,14 +149,14 @@ KindEditor.plugin('filemanager', function(K) {
 			var fileList = result.file_list;
 			for (var i = 0, len = fileList.length; i < len; i++) {
 				var data = fileList[i],
-					div = K('<div class="ke-inline-block item"></div>');
+					div = K('<div class="ke-inline-block ke-item"></div>');
 				bodyDiv.append(div);
-				var photoDiv = K('<div class="ke-inline-block photo"></div>')
+				var photoDiv = K('<div class="ke-inline-block ke-photo"></div>')
 					.mouseover(function(e) {
-						K(this).addClass('on');
+						K(this).addClass('ke-on');
 					})
 					.mouseout(function(e) {
-						K(this).removeClass('on');
+						K(this).removeClass('ke-on');
 					});
 				div.append(photoDiv);
 				var fileUrl = result.current_url + data.filename,
@@ -170,7 +170,7 @@ KindEditor.plugin('filemanager', function(K) {
 					photoDiv.attr('title', lang.emptyFolder);
 				}
 				photoDiv.append(img);
-				div.append('<div class="name" title="' + data.filename + '">' + data.filename + '</div>');
+				div.append('<div class="ke-name" title="' + data.filename + '">' + data.filename + '</div>');
 			}
 		}
 		viewTypeBox.val(viewType);
