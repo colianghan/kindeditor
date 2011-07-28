@@ -202,16 +202,14 @@ var _options = {
 	urlType : '',
 	newlineType : 'p',
 	resizeType : 2,
+	syncType : 'form',
 	dialogAlignType : 'page',
 	bodyClass : 'ke-content',
 	cssPath : '',
 	cssData : '',
 	minWidth : 550,
 	minHeight : 100,
-	minChangeLength : 5,
-	shortcutKeys : {
-		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
-	},
+	minChangeSize : 5,
 	items : [
 		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
 		'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
@@ -222,12 +220,13 @@ var _options = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
-	colors : [
+	colorTable : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
 		['#337FE5', '#003399', '#4C33E5', '#9933E5', '#CC33E5', '#EE33EE'],
 		['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#333333', '#000000']
 	],
+	fontSizeTable : ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
 	htmlTags : {
 		font : ['color', 'size', 'face', '.background-color'],
 		span : [
@@ -2425,6 +2424,15 @@ function _mergeAttrs(knode, attrs, styles) {
 		knode.css(key, val);
 	});
 }
+function _inPreElement(knode) {
+	while (knode && knode.name != 'body') {
+		if (_PRE_TAG_MAP[knode.name]) {
+			return true;
+		}
+		knode = knode.parent();
+	}
+	return false;
+}
 function KCmd(range) {
 	this.init(range);
 }
@@ -2506,8 +2514,12 @@ _extend(KCmd, {
 				if (node == bookmark.end) {
 					return false;
 				}
-				if (node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
-					var parent, knode = K(node);
+				var knode = K(node);
+				if (_inPreElement(knode)) {
+					return;
+				}
+				if (knode.type == 3 && _trim(node.nodeValue).length > 0) {
+					var parent;
 					while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 						knode = parent;
 					}
@@ -4350,7 +4362,7 @@ KEditor.prototype = {
 		}
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
-			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
+			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeSize) {
 				return self;
 			}
 		}
@@ -4476,7 +4488,10 @@ K.plugin = _plugin;
 K.lang = _lang;
 })(window);
 KindEditor.plugin('core', function(K) {
-	var self = this;
+	var self = this,
+		shortcutKeys = {
+			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
+		};
 	self.clickToolbar('source', function() {
 		if (self.edit.designMode) {
 			self.toolbar.disable(true);
@@ -4514,9 +4529,9 @@ KindEditor.plugin('core', function(K) {
 		}
 	});
 	K.each('undo,redo'.split(','), function(i, name) {
-		if (self.shortcutKeys[name]) {
+		if (shortcutKeys[name]) {
 			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+				K.ctrl(this.edit.doc, shortcutKeys[name], function() {
 					self.clickToolbar(name);
 				});
 			});
@@ -4571,13 +4586,12 @@ KindEditor.plugin('core', function(K) {
 		});
 	});
 	self.clickToolbar('fontsize', function() {
-		var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-			curVal = self.val('fontsize');
+		var curVal = self.val('fontsize');
 			menu = self.createMenu({
 				name : 'fontsize',
 				width : 150
 			});
-		K.each(fontSize, function(i, val) {
+		K.each(self.fontSizeTable, function(i, val) {
 			menu.addItem({
 				title : '<span style="font-size:' + val + ';">' + val + '</span>',
 				height : K.removeUnit(val) + 12,
@@ -4593,6 +4607,7 @@ KindEditor.plugin('core', function(K) {
 			self.createMenu({
 				name : name,
 				selectedColor : self.val(name) || 'default',
+				colors : self.colorTable,
 				click : function(color) {
 					self.exec(name, color).hideMenu();
 				}
@@ -4726,9 +4741,9 @@ KindEditor.plugin('core', function(K) {
 	K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 		'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 		'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
-		if (self.shortcutKeys[name]) {
+		if (shortcutKeys[name]) {
 			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+				K.ctrl(this.edit.doc, shortcutKeys[name], function() {
 					self.cmd.selection();
 					self.clickToolbar(name);
 				});

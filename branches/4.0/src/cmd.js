@@ -235,6 +235,17 @@ function _mergeAttrs(knode, attrs, styles) {
 	});
 }
 
+// 判断node是否在pre、style、script里
+function _inPreElement(knode) {
+	while (knode && knode.name != 'body') {
+		if (_PRE_TAG_MAP[knode.name]) {
+			return true;
+		}
+		knode = knode.parent();
+	}
+	return false;
+}
+
 // create KCmd class
 function KCmd(range) {
 	this.init(range);
@@ -324,9 +335,13 @@ _extend(KCmd, {
 				if (node == bookmark.end) {
 					return false;
 				}
-				if (node.nodeType == 3 && _trim(node.nodeValue).length > 0) {
-					var parent, knode = K(node);
+				var knode = K(node);
+				if (_inPreElement(knode)) {
+					return;
+				}
+				if (knode.type == 3 && _trim(node.nodeValue).length > 0) {
 					// textNode为唯一的子节点时，重新设置node
+					var parent;
 					while ((parent = knode.parent()) && parent.isStyle() && parent.children().length == 1) {
 						knode = parent;
 					}

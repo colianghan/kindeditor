@@ -1,6 +1,9 @@
 
 KindEditor.plugin('core', function(K) {
-	var self = this;
+	var self = this,
+		shortcutKeys = {
+			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
+		};
 	// source
 	self.clickToolbar('source', function() {
 		if (self.edit.designMode) {
@@ -41,9 +44,9 @@ KindEditor.plugin('core', function(K) {
 	});
 	// undo, redo
 	K.each('undo,redo'.split(','), function(i, name) {
-		if (self.shortcutKeys[name]) {
+		if (shortcutKeys[name]) {
 			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+				K.ctrl(this.edit.doc, shortcutKeys[name], function() {
 					self.clickToolbar(name);
 				});
 			});
@@ -101,13 +104,12 @@ KindEditor.plugin('core', function(K) {
 	});
 	// fontsize
 	self.clickToolbar('fontsize', function() {
-		var fontSize = ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
-			curVal = self.val('fontsize');
+		var curVal = self.val('fontsize');
 			menu = self.createMenu({
 				name : 'fontsize',
 				width : 150
 			});
-		K.each(fontSize, function(i, val) {
+		K.each(self.fontSizeTable, function(i, val) {
 			menu.addItem({
 				title : '<span style="font-size:' + val + ';">' + val + '</span>',
 				height : K.removeUnit(val) + 12,
@@ -124,6 +126,7 @@ KindEditor.plugin('core', function(K) {
 			self.createMenu({
 				name : name,
 				selectedColor : self.val(name) || 'default',
+				colors : self.colorTable,
 				click : function(color) {
 					self.exec(name, color).hideMenu();
 				}
@@ -262,9 +265,9 @@ KindEditor.plugin('core', function(K) {
 	K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 		'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 		'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
-		if (self.shortcutKeys[name]) {
+		if (shortcutKeys[name]) {
 			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, self.shortcutKeys[name], function() {
+				K.ctrl(this.edit.doc, shortcutKeys[name], function() {
 					self.cmd.selection();
 					self.clickToolbar(name);
 				});

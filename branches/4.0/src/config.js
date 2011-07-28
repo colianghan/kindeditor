@@ -21,16 +21,14 @@ var _options = {
 	urlType : '', // "", relative, absolute, domain
 	newlineType : 'p', // p, br
 	resizeType : 2, // 0, 1, 2
+	syncType : 'form', // "", form, auto
 	dialogAlignType : 'page', // page, editor
 	bodyClass : 'ke-content',
 	cssPath : '', //String or Array
 	cssData : '',
 	minWidth : 550,
 	minHeight : 100,
-	minChangeLength : 5,
-	shortcutKeys : {
-		undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
-	},
+	minChangeSize : 5,
 	items : [
 		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
 		'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
@@ -41,12 +39,13 @@ var _options = {
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
-	colors : [
+	colorTable : [
 		['#E53333', '#E56600', '#FF9900', '#64451D', '#DFC5A4', '#FFE500'],
 		['#009900', '#006600', '#99BB00', '#B8D100', '#60D978', '#00D5FF'],
 		['#337FE5', '#003399', '#4C33E5', '#9933E5', '#CC33E5', '#EE33EE'],
 		['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#333333', '#000000']
 	],
+	fontSizeTable : ['9px', '10px', '12px', '14px', '16px', '18px', '24px', '32px'],
 	htmlTags : {
 		font : ['color', 'size', 'face', '.background-color'],
 		span : [

@@ -527,7 +527,7 @@ KEditor.prototype = {
 		}
 		if (self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
-			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeLength) {
+			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeSize) {
 				return self;
 			}
 		}

@@ -208,6 +208,7 @@ KindEditor.plugin('table', function(K) {
 						y : pos.y + box.height(),
 						z : 811214,
 						selectedColor : K(this).html(),
+						colors : self.colorTable,
 						noColor : self.lang('noColor'),
 						click : function(color) {
 							setColor(box, color);
@@ -379,6 +380,7 @@ KindEditor.plugin('table', function(K) {
 						y : pos.y + box.height(),
 						z : 811214,
 						selectedColor : K(this).html(),
+						colors : self.colorTable,
 						noColor : self.lang('noColor'),
 						click : function(color) {
 							setColor(box, color);

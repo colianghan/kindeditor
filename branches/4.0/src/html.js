@@ -126,12 +126,15 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 			attr = $4 || '',
 			endSlash = $5 ? ' ' + $5 : '',
 			endNewline = $6 || '';
+		// 不在名单里的过滤掉
 		if (htmlTags && !htmlTagMap[tagName]) {
 			return '';
 		}
+		// 无闭合标签的自动添加斜线
 		if (endSlash === '' && _SINGLE_TAG_MAP[tagName]) {
 			endSlash = ' /';
 		}
+		// inline tag时自动将多个空白转换成一个空格
 		if (_INLINE_TAG_MAP[tagName]) {
 			if (startNewline) {
 				startNewline = ' ';
@@ -140,6 +143,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				endNewline = ' ';
 			}
 		}
+		// pre,style,script tag的格式化
 		if (_PRE_TAG_MAP[tagName]) {
 			if (startSlash) {
 				endNewline = '\n';
@@ -147,6 +151,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				startNewline = '\n';
 			}
 		}
+		// block tag的格式化
 		if (_BLOCK_TAG_MAP[tagName] && !_PRE_TAG_MAP[tagName]) {
 			if (wellFormatted) {
 				if (startSlash && tagStack.length > 0 && tagStack[tagStack.length - 1] === tagName) {
