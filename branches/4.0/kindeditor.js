@@ -177,7 +177,7 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,c
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),
-	_PRE_TAG_MAP = _toMap('pre,style,script'),
+	_PRE_TAG_MAP = _toMap('pre,style,script,ke-script'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
@@ -2943,16 +2943,6 @@ _extend(KCmd, {
 		});
 		return self;
 	},
-	oncursormove : function(fn) {
-		var self = this, doc = self.doc;
-		K(doc).keyup(function(e) {
-			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
-				fn(e);
-			}
-		});
-		K(doc).mouseup(fn);
-		return self;
-	},
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
 		K(doc).keyup(function(e) {
@@ -3307,7 +3297,8 @@ _extend(KEdit, KWidget, {
 				doc.body.contentEditable = true;
 				doc.body.removeAttribute('disabled');
 			} else {
-				doc.body.contentEditable = true;
+				doc.designMode = 'on';
+				doc.body.spellcheck = false;
 			}
 			self.cmd = _cmd(doc);
 			if (options.afterCreate) {
@@ -4325,6 +4316,9 @@ KEditor.prototype = {
 		this.edit.focus();
 		return this;
 	},
+	sync : function() {
+		_elementVal(K(this.srcElement), this.html());
+	},
 	addBookmark : function() {
 		var self = this, edit = self.edit, bookmark;
 		if (edit.designMode) {
@@ -4464,6 +4458,20 @@ _plugin('core', function(K) {
 		shortcutKeys = {
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
 		};
+	if (self.syncType == 'form') {
+		var el = K(self.srcElement), hasForm = false;
+		while ((el = el.parent())) {
+			if (el.name == 'form') {
+				hasForm = true;
+				break;
+			}
+		}
+		if (hasForm) {
+			el.bind('submit', function(e) {
+				self.sync();
+			});
+		}
+	}
 	self.clickToolbar('source', function() {
 		if (self.edit.designMode) {
 			self.toolbar.disable(true);

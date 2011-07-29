@@ -655,14 +655,17 @@ _plugin('core', function(K) {
 		};
 	// sync
 	if (self.syncType == 'form') {
-		var el = K(self.srcElement);
+		var el = K(self.srcElement), hasForm = false;
 		while ((el = el.parent())) {
 			if (el.name == 'form') {
-				el.bind('submit', function(e) {
-					self.sync();
-				});
+				hasForm = true;
 				break;
 			}
+		}
+		if (hasForm) {
+			el.bind('submit', function(e) {
+				self.sync();
+			});
 		}
 	}
 	// source

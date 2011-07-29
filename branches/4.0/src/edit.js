@@ -117,7 +117,8 @@ _extend(KEdit, KWidget, {
 				doc.body.contentEditable = true;
 				doc.body.removeAttribute('disabled');
 			} else {
-				doc.body.contentEditable = true;
+				doc.designMode = 'on';
+				doc.body.spellcheck = false;
 			}
 			self.cmd = _cmd(doc);
 			if (options.afterCreate) {
