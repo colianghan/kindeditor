@@ -18,7 +18,11 @@ KindEditor.plugin('plainpaste', function(K) {
 						var html = textarea.val();
 						html = K.escape(html);
 						html = html.replace(/ /g, '&nbsp;');
-						html = html.replace(/\r\n|\n|\r/g, "<br />$&");
+						if (self.newlineTag == 'p') {
+							html = html.replace(/^/, '<p>').replace(/$/, '</p>').replace(/\n/g, '</p><p>');
+						} else {
+							html = html.replace(/\n/g, '<br />$&');
+						}
 						self.insertHtml(html).hideDialog().focus();
 					}
 				}

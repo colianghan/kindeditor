@@ -11,10 +11,7 @@ ver 4.0 alpha
 * 改善: 后退时保持选中状态。
 * 改善: 大部分组件实现模块化，可以单独调用。
 * 改善: 改进了HTML格式化功能。
-* 初始化参数: 新增fullscreenMode、wellFormatMode、scriptPath、langType、pasteType、bodyClass、cssData、noDisableItems。
-* 初始化参数: wyswygMode参数名改成designMode。
-* 初始化参数: skinsPath参数名改成themesPath。
-* 初始化参数: 删除skinType。
+* 改善: 粘贴纯文本时按照换行设置（newlineTag）换行。
 * BUG: 修复了在页面上设置document.domain时发生错误的问题。
 * BUG: 修复了跨域调用编辑器时无法使用dialog的问题。
 * BUG: 修复了range的collapsed为true时删除格式不起作用的问题。

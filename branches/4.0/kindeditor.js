@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-29)
+* @version 4.0 (2011-07-30)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-29)',
+var _VERSION = '4.0 (2011-07-30)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -200,12 +200,13 @@ var _options = {
 	scriptPath : _getScriptPath(),
 	langType : 'zh_CN',
 	urlType : '',
-	newlineType : 'p',
+	newlineTag : 'p',
 	resizeType : 2,
 	syncType : 'form',
 	pasteType : 2,
 	dialogAlignType : 'page',
 	bodyClass : 'ke-content',
+	indentChar : '\t',
 	cssPath : '',
 	cssData : '',
 	minWidth : 550,
@@ -634,13 +635,18 @@ function _formatUrl(url, mode, host, pathname) {
 	}
 	return url;
 }
-function _formatHtml(html, htmlTags, urlType, wellFormatted) {
+function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	urlType = urlType || '';
 	wellFormatted = _undef(wellFormatted, false);
+	indentChar = _undef(indentChar, '\t');
 	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	});
+	html = html.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>');
+	html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
+	html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
+	html = html.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
 		_each(htmlTags, function(key, val) {
@@ -681,6 +687,9 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				startNewline = '\n';
 			}
 		}
+		if (tagName == 'br') {
+			endNewline = '\n';
+		}
 		if (_BLOCK_TAG_MAP[tagName] && !_PRE_TAG_MAP[tagName]) {
 			if (wellFormatted) {
 				if (startSlash && tagStack.length > 0 && tagStack[tagStack.length - 1] === tagName) {
@@ -691,13 +700,13 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				startNewline = '\n';
 				endNewline = '\n';
 				for (var i = 0, len = startSlash ? tagStack.length : tagStack.length - 1; i < len; i++) {
-					startNewline += '\t';
+					startNewline += indentChar;
 					if (!startSlash) {
-						endNewline += '\t';
+						endNewline += indentChar;
 					}
 				}
 				if (!startSlash) {
-					endNewline += '\t';
+					endNewline += indentChar;
 				}
 			} else {
 				startNewline = endNewline = '';
@@ -775,14 +784,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 		}
 		return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 	});
-	html = html.replace(/\n\t*\n/g, '\n');
-	if (!_IE) {
-		html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
-		html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
-	}
-	if (_WEBKIT) {
-		html = html.replace(/\u200B/g, '');
-	}
+	html = html.replace(/\n\s*\n/g, '\n');
 	return _trim(html);
 }
 function _mediaType(src) {
@@ -3265,7 +3267,7 @@ _extend(KEdit, KWidget, {
 		self.srcElement = K(options.srcElement);
 		self.div.addClass('ke-edit');
 		self.designMode = _undef(options.designMode, true);
-		self.afterGetHtml = options.afterGetHtml;
+		self.beforeGetHtml = options.beforeGetHtml;
 		self.beforeSetHtml = options.beforeSetHtml;
 		var themesPath = _undef(options.themesPath, ''),
 			bodyClass = options.bodyClass,
@@ -3359,29 +3361,11 @@ _extend(KEdit, KWidget, {
 			var body = doc.body;
 			if (val === undefined) {
 				val = body.innerHTML;
-				val = val.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
-					full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
-					full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
-					return full;
-				});
-				val = val.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
-					return start + end;
-				});
-				if (self.afterGetHtml) {
-					val = self.afterGetHtml(val);
+				if (self.beforeGetHtml) {
+					val = self.beforeGetHtml(val);
 				}
 				return val;
 			}
-			val = val.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
-				if (full.match(/\sdata-ke-src="[^"]+"/i)) {
-					return full;
-				}
-				full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
-				return full;
-			});
-			val = val.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
-				return start + 'data-ke-' + end;
-			});
 			if (self.beforeSetHtml) {
 				val = self.beforeSetHtml(val);
 			}
@@ -4120,8 +4104,8 @@ KEditor.prototype = {
 	beforeHideDialog : function(fn) {
 		return this.handler('beforeHideDialog', fn);
 	},
-	afterGetHtml : function(fn) {
-		return this.handler('afterGetHtml', fn);
+	beforeGetHtml : function(fn) {
+		return this.handler('beforeGetHtml', fn);
 	},
 	beforeSetHtml : function(fn) {
 		return this.handler('beforeSetHtml', fn);
@@ -4195,9 +4179,9 @@ KEditor.prototype = {
 			bodyClass : self.bodyClass,
 			cssPath : self.cssPath,
 			cssData : self.cssData,
-			afterGetHtml : function(html) {
-				html = self.afterGetHtml(html);
-				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode);
+			beforeGetHtml : function(html) {
+				html = self.beforeGetHtml(html);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
 			},
 			beforeSetHtml : function(html) {
 				html = self.beforeSetHtml(html);
@@ -4475,11 +4459,7 @@ function _create(expr, options) {
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
-K.create = _create;
-K.plugin = _plugin;
-K.lang = _lang;
-})(window);
-KindEditor.plugin('core', function(K) {
+_plugin('core', function(K) {
 	var self = this,
 		shortcutKeys = {
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
@@ -4520,10 +4500,10 @@ KindEditor.plugin('core', function(K) {
 			loaded = true;
 		}
 	});
-	K.each('undo,redo'.split(','), function(i, name) {
+	_each('undo,redo'.split(','), function(i, name) {
 		if (shortcutKeys[name]) {
 			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, shortcutKeys[name], function() {
+				_ctrl(this.edit.doc, shortcutKeys[name], function() {
 					self.clickToolbar(name);
 				});
 			});
@@ -4546,7 +4526,7 @@ KindEditor.plugin('core', function(K) {
 				name : 'formatblock',
 				width : self.langType == 'en' ? 200 : 150
 			});
-		K.each(blocks, function(key, val) {
+		_each(blocks, function(key, val) {
 			var style = 'font-size:' + heights[key] + 'px;';
 			if (key.charAt(0) === 'h') {
 				style += 'font-weight:bold;';
@@ -4567,7 +4547,7 @@ KindEditor.plugin('core', function(K) {
 				name : 'fontname',
 				width : 150
 			});
-		K.each(self.lang('fontname.fontName'), function(key, val) {
+		_each(self.lang('fontname.fontName'), function(key, val) {
 			menu.addItem({
 				title : '<span style="font-family: ' + key + ';">' + val + '</span>',
 				checked : (curVal === key.toLowerCase() || curVal === val.toLowerCase()),
@@ -4583,10 +4563,10 @@ KindEditor.plugin('core', function(K) {
 				name : 'fontsize',
 				width : 150
 			});
-		K.each(self.fontSizeTable, function(i, val) {
+		_each(self.fontSizeTable, function(i, val) {
 			menu.addItem({
 				title : '<span style="font-size:' + val + ';">' + val + '</span>',
-				height : K.removeUnit(val) + 12,
+				height : _removeUnit(val) + 12,
 				checked : curVal === val,
 				click : function() {
 					self.exec('fontsize', val).hideMenu();
@@ -4594,7 +4574,7 @@ KindEditor.plugin('core', function(K) {
 			});
 		});
 	});
-	K.each('forecolor,hilitecolor'.split(','), function(i, name) {
+	_each('forecolor,hilitecolor'.split(','), function(i, name) {
 		self.clickToolbar(name, function() {
 			self.createMenu({
 				name : name,
@@ -4606,7 +4586,7 @@ KindEditor.plugin('core', function(K) {
 			});
 		});
 	});
-	K.each(('cut,copy,paste').split(','), function(i, name) {
+	_each(('cut,copy,paste').split(','), function(i, name) {
 		self.clickToolbar(name, function() {
 			self.focus();
 			try {
@@ -4618,7 +4598,7 @@ KindEditor.plugin('core', function(K) {
 	});
 	self.clickToolbar('about', function() {
 		var html = '<div style="margin:20px;">' +
-			'<div>KindEditor ' + K.VERSION + '</div>' +
+			'<div>KindEditor ' + _VERSION + '</div>' +
 			'<div>Copyright &copy; <a href="http://www.kindsoft.net/" target="_blank">kindsoft.net</a> All rights reserved.</div>' +
 			'</div>';
 		self.createDialog({
@@ -4634,7 +4614,7 @@ KindEditor.plugin('core', function(K) {
 	self.plugin.getSelectedImage = function() {
 		var range = self.edit.cmd.range,
 			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
+		if (!_WEBKIT && !range.isControl()) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
@@ -4646,7 +4626,7 @@ KindEditor.plugin('core', function(K) {
 	self.plugin.getSelectedFlash = function() {
 		var range = self.edit.cmd.range,
 			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
+		if (!_WEBKIT && !range.isControl()) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
@@ -4658,7 +4638,7 @@ KindEditor.plugin('core', function(K) {
 	self.plugin.getSelectedMedia = function() {
 		var range = self.edit.cmd.range,
 			sc = range.startContainer, so = range.startOffset;
-		if (!K.WEBKIT && !range.isControl()) {
+		if (!_WEBKIT && !range.isControl()) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
@@ -4670,9 +4650,9 @@ KindEditor.plugin('core', function(K) {
 		}
 		return img;
 	};
-	K.each('link,image,flash,media'.split(','), function(i, name) {
+	_each('link,image,flash,media'.split(','), function(i, name) {
 		var uName = name.charAt(0).toUpperCase() + name.substr(1);
-		K.each('edit,delete'.split(','), function(j, val) {
+		_each('edit,delete'.split(','), function(j, val) {
 			self.addContextmenu({
 				title : self.lang(val + uName),
 				click : function() {
@@ -4688,20 +4668,20 @@ KindEditor.plugin('core', function(K) {
 		});
 		self.addContextmenu({ title : '-' });
 	});
-	self.afterGetHtml(function(html) {
+	self.beforeGetHtml(function(html) {
 		return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(full) {
-			var imgAttrs = K.getAttrList(full),
-				attrs = K.mediaAttrs(imgAttrs['data-ke-tag']);
-			return K.mediaEmbed(attrs);
+			var imgAttrs = _getAttrList(full),
+				attrs = _mediaAttrs(imgAttrs['data-ke-tag']);
+			return _mediaEmbed(attrs);
 		});
 	});
 	self.beforeSetHtml(function(html) {
 		return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>(?:<\/embed>)?/ig, function(full) {
-			var attrs = K.getAttrList(full);
-			attrs.src = K.undef(attrs.src, '');
-			attrs.width = K.undef(attrs.width, 0);
-			attrs.height = K.undef(attrs.height, 0);
-			return K.mediaImg(self.themesPath + 'common/blank.gif', attrs);
+			var attrs = _getAttrList(full);
+			attrs.src = _undef(attrs.src, '');
+			attrs.width = _undef(attrs.width, 0);
+			attrs.height = _undef(attrs.height, 0);
+			return _mediaImg(self.themesPath + 'common/blank.gif', attrs);
 		});
 	});
 	self.plugin.getSelectedTable = function() {
@@ -4713,9 +4693,9 @@ KindEditor.plugin('core', function(K) {
 	self.plugin.getSelectedCell = function() {
 		return self.cmd.commonAncestor('td');
 	};
-	K.each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
+	_each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
 	'rowdelete,insert,delete').split(','), function(i, val) {
-		var cond = K.inArray(val, ['prop', 'delete']) < 0 ? self.plugin.getSelectedCell : self.plugin.getSelectedTable;
+		var cond = _inArray(val, ['prop', 'delete']) < 0 ? self.plugin.getSelectedCell : self.plugin.getSelectedTable;
 		self.addContextmenu({
 			title : self.lang('table' + val),
 			click : function() {
@@ -4730,12 +4710,12 @@ KindEditor.plugin('core', function(K) {
 		});
 	});
 	self.addContextmenu({ title : '-' });
-	K.each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
+	_each(('selectall,justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,' +
 		'insertunorderedlist,indent,outdent,subscript,superscript,hr,print,' +
 		'bold,italic,underline,strikethrough,removeformat,unlink').split(','), function(i, name) {
 		if (shortcutKeys[name]) {
 			self.afterCreate(function() {
-				K.ctrl(this.edit.doc, shortcutKeys[name], function() {
+				_ctrl(this.edit.doc, shortcutKeys[name], function() {
 					self.cmd.selection();
 					self.clickToolbar(name);
 				});
@@ -4746,19 +4726,19 @@ KindEditor.plugin('core', function(K) {
 		});
 	});
 	self.afterCreate(function() {
-		var doc = self.edit.doc, id = '__kindeditor_paste__';
+		var doc = self.edit.doc, cls = '__kindeditor_paste__';
 		K(doc.body).bind('paste', function(e) {
 			if (self.pasteType === 0) {
 				e.stop();
 			}
 		});
 		K(doc.body).bind(_IE ? 'beforepaste' : 'paste', function(e){
-			if (self.pasteType === 0 || doc.getElementById(id)) {
+			if (self.pasteType === 0 || K('div.' + cls, doc).length > 0) {
 				return;
 			}
 			var cmd = self.cmd.selection(),
 				bookmark = cmd.range.createBookmark(),
-				div = K('<div id="' + id + '" style="border:1px solid #000;">1111&nbsp;</div>', doc).css({
+				div = K('<div class="' + cls + '">&nbsp;</div>', doc).css({
 					position : 'absolute',
 					width : '1px',
 					height : '1px',
@@ -4773,17 +4753,67 @@ KindEditor.plugin('core', function(K) {
 			setTimeout(function() {
 				cmd.range.moveToBookmark(bookmark);
 				cmd.select();
-				div = K('#' + id, doc);
-				var data = '';
+				if (_WEBKIT) {
+					K('div.' + cls, div).each(function() {
+						K(this).after('<br />').remove(true);
+					});
+					K('span.Apple-style-span', div).remove(true);
+					K('meta', div).remove();
+				}
+				var html = div.html();
+				div.remove();
 				if (self.pasteType === 2) {
-					data = K.formatHtml(div.html(), self.filterMode ? self.htmlTags : null);
+					html = self.beforeSetHtml(html);
+					html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
 				}
 				if (self.pasteType === 1) {
-					data = div.text();
+					html = html.replace(/<br[^>]*>/ig, '\n');
+					html = html.replace(/<\/p><p[^>]*>/ig, '\n');
+					html = html.replace(/<[^>]+/g, '');
+					html = html.replace(/&nbsp;/ig, ' ');
+					html = html.replace(/\n\s*\n/g, '\n');
+					if (self.newlineTag == 'p') {
+						html = html.replace(/^/, '<p>').replace(/$/, '</p>').replace(/\n/g, '</p><p>');
+					} else {
+						html = html.replace(/\n/g, '<br />$&');
+					}
 				}
-				div.remove();
-				self.insertHtml(data);
+				self.insertHtml(html);
 			}, 0);
 		});
 	});
+	self.beforeGetHtml(function(html) {
+		html = html.replace(/<ke-script([^>]*)>([\s\S]*?)<\/ke-script>/ig, function(full, attr, code) {
+			return '<script' + attr + '>' + code + '</script>';
+		});
+		html = html.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
+			full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
+			full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
+			return full;
+		});
+		html = html.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+			return start + end;
+		});
+		return html;
+	});
+	self.beforeSetHtml(function(html) {
+		html = html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
+			return '<ke-script' + attr + '>' + code + '</ke-script>';
+		});
+		html = html.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
+			if (full.match(/\sdata-ke-src="[^"]+"/i)) {
+				return full;
+			}
+			full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
+			return full;
+		});
+		html = html.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+			return start + 'data-ke-' + end;
+		});
+		return html;
+	});
 });
+K.create = _create;
+K.plugin = _plugin;
+K.lang = _lang;
+})(window);

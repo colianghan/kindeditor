@@ -98,9 +98,10 @@ function _formatUrl(url, mode, host, pathname) {
 	return url;
 }
 
-function _formatHtml(html, htmlTags, urlType, wellFormatted) {
+function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	urlType = urlType || '';
 	wellFormatted = _undef(wellFormatted, false);
+	indentChar = _undef(indentChar, '\t');
 	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
 	// 将pre里的br转换成\n
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
@@ -170,13 +171,13 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				startNewline = '\n';
 				endNewline = '\n';
 				for (var i = 0, len = startSlash ? tagStack.length : tagStack.length - 1; i < len; i++) {
-					startNewline += '  ';
+					startNewline += indentChar;
 					if (!startSlash) {
-						endNewline += '  ';
+						endNewline += indentChar;
 					}
 				}
 				if (!startSlash) {
-					endNewline += '  ';
+					endNewline += indentChar;
 				}
 			} else {
 				startNewline = endNewline = '';

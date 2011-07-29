@@ -25,6 +25,7 @@ var _options = {
 	pasteType : 2, // 0:none, 1:text, 2:HTML
 	dialogAlignType : 'page', // page, editor
 	bodyClass : 'ke-content',
+	indentChar : '\t', // \t, "  "
 	cssPath : '', //String or Array
 	cssData : '',
 	minWidth : 550,
