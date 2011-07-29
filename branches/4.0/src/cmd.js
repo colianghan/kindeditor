@@ -675,8 +675,11 @@ _extend(KCmd, {
 		return this.select();
 	},
 	inserthtml : function(val) {
-		var self = this, doc = self.doc, range = self.range,
-			frag = doc.createDocumentFragment();
+		var self = this, doc = self.doc, range = self.range;
+		if (val === '') {
+			return self;
+		}
+		var frag = doc.createDocumentFragment();
 		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
 		});

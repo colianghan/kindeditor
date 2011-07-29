@@ -22,6 +22,7 @@ var _options = {
 	newlineType : 'p', // p, br
 	resizeType : 2, // 0, 1, 2
 	syncType : 'form', // "", form, auto
+	pasteType : 2, // 0:none, 1:text, 2:HTML
 	dialogAlignType : 'page', // page, editor
 	bodyClass : 'ke-content',
 	cssPath : '', //String or Array

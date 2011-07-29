@@ -277,4 +277,49 @@ KindEditor.plugin('core', function(K) {
 			self.focus().exec(name, null);
 		});
 	});
+	// paste
+	self.afterCreate(function() {
+		var doc = self.edit.doc, id = '__kindeditor_paste__';
+		K(doc.body).bind('paste', function(e) {
+			if (self.pasteType === 0) {
+				e.stop();
+			}
+		});
+		K(doc.body).bind(_IE ? 'beforepaste' : 'paste', function(e){
+			if (self.pasteType === 0 || doc.getElementById(id)) {
+				return;
+			}
+			var cmd = self.cmd.selection(),
+				bookmark = cmd.range.createBookmark(),
+				div = K('<div id="' + id + '" style="border:1px solid #000;">1111&nbsp;</div>', doc).css({
+					position : 'absolute',
+					width : '1px',
+					height : '1px',
+					overflow : 'hidden',
+					left : '-1981px',
+					top : K(bookmark.start).pos().y + 'px',
+					'white-space' : 'nowrap'
+				});
+			K(doc.body).append(div);
+			cmd.range.selectNodeContents(div[0]);
+			cmd.select();
+			// 结束粘贴后
+			setTimeout(function() {
+				cmd.range.moveToBookmark(bookmark);
+				cmd.select();
+				div = K('#' + id, doc);
+				var data = '';
+				// paste HTML
+				if (self.pasteType === 2) {
+					data = K.formatHtml(div.html(), self.filterMode ? self.htmlTags : null);
+				}
+				// paste text
+				if (self.pasteType === 1) {
+					data = div.text();
+				}
+				div.remove();
+				self.insertHtml(data);
+			}, 0);
+		});
+	});
 });

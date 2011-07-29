@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-28)
+* @version 4.0 (2011-07-29)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-28)',
+var _VERSION = '4.0 (2011-07-29)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -203,6 +203,7 @@ var _options = {
 	newlineType : 'p',
 	resizeType : 2,
 	syncType : 'form',
+	pasteType : 2,
 	dialogAlignType : 'page',
 	bodyClass : 'ke-content',
 	cssPath : '',
@@ -1115,14 +1116,15 @@ function _docWidth(doc) {
 	var el = _docElement(doc);
 	return Math.max(el.scrollWidth, el.clientWidth);
 }
-function _getScrollPos() {
+function _getScrollPos(doc) {
+	doc = doc || document;
 	var x, y;
 	if (_IE || _OPERA) {
-		x = _docElement().scrollLeft;
-		y = _docElement().scrollTop;
+		x = _docElement(doc).scrollLeft;
+		y = _docElement(doc).scrollTop;
 	} else {
-		x = window.scrollX;
-		y = window.scrollY;
+		x = _getWin(doc).scrollX;
+		y = _getWin(doc).scrollY;
 	}
 	return {x : x, y : y};
 }
@@ -1243,6 +1245,13 @@ _extend(KNode, {
 		});
 		return self;
 	},
+	text : function() {
+		var self = this;
+		if (self.length < 1) {
+			return '';
+		}
+		return _IE ? self[0].innerText : self[0].textContent;
+	},
 	hasVal : function() {
 		if (this.length < 1) {
 			return false;
@@ -1332,7 +1341,7 @@ _extend(KNode, {
 		if (node) {
 			if (node.getBoundingClientRect) {
 				var box = node.getBoundingClientRect(),
-					pos = _getScrollPos();
+					pos = _getScrollPos(self.doc);
 				x = box.left + pos.x;
 				y = box.top + pos.y;
 			} else {
@@ -2833,8 +2842,11 @@ _extend(KCmd, {
 		return this.select();
 	},
 	inserthtml : function(val) {
-		var self = this, doc = self.doc, range = self.range,
-			frag = doc.createDocumentFragment();
+		var self = this, doc = self.doc, range = self.range;
+		if (val === '') {
+			return self;
+		}
+		var frag = doc.createDocumentFragment();
 		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
 		});
@@ -4115,8 +4127,7 @@ KEditor.prototype = {
 		return this.handler('beforeSetHtml', fn);
 	},
 	create : function() {
-		var self = this,
-			fullscreenMode = self.fullscreenMode;
+		var self = this, fullscreenMode = self.fullscreenMode;
 		if (fullscreenMode) {
 			_docElement().style.overflow = 'hidden';
 		} else {
@@ -4200,24 +4211,6 @@ KEditor.prototype = {
 					}
 				});
 				_bindContextmenuEvent.call(self);
-				/*
-				var pasted = false;
-				K(this.doc.body).bind('paste', function(e){
-					if (pasted) return false;
-					pasted = true;
-					var n= K('<div id="_mcePaste">tesw</div>', self.edit.doc);
-					K(self.edit.doc.body).append(n);
-					var rng = self.edit.doc.body.createTextRange();
-					rng.moveToElementText(n[0]);
-					rng.execCommand('paste');
-					setTimeout(function() {
-						var data = K("#_mcePaste", self.edit.doc);
-						self.cmd.range.insertNode(data[0]);
-					}, 0);
-					e.stop();
-					return false;
-				});
-				*/
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
 					self.addBookmark();
@@ -4335,7 +4328,7 @@ KEditor.prototype = {
 		key = key.toLowerCase();
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
-		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
+		if (_inArray(key, 'selectall,copy,paste,print'.split(',')) < 0) {
 			self.updateState();
 			self.addBookmark();
 		}
@@ -4452,33 +4445,32 @@ KEditor.prototype = {
 	}
 };
 function _create(expr, options) {
-	if (!options) {
-		options = {};
+	options = options || {};
+	function create(editor) {
+		_each(_plugins, function(name, fn) {
+			fn.call(editor, KindEditor);
+		});
+		return editor.create();
 	}
 	var knode = K(expr);
-	if (knode) {
-		options.srcElement = knode[0];
-		if (!options.width) {
-			options.width = knode.width();
-		}
-		if (!options.height) {
-			options.height = knode.height();
-		}
-		var editor = new KEditor(options);
-		if (_language[editor.langType]) {
-			_each(_plugins, function(name, fn) {
-				fn.call(editor, KindEditor);
-			});
-			return editor.create();
-		}
-		_getScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
-			_each(_plugins, function(name, fn) {
-				fn.call(editor, KindEditor);
-			});
-			editor.create();
-		});
-		return editor;
+	if (!knode) {
+		return;
 	}
+	options.srcElement = knode[0];
+	if (!options.width) {
+		options.width = knode.width();
+	}
+	if (!options.height) {
+		options.height = knode.height();
+	}
+	var editor = new KEditor(options);
+	if (_language[editor.langType]) {
+		return create(editor);
+	}
+	_getScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+		return create(editor);
+	});
+	return editor;
 }
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
@@ -4751,6 +4743,47 @@ KindEditor.plugin('core', function(K) {
 		}
 		self.clickToolbar(name, function() {
 			self.focus().exec(name, null);
+		});
+	});
+	self.afterCreate(function() {
+		var doc = self.edit.doc, id = '__kindeditor_paste__';
+		K(doc.body).bind('paste', function(e) {
+			if (self.pasteType === 0) {
+				e.stop();
+			}
+		});
+		K(doc.body).bind(_IE ? 'beforepaste' : 'paste', function(e){
+			if (self.pasteType === 0 || doc.getElementById(id)) {
+				return;
+			}
+			var cmd = self.cmd.selection(),
+				bookmark = cmd.range.createBookmark(),
+				div = K('<div id="' + id + '" style="border:1px solid #000;">1111&nbsp;</div>', doc).css({
+					position : 'absolute',
+					width : '1px',
+					height : '1px',
+					overflow : 'hidden',
+					left : '-1981px',
+					top : K(bookmark.start).pos().y + 'px',
+					'white-space' : 'nowrap'
+				});
+			K(doc.body).append(div);
+			cmd.range.selectNodeContents(div[0]);
+			cmd.select();
+			setTimeout(function() {
+				cmd.range.moveToBookmark(bookmark);
+				cmd.select();
+				div = K('#' + id, doc);
+				var data = '';
+				if (self.pasteType === 2) {
+					data = K.formatHtml(div.html(), self.filterMode ? self.htmlTags : null);
+				}
+				if (self.pasteType === 1) {
+					data = div.text();
+				}
+				div.remove();
+				self.insertHtml(data);
+			}, 0);
 		});
 	});
 });

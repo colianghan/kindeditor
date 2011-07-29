@@ -265,8 +265,7 @@ KEditor.prototype = {
 		return this.handler('beforeSetHtml', fn);
 	},
 	create : function() {
-		var self = this,
-			fullscreenMode = self.fullscreenMode;
+		var self = this, fullscreenMode = self.fullscreenMode;
 		if (fullscreenMode) {
 			_docElement().style.overflow = 'hidden';
 		} else {
@@ -356,24 +355,6 @@ KEditor.prototype = {
 					}
 				});
 				_bindContextmenuEvent.call(self);
-				/*
-				var pasted = false;
-				K(this.doc.body).bind('paste', function(e){
-					if (pasted) return false;
-					pasted = true;
-					var n= K('<div id="_mcePaste">tesw</div>', self.edit.doc);
-					K(self.edit.doc.body).append(n);
-					var rng = self.edit.doc.body.createTextRange();
-					rng.moveToElementText(n[0]);
-					rng.execCommand('paste');
-					setTimeout(function() {
-						var data = K("#_mcePaste", self.edit.doc);
-						self.cmd.range.insertNode(data[0]);
-					}, 0);
-					e.stop();
-					return false;
-				});
-				*/
 				// add bookmark to undoStack
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
@@ -500,7 +481,7 @@ KEditor.prototype = {
 		var self = this, cmd = self.cmd;
 		cmd[key].apply(cmd, _toArray(arguments, 1));
 		// 下面命令不改变HTML内容，所以不需要改变工具栏状态，也不需要保存bookmark
-		if (_inArray(key, 'selectall,copy,print'.split(',')) < 0) {
+		if (_inArray(key, 'selectall,copy,paste,print'.split(',')) < 0) {
 			self.updateState();
 			self.addBookmark();
 		}
@@ -628,35 +609,34 @@ KEditor.prototype = {
 	K.create('#id');
 */
 function _create(expr, options) {
-	if (!options) {
-		options = {};
+	options = options || {};
+	function create(editor) {
+		_each(_plugins, function(name, fn) {
+			fn.call(editor, KindEditor);
+		});
+		return editor.create();
 	}
 	var knode = K(expr);
-	if (knode) {
-		options.srcElement = knode[0];
-		if (!options.width) {
-			options.width = knode.width();
-		}
-		if (!options.height) {
-			options.height = knode.height();
-		}
-		var editor = new KEditor(options);
-		// create editor
-		if (_language[editor.langType]) {
-			_each(_plugins, function(name, fn) {
-				fn.call(editor, KindEditor);
-			});
-			return editor.create();
-		}
-		// create editor after load lang file
-		_getScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
-			_each(_plugins, function(name, fn) {
-				fn.call(editor, KindEditor);
-			});
-			editor.create();
-		});
-		return editor;
+	if (!knode) {
+		return;
 	}
+	options.srcElement = knode[0];
+	if (!options.width) {
+		options.width = knode.width();
+	}
+	if (!options.height) {
+		options.height = knode.height();
+	}
+	var editor = new KEditor(options);
+	// create editor
+	if (_language[editor.langType]) {
+		return create(editor);
+	}
+	// create editor after load lang file
+	_getScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+		return create(editor);
+	});
+	return editor;
 }
 
 // 解决IE6浏览器重复下载背景图片的问题

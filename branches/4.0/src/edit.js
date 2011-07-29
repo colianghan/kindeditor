@@ -176,6 +176,9 @@ _extend(KEdit, KWidget, {
 			// get
 			if (val === undefined) {
 				val = body.innerHTML;
+				val = val.replace(/<ke-script([^>]*)>([\s\S]*?)<\/ke-script>/ig, function(full, attr, code) {
+					return '<script' + attr + '>' + code + '</script>';
+				});
 				val = val.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
 					full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
 					full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
@@ -190,6 +193,9 @@ _extend(KEdit, KWidget, {
 				return val;
 			}
 			// set
+			val = val.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
+				return '<ke-script' + attr + '>' + code + '</ke-script>';
+			});
 			val = val.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
 				if (full.match(/\sdata-ke-src="[^"]+"/i)) {
 					return full;

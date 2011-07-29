@@ -90,14 +90,15 @@ function _docWidth(doc) {
 	return Math.max(el.scrollWidth, el.clientWidth);
 }
 
-function _getScrollPos() {
+function _getScrollPos(doc) {
+	doc = doc || document;
 	var x, y;
 	if (_IE || _OPERA) {
-		x = _docElement().scrollLeft;
-		y = _docElement().scrollTop;
+		x = _docElement(doc).scrollLeft;
+		y = _docElement(doc).scrollTop;
 	} else {
-		x = window.scrollX;
-		y = window.scrollY;
+		x = _getWin(doc).scrollX;
+		y = _getWin(doc).scrollY;
 	}
 	return {x : x, y : y};
 }
@@ -221,6 +222,13 @@ _extend(KNode, {
 		});
 		return self;
 	},
+	text : function() {
+		var self = this;
+		if (self.length < 1) {
+			return '';
+		}
+		return _IE ? self[0].innerText : self[0].textContent;
+	},
 	hasVal : function() {
 		if (this.length < 1) {
 			return false;
@@ -310,7 +318,7 @@ _extend(KNode, {
 		if (node) {
 			if (node.getBoundingClientRect) {
 				var box = node.getBoundingClientRect(),
-					pos = _getScrollPos();
+					pos = _getScrollPos(self.doc);
 				x = box.left + pos.x;
 				y = box.top + pos.y;
 			} else {
