@@ -494,6 +494,9 @@ KEditor.prototype = {
 		this.edit.focus();
 		return this;
 	},
+	sync : function() {
+		_elementVal(K(this.srcElement), this.html());
+	},
 	addBookmark : function() {
 		var self = this, edit = self.edit, bookmark;
 		if (edit.designMode) {
@@ -650,6 +653,18 @@ _plugin('core', function(K) {
 		shortcutKeys = {
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
 		};
+	// sync
+	if (self.syncType == 'form') {
+		var el = K(self.srcElement);
+		while ((el = el.parent())) {
+			if (el.name == 'form') {
+				el.bind('submit', function(e) {
+					self.sync();
+				});
+				break;
+			}
+		}
+	}
 	// source
 	self.clickToolbar('source', function() {
 		if (self.edit.designMode) {

@@ -765,7 +765,7 @@ _extend(KCmd, {
 		}
 		return self;
 	},
-	//用键盘添加文字时触发oninput事件
+	// 用键盘添加文字时触发oninput事件
 	oninput : function(fn) {
 		var self = this, doc = self.doc;
 		K(doc).keyup(function(e) {
@@ -775,18 +775,7 @@ _extend(KCmd, {
 		});
 		return self;
 	},
-	//移动光标时触发oncursormove事件
-	oncursormove : function(fn) {
-		var self = this, doc = self.doc;
-		K(doc).keyup(function(e) {
-			if (!e.ctrlKey && !e.altKey && _CURSORMOVE_KEY_MAP[e.which]) {
-				fn(e);
-			}
-		});
-		K(doc).mouseup(fn);
-		return self;
-	},
-	//输入文字、移动光标、执行命令都会触发onchange事件
+	// 输入文字、移动光标、执行命令都会触发onchange事件
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
 		K(doc).keyup(function(e) {
