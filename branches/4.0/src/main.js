@@ -258,8 +258,8 @@ KEditor.prototype = {
 	beforeHideDialog : function(fn) {
 		return this.handler('beforeHideDialog', fn);
 	},
-	afterGetHtml : function(fn) {
-		return this.handler('afterGetHtml', fn);
+	beforeGetHtml : function(fn) {
+		return this.handler('beforeGetHtml', fn);
 	},
 	beforeSetHtml : function(fn) {
 		return this.handler('beforeSetHtml', fn);
@@ -338,8 +338,8 @@ KEditor.prototype = {
 			bodyClass : self.bodyClass,
 			cssPath : self.cssPath,
 			cssData : self.cssData,
-			afterGetHtml : function(html) {
-				html = self.afterGetHtml(html);
+			beforeGetHtml : function(html) {
+				html = self.beforeGetHtml(html);
 				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode);
 			},
 			beforeSetHtml : function(html) {

@@ -218,7 +218,7 @@ KindEditor.plugin('core', function(K) {
 		});
 		self.addContextmenu({ title : '-' });
 	});
-	self.afterGetHtml(function(html) {
+	self.beforeGetHtml(function(html) {
 		return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(full) {
 			var imgAttrs = K.getAttrList(full),
 				attrs = K.mediaAttrs(imgAttrs['data-ke-tag']);
@@ -311,7 +311,8 @@ KindEditor.plugin('core', function(K) {
 				var data = '';
 				// paste HTML
 				if (self.pasteType === 2) {
-					data = K.formatHtml(div.html(), self.filterMode ? self.htmlTags : null);
+					data = self.beforeSetHtml(div.html());
+					data = K.formatHtml(data, self.filterMode ? self.htmlTags : null);
 				}
 				// paste text
 				if (self.pasteType === 1) {
@@ -321,5 +322,35 @@ KindEditor.plugin('core', function(K) {
 				self.insertHtml(data);
 			}, 0);
 		});
+	});
+	self.beforeGetHtml(function(html) {
+		html = html.replace(/<ke-script([^>]*)>([\s\S]*?)<\/ke-script>/ig, function(full, attr, code) {
+			return '<script' + attr + '>' + code + '</script>';
+		});
+		html = html.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
+			full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
+			full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
+			return full;
+		});
+		html = html.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+			return start + end;
+		});
+		return html;
+	});
+	self.beforeSetHtml(function(html) {
+		html = html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
+			return '<ke-script' + attr + '>' + code + '</ke-script>';
+		});
+		html = html.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
+			if (full.match(/\sdata-ke-src="[^"]+"/i)) {
+				return full;
+			}
+			full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
+			return full;
+		});
+		html = html.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+			return start + 'data-ke-' + end;
+		});
+		return html;
 	});
 });
