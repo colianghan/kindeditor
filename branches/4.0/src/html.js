@@ -106,6 +106,10 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	});
+	html = html.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>');
+	html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
+	html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
+	html = html.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
 		// 展开htmlTags里的key
@@ -151,6 +155,10 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				startNewline = '\n';
 			}
 		}
+		// br tag
+		if (tagName == 'br') {
+			endNewline = '\n';
+		}
 		// block tag的格式化
 		if (_BLOCK_TAG_MAP[tagName] && !_PRE_TAG_MAP[tagName]) {
 			if (wellFormatted) {
@@ -162,13 +170,13 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 				startNewline = '\n';
 				endNewline = '\n';
 				for (var i = 0, len = startSlash ? tagStack.length : tagStack.length - 1; i < len; i++) {
-					startNewline += '\t';
+					startNewline += '  ';
 					if (!startSlash) {
-						endNewline += '\t';
+						endNewline += '  ';
 					}
 				}
 				if (!startSlash) {
-					endNewline += '\t';
+					endNewline += '  ';
 				}
 			} else {
 				startNewline = endNewline = '';
@@ -252,14 +260,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted) {
 		}
 		return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 	});
-	html = html.replace(/\n\t*\n/g, '\n');
-	if (!_IE) {
-		html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
-		html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
-	}
-	if (_WEBKIT) {
-		html = html.replace(/\u200B/g, '');
-	}
+	html = html.replace(/\n\s*\n/g, '\n');
 	return _trim(html);
 }
 // 根据URL判断 media type

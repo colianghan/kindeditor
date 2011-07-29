@@ -19,7 +19,7 @@ var _options = {
 	scriptPath : _getScriptPath(),
 	langType : 'zh_CN',
 	urlType : '', // "", relative, absolute, domain
-	newlineType : 'p', // p, br
+	newlineTag : 'p', // p, br
 	resizeType : 2, // 0, 1, 2
 	syncType : 'form', // "", form, auto
 	pasteType : 2, // 0:none, 1:text, 2:HTML

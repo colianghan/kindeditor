@@ -279,19 +279,19 @@ KindEditor.plugin('core', function(K) {
 	});
 	// paste
 	self.afterCreate(function() {
-		var doc = self.edit.doc, id = '__kindeditor_paste__';
+		var doc = self.edit.doc, cls = '__kindeditor_paste__';
 		K(doc.body).bind('paste', function(e) {
 			if (self.pasteType === 0) {
 				e.stop();
 			}
 		});
 		K(doc.body).bind(_IE ? 'beforepaste' : 'paste', function(e){
-			if (self.pasteType === 0 || doc.getElementById(id)) {
+			if (self.pasteType === 0 || K('div.' + cls, doc).length > 0) {
 				return;
 			}
 			var cmd = self.cmd.selection(),
 				bookmark = cmd.range.createBookmark(),
-				div = K('<div id="' + id + '" style="border:1px solid #000;">1111&nbsp;</div>', doc).css({
+				div = K('<div class="' + cls + '">&nbsp;</div>', doc).css({
 					position : 'absolute',
 					width : '1px',
 					height : '1px',
@@ -307,19 +307,34 @@ KindEditor.plugin('core', function(K) {
 			setTimeout(function() {
 				cmd.range.moveToBookmark(bookmark);
 				cmd.select();
-				div = K('#' + id, doc);
-				var data = '';
+				if (_WEBKIT) {
+					K('div.' + cls, div).each(function() {
+						K(this).after('<br />').remove(true);
+					});
+					K('span.Apple-style-span', div).remove(true);
+					K('meta', div).remove();
+				}
+				var html = div.html();
+				div.remove();
 				// paste HTML
 				if (self.pasteType === 2) {
-					data = self.beforeSetHtml(div.html());
-					data = K.formatHtml(data, self.filterMode ? self.htmlTags : null);
+					html = self.beforeSetHtml(html);
+					html = K.formatHtml(html, self.filterMode ? self.htmlTags : null);
 				}
 				// paste text
 				if (self.pasteType === 1) {
-					data = div.text();
+					html = html.replace(/<br[^>]*>/ig, '\n');
+					html = html.replace(/<\/p><p[^>]*>/ig, '\n');
+					html = html.replace(/<[^>]+/g, '');
+					html = html.replace(/&nbsp;/ig, ' ');
+					html = html.replace(/\n\s*\n/g, '\n');
+					if (self.newlineTag == 'p') {
+						html = html.replace(/^/, '<p>').replace(/$/, '</p>').replace(/\n/g, '</p><p>');
+					} else {
+						html = html.replace(/\n/g, '<br />$&');
+					}
 				}
-				div.remove();
-				self.insertHtml(data);
+				self.insertHtml(html);
 			}, 0);
 		});
 	});
