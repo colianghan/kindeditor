@@ -87,18 +87,27 @@ function _bindContextmenuEvent() {
 			prevItem = this;
 		});
 		if (items.length > 0) {
-			var pos = K(self.edit.iframe).pos();
-			self.menu = _menu({
-				x : pos.x + e.clientX,
-				y : pos.y + e.clientY,
-				width : maxWidth
-			});
+			e.preventDefault();
+			var pos = K(self.edit.iframe).pos(),
+				menu = _menu({
+					x : pos.x + e.clientX,
+					y : pos.y + e.clientY,
+					width : maxWidth,
+					css : { visibility: 'hidden' }
+				});
 			_each(items, function() {
 				if (this.title) {
-					self.menu.addItem(this);
+					menu.addItem(this);
 				}
 			});
-			e.preventDefault();
+			// 下拉菜单超过可视区域时调整菜单位置
+			var docEl = _docElement(menu.doc),
+				menuHeight = menu.div.height();
+			if (e.clientY + menuHeight >= docEl.clientHeight - 200) {
+				menu.pos(menu.x, _removeUnit(menu.y) - menuHeight);
+			}
+			menu.div.css('visibility', 'visible');
+			self.menu = menu;
 		}
 	});
 }

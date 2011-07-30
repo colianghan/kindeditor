@@ -38,6 +38,12 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'	width:100px;',
 		'	height:100px;',
 		'}',
+		'.ke-script {',
+		'	display:none;',
+		'	font-size:0;',
+		'	width:0;',
+		'	height:0;',
+		'}',
 		'</style>'
 	];
 	if (_isArray(cssPath)) {

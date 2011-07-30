@@ -2849,6 +2849,9 @@ _extend(KCmd, {
 		if (val === '') {
 			return self;
 		}
+		if (_inPreElement(K(range.startContainer))) {
+			return self;
+		}
 		var frag = doc.createDocumentFragment();
 		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
@@ -3127,6 +3130,8 @@ _extend(KWidget, {
 	},
 	pos : function(x, y) {
 		var self = this;
+		x = x < 0 ? 0 : _addUnit(x);
+		y = y < 0 ? 0 : _addUnit(y);
 		self.div.css({
 			left : x,
 			top : y
@@ -3152,8 +3157,6 @@ _extend(KWidget, {
 			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
 			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
 		}
-		x = x < 0 ? 0 : _addUnit(x);
-		y = y < 0 ? 0 : _addUnit(y);
 		return self.pos(x, y);
 	},
 	remove : function() {
@@ -3230,6 +3233,12 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'	background-repeat:no-repeat;',
 		'	width:100px;',
 		'	height:100px;',
+		'}',
+		'.ke-script {',
+		'	display:none;',
+		'	font-size:0;',
+		'	width:0;',
+		'	height:0;',
 		'}',
 		'</style>'
 	];
@@ -3952,18 +3961,26 @@ function _bindContextmenuEvent() {
 			prevItem = this;
 		});
 		if (items.length > 0) {
-			var pos = K(self.edit.iframe).pos();
-			self.menu = _menu({
-				x : pos.x + e.clientX,
-				y : pos.y + e.clientY,
-				width : maxWidth
-			});
+			e.preventDefault();
+			var pos = K(self.edit.iframe).pos(),
+				menu = _menu({
+					x : pos.x + e.clientX,
+					y : pos.y + e.clientY,
+					width : maxWidth,
+					css : { visibility: 'hidden' }
+				});
 			_each(items, function() {
 				if (this.title) {
-					self.menu.addItem(this);
+					menu.addItem(this);
 				}
 			});
-			e.preventDefault();
+			var docEl = _docElement(menu.doc),
+				menuHeight = menu.div.height();
+			if (e.clientY + menuHeight >= docEl.clientHeight - 200) {
+				menu.pos(menu.x, _removeUnit(menu.y) - menuHeight);
+			}
+			menu.div.css('visibility', 'visible');
+			self.menu = menu;
 		}
 	});
 }

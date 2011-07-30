@@ -10,8 +10,7 @@ function _drag(options) {
 		listeners = [];
 	if (iframeFix) {
 		K('iframe').each(function() {
-			//在IE上，页面设置document.domain后，取得没做过处理的iframe document会报错
-			//此时先跳过，不做处理
+			// 在IE上，页面设置document.domain后，取得没做过处理的iframe document会报错，此时先跳过，不做处理
 			try {
 				docs.push(_iframeDoc(this));
 			} catch (e) {}
@@ -121,6 +120,8 @@ _extend(KWidget, {
 	},
 	pos : function(x, y) {
 		var self = this;
+		x = x < 0 ? 0 : _addUnit(x);
+		y = y < 0 ? 0 : _addUnit(y);
 		self.div.css({
 			left : x,
 			top : y
@@ -146,8 +147,6 @@ _extend(KWidget, {
 			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
 			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
 		}
-		x = x < 0 ? 0 : _addUnit(x);
-		y = y < 0 ? 0 : _addUnit(y);
 		return self.pos(x, y);
 	},
 	remove : function() {

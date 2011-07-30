@@ -680,6 +680,9 @@ _extend(KCmd, {
 		if (val === '') {
 			return self;
 		}
+		if (_inPreElement(K(range.startContainer))) {
+			return self;
+		}
 		var frag = doc.createDocumentFragment();
 		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
