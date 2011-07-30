@@ -103,7 +103,7 @@ function _bindContextmenuEvent() {
 			// 下拉菜单超过可视区域时调整菜单位置
 			var docEl = _docElement(menu.doc),
 				menuHeight = menu.div.height();
-			if (e.clientY + menuHeight >= docEl.clientHeight - 200) {
+			if (e.clientY + menuHeight >= docEl.clientHeight - 100) {
 				menu.pos(menu.x, _removeUnit(menu.y) - menuHeight);
 			}
 			menu.div.css('visibility', 'visible');

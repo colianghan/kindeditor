@@ -3976,7 +3976,7 @@ function _bindContextmenuEvent() {
 			});
 			var docEl = _docElement(menu.doc),
 				menuHeight = menu.div.height();
-			if (e.clientY + menuHeight >= docEl.clientHeight - 200) {
+			if (e.clientY + menuHeight >= docEl.clientHeight - 100) {
 				menu.pos(menu.x, _removeUnit(menu.y) - menuHeight);
 			}
 			menu.div.css('visibility', 'visible');
