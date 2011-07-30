@@ -238,7 +238,7 @@ function _mergeAttrs(knode, attrs, styles) {
 // 判断node是否在pre、style、script里
 function _inPreElement(knode) {
 	while (knode && knode.name != 'body') {
-		if (_PRE_TAG_MAP[knode.name]) {
+		if (_PRE_TAG_MAP[knode.name] || knode.name == 'div' && knode.hasClass('ke-script')) {
 			return true;
 		}
 		knode = knode.parent();
@@ -261,6 +261,7 @@ _extend(KCmd, {
 	selection : function() {
 		var self = this, doc = self.doc, rng = _getRng(doc);
 		if (rng) {
+			self.sel = _getSel(doc);
 			self.range = _range(rng);
 			if (K(self.range.startContainer).name == 'html') {
 				self.range.selectNodeContents(doc.body).collapse(false);
@@ -272,7 +273,7 @@ _extend(KCmd, {
 		var self = this, sel = self.sel, range = self.range.cloneRange(),
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset,
-			doc = sc.ownerDocument || sc, win = self.win, rng;
+			doc = _getDoc(sc), win = self.win, rng;
 		//tag内部无内容时选中tag内部，<tagName>[]</tagName>
 		if (sc.nodeType == 1 && range.collapsed) {
 			if (_IE) {
@@ -537,7 +538,7 @@ _extend(KCmd, {
 		}
 		return null;
 	},
-	//Reference: document.queryCommandState
+	// Reference: document.queryCommandState
 	state : function(key) {
 		var self = this, doc = self.doc, bool = false;
 		try {
@@ -545,7 +546,7 @@ _extend(KCmd, {
 		} catch (e) {}
 		return bool;
 	},
-	//Reference: document.queryCommandValue
+	// Reference: document.queryCommandValue
 	val : function(key) {
 		var self = this, doc = self.doc, range = self.range;
 		function lc(val) {

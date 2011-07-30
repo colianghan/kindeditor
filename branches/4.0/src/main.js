@@ -1003,34 +1003,32 @@ _plugin('core', function(K) {
 		});
 	});
 	self.beforeGetHtml(function(html) {
-		html = html.replace(/<ke-script([^>]*)>([\s\S]*?)<\/ke-script>/ig, function(full, attr, code) {
-			return '<script' + attr + '>' + code + '</script>';
-		});
-		html = html.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
+		return html.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
+			return '<script' + _unescape(attr) + '>' + code + '</script>';
+		})
+		.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
 			full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
 			full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
 			return full;
-		});
-		html = html.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+		})
+		.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
 			return start + end;
 		});
-		return html;
 	});
 	self.beforeSetHtml(function(html) {
-		html = html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
-			return '<ke-script' + attr + '>' + code + '</ke-script>';
-		});
-		html = html.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
+		return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
+			return '<div class="ke-script" data-ke-script-attr="' + _escape(attr) + '">' + code + '</div>';
+		})
+		.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
 			if (full.match(/\sdata-ke-src="[^"]+"/i)) {
 				return full;
 			}
 			full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
 			return full;
-		});
-		html = html.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+		})
+		.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
 		});
-		return html;
 	});
 });
 

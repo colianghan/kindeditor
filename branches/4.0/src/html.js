@@ -106,11 +106,11 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	// 将pre里的br转换成\n
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
-	});
-	html = html.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>');
-	html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
-	html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
-	html = html.replace(/\u200B/g, '');
+	})
+	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<br\s*\/>\s*<\/p>/ig, '</p>')
+	.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
 		// 展开htmlTags里的key
@@ -157,7 +157,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 			}
 		}
 		// br tag
-		if (tagName == 'br') {
+		if (wellFormatted && tagName == 'br') {
 			endNewline = '\n';
 		}
 		// block tag的格式化

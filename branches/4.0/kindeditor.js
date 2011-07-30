@@ -177,7 +177,7 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,c
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),
-	_PRE_TAG_MAP = _toMap('pre,style,script,ke-script'),
+	_PRE_TAG_MAP = _toMap('pre,style,script'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
@@ -642,11 +642,11 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
 	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
-	});
-	html = html.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>');
-	html = html.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>');
-	html = html.replace(/<br\s*\/>\s*<\/p>/ig, '</p>');
-	html = html.replace(/\u200B/g, '');
+	})
+	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<br\s*\/>\s*<\/p>/ig, '</p>')
+	.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
 		_each(htmlTags, function(key, val) {
@@ -687,7 +687,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				startNewline = '\n';
 			}
 		}
-		if (tagName == 'br') {
+		if (wellFormatted && tagName == 'br') {
 			endNewline = '\n';
 		}
 		if (_BLOCK_TAG_MAP[tagName] && !_PRE_TAG_MAP[tagName]) {
@@ -2437,7 +2437,7 @@ function _mergeAttrs(knode, attrs, styles) {
 }
 function _inPreElement(knode) {
 	while (knode && knode.name != 'body') {
-		if (_PRE_TAG_MAP[knode.name]) {
+		if (_PRE_TAG_MAP[knode.name] || knode.name == 'div' && knode.hasClass('ke-script')) {
 			return true;
 		}
 		knode = knode.parent();
@@ -2458,6 +2458,7 @@ _extend(KCmd, {
 	selection : function() {
 		var self = this, doc = self.doc, rng = _getRng(doc);
 		if (rng) {
+			self.sel = _getSel(doc);
 			self.range = _range(rng);
 			if (K(self.range.startContainer).name == 'html') {
 				self.range.selectNodeContents(doc.body).collapse(false);
@@ -2469,7 +2470,7 @@ _extend(KCmd, {
 		var self = this, sel = self.sel, range = self.range.cloneRange(),
 			sc = range.startContainer, so = range.startOffset,
 			ec = range.endContainer, eo = range.endOffset,
-			doc = sc.ownerDocument || sc, win = self.win, rng;
+			doc = _getDoc(sc), win = self.win, rng;
 		if (sc.nodeType == 1 && range.collapsed) {
 			if (_IE) {
 				var dummy = K('<span>&nbsp;</span>', doc);
@@ -4791,34 +4792,32 @@ _plugin('core', function(K) {
 		});
 	});
 	self.beforeGetHtml(function(html) {
-		html = html.replace(/<ke-script([^>]*)>([\s\S]*?)<\/ke-script>/ig, function(full, attr, code) {
-			return '<script' + attr + '>' + code + '</script>';
-		});
-		html = html.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
+		return html.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
+			return '<script' + _unescape(attr) + '>' + code + '</script>';
+		})
+		.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
 			full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
 			full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
 			return full;
-		});
-		html = html.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+		})
+		.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
 			return start + end;
 		});
-		return html;
 	});
 	self.beforeSetHtml(function(html) {
-		html = html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
-			return '<ke-script' + attr + '>' + code + '</ke-script>';
-		});
-		html = html.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
+		return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
+			return '<div class="ke-script" data-ke-script-attr="' + _escape(attr) + '">' + code + '</div>';
+		})
+		.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
 			if (full.match(/\sdata-ke-src="[^"]+"/i)) {
 				return full;
 			}
 			full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
 			return full;
-		});
-		html = html.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+		})
+		.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
 		});
-		return html;
 	});
 });
 K.create = _create;
