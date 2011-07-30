@@ -81,6 +81,7 @@ _extend(KWidget, {
 		// public properties
 		self.name = options.name || '';
 		self.doc = options.doc || document;
+		self.win = _getWin(self.doc);
 		self.x = _addUnit(options.x);
 		self.y = _addUnit(options.y);
 		self.z = options.z;
@@ -105,7 +106,7 @@ _extend(KWidget, {
 			});
 		}
 		if (self.z && (self.x === undefined || self.y === undefined)) {
-			self.resetPos(self.width, self.height);
+			self.autoPos(self.width, self.height);
 		}
 		if (options.cls) {
 			self.div.addClass(options.cls);
@@ -118,15 +119,25 @@ _extend(KWidget, {
 		}
 		K(options.parent || self.doc.body).append(self.div);
 	},
-	resetPos : function(width, height) {
+	pos : function(x, y) {
+		var self = this;
+		self.div.css({
+			left : x,
+			top : y
+		});
+		self.x = x;
+		self.y = y;
+		return self;
+	},
+	autoPos : function(width, height) {
 		var self = this,
 			w = _removeUnit(width) || 0,
 			h = _removeUnit(height) || 0;
 		if (self._alignEl) {
-			var el = self._alignEl,
-				pos = K(el).pos(),
-				diffX = _round(el.clientWidth / 2 - w / 2),
-				diffY = _round(el.clientHeight / 2 - h / 2);
+			var knode = K(self._alignEl),
+				pos = knode.pos(),
+				diffX = _round(knode[0].clientWidth / 2 - w / 2),
+				diffY = _round(knode[0].clientHeight / 2 - h / 2);
 			x = diffX < 0 ? pos.x : pos.x + diffX;
 			y = diffY < 0 ? pos.y : pos.y + diffY;
 		} else {
@@ -137,13 +148,7 @@ _extend(KWidget, {
 		}
 		x = x < 0 ? 0 : _addUnit(x);
 		y = y < 0 ? 0 : _addUnit(y);
-		self.div.css({
-			left : x,
-			top : y
-		});
-		self.x = x;
-		self.y = y;
-		return self;
+		return self.pos(x, y);
 	},
 	remove : function() {
 		this.div.remove();

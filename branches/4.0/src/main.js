@@ -559,6 +559,9 @@ KEditor.prototype = {
 	createDialog : function(options) {
 		var self = this, name = options.name;
 		options.shadowMode = self.shadowMode;
+		if (self.dialogAlignType != 'page') {
+			options.alignEl = self.container;
+		}
 		options.closeBtn = {
 			name : self.lang('close'),
 			click : function(e) {
