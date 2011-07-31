@@ -117,17 +117,37 @@ _extend(KWidget, {
 			self.div.html(options.html);
 		}
 		K(options.parent || self.doc.body).append(self.div);
+		if (options.autoScroll) {
+			if (_IE && _V < 7) {
+				var scrollPos = _getScrollPos();
+				K(self.win).bind('scroll', function(e) {
+					var pos = _getScrollPos(),
+						diffX = pos.x - scrollPos.x,
+						diffY = pos.y - scrollPos.y;
+					self.pos(_removeUnit(self.x) + diffX, _removeUnit(self.y) + diffY, false);
+				});
+			} else {
+				self.div.css('position', 'fixed');
+			}
+		}
 	},
-	pos : function(x, y) {
+	pos : function(x, y, updateProp) {
 		var self = this;
-		x = x < 0 ? 0 : _addUnit(x);
-		y = y < 0 ? 0 : _addUnit(y);
-		self.div.css({
-			left : x,
-			top : y
-		});
-		self.x = x;
-		self.y = y;
+		updateProp = _undef(updateProp, true);
+		if (x !== null) {
+			x = x < 0 ? 0 : _addUnit(x);
+			self.div.css('left', x);
+			if (updateProp) {
+				self.x = x;
+			}
+		}
+		if (y !== null) {
+			y = y < 0 ? 0 : _addUnit(y);
+			self.div.css('top', y);
+			if (updateProp) {
+				self.y = y;
+			}
+		}
 		return self;
 	},
 	autoPos : function(width, height) {
@@ -150,6 +170,9 @@ _extend(KWidget, {
 		return self.pos(x, y);
 	},
 	remove : function() {
+		if (_IE && _V < 7) {
+			K(this.win).unbind('scroll');
+		}
 		this.div.remove();
 		return this;
 	},
@@ -172,11 +195,7 @@ _extend(KWidget, {
 			if ((y = y + diffY) < 0) {
 				y = 0;
 			}
-			x = _addUnit(x);
-			y = _addUnit(y);
-			self.div.css('left', x).css('top', y);
-			self.x = x;
-			self.y = y;
+			self.pos(x, y);
 		};
 		_drag(options);
 		return self;

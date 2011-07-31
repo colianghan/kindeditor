@@ -19,6 +19,7 @@ _extend(KDialog, KWidget, {
 	init : function(options) {
 		var self = this;
 		options.z = options.z || 811213;
+		options.autoScroll = _undef(options.autoScroll, true);
 		KDialog.parent.init.call(self, options);
 		var title = options.title,
 			body = K(options.body, self.doc),
@@ -77,12 +78,7 @@ _extend(KDialog, KWidget, {
 				height : docHeight
 			});
 		}
-		// auto set dialog position
-		var width = self.div.width(), height = self.div.height();
-		self.autoPos(width, height);
-		K(self.win).bind('scroll', function(e) {
-			self.autoPos(width, height);
-		});
+		self.autoPos(self.div.width(), self.div.height());
 		self.footerDiv = footerDiv;
 		self.bodyDiv = bodyDiv;
 		self.headerDiv = headerDiv;
@@ -92,7 +88,6 @@ _extend(KDialog, KWidget, {
 		if (self.mask) {
 			self.mask.remove();
 		}
-		K(self.win).unbind('scroll');
 		self.closeIcon.remove();
 		K('input', self.div).remove();
 		self.footerDiv.remove();
