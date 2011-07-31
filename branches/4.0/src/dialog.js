@@ -19,7 +19,6 @@ _extend(KDialog, KWidget, {
 	init : function(options) {
 		var self = this;
 		options.z = options.z || 811213;
-		options.autoScroll = _undef(options.autoScroll, true);
 		KDialog.parent.init.call(self, options);
 		var title = options.title,
 			body = K(options.body, self.doc),

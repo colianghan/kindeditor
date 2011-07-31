@@ -175,14 +175,18 @@ _extend(KEdit, KWidget, {
 		KEdit.parent.remove.call(self);
 		return self;
 	},
-	html : function(val) {
+	html : function(val, isFull) {
 		var self = this, doc = self.doc;
 		// design mode
 		if (self.designMode) {
 			var body = doc.body;
 			// get
 			if (val === undefined) {
-				val = body.innerHTML;
+				if (isFull) {
+					val = body.innerHTML;
+				} else {
+					val = '<!doctype html><html>' + body.parentNode.innerHTML + '</html>';
+				}
 				if (self.beforeGetHtml) {
 					val = self.beforeGetHtml(val);
 				}

@@ -3,15 +3,6 @@ function _get(val) {
 	return K(val)[0];
 }
 
-function _toCamel(str) {
-	var arr = str.split('-');
-	str = '';
-	_each(arr, function(key, val) {
-		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
-	});
-	return str;
-}
-
 function _getDoc(node) {
 	if (!node) {
 		return document;
@@ -151,9 +142,9 @@ _extend(KNode, {
 	},
 	hasAttr : function(key) {
 		if (this.length < 1) {
-			return null;
+			return false;
 		}
-		return _getAttr(this[0], key);
+		return !!_getAttr(this[0], key);
 	},
 	attr : function(key, val) {
 		var self = this;

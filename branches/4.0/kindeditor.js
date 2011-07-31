@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-07-31)
+* @version 4.0 (2011-08-01)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-07-31)',
+var _VERSION = '4.0 (2011-08-01)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -74,6 +74,14 @@ function _escape(val) {
 }
 function _unescape(val) {
 	return val.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+}
+function _toCamel(str) {
+	var arr = str.split('-');
+	str = '';
+	_each(arr, function(key, val) {
+		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
+	});
+	return str;
 }
 function _toHex(val) {
 	function hex(d) {
@@ -165,6 +173,7 @@ var K = {
 	removeUnit : _removeUnit,
 	escape : _escape,
 	unescape : _unescape,
+	toCamel : _toCamel,
 	toHex : _toHex,
 	toMap : _toMap,
 	toArray : _toArray,
@@ -173,7 +182,7 @@ var K = {
 	json : _json
 };
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,img,input,ins,kbd,label,map,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
-	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,tr,ul'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,body,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,head,hr,html,iframe,ins,isindex,li,map,menu,meta,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,title,tr,ul'),
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),
@@ -213,10 +222,10 @@ var _options = {
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [
-		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
+		'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
 		'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
 		'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
-		'superscript', '|', 'selectall', '/',
+		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
@@ -1044,14 +1053,6 @@ K.queryAll = _queryAll;
 function _get(val) {
 	return K(val)[0];
 }
-function _toCamel(str) {
-	var arr = str.split('-');
-	str = '';
-	_each(arr, function(key, val) {
-		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
-	});
-	return str;
-}
 function _getDoc(node) {
 	if (!node) {
 		return document;
@@ -1176,9 +1177,9 @@ _extend(KNode, {
 	},
 	hasAttr : function(key) {
 		if (this.length < 1) {
-			return null;
+			return false;
 		}
-		return _getAttr(this[0], key);
+		return !!_getAttr(this[0], key);
 	},
 	attr : function(key, val) {
 		var self = this;
@@ -3380,12 +3381,16 @@ _extend(KEdit, KWidget, {
 		KEdit.parent.remove.call(self);
 		return self;
 	},
-	html : function(val) {
+	html : function(val, isFull) {
 		var self = this, doc = self.doc;
 		if (self.designMode) {
 			var body = doc.body;
 			if (val === undefined) {
-				val = body.innerHTML;
+				if (isFull) {
+					val = body.innerHTML;
+				} else {
+					val = '<!doctype html><html>' + body.parentNode.innerHTML + '</html>';
+				}
 				if (self.beforeGetHtml) {
 					val = self.beforeGetHtml(val);
 				}
@@ -3725,7 +3730,6 @@ _extend(KDialog, KWidget, {
 	init : function(options) {
 		var self = this;
 		options.z = options.z || 811213;
-		options.autoScroll = _undef(options.autoScroll, true);
 		KDialog.parent.init.call(self, options);
 		var title = options.title,
 			body = K(options.body, self.doc),
@@ -4129,7 +4133,7 @@ KEditor.prototype = {
 		var self = this;
 		_each(('justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,' +
 			'subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
-			self.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
+			self.cmd.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
 		});
 	},
 	addContextmenu : function(item) {
@@ -4342,12 +4346,6 @@ KEditor.prototype = {
 		this.edit.html(val);
 		return this;
 	},
-	val : function(key) {
-		return this.cmd.val(key);
-	},
-	state : function(key) {
-		return this.cmd.state(key);
-	},
 	exec : function(key) {
 		key = key.toLowerCase();
 		var self = this, cmd = self.cmd;
@@ -4396,9 +4394,8 @@ KEditor.prototype = {
 		return _undoToRedo.call(this, this._redoStack, this._undoStack);
 	},
 	fullscreen : function(bool) {
-		var self = this;
-		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
-		return self.remove().create();
+		this.fullscreenMode = (bool === undefined ? !this.fullscreenMode : bool);
+		return this.remove().create();
 	},
 	createMenu : function(options) {
 		var self = this,
@@ -4429,24 +4426,23 @@ KEditor.prototype = {
 	},
 	createDialog : function(options) {
 		var self = this, name = options.name;
-		options.shadowMode = self.shadowMode;
+		options.autoScroll = _undef(options.autoScroll, true);
+		options.shadowMode = _undef(options.shadowMode, self.shadowMode);
+		options.closeBtn = _undef(options.closeBtn, {
+			name : self.lang('close'),
+			click : function(e) {
+				self.hideDialog().focus();
+			}
+		});
+		options.noBtn = _undef(options.noBtn, {
+			name : self.lang('no'),
+			click : function(e) {
+				self.hideDialog().focus();
+			}
+		});
 		if (self.dialogAlignType != 'page') {
 			options.alignEl = self.container;
 		}
-		options.closeBtn = {
-			name : self.lang('close'),
-			click : function(e) {
-				self.hideDialog();
-				self.focus();
-			}
-		};
-		options.noBtn = {
-			name : self.lang('no'),
-			click : function(e) {
-				self.hideDialog();
-				self.focus();
-			}
-		};
 		if (self.dialogs.length > 0) {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
@@ -4581,7 +4577,7 @@ _plugin('core', function(K) {
 				H4 : 14,
 				p : 12
 			},
-			curVal = self.val('formatblock'),
+			curVal = self.cmd.val('formatblock'),
 			menu = self.createMenu({
 				name : 'formatblock',
 				width : self.langType == 'en' ? 200 : 150
@@ -4602,7 +4598,7 @@ _plugin('core', function(K) {
 		});
 	});
 	self.clickToolbar('fontname', function() {
-		var curVal = self.val('fontname'),
+		var curVal = self.cmd.val('fontname'),
 			menu = self.createMenu({
 				name : 'fontname',
 				width : 150
@@ -4618,7 +4614,7 @@ _plugin('core', function(K) {
 		});
 	});
 	self.clickToolbar('fontsize', function() {
-		var curVal = self.val('fontsize');
+		var curVal = self.cmd.val('fontsize');
 			menu = self.createMenu({
 				name : 'fontsize',
 				width : 150
@@ -4638,7 +4634,7 @@ _plugin('core', function(K) {
 		self.clickToolbar(name, function() {
 			self.createMenu({
 				name : name,
-				selectedColor : self.val(name) || 'default',
+				selectedColor : self.cmd.val(name) || 'default',
 				colors : self.colorTable,
 				click : function(color) {
 					self.exec(name, color).hideMenu();

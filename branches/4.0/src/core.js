@@ -80,6 +80,15 @@ function _unescape(val) {
 	return val.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 }
 
+function _toCamel(str) {
+	var arr = str.split('-');
+	str = '';
+	_each(arr, function(key, val) {
+		str += (key > 0) ? val.charAt(0).toUpperCase() + val.substr(1) : val;
+	});
+	return str;
+}
+
 function _toHex(val) {
 	function hex(d) {
 		var s = parseInt(d, 10).toString(16).toUpperCase();
@@ -178,6 +187,7 @@ var K = {
 	removeUnit : _removeUnit,
 	escape : _escape,
 	unescape : _unescape,
+	toCamel : _toCamel,
 	toHex : _toHex,
 	toMap : _toMap,
 	toArray : _toArray,
@@ -187,7 +197,7 @@ var K = {
 };
 
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,img,input,ins,kbd,label,map,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
-	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,map,menu,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,tr,ul'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,body,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,head,hr,html,iframe,ins,isindex,li,map,menu,meta,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,title,tr,ul'),
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),

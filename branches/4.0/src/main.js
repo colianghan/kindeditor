@@ -252,7 +252,7 @@ KEditor.prototype = {
 		var self = this;
 		_each(('justifyleft,justifycenter,justifyright,justifyfull,insertorderedlist,insertunorderedlist,' +
 			'subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
-			self.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
+			self.cmd.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
 		});
 	},
 	addContextmenu : function(item) {
@@ -479,12 +479,6 @@ KEditor.prototype = {
 		this.edit.html(val);
 		return this;
 	},
-	val : function(key) {
-		return this.cmd.val(key);
-	},
-	state : function(key) {
-		return this.cmd.state(key);
-	},
 	exec : function(key) {
 		key = key.toLowerCase();
 		var self = this, cmd = self.cmd;
@@ -534,9 +528,8 @@ KEditor.prototype = {
 		return _undoToRedo.call(this, this._redoStack, this._undoStack);
 	},
 	fullscreen : function(bool) {
-		var self = this;
-		self.fullscreenMode = (bool === undefined ? !self.fullscreenMode : bool);
-		return self.remove().create();
+		this.fullscreenMode = (bool === undefined ? !this.fullscreenMode : bool);
+		return this.remove().create();
 	},
 	createMenu : function(options) {
 		var self = this,
@@ -567,24 +560,23 @@ KEditor.prototype = {
 	},
 	createDialog : function(options) {
 		var self = this, name = options.name;
-		options.shadowMode = self.shadowMode;
+		options.autoScroll = _undef(options.autoScroll, true);
+		options.shadowMode = _undef(options.shadowMode, self.shadowMode);
+		options.closeBtn = _undef(options.closeBtn, {
+			name : self.lang('close'),
+			click : function(e) {
+				self.hideDialog().focus();
+			}
+		});
+		options.noBtn = _undef(options.noBtn, {
+			name : self.lang('no'),
+			click : function(e) {
+				self.hideDialog().focus();
+			}
+		});
 		if (self.dialogAlignType != 'page') {
 			options.alignEl = self.container;
 		}
-		options.closeBtn = {
-			name : self.lang('close'),
-			click : function(e) {
-				self.hideDialog();
-				self.focus();
-			}
-		};
-		options.noBtn = {
-			name : self.lang('no'),
-			click : function(e) {
-				self.hideDialog();
-				self.focus();
-			}
-		};
 		if (self.dialogs.length > 0) {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
@@ -741,7 +733,7 @@ _plugin('core', function(K) {
 				H4 : 14,
 				p : 12
 			},
-			curVal = self.val('formatblock'),
+			curVal = self.cmd.val('formatblock'),
 			menu = self.createMenu({
 				name : 'formatblock',
 				width : self.langType == 'en' ? 200 : 150
@@ -763,7 +755,7 @@ _plugin('core', function(K) {
 	});
 	// fontname
 	self.clickToolbar('fontname', function() {
-		var curVal = self.val('fontname'),
+		var curVal = self.cmd.val('fontname'),
 			menu = self.createMenu({
 				name : 'fontname',
 				width : 150
@@ -780,7 +772,7 @@ _plugin('core', function(K) {
 	});
 	// fontsize
 	self.clickToolbar('fontsize', function() {
-		var curVal = self.val('fontsize');
+		var curVal = self.cmd.val('fontsize');
 			menu = self.createMenu({
 				name : 'fontsize',
 				width : 150
@@ -801,7 +793,7 @@ _plugin('core', function(K) {
 		self.clickToolbar(name, function() {
 			self.createMenu({
 				name : name,
-				selectedColor : self.val(name) || 'default',
+				selectedColor : self.cmd.val(name) || 'default',
 				colors : self.colorTable,
 				click : function(color) {
 					self.exec(name, color).hideMenu();

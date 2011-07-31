@@ -32,10 +32,10 @@ var _options = {
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [
-		'source', '|', 'fullscreen', 'undo', 'redo', 'print', 'cut', 'copy', 'paste',
+		'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
 		'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
 		'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
-		'superscript', '|', 'selectall', '/',
+		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
