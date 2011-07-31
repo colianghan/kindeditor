@@ -472,11 +472,11 @@ KEditor.prototype = {
 		this.cmd.select();
 		return this;
 	},
-	html : function(val) {
+	html : function(val, isFull) {
 		if (val === undefined) {
-			return this.edit.html();
+			return this.edit.html(undefined, isFull);
 		}
-		this.edit.html(val);
+		this.edit.html(val, isFull);
 		return this;
 	},
 	exec : function(key) {

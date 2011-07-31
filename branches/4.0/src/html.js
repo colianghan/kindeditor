@@ -179,6 +179,9 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				if (!startSlash) {
 					endNewline += indentChar;
 				}
+				if (endSlash) {
+					tagStack.pop();
+				}
 			} else {
 				startNewline = endNewline = '';
 			}
