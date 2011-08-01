@@ -575,7 +575,7 @@ KEditor.prototype = {
 			}
 		});
 		options.noBtn = _undef(options.noBtn, {
-			name : self.lang('no'),
+			name : self.lang(options.yesBtn ? 'no' : 'close'),
 			click : function(e) {
 				self.hideDialog().focus();
 			}

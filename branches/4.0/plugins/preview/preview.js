@@ -10,13 +10,7 @@ KindEditor.plugin('preview', function(K) {
 				name : name,
 				width : 750,
 				title : self.lang(name),
-				body : html,
-				noBtn : {
-					name : self.lang('close'),
-					click : function(e) {
-						self.hideDialog().focus();
-					}
-				}
+				body : html
 			}),
 			iframe = K('iframe', dialog.div),
 			doc = K.iframeDoc(iframe);
