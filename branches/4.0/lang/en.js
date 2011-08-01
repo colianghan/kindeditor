@@ -44,6 +44,7 @@ KindEditor.lang({
 	print : 'Print',
 	filemanager : 'File Manager',
 	code : 'Insert code',
+	map : 'Google Maps',
 	yes : 'OK',
 	no : 'Cancel',
 	close : 'Close',
@@ -142,6 +143,8 @@ KindEditor.lang({
 	'table.borderWidth' : 'Width',
 	'table.borderColor' : 'Color',
 	'table.backgroundColor' : 'Background',
+	'map.address' : 'Address: ',
+	'map.search' : 'Search',
 	'formatblock.formatBlock' : {
 		h1 : 'Heading 1',
 		h2 : 'Heading 2',

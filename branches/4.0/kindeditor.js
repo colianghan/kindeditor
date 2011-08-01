@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-08-01)
+* @version 4.0 (2011-08-02)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-08-01)',
+var _VERSION = '4.0 (2011-08-02)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -115,7 +115,7 @@ function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
 function _extend(child) {
-	var parent = arguments[1], proto = arguments[2];
+	var parent = arguments[1], proto = arguments[2], childProto;
 	if (arguments.length == 2) {
 		proto = parent;
 	}
@@ -228,7 +228,7 @@ var _options = {
 		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'table', 'hr', 'emoticons', 'code', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'table', 'hr', 'emoticons', 'map', 'code', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
 	colorTable : [
@@ -2891,7 +2891,7 @@ _extend(KCmd, {
 			html += 'align="' + align + '" ';
 		}
 		html += 'alt="' + title + '" ';
-		html += 'border="' + border + '" />';
+		html += '/>';
 		return this.inserthtml(html);
 	},
 	createlink : function(url, type) {
@@ -3228,44 +3228,44 @@ function _iframeDoc(iframe) {
 function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 	var arr = [
 		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
-		'<style>\n',
-		'html {margin:0;padding:0;}\n',
-		'body {margin:0;padding:5px;}\n',
-		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}\n',
-		'p {margin:5px 0;}\n',
-		'table {border-collapse:collapse;}\n',
-		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}\n',
-		'.ke-flash {\n',
-		'	border:1px solid #AAAAAA;\n',
-		'	background-image:url(' + themesPath + 'common/flash.gif);\n',
-		'	background-position:center center;\n',
-		'	background-repeat:no-repeat;\n',
-		'	width:100px;\n',
-		'	height:100px;\n',
-		'}\n',
-		'.ke-rm {\n',
-		'	border:1px solid #AAAAAA;\n',
-		'	background-image:url(' + themesPath + 'common/rm.gif);\n',
-		'	background-position:center center;\n',
-		'	background-repeat:no-repeat;\n',
-		'	width:100px;\n',
-		'	height:100px;\n',
-		'}\n',
-		'.ke-media {\n',
-		'	border:1px solid #AAAAAA;\n',
-		'	background-image:url(' + themesPath + 'common/media.gif);\n',
-		'	background-position:center center;\n',
-		'	background-repeat:no-repeat;\n',
-		'	width:100px;\n',
-		'	height:100px;\n',
-		'}\n',
-		'.ke-script {\n',
-		'	display:none;\n',
-		'	font-size:0;\n',
-		'	width:0;\n',
-		'	height:0;\n',
-		'}\n',
-		'</style>\n'
+		'<style>',
+		'html {margin:0;padding:0;}',
+		'body {margin:0;padding:5px;}',
+		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
+		'p {margin:5px 0;}',
+		'table {border-collapse:collapse;}',
+		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'.ke-flash {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/flash.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-rm {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/rm.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-media {',
+		'	border:1px solid #AAAAAA;',
+		'	background-image:url(' + themesPath + 'common/media.gif);',
+		'	background-position:center center;',
+		'	background-repeat:no-repeat;',
+		'	width:100px;',
+		'	height:100px;',
+		'}',
+		'.ke-script {',
+		'	display:none;',
+		'	font-size:0;',
+		'	width:0;',
+		'	height:0;',
+		'}',
+		'</style>'
 	];
 	if (_isArray(cssPath)) {
 		_each(cssPath, function(i, path) {
@@ -3282,7 +3282,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		arr.push('<style>' + cssData + '</style>');
 	}
 	arr.push('</head><body ' + (bodyClass ? 'class="' + bodyClass + '"' : '') + '></body></html>');
-	return arr.join('');
+	return arr.join('\n');
 }
 function _elementVal(knode, val) {
 	return knode.hasVal() ? knode.val(val) : knode.html(val);
@@ -4852,12 +4852,12 @@ _plugin('core', function(K) {
 		return html.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
 			return '<script' + _unescape(attr) + '>' + code + '</script>';
 		})
-		.replace(/(<[^>]*)data-ke-src="([^"]+)"([^>]*>)/ig, function(full, start, src, end) {
-			full = full.replace(/(\s+(?:href|src)=")[^"]+(")/i, '$1' + src + '$2');
-			full = full.replace(/\s+data-ke-src="[^"]+"/i, '');
+		.replace(/(<[^>]*)data-ke-src="([^"]*)"([^>]*>)/ig, function(full, start, src, end) {
+			full = full.replace(/(\s+(?:href|src)=")[^"]*(")/i, '$1' + src + '$2');
+			full = full.replace(/\s+data-ke-src="[^"]*"/i, '');
 			return full;
 		})
-		.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+		.replace(/(<[^>]+\s)data-ke-(on\w+="[^"]*"[^>]*>)/ig, function(full, start, end) {
 			return start + end;
 		});
 	});
@@ -4865,14 +4865,14 @@ _plugin('core', function(K) {
 		return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
 			return '<div class="ke-script" data-ke-script-attr="' + _escape(attr) + '">' + code + '</div>';
 		})
-		.replace(/(<[^>]*)(href|src)="([^"]+)"([^>]*>)/ig, function(full, start, key, src, end) {
-			if (full.match(/\sdata-ke-src="[^"]+"/i)) {
+		.replace(/(<[^>]*)(href|src)="([^"]*)"([^>]*>)/ig, function(full, start, key, src, end) {
+			if (full.match(/\sdata-ke-src="[^"]*"/i)) {
 				return full;
 			}
 			full = start + key + '="' + src + '"' + ' data-ke-src="' + src + '"' + end;
 			return full;
 		})
-		.replace(/(<[^>]+\s)(on\w+="[^"]+"[^>]*>)/ig, function(full, start, end) {
+		.replace(/(<[^>]+\s)(on\w+="[^"]*"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
 		});
 	});

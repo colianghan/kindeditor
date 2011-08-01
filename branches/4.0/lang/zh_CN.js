@@ -44,6 +44,7 @@ KindEditor.lang({
 	print : '打印(Ctrl+P)',
 	filemanager : '浏览服务器',
 	code : '插入程序代码',
+	map : 'Google地图',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',
@@ -142,6 +143,8 @@ KindEditor.lang({
 	'table.borderWidth' : '边框',
 	'table.borderColor' : '颜色',
 	'table.backgroundColor' : '背景颜色',
+	'map.address' : '地址: ',
+	'map.search' : '搜索',
 	'formatblock.formatBlock' : {
 		h1 : '标题 1',
 		h2 : '标题 2',

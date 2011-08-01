@@ -125,7 +125,7 @@ function _undef(val, defaultVal) {
 }
 
 function _extend(child) {
-	var parent = arguments[1], proto = arguments[2];
+	var parent = arguments[1], proto = arguments[2], childProto;
 	if (arguments.length == 2) {
 		proto = parent;
 	}

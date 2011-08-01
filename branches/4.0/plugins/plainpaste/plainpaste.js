@@ -28,6 +28,6 @@ KindEditor.plugin('plainpaste', function(K) {
 				}
 			}),
 			textarea = K('textarea', dialog.div);
-		textarea.get().focus();
+		textarea[0].focus();
 	});
 });

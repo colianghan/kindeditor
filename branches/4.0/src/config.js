@@ -38,7 +38,7 @@ var _options = {
 		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'table', 'hr', 'emoticons', 'code', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'table', 'hr', 'emoticons', 'map', 'code', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
 	colorTable : [

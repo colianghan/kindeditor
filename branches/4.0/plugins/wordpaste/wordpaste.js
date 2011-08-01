@@ -28,14 +28,14 @@ KindEditor.plugin('wordpaste', function(K) {
 				}
 			}),
 			div = dialog.div,
-			iframe = K('iframe', div.get());
-		var doc = K.iframeDoc(iframe);
+			iframe = K('iframe', div),
+			doc = K.iframeDoc(iframe);
 		if (!K.IE) {
 			doc.designMode = 'on';
 		}
 		doc.open();
-		doc.write('<html><head><title>WordPaste</title></head>');
-		doc.write('<body style="background-color:#FFFFFF;font-size:12px;margin:2px;" />');
+		doc.write('<!doctype html><html><head><title>WordPaste</title></head>');
+		doc.write('<body style="background-color:#FFF;font-size:12px;margin:2px;">');
 		if (!K.IE) {
 			doc.write('<br />');
 		}
@@ -44,6 +44,6 @@ KindEditor.plugin('wordpaste', function(K) {
 		if (K.IE) {
 			doc.body.contentEditable = 'true';
 		}
-		iframe.get().contentWindow.focus();
+		iframe[0].contentWindow.focus();
 	});
 });

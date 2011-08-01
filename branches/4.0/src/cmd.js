@@ -716,7 +716,7 @@ _extend(KCmd, {
 			html += 'align="' + align + '" ';
 		}
 		html += 'alt="' + title + '" ';
-		html += 'border="' + border + '" />';
+		html += '/>';
 		return this.inserthtml(html);
 	},
 	createlink : function(url, type) {
