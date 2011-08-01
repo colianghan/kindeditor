@@ -18,13 +18,11 @@ KindEditor.plugin('preview', function(K) {
 					}
 				}
 			}),
-			div = dialog.div,
-			iframe = K('iframe', div.get());
-		var doc = K.iframeDoc(iframe);
+			iframe = K('iframe', dialog.div),
+			doc = K.iframeDoc(iframe);
 		doc.open();
-		doc.write(self.html(undefined, true));
+		doc.write(self.fullHtml());
 		doc.close();
-		doc.body.contentEditable = 'false';
 		K(doc.body).css('background-color', '#FFF');
 		iframe[0].contentWindow.focus();
 	});

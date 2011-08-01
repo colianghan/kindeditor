@@ -472,12 +472,15 @@ KEditor.prototype = {
 		this.cmd.select();
 		return this;
 	},
-	html : function(val, isFull) {
+	html : function(val) {
 		if (val === undefined) {
-			return this.edit.html(undefined, isFull);
+			return this.edit.html();
 		}
-		this.edit.html(val, isFull);
+		this.edit.html(val);
 		return this;
+	},
+	fullHtml : function() {
+		return this.edit.html(undefined, true);
 	},
 	exec : function(key) {
 		key = key.toLowerCase();

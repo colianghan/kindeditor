@@ -28,7 +28,7 @@ var _options = {
 	indentChar : '\t', // \t, "  "
 	cssPath : '', //String or Array
 	cssData : '',
-	minWidth : 550,
+	minWidth : 600,
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [

@@ -229,7 +229,9 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 					attrMap[key] = key;
 				}
 				// 过滤属性
-				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key]) {
+				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key] ||
+					tagName === 'body' && key === 'contenteditable' ||
+					/^kindeditor_\d+$/.test(key)) {
 					delete attrMap[key];
 				}
 				if (key === 'style' && val !== '') {

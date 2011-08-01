@@ -218,7 +218,7 @@ var _options = {
 	indentChar : '\t',
 	cssPath : '',
 	cssData : '',
-	minWidth : 550,
+	minWidth : 600,
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [
@@ -717,6 +717,9 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				if (!startSlash) {
 					endNewline += indentChar;
 				}
+				if (endSlash) {
+					tagStack.pop();
+				}
 			} else {
 				startNewline = endNewline = '';
 			}
@@ -760,7 +763,9 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				if (_FILL_ATTR_MAP[key]) {
 					attrMap[key] = key;
 				}
-				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key]) {
+				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key] ||
+					tagName === 'body' && key === 'contenteditable' ||
+					/^kindeditor_\d+$/.test(key)) {
 					delete attrMap[key];
 				}
 				if (key === 'style' && val !== '') {
@@ -3223,44 +3228,44 @@ function _iframeDoc(iframe) {
 function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 	var arr = [
 		'<html><head><meta charset="utf-8" /><title>KindEditor</title>',
-		'<style>',
-		'html {margin:0;padding:0;}',
-		'body {margin:0;padding:5px;}',
-		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
-		'p {margin:5px 0;}',
-		'table {border-collapse:collapse;}',
-		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
-		'.ke-flash {',
-		'	border:1px solid #AAAAAA;',
-		'	background-image:url(' + themesPath + 'common/flash.gif);',
-		'	background-position:center center;',
-		'	background-repeat:no-repeat;',
-		'	width:100px;',
-		'	height:100px;',
-		'}',
-		'.ke-rm {',
-		'	border:1px solid #AAAAAA;',
-		'	background-image:url(' + themesPath + 'common/rm.gif);',
-		'	background-position:center center;',
-		'	background-repeat:no-repeat;',
-		'	width:100px;',
-		'	height:100px;',
-		'}',
-		'.ke-media {',
-		'	border:1px solid #AAAAAA;',
-		'	background-image:url(' + themesPath + 'common/media.gif);',
-		'	background-position:center center;',
-		'	background-repeat:no-repeat;',
-		'	width:100px;',
-		'	height:100px;',
-		'}',
-		'.ke-script {',
-		'	display:none;',
-		'	font-size:0;',
-		'	width:0;',
-		'	height:0;',
-		'}',
-		'</style>'
+		'<style>\n',
+		'html {margin:0;padding:0;}\n',
+		'body {margin:0;padding:5px;}\n',
+		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}\n',
+		'p {margin:5px 0;}\n',
+		'table {border-collapse:collapse;}\n',
+		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}\n',
+		'.ke-flash {\n',
+		'	border:1px solid #AAAAAA;\n',
+		'	background-image:url(' + themesPath + 'common/flash.gif);\n',
+		'	background-position:center center;\n',
+		'	background-repeat:no-repeat;\n',
+		'	width:100px;\n',
+		'	height:100px;\n',
+		'}\n',
+		'.ke-rm {\n',
+		'	border:1px solid #AAAAAA;\n',
+		'	background-image:url(' + themesPath + 'common/rm.gif);\n',
+		'	background-position:center center;\n',
+		'	background-repeat:no-repeat;\n',
+		'	width:100px;\n',
+		'	height:100px;\n',
+		'}\n',
+		'.ke-media {\n',
+		'	border:1px solid #AAAAAA;\n',
+		'	background-image:url(' + themesPath + 'common/media.gif);\n',
+		'	background-position:center center;\n',
+		'	background-repeat:no-repeat;\n',
+		'	width:100px;\n',
+		'	height:100px;\n',
+		'}\n',
+		'.ke-script {\n',
+		'	display:none;\n',
+		'	font-size:0;\n',
+		'	width:0;\n',
+		'	height:0;\n',
+		'}\n',
+		'</style>\n'
 	];
 	if (_isArray(cssPath)) {
 		_each(cssPath, function(i, path) {
@@ -3333,7 +3338,6 @@ _extend(KEdit, KWidget, {
 				doc.body.removeAttribute('disabled');
 			} else {
 				doc.designMode = 'on';
-				doc.body.spellcheck = false;
 			}
 			self.cmd = _cmd(doc);
 			if (options.afterCreate) {
@@ -3387,9 +3391,9 @@ _extend(KEdit, KWidget, {
 			var body = doc.body;
 			if (val === undefined) {
 				if (isFull) {
-					val = body.innerHTML;
-				} else {
 					val = '<!doctype html><html>' + body.parentNode.innerHTML + '</html>';
+				} else {
+					val = body.innerHTML;
 				}
 				if (self.beforeGetHtml) {
 					val = self.beforeGetHtml(val);
@@ -4345,6 +4349,9 @@ KEditor.prototype = {
 		}
 		this.edit.html(val);
 		return this;
+	},
+	fullHtml : function() {
+		return this.edit.html(undefined, true);
 	},
 	exec : function(key) {
 		key = key.toLowerCase();
