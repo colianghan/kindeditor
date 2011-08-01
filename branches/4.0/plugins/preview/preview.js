@@ -4,7 +4,7 @@ KindEditor.plugin('preview', function(K) {
 	self.clickToolbar(name, function() {
 		var lang = self.lang(name + '.'),
 			html = '<div style="padding:10px 20px;">' +
-				'<iframe class="ke-plugin-preview-iframe" frameborder="0"></iframe>' +
+				'<iframe class="ke-textarea" frameborder="0" style="width:708px;height:400px;"></iframe>' +
 				'</div>',
 			dialog = self.createDialog({
 				name : name,

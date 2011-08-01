@@ -228,7 +228,7 @@ var _options = {
 		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
-		'flash', 'media', 'table', 'hr', 'emoticons', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'table', 'hr', 'emoticons', 'code', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
 	colorTable : [
@@ -4250,6 +4250,9 @@ KEditor.prototype = {
 					self.updateState();
 				});
 				self.afterCreate();
+				if (self.afterCreateFn) {
+					self.afterCreateFn.call(self);
+				}
 			}
 		});
 		var statusbar = K('<div class="ke-statusbar"></div>');

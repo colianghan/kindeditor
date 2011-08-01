@@ -43,6 +43,7 @@ KindEditor.lang({
 	about : '关于',
 	print : '打印(Ctrl+P)',
 	filemanager : '浏览服务器',
+	code : '插入程序代码',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',

@@ -43,6 +43,7 @@ KindEditor.lang({
 	about : 'About',
 	print : 'Print',
 	filemanager : 'File Manager',
+	code : 'Insert code',
 	yes : 'OK',
 	no : 'Cancel',
 	close : 'Close',

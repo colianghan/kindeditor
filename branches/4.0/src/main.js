@@ -372,6 +372,9 @@ KEditor.prototype = {
 					self.updateState();
 				});
 				self.afterCreate();
+				if (self.afterCreateFn) {
+					self.afterCreateFn.call(self);
+				}
 			}
 		});
 		// create statusbar
