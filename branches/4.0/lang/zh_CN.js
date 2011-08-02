@@ -45,6 +45,7 @@ KindEditor.lang({
 	filemanager : '浏览服务器',
 	code : '插入程序代码',
 	map : 'Google地图',
+	lineheight : '行距',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',

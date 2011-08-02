@@ -1,5 +1,5 @@
 
-function _getScript(url, fn) {
+function _loadScript(url, fn) {
 	var head = document.getElementsByTagName('head')[0] || document.documentElement,
 	script = document.createElement('script');
 	head.appendChild(script);
@@ -42,5 +42,5 @@ function _ajax(url, fn, method, data) {
 	}
 }
 
-K.getScript = _getScript;
+K.loadScript = _loadScript;
 K.ajax = _ajax;

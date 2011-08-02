@@ -69,7 +69,7 @@ KindEditor.plugin('map', function(K) {
 			searchBtn = K('.ke-button', div),
 			iframe = K('.ke-textarea', div);
 		// Asynchronously Loading the Javascript API
-		K.getScript('http://maps.googleapis.com/maps/api/js?sensor=false&language=' + self.langType + '&callback=kindeditor_plugin_map_initialize');
+		K.loadScript('http://maps.googleapis.com/maps/api/js?sensor=false&language=' + self.langType + '&callback=kindeditor_plugin_map_initialize');
 		// search map
 		searchBtn.click(function(e) {
 			var geocoder = kindeditor_plugin_map_geocoder,

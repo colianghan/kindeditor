@@ -45,6 +45,7 @@ KindEditor.lang({
 	filemanager : 'File Manager',
 	code : 'Insert code',
 	map : 'Google Maps',
+	lineheight : 'Line height',
 	yes : 'OK',
 	no : 'Cancel',
 	close : 'Close',

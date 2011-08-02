@@ -227,7 +227,7 @@ var _options = {
 		'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
 		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
-		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
+		'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'map', 'code', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
@@ -242,7 +242,7 @@ var _options = {
 		font : ['color', 'size', 'face', '.background-color'],
 		span : [
 			'.color', '.background-color', '.font-size', '.font-family', '.background',
-			'.font-weight', '.font-style', '.text-decoration', '.vertical-align'
+			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.line-height'
 		],
 		div : [
 			'align', '.border', '.margin', '.padding', '.text-align', '.color',
@@ -3868,7 +3868,7 @@ function _tabs(options) {
 	return self;
 }
 K.tabs = _tabs;
-function _getScript(url, fn) {
+function _loadScript(url, fn) {
 	var head = document.getElementsByTagName('head')[0] || document.documentElement,
 	script = document.createElement('script');
 	head.appendChild(script);
@@ -3909,7 +3909,7 @@ function _ajax(url, fn, method, data) {
 		xhr.send(null);
 	}
 }
-K.getScript = _getScript;
+K.loadScript = _loadScript;
 K.ajax = _ajax;
 var _plugins = {};
 function _plugin(name, fn) {
@@ -4099,7 +4099,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_getScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}
@@ -4503,7 +4503,7 @@ function _create(expr, options) {
 	if (_language[editor.langType]) {
 		return create(editor);
 	}
-	_getScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
 		return create(editor);
 	});
 	return editor;

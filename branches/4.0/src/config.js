@@ -37,7 +37,7 @@ var _options = {
 		'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
 		'superscript', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
-		'italic', 'underline', 'strikethrough', 'removeformat', '|', 'image',
+		'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
 		'flash', 'media', 'table', 'hr', 'emoticons', 'map', 'code', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
@@ -52,7 +52,7 @@ var _options = {
 		font : ['color', 'size', 'face', '.background-color'],
 		span : [
 			'.color', '.background-color', '.font-size', '.font-family', '.background',
-			'.font-weight', '.font-style', '.text-decoration', '.vertical-align'
+			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.line-height'
 		],
 		div : [
 			'align', '.border', '.margin', '.padding', '.text-align', '.color',
