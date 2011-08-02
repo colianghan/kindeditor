@@ -4,6 +4,7 @@
 		KindEditor build file
 	</description>
 
+	<property name="src" value="src"/>
 	<property name="filename" value="kindeditor"/>
 	<property name="version" value="4.0"/>
 	<property name="charset" value="utf-8"/>
@@ -114,6 +115,7 @@
 		<delete dir="${dist}/docs"/>
 		<delete dir="${dist}/src"/>
 		<delete file="${dist}/build.xml"/>
+		<delete file="${dist}/changelog.txt"/>
 		<zip destfile="${dist}.zip" basedir="${dist}"/>
 	</target>
 

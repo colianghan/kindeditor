@@ -32,9 +32,9 @@ KindEditor.plugin('map', function(K) {
 	self.clickToolbar(name, function() {
 		var html = ['<div style="padding:10px 20px;">',
 				'<div class="ke-dialog-row">',
-				lang.address + ' <input id="kindeditor_plugin_map_address" class="ke-input-text" value="" style="width:200px;" /> ',
+				lang.address + ' <input id="kindeditor_plugin_map_address" name="address" class="ke-input-text" value="" style="width:200px;" /> ',
 				'<span class="ke-button-common ke-button-outer">',
-				'<input type="button" class="ke-button-common ke-button" value="' + lang.search + '" />',
+				'<input type="button" name="searchBtn" class="ke-button-common ke-button" value="' + lang.search + '" />',
 				'</span>',
 				'</div>',
 				'<div id="kindeditor_plugin_map_canvas" style="border:1px solid #A0A0A0;width:558px;height:360px;"></div>',
@@ -65,13 +65,12 @@ KindEditor.plugin('map', function(K) {
 				}
 			}),
 			div = dialog.div,
-			addressBox = K('.ke-input-text', div),
-			searchBtn = K('.ke-button', div),
-			iframe = K('.ke-textarea', div);
+			addressBox = K('[name="address"]', div),
+			searchBtn = K('[name="searchBtn"]', div);
 		// Asynchronously Loading the Javascript API
 		K.loadScript('http://maps.googleapis.com/maps/api/js?sensor=false&language=' + self.langType + '&callback=kindeditor_plugin_map_initialize');
 		// search map
-		searchBtn.click(function(e) {
+		searchBtn[0].onclick = function() {
 			var geocoder = kindeditor_plugin_map_geocoder,
 				map = kindeditor_plugin_map;
 			geocoder.geocode({"address" : addressBox.val()}, function(results, status) {
@@ -85,6 +84,6 @@ KindEditor.plugin('map', function(K) {
 					kindeditor_plugin_map_latlng = results[0].geometry.location;
 				}
 			});
-		});
+		};
 	});
 });

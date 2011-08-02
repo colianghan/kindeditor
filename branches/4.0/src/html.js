@@ -291,7 +291,7 @@ function _mediaClass(type) {
 }
 
 function _mediaAttrs(srcTag) {
-	return _getAttrList(_unescape(srcTag));
+	return _getAttrList(unescape(srcTag));
 }
 
 function _mediaEmbed(attrs) {
@@ -319,7 +319,7 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'data-ke-tag="' + _escape(srcTag) + '" alt="" />';
+	html += 'data-ke-tag="' + escape(srcTag) + '" alt="" />';
 	return html;
 }
 

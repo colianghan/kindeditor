@@ -820,7 +820,7 @@ function _mediaClass(type) {
 	return 'ke-media';
 }
 function _mediaAttrs(srcTag) {
-	return _getAttrList(_unescape(srcTag));
+	return _getAttrList(unescape(srcTag));
 }
 function _mediaEmbed(attrs) {
 	var html = '<embed ';
@@ -846,7 +846,7 @@ function _mediaImg(blankPath, attrs) {
 	if (style !== '') {
 		html += 'style="' + style + '" ';
 	}
-	html += 'data-ke-tag="' + _escape(srcTag) + '" alt="" />';
+	html += 'data-ke-tag="' + escape(srcTag) + '" alt="" />';
 	return html;
 }
 K.formatUrl = _formatUrl;
@@ -1542,6 +1542,9 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 });
 var _K = K;
 K = function(expr, root) {
+	if (expr === undefined || expr === null) {
+		return;
+	}
 	function newNode(node) {
 		if (!node[0]) {
 			node = [];
@@ -4850,7 +4853,7 @@ _plugin('core', function(K) {
 	});
 	self.beforeGetHtml(function(html) {
 		return html.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
-			return '<script' + _unescape(attr) + '>' + code + '</script>';
+			return '<script' + unescape(attr) + '>' + code + '</script>';
 		})
 		.replace(/(<[^>]*)data-ke-src="([^"]*)"([^>]*>)/ig, function(full, start, src, end) {
 			full = full.replace(/(\s+(?:href|src)=")[^"]*(")/i, '$1' + src + '$2');
@@ -4863,7 +4866,7 @@ _plugin('core', function(K) {
 	});
 	self.beforeSetHtml(function(html) {
 		return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
-			return '<div class="ke-script" data-ke-script-attr="' + _escape(attr) + '">' + code + '</div>';
+			return '<div class="ke-script" data-ke-script-attr="' + escape(attr) + '">' + code + '</div>';
 		})
 		.replace(/(<[^>]*)(href|src)="([^"]*)"([^>]*>)/ig, function(full, start, key, src, end) {
 			if (full.match(/\sdata-ke-src="[^"]*"/i)) {

@@ -505,6 +505,9 @@ _each(('blur,focus,focusin,focusout,load,resize,scroll,unload,click,dblclick,' +
 var _K = K;
 
 K = function(expr, root) {
+	if (expr === undefined || expr === null) {
+		return;
+	}
 	function newNode(node) {
 		if (!node[0]) {
 			node = [];

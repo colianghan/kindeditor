@@ -88,7 +88,7 @@ KindEditor.plugin('image', function(K) {
 								iframe.unbind();
 								var data = {};
 								try {
-									data = K.json(_iframeDoc(iframe).body.innerHTML);
+									data = K.json(K.iframeDoc(iframe).body.innerHTML);
 								} catch (e) {
 									alert(self.lang('invalidJson'));
 								}
