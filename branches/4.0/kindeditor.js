@@ -189,6 +189,7 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,c
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),
 	_PRE_TAG_MAP = _toMap('pre,style,script'),
+	_NOSPLIT_TAG_MAP = _toMap('html,head,body,td,tr,table,ol,ul,li'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
@@ -655,8 +656,8 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	})
 	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
-	.replace(/<p>\s*<br\s*\/>\s*<\/p>/ig, '<p>&nbsp;</p>')
-	.replace(/<br\s*\/>\s*<\/p>/ig, '</p>')
+	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<br\s*\/?>\s*<\/p>/ig, '</p>')
 	.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
@@ -2561,11 +2562,17 @@ _extend(KCmd, {
 			needSplit = false, knode;
 		while (parent && parent.parentNode) {
 			knode = K(parent);
-			if (!knode.isStyle()) {
-				break;
-			}
-			if (!_hasAttrOrCss(knode, map)) {
-				break;
+			if (map) {
+				if (!knode.isStyle()) {
+					break;
+				}
+				if (!_hasAttrOrCss(knode, map)) {
+					break;
+				}
+			} else {
+				if (_NOSPLIT_TAG_MAP[knode.name]) {
+					break;
+				}
 			}
 			needSplit = true;
 			parent = parent.parentNode;
@@ -3269,6 +3276,11 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'	font-size:0;',
 		'	width:0;',
 		'	height:0;',
+		'}',
+		'.ke-pagebreak {',
+		'	border:1px dotted #AAAAAA;',
+		'	font-size:0;',
+		'	height:2px;',
 		'}',
 		'</style>'
 	];
@@ -4018,6 +4030,41 @@ function _bindContextmenuEvent() {
 		}
 	});
 }
+function _bindNewlineEvent() {
+	var self = this, doc = self.edit.doc, newlineTag = self.newlineTag;
+	if (_IE && newlineTag !== 'br') {
+		return;
+	}
+	if (_GECKO && _V < 3 && newlineTag !== 'p') {
+		return;
+	}
+	if (_OPERA) {
+		return;
+	}
+	K(doc).keydown(function(e) {
+		if (e.which != 13 || e.shiftKey || e.ctrlKey || e.altKey) {
+			return;
+		}
+		self.cmd.selection();
+		var range = self.cmd.range,
+			ancestor = K(range.commonAncestor());
+		if (ancestor.type == 3) {
+			ancestor = ancestor.parent();
+		}
+		var tagName = ancestor.name;
+		if (tagName == 'marquee' || tagName == 'select') {
+			return;
+		}
+		if (newlineTag === 'br' && _inArray(tagName, 'h1,h2,h3,h4,h5,h6,pre,li'.split(',')) < 0) {
+			e.preventDefault();
+			self.insertHtml('<br />');
+			return;
+		}
+		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li'.split(',')) < 0) {
+			_nativeCommand(doc, 'formatblock', '<P>');
+		}
+	});
+}
 function _removeBookmarkTag(html) {
 	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
 }
@@ -4248,6 +4295,7 @@ KEditor.prototype = {
 					}
 				});
 				_bindContextmenuEvent.call(self);
+				_bindNewlineEvent.call(self);
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
 					self.addBookmark();

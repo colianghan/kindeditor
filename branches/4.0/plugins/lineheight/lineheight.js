@@ -1,7 +1,7 @@
 
 KindEditor.plugin('lineheight', function(K) {
 	var self = this, name = 'lineheight', lang = self.lang(name + '.');
-	self.clickToolbar('lineheight', function() {
+	self.clickToolbar(name, function() {
 		var curVal = '', commonNode = self.cmd.commonNode({'*' : '.line-height'});
 		if (commonNode) {
 			curVal = commonNode.css('line-height');

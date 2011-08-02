@@ -46,6 +46,7 @@ KindEditor.lang({
 	code : '插入程序代码',
 	map : 'Google地图',
 	lineheight : '行距',
+	pagebreak : '分页符',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',

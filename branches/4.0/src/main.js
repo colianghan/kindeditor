@@ -112,6 +112,44 @@ function _bindContextmenuEvent() {
 	});
 }
 
+function _bindNewlineEvent() {
+	var self = this, doc = self.edit.doc, newlineTag = self.newlineTag;
+	if (_IE && newlineTag !== 'br') {
+		return;
+	}
+	if (_GECKO && _V < 3 && newlineTag !== 'p') {
+		return;
+	}
+	if (_OPERA) {
+		return;
+	}
+	K(doc).keydown(function(e) {
+		if (e.which != 13 || e.shiftKey || e.ctrlKey || e.altKey) {
+			return;
+		}
+		self.cmd.selection();
+		var range = self.cmd.range,
+			ancestor = K(range.commonAncestor());
+		if (ancestor.type == 3) {
+			ancestor = ancestor.parent();
+		}
+		var tagName = ancestor.name;
+		if (tagName == 'marquee' || tagName == 'select') {
+			return;
+		}
+		// br
+		if (newlineTag === 'br' && _inArray(tagName, 'h1,h2,h3,h4,h5,h6,pre,li'.split(',')) < 0) {
+			e.preventDefault();
+			self.insertHtml('<br />');
+			return;
+		}
+		// p
+		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li'.split(',')) < 0) {
+			_nativeCommand(doc, 'formatblock', '<P>');
+		}
+	});
+}
+
 function _removeBookmarkTag(html) {
 	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
 }
@@ -358,6 +396,7 @@ KEditor.prototype = {
 					}
 				});
 				_bindContextmenuEvent.call(self);
+				_bindNewlineEvent.call(self);
 				// add bookmark to undoStack
 				self.addBookmark();
 				self.cmd.oninput(function(e) {

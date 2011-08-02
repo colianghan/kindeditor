@@ -46,6 +46,7 @@ KindEditor.lang({
 	code : 'Insert code',
 	map : 'Google Maps',
 	lineheight : 'Line height',
+	pagebreak : 'Page Break',
 	yes : 'OK',
 	no : 'Cancel',
 	close : 'Close',

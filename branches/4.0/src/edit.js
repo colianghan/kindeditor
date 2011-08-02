@@ -44,6 +44,11 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'	width:0;',
 		'	height:0;',
 		'}',
+		'.ke-pagebreak {',
+		'	border:1px dotted #AAAAAA;',
+		'	font-size:0;',
+		'	height:2px;',
+		'}',
 		'</style>'
 	];
 	if (_isArray(cssPath)) {

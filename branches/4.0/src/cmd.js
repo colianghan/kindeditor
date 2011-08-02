@@ -362,11 +362,17 @@ _extend(KCmd, {
 			needSplit = false, knode;
 		while (parent && parent.parentNode) {
 			knode = K(parent);
-			if (!knode.isStyle()) {
-				break;
-			}
-			if (!_hasAttrOrCss(knode, map)) {
-				break;
+			if (map) {
+				if (!knode.isStyle()) {
+					break;
+				}
+				if (!_hasAttrOrCss(knode, map)) {
+					break;
+				}
+			} else {
+				if (_NOSPLIT_TAG_MAP[knode.name]) {
+					break;
+				}
 			}
 			needSplit = true;
 			parent = parent.parentNode;
