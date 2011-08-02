@@ -166,5 +166,12 @@ KindEditor.lang({
 		'Courier New' : 'Courier New',
 		'Tahoma' : 'Tahoma',
 		'Verdana' : 'Verdana'
-	}
+	},
+	'lineheight.lineHeight' : [
+		{'1' : '单倍行距'},
+		{'1.5' : '1.5倍行距'},
+		{'2' : '2倍行距'},
+		{'2.5' : '2.5倍行距'},
+		{'3' : '3倍行距'}
+	]
 }, 'zh_CN');

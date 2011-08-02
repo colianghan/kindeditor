@@ -164,5 +164,12 @@ KindEditor.lang({
 		'Times New Roman' : 'Times New Roman',
 		'Trebuchet MS' : 'Trebuchet MS',
 		'Verdana' : 'Verdana'
-	}
+	},
+	'lineheight.lineHeight' : [
+		{'1' : 'Line height 1'},
+		{'1.5' : 'Line height 1.5'},
+		{'2' : 'Line height 2'},
+		{'2.5' : 'Line height 2.5'},
+		{'3' : 'Line height 3'}
+	]
 }, 'en');
