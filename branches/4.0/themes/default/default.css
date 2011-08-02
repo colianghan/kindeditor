@@ -306,6 +306,26 @@
 	width: 16px;
 	height: 16px;
 }
+.ke-icon-clearhtml {
+	background-position: 0px -1008px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-pagebreak {
+	background-position: 0px -1024px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-file {
+	background-position: 0px -1040px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-quickformat {
+	background-position: 0px -1056px;
+	width: 16px;
+	height: 16px;
+}
 /* container (*/
 .ke-container {
 	display: block;
