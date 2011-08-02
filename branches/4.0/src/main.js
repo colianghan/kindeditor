@@ -272,7 +272,7 @@ KEditor.prototype = {
 		if (fullscreenMode) {
 			_docElement().style.overflow = 'hidden';
 		} else {
-			_docElement().style.overflow = 'auto';
+			_docElement().style.overflow = '';
 		}
 		var width = fullscreenMode ? _docElement().clientWidth + 'px' : self.width,
 			height = fullscreenMode ? _docElement().clientHeight + 'px' : self.height;

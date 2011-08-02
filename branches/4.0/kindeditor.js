@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-08-02)
+* @version 4.0 (2011-08-03)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-08-02)',
+var _VERSION = '4.0 (2011-08-03)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -3639,6 +3639,9 @@ _extend(KMenu, KWidget, {
 	},
 	remove : function() {
 		var self = this;
+		if (self.options.beforeRemove) {
+			self.options.beforeRemove.call(self);
+		}
 		K('.ke-menu-item', self.div[0]).remove();
 		KMenu.parent.remove.call(self);
 		return self;
@@ -4165,7 +4168,7 @@ KEditor.prototype = {
 		if (fullscreenMode) {
 			_docElement().style.overflow = 'hidden';
 		} else {
-			_docElement().style.overflow = 'auto';
+			_docElement().style.overflow = '';
 		}
 		var width = fullscreenMode ? _docElement().clientWidth + 'px' : self.width,
 			height = fullscreenMode ? _docElement().clientHeight + 'px' : self.height;
