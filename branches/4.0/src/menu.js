@@ -66,6 +66,9 @@ _extend(KMenu, KWidget, {
 	},
 	remove : function() {
 		var self = this;
+		if (self.options.beforeRemove) {
+			self.options.beforeRemove.call(self);
+		}
 		K('.ke-menu-item', self.div[0]).remove();
 		KMenu.parent.remove.call(self);
 		return self;

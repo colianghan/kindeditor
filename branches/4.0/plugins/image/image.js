@@ -86,11 +86,11 @@ KindEditor.plugin('image', function(K) {
 							form.attr('action', uploadJson);
 							iframe.bind('load', function() {
 								iframe.unbind();
-								var data = {};
+								var data = {}, str = K.iframeDoc(iframe).body.innerHTML;
 								try {
-									data = K.json(K.iframeDoc(iframe).body.innerHTML);
+									data = K.json(str);
 								} catch (e) {
-									alert(self.lang('invalidJson'));
+									alert(K.DEBUG ? str : self.lang('invalidJson'));
 								}
 								if ('error' in data) {
 									if (data.error === 0) {

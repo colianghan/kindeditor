@@ -84,6 +84,9 @@ _extend(KDialog, KWidget, {
 	},
 	remove : function() {
 		var self = this;
+		if (self.options.beforeRemove) {
+			self.options.beforeRemove.call(self);
+		}
 		if (self.mask) {
 			self.mask.remove();
 		}

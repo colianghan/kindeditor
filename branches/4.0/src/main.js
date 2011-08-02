@@ -214,7 +214,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}
@@ -260,12 +260,6 @@ KEditor.prototype = {
 	},
 	afterCreate : function(fn) {
 		return this.handler('afterCreate', fn);
-	},
-	beforeHideMenu : function(fn) {
-		return this.handler('beforeHideMenu', fn);
-	},
-	beforeHideDialog : function(fn) {
-		return this.handler('beforeHideDialog', fn);
 	},
 	beforeGetHtml : function(fn) {
 		return this.handler('beforeGetHtml', fn);
@@ -554,7 +548,6 @@ KEditor.prototype = {
 		return self.menu;
 	},
 	hideMenu : function() {
-		this.beforeHideMenu();
 		this.menu.remove();
 		this.menu = null;
 		return this;
@@ -600,7 +593,6 @@ KEditor.prototype = {
 	hideDialog : function() {
 		var self = this;
 		if (self.dialogs.length > 0) {
-			self.beforeHideDialog();
 			self.dialogs.pop().remove();
 		}
 		if (self.dialogs.length > 0) {
@@ -646,7 +638,7 @@ function _create(expr, options) {
 		return create(editor);
 	}
 	// create editor after load lang file
-	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
 		return create(editor);
 	});
 	return editor;

@@ -11,7 +11,10 @@ KindEditor.plugin('emoticons', function(K) {
 			wrapperDiv = K('<div class="ke-plugin-emoticons"></div>'),
 			elements = [],
 			menu = self.createMenu({
-				name : name
+				name : name,
+				beforeRemove : function() {
+					removeEvent();
+				}
 			});
 		menu.div.append(wrapperDiv);
 		var previewDiv, previewImg;
@@ -114,8 +117,5 @@ KindEditor.plugin('emoticons', function(K) {
 			}
 		}
 		createPageTable(currentPageNum);
-		self.beforeHideMenu(function() {
-			removeEvent();
-		});
 	});
 });

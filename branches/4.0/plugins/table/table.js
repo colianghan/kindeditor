@@ -70,6 +70,10 @@ KindEditor.plugin('table', function(K) {
 				title : self.lang(name),
 				body : html,
 				beforeDrag : removePicker,
+				beforeRemove : function() {
+					removePicker();
+					colorBox.unbind();
+				},
 				yesBtn : {
 					name : self.lang('yes'),
 					click : function(e) {
@@ -219,10 +223,6 @@ KindEditor.plugin('table', function(K) {
 				}
 			}
 			colorBox.click(clickHandler);
-			self.beforeHideDialog(function() {
-				removePicker();
-				colorBox.unbind();
-			});
 			// foucs and select
 			rowsBox[0].focus();
 			rowsBox[0].select();
@@ -323,6 +323,10 @@ KindEditor.plugin('table', function(K) {
 				title : self.lang('tablecell'),
 				body : html,
 				beforeDrag : removePicker,
+				beforeRemove : function() {
+					removePicker();
+					colorBox.unbind();
+				},
 				yesBtn : {
 					name : self.lang('yes'),
 					click : function(e) {
@@ -391,10 +395,6 @@ KindEditor.plugin('table', function(K) {
 				}
 			}
 			colorBox.click(clickHandler);
-			self.beforeHideDialog(function() {
-				removePicker();
-				colorBox.unbind();
-			});
 			// foucs and select
 			widthBox[0].focus();
 			widthBox[0].select();

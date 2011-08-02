@@ -17,17 +17,9 @@
 	<link rel="stylesheet" href="../plugins/code/prettify.css" />
 	<script charset="utf-8" src="../kindeditor.js"></script>
 	<script charset="utf-8" src="../plugins/code/prettify.js"></script>
-</head>
-<body class="ke-content">
-	<?php echo $htmlData; ?>
-	<form name="example" method="post" action="demo.php">
-		<textarea name="content1" cols="100" rows="8" style="width:700px;height:200px;visibility:hidden;"><?php echo htmlspecialchars($htmlData); ?></textarea>
-		<br />
-		<input type="submit" name="button" value="提交内容" /> (提交快捷键: Ctrl + Enter)
-	</form>
 	<script>
 		KindEditor.ready(function(K) {
-			var editor1 = K.create('textarea[name=content1]', {
+			var editor1 = K.create('textarea[name="content1"]', {
 				cssPath : '../plugins/code/prettify.css',
 				imageUploadJson : '../php/upload_json.php',
 				fileManagerJson : '../php/file_manager_json.php',
@@ -47,6 +39,14 @@
 			prettyPrint();
 		});
 	</script>
+</head>
+<body>
+	<?php echo $htmlData; ?>
+	<form name="example" method="post" action="demo.php">
+		<textarea name="content1" cols="100" rows="8" style="width:700px;height:200px;visibility:hidden;"><?php echo htmlspecialchars($htmlData); ?></textarea>
+		<br />
+		<input type="submit" name="button" value="提交内容" /> (提交快捷键: Ctrl + Enter)
+	</form>
 </body>
 </html>
 

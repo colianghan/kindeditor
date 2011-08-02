@@ -9,6 +9,7 @@
 *******************************************************************************/
 (function (window, undefined) {
 var _VERSION = '4.0 (2011-08-02)',
+	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -157,6 +158,7 @@ function _json(text) {
 var _round = Math.round;
 var K = {
 	VERSION : _VERSION,
+	DEBUG : _DEBUG,
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,
@@ -3800,6 +3802,9 @@ _extend(KDialog, KWidget, {
 	},
 	remove : function() {
 		var self = this;
+		if (self.options.beforeRemove) {
+			self.options.beforeRemove.call(self);
+		}
 		if (self.mask) {
 			self.mask.remove();
 		}
@@ -4102,7 +4107,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}
@@ -4148,12 +4153,6 @@ KEditor.prototype = {
 	},
 	afterCreate : function(fn) {
 		return this.handler('afterCreate', fn);
-	},
-	beforeHideMenu : function(fn) {
-		return this.handler('beforeHideMenu', fn);
-	},
-	beforeHideDialog : function(fn) {
-		return this.handler('beforeHideDialog', fn);
 	},
 	beforeGetHtml : function(fn) {
 		return this.handler('beforeGetHtml', fn);
@@ -4427,7 +4426,6 @@ KEditor.prototype = {
 		return self.menu;
 	},
 	hideMenu : function() {
-		this.beforeHideMenu();
 		this.menu.remove();
 		this.menu = null;
 		return this;
@@ -4470,7 +4468,6 @@ KEditor.prototype = {
 	hideDialog : function() {
 		var self = this;
 		if (self.dialogs.length > 0) {
-			self.beforeHideDialog();
 			self.dialogs.pop().remove();
 		}
 		if (self.dialogs.length > 0) {
@@ -4506,7 +4503,7 @@ function _create(expr, options) {
 	if (_language[editor.langType]) {
 		return create(editor);
 	}
-	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_VERSION), function() {
+	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
 		return create(editor);
 	});
 	return editor;
