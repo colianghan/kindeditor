@@ -13,7 +13,7 @@ function _getCssList(css) {
 
 function _getAttrList(tag) {
 	var list = {},
-		reg = /\s+(?:([\w\-:]+)|(?:([\w\-:]+)=([^\s"'<>]+))|(?:([\w\-:]+)="([^"]*)")|(?:([\w\-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
+		reg = /\s+(?:([\w\-:]+)|(?:([\w\-:]+)=([^\s"'<>]+))|(?:([\w\-:"]+)="([^"]*)")|(?:([\w\-:"]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
 	while ((match = reg.exec(tag))) {
 		var key = (match[1] || match[2] || match[4] || match[6]).toLowerCase(),
@@ -121,7 +121,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 			}
 		});
 	}
-	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>(\s*)/g;
+	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:"]+="[^"]*")|(?:\s+[\w\-:"]+='[^']*'))*)(\/)?>(\s*)/g;
 	var tagStack = [];
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var full = $0,
@@ -324,6 +324,7 @@ function _mediaImg(blankPath, attrs) {
 
 K.formatUrl = _formatUrl;
 K.formatHtml = _formatHtml;
+K.getCssList = _getCssList;
 K.getAttrList = _getAttrList;
 K.mediaType = _mediaType;
 K.mediaAttrs = _mediaAttrs;
