@@ -108,7 +108,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	})
 	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
-	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p></p>')
 	.replace(/<br\s*\/?>\s*<\/p>/ig, '</p>')
 	.replace(/\u200B/g, '');
 	var htmlTagMap = {};
@@ -176,11 +176,10 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 						endNewline += indentChar;
 					}
 				}
-				if (!startSlash) {
-					endNewline += indentChar;
-				}
 				if (endSlash) {
 					tagStack.pop();
+				} else if (!startSlash) {
+					endNewline += indentChar;
 				}
 			} else {
 				startNewline = endNewline = '';

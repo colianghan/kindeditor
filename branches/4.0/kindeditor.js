@@ -115,21 +115,22 @@ function _toArray(obj, offset) {
 function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
-function _extend(child) {
-	var parent = arguments[1], proto = arguments[2], childProto;
-	if (arguments.length == 2) {
+function _extend(child, parent, proto) {
+	if (!proto) {
 		proto = parent;
+		parent = null;
 	}
+	var childProto;
 	if (parent) {
 		var fn = function () {};
 		fn.prototype = parent.prototype;
 		childProto = new fn();
+		_each(proto, function(key, val) {
+			childProto[key] = val;
+		});
 	} else {
-		childProto = {};
+		childProto = proto;
 	}
-	_each(proto, function(key, val) {
-		childProto[key] = val;
-	});
 	childProto.constructor = child;
 	child.prototype = childProto;
 	child.parent = parent ? parent.prototype : null;
@@ -656,7 +657,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
 	})
 	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
-	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p>&nbsp;</p>')
+	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p></p>')
 	.replace(/<br\s*\/?>\s*<\/p>/ig, '</p>')
 	.replace(/\u200B/g, '');
 	var htmlTagMap = {};
@@ -717,11 +718,10 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 						endNewline += indentChar;
 					}
 				}
-				if (!startSlash) {
-					endNewline += indentChar;
-				}
 				if (endSlash) {
 					tagStack.pop();
+				} else if (!startSlash) {
+					endNewline += indentChar;
 				}
 			} else {
 				startNewline = endNewline = '';
@@ -2175,18 +2175,18 @@ _extend(KRange, {
 		upPos(self.endContainer, self.endOffset, false);
 		return self;
 	},
-	enlarge : function() {
+	enlarge : function(toBlock) {
 		var self = this;
 		self.up();
 		function enlargePos(node, pos, isStart) {
 			var knode = K(node), parent;
-			if (knode.type == 3 || knode.name == 'body' || knode.isBlock()) {
+			if (knode.type == 3 || _NOSPLIT_TAG_MAP[knode.name] || !toBlock && knode.isBlock()) {
 				return;
 			}
 			if (pos === 0) {
-				while (!knode.prev() && knode.name != 'body') {
+				while (!knode.prev()) {
 					parent = knode.parent();
-					if (!parent || parent.isBlock()) {
+					if (!parent || _NOSPLIT_TAG_MAP[parent.name] || !toBlock && parent.isBlock()) {
 						break;
 					}
 					knode = parent;
@@ -2197,9 +2197,9 @@ _extend(KRange, {
 					self.setEndBefore(knode[0]);
 				}
 			} else if (pos == knode.children().length) {
-				while (!knode.next() && knode.name != 'body') {
+				while (!knode.next()) {
 					parent = knode.parent();
-					if (!parent || parent.isBlock()) {
+					if (!parent || _NOSPLIT_TAG_MAP[parent.name] || !toBlock && parent.isBlock()) {
 						break;
 					}
 					knode = parent;
@@ -4285,7 +4285,7 @@ KEditor.prototype = {
 			},
 			beforeSetHtml : function(html) {
 				html = self.beforeSetHtml(html);
-				return html;
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
 			},
 			afterCreate : function() {
 				self.cmd = this.cmd;

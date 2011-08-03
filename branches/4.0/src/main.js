@@ -385,7 +385,7 @@ KEditor.prototype = {
 			},
 			beforeSetHtml : function(html) {
 				html = self.beforeSetHtml(html);
-				return html;
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
 			},
 			afterCreate : function() {
 				self.cmd = this.cmd;

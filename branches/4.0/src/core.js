@@ -125,21 +125,22 @@ function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
 
-function _extend(child) {
-	var parent = arguments[1], proto = arguments[2], childProto;
-	if (arguments.length == 2) {
+function _extend(child, parent, proto) {
+	if (!proto) {
 		proto = parent;
+		parent = null;
 	}
+	var childProto;
 	if (parent) {
 		var fn = function () {};
 		fn.prototype = parent.prototype;
 		childProto = new fn();
+		_each(proto, function(key, val) {
+			childProto[key] = val;
+		});
 	} else {
-		childProto = {};
+		childProto = proto;
 	}
-	_each(proto, function(key, val) {
-		childProto[key] = val;
-	});
 	childProto.constructor = child;
 	child.prototype = childProto;
 	child.parent = parent ? parent.prototype : null;

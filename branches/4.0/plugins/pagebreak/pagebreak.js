@@ -2,8 +2,17 @@
 KindEditor.plugin('pagebreak', function(K) {
 	var self = this, name = 'pagebreak', lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {
+		var cmd = self.cmd, range = cmd.range;
 		self.focus();
-		self.cmd.split(true);
-		self.insertHtml('<hr class="ke-pagebreak" style="page-break-after: always;" />');
+		range.enlarge(true);
+		cmd.split(true);
+		var tail = self.newlineTag == 'br' ? '' : '<p id="__kindeditor_tail_tag__"></p>';
+		self.insertHtml('<hr class="ke-pagebreak" style="page-break-after: always;" />' + tail);
+		if (self.newlineTag != 'br') {
+			var p = K('#__kindeditor_tail_tag__', self.edit.doc);
+			range.selectNodeContents(p[0]);
+			p.removeAttr('id');
+			cmd.select();
+		}
 	});
 });

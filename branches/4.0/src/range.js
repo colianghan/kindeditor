@@ -418,12 +418,12 @@ _extend(KRange, {
 				nodeB = range.endContainer;
 				posB = range.endOffset;
 			}
-			//nodeA和nodeA相同时
+			// nodeA和nodeA相同时
 			if (nodeA === nodeB) {
 				var diff = posA - posB;
 				return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
 			}
-			//nodeA是nodeB的祖先时
+			// nodeA是nodeB的祖先时
 			nodeC = nodeB;
 			while (nodeC && nodeC.parentNode !== nodeA) {
 				nodeC = nodeC.parentNode;
@@ -431,7 +431,7 @@ _extend(KRange, {
 			if (nodeC) {
 				return K(nodeC).index() >= posA ? -1 : 1;
 			}
-			//nodeB是nodeA的祖先时
+			// nodeB是nodeA的祖先时
 			nodeC = nodeA;
 			while (nodeC && nodeC.parentNode !== nodeB) {
 				nodeC = nodeC.parentNode;
@@ -439,12 +439,12 @@ _extend(KRange, {
 			if (nodeC) {
 				return K(nodeC).index() >= posB ? 1 : -1;
 			}
-			//nodeB的下一个节点是nodeA的祖先
+			// nodeB的下一个节点是nodeA的祖先
 			nodeC = K(nodeB).next();
 			if (nodeC && nodeC.contains(nodeA)) {
 				return 1;
 			}
-			//nodeA的下一个节点是nodeB的祖先
+			// nodeA的下一个节点是nodeB的祖先
 			nodeC = K(nodeA).next();
 			if (nodeC && nodeC.contains(nodeB)) {
 				return -1;
@@ -647,18 +647,18 @@ _extend(KRange, {
 	},
 	// 扩大边界
 	// <p><strong><span>[123</span>abc]</strong>def</p> to <p>[<strong><span>123</span>abc</strong>]def</p>
-	enlarge : function() {
+	enlarge : function(toBlock) {
 		var self = this;
 		self.up();
 		function enlargePos(node, pos, isStart) {
 			var knode = K(node), parent;
-			if (knode.type == 3 || knode.name == 'body' || knode.isBlock()) {
+			if (knode.type == 3 || _NOSPLIT_TAG_MAP[knode.name] || !toBlock && knode.isBlock()) {
 				return;
 			}
 			if (pos === 0) {
-				while (!knode.prev() && knode.name != 'body') {
+				while (!knode.prev()) {
 					parent = knode.parent();
-					if (!parent || parent.isBlock()) {
+					if (!parent || _NOSPLIT_TAG_MAP[parent.name] || !toBlock && parent.isBlock()) {
 						break;
 					}
 					knode = parent;
@@ -669,9 +669,9 @@ _extend(KRange, {
 					self.setEndBefore(knode[0]);
 				}
 			} else if (pos == knode.children().length) {
-				while (!knode.next() && knode.name != 'body') {
+				while (!knode.next()) {
 					parent = knode.parent();
-					if (!parent || parent.isBlock()) {
+					if (!parent || _NOSPLIT_TAG_MAP[parent.name] || !toBlock && parent.isBlock()) {
 						break;
 					}
 					knode = parent;
