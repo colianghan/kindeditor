@@ -234,7 +234,6 @@ function _mergeAttrs(knode, attrs, styles) {
 		knode.css(key, val);
 	});
 }
-
 // 判断node是否在pre、style、script里
 function _inPreElement(knode) {
 	while (knode && knode.name != 'body') {
@@ -245,7 +244,6 @@ function _inPreElement(knode) {
 	}
 	return false;
 }
-
 // create KCmd class
 function KCmd(range) {
 	this.init(range);

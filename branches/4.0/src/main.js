@@ -144,7 +144,7 @@ function _bindNewlineEvent() {
 			return;
 		}
 		// p
-		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li'.split(',')) < 0) {
+		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li,blockquote'.split(',')) < 0) {
 			_nativeCommand(doc, 'formatblock', '<P>');
 		}
 	});
