@@ -1,6 +1,6 @@
 
 KindEditor.plugin('pagebreak', function(K) {
-	var self = this, name = 'pagebreak', lang = self.lang(name + '.');
+	var self = this, name = 'pagebreak';
 	self.clickToolbar(name, function() {
 		var cmd = self.cmd, range = cmd.range;
 		self.focus();
