@@ -68,6 +68,11 @@ test("formatHtml", function() {
 	equals(K.formatHtml(K.query("#test21").innerHTML), '<span style="background-color:#d8d8d8;font-family:\'Arial Black\';color:#ff0000;font-size:xx-large;">ddd</span>');
 
 	equals(K.formatHtml('<a href="#" ""="" style="color:red;">123</a>', {a:['href']}), '<a href="#">123</a>');
+	equals(K.formatHtml('<a href="#">123</a>', {a:['*']}), '<a href="#">123</a>');
+
+	equals(K.formatHtml('<p style="text-indent:2em;"></p>'), '<p style="text-indent:2em;">&nbsp;</p>');
+	equals(K.formatHtml('<p style="text-indent:2em;">\t\n<br/>\n</p>'), '<p style="text-indent:2em;">&nbsp;</p>');
+
 });
 
 

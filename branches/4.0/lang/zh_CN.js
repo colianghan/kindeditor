@@ -48,6 +48,7 @@ KindEditor.lang({
 	lineheight : '行距',
 	clearhtml : '清理HTML代码',
 	pagebreak : '插入分页符',
+	quickformat : '一键排版',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',

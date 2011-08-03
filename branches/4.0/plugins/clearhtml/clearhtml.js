@@ -14,5 +14,6 @@ KindEditor.plugin('clearhtml', function(K) {
 			'div,td,th,hr,br,tbody,tr,p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : []
 		});
 		self.html(html);
+		self.addBookmark();
 	});
 });

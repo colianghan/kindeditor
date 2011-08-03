@@ -104,13 +104,16 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	indentChar = _undef(indentChar, '\t');
 	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
 	// 将pre里的br转换成\n
-	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
-		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
-	})
-	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
-	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p></p>')
-	.replace(/<br\s*\/?>\s*<\/p>/ig, '</p>')
-	.replace(/\u200B/g, '');
+	html = html.replace(/(<(?:pre|pre\s[^>]*)>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3) {
+		return $1 + $2.replace(/<(?:br|br\s[^>]*)>/ig, '\n') + $3;
+	});
+	// <br/></p> to </p>
+	html = html.replace(/<(?:br|br\s[^>]*)\s*\/?>\s*<\/p>/ig, '</p>');
+	// <p></p> to <p>&nbsp;</p>
+	html = html.replace(/(<(?:p|p\s[^>]*)>)\s*(<\/p>)/ig, function($0, $1, $2) {
+		return $1 + '&nbsp;' + $2;
+	});
+	html = html.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
 		// 展开htmlTags里的key
@@ -227,8 +230,12 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				if (_FILL_ATTR_MAP[key]) {
 					attrMap[key] = key;
 				}
+				// 处理URL
+				if (_inArray(key, ['src', 'href']) >= 0) {
+					attrMap[key] = _formatUrl(val, urlType);
+				}
 				// 过滤属性
-				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key] ||
+				if (htmlTags && key !== 'style' && !htmlTagMap[tagName]['*'] && !htmlTagMap[tagName][key] ||
 					tagName === 'body' && key === 'contenteditable' ||
 					/^kindeditor_\d+$/.test(key)) {
 					delete attrMap[key];
@@ -246,10 +253,6 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 						style += k + ':' + v + ';';
 					});
 					attrMap.style = style;
-				}
-				// 处理URL
-				if (_inArray(key, ['src', 'href']) >= 0) {
-					attrMap[key] = _formatUrl(val, urlType);
 				}
 			});
 			attr = '';

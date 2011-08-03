@@ -185,7 +185,7 @@ var K = {
 	json : _json
 };
 var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,img,input,ins,kbd,label,map,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var'),
-	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,body,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,head,hr,html,iframe,ins,isindex,li,map,menu,meta,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,title,tr,ul'),
+	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,body,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,h1,h2,h3,h4,h5,h6,head,hr,html,iframe,ins,isindex,li,map,menu,meta,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,title,tr,ul'),
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
 	_CONTROL_TAG_MAP = _toMap('img,table'),
@@ -566,7 +566,7 @@ function _getCssList(css) {
 }
 function _getAttrList(tag) {
 	var list = {},
-		reg = /\s+(?:([\w\-:]+)|(?:([\w\-:]+)=([^\s"'<>]+))|(?:([\w\-:]+)="([^"]*)")|(?:([\w\-:]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
+		reg = /\s+(?:([\w\-:]+)|(?:([\w\-:]+)=([^\s"'<>]+))|(?:([\w\-:"]+)="([^"]*)")|(?:([\w\-:"]+)='([^']*)'))(?=(?:\s|\/|>)+)/g,
 		match;
 	while ((match = reg.exec(tag))) {
 		var key = (match[1] || match[2] || match[4] || match[6]).toLowerCase(),
@@ -653,13 +653,14 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	wellFormatted = _undef(wellFormatted, false);
 	indentChar = _undef(indentChar, '\t');
 	var fontSizeList = 'xx-small,x-small,small,medium,large,x-large,xx-large'.split(',');
-	html = html.replace(/(<pre[^>]*>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3){
-		return $1 + $2.replace(/<br[^>]*>/ig, '\n') + $3;
-	})
-	.replace(/<p>\s*<\/p>/ig, '<p>&nbsp;</p>')
-	.replace(/<p>\s*<br\s*\/?>\s*<\/p>/ig, '<p></p>')
-	.replace(/<br\s*\/?>\s*<\/p>/ig, '</p>')
-	.replace(/\u200B/g, '');
+	html = html.replace(/(<(?:pre|pre\s[^>]*)>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3) {
+		return $1 + $2.replace(/<(?:br|br\s[^>]*)>/ig, '\n') + $3;
+	});
+	html = html.replace(/<(?:br|br\s[^>]*)\s*\/?>\s*<\/p>/ig, '</p>');
+	html = html.replace(/(<(?:p|p\s[^>]*)>)\s*(<\/p>)/ig, function($0, $1, $2) {
+		return $1 + '&nbsp;' + $2;
+	});
+	html = html.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
 		_each(htmlTags, function(key, val) {
@@ -669,7 +670,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 			}
 		});
 	}
-	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:]+="[^"]*")|(?:\s+[\w\-:]+='[^']*'))*)(\/)?>(\s*)/g;
+	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:"]+="[^"]*")|(?:\s+[\w\-:"]+='[^']*'))*)(\/)?>(\s*)/g;
 	var tagStack = [];
 	html = html.replace(re, function($0, $1, $2, $3, $4, $5, $6) {
 		var full = $0,
@@ -766,7 +767,10 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				if (_FILL_ATTR_MAP[key]) {
 					attrMap[key] = key;
 				}
-				if (htmlTags && key !== 'style' && !htmlTagMap[tagName][key] ||
+				if (_inArray(key, ['src', 'href']) >= 0) {
+					attrMap[key] = _formatUrl(val, urlType);
+				}
+				if (htmlTags && key !== 'style' && !htmlTagMap[tagName]['*'] && !htmlTagMap[tagName][key] ||
 					tagName === 'body' && key === 'contenteditable' ||
 					/^kindeditor_\d+$/.test(key)) {
 					delete attrMap[key];
@@ -783,9 +787,6 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 						style += k + ':' + v + ';';
 					});
 					attrMap.style = style;
-				}
-				if (_inArray(key, ['src', 'href']) >= 0) {
-					attrMap[key] = _formatUrl(val, urlType);
 				}
 			});
 			attr = '';
@@ -854,6 +855,7 @@ function _mediaImg(blankPath, attrs) {
 }
 K.formatUrl = _formatUrl;
 K.formatHtml = _formatHtml;
+K.getCssList = _getCssList;
 K.getAttrList = _getAttrList;
 K.mediaType = _mediaType;
 K.mediaAttrs = _mediaAttrs;
@@ -889,6 +891,18 @@ function _getAttr(el, key) {
 	return val;
 }
 function _queryAll(expr, root) {
+	var exprList = expr.split(',');
+	if (exprList.length > 1) {
+		var mergedResults = [];
+		_each(exprList, function() {
+			_each(_queryAll(this, root), function() {
+				if (_inArray(this, mergedResults) < 0) {
+					mergedResults.push(this);
+				}
+			});
+		});
+		return mergedResults;
+	}
 	root = root || document;
 	function escape(str) {
 		if (typeof str != 'string') {

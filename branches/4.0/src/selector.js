@@ -34,6 +34,18 @@ function _getAttr(el, key) {
 }
 
 function _queryAll(expr, root) {
+	var exprList = expr.split(',');
+	if (exprList.length > 1) {
+		var mergedResults = [];
+		_each(exprList, function() {
+			_each(_queryAll(this, root), function() {
+				if (_inArray(this, mergedResults) < 0) {
+					mergedResults.push(this);
+				}
+			});
+		});
+		return mergedResults;
+	}
 	root = root || document;
 	function escape(str) {
 		if (typeof str != 'string') {

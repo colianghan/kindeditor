@@ -48,6 +48,7 @@ KindEditor.lang({
 	lineheight : 'Line height',
 	clearhtml : 'Clear HTML code',
 	pagebreak : 'Insert Page Break',
+	quickformat : 'Quick Format',
 	yes : 'OK',
 	no : 'Cancel',
 	close : 'Close',
