@@ -26,7 +26,7 @@ KindEditor.plugin('quickformat', function(K) {
 			child = next;
 		}
 		K.each(nodeList, function(i, subList) {
-			var wrapper = K('<p style="text-indent:2em;"></p>');
+			var wrapper = K('<p style="text-indent:2em;"></p>', doc);
 			subList[0].before(wrapper);
 			K.each(subList, function(i, knode) {
 				wrapper.append(knode);
