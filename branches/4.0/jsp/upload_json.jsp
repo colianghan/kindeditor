@@ -20,7 +20,7 @@ String savePath = pageContext.getServletContext().getRealPath("/") + "attached/"
 //文件保存目录URL
 String saveUrl  = request.getContextPath() + "/attached/";
 //定义允许上传的文件扩展名
-String[] fileTypes = new String[]{"gif", "jpg", "jpeg", "png", "bmp"};
+String[] fileTypes = new String[]{"gif", "jpg", "jpeg", "png", "bmp", "swf", "flv", "mp3", "wav", "wma", "wmv", "mid", "avi", "mpg", "asf", "rm", "rmvb", "doc", "docx", "xls", "xlsx", "ppt", "htm", "html", "txt", "zip", "rar", "gz", "bz2"};
 //最大文件大小
 long maxSize = 1000000;
 
@@ -40,6 +40,15 @@ if(!uploadDir.isDirectory()){
 if(!uploadDir.canWrite()){
 	out.println(getError("上传目录没有写权限。"));
 	return;
+}
+//创建文件夹
+SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+String ymd = sdf.format(new Date());
+savePath += ymd + "/";
+saveUrl += ymd + "/";
+File dirFile = new File(savePath);
+if (!dirFile.exists()) {
+	dirFile.mkdirs();
 }
 
 FileItemFactory factory = new DiskFileItemFactory();
@@ -63,6 +72,7 @@ while (itr.hasNext()) {
 			out.println(getError("上传文件扩展名是不允许的扩展名。"));
 			return;
 		}
+
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 		String newFileName = df.format(new Date()) + "_" + new Random().nextInt(1000) + "." + fileExt;
 		try{

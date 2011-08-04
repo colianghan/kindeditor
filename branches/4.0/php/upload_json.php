@@ -19,7 +19,7 @@ $save_url = $php_url . '../attached/';
 //定义允许上传的文件扩展名
 $image_ext_arr = array('gif', 'jpg', 'jpeg', 'png', 'bmp');
 $media_ext_arr = array('swf', 'flv', 'mp3', 'wav', 'wma', 'wmv', 'mid', 'avi', 'mpg', 'asf', 'rm', 'rmvb');
-$file_ext_arr = array('doc', 'docx', 'xls', 'xlsx', 'ppt', 'txt', 'zip', 'rar', 'gz', 'bz2');
+$file_ext_arr = array('doc', 'docx', 'xls', 'xlsx', 'ppt', 'htm', 'html', 'txt', 'zip', 'rar', 'gz', 'bz2');
 $ext_arr = array_merge($image_ext_arr, $media_ext_arr, $file_ext_arr);
 //最大文件大小
 $max_size = 1000000;
