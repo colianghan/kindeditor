@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-08-03)
+* @version 4.0 (2011-08-04)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-08-03)',
+var _VERSION = '4.0 (2011-08-04)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -194,7 +194,7 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,c
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
 	_FILL_ATTR_MAP = _toMap('checked,compact,declare,defer,disabled,ismap,multiple,nohref,noresize,noshade,nowrap,readonly,selected'),
 	_VALUE_TAG_MAP = _toMap('input,button,textarea,select');
-function _getScriptPath() {
+function _getBasePath() {
 	var els = document.getElementsByTagName('script'), src;
 	for (var i = 0, len = els.length; i < len; i++) {
 		src = els[i].src || '';
@@ -210,7 +210,7 @@ var _options = {
 	filterMode : false,
 	wellFormatMode : true,
 	shadowMode : true,
-	scriptPath : _getScriptPath(),
+	basePath : _getBasePath(),
 	langType : 'zh_CN',
 	urlType : '',
 	newlineTag : 'p',
@@ -232,7 +232,7 @@ var _options = {
 		'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
-		'flash', 'media', 'file', 'table', 'hr', 'emoticons', 'map', 'code', 'pagebreak', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'uploadfile', 'table', 'hr', 'emoticons', 'map', 'code', 'pagebreak', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
 	colorTable : [
@@ -274,9 +274,9 @@ var _options = {
 		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
-_options.themesPath = _options.scriptPath + 'themes/';
-_options.langPath = _options.scriptPath + 'lang/';
-_options.pluginsPath = _options.scriptPath + 'plugins/';
+_options.themesPath = _options.basePath + 'themes/';
+_options.langPath = _options.basePath + 'lang/';
+_options.pluginsPath = _options.basePath + 'plugins/';
 var _useCapture = false;
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
@@ -3298,17 +3298,14 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'}',
 		'</style>'
 	];
-	if (_isArray(cssPath)) {
-		_each(cssPath, function(i, path) {
-			if (path !== '') {
-				arr.push('<link href="' + path + '" rel="stylesheet" />');
-			}
-		});
-	} else {
-		if (cssPath) {
-			arr.push('<link href="' + cssPath + '" rel="stylesheet" />');
-		}
+	if (!_isArray(cssPath)) {
+		cssPath = [cssPath];
 	}
+	_each(cssPath, function(i, path) {
+		if (path !== '') {
+			arr.push('<link href="' + path + '" rel="stylesheet" />');
+		}
+	});
 	if (cssData) {
 		arr.push('<style>' + cssData + '</style>');
 	}
@@ -4074,7 +4071,7 @@ function _bindNewlineEvent() {
 			self.insertHtml('<br />');
 			return;
 		}
-		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li'.split(',')) < 0) {
+		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li,blockquote'.split(',')) < 0) {
 			_nativeCommand(doc, 'formatblock', '<P>');
 		}
 	});
@@ -4131,7 +4128,7 @@ function KEditor(options) {
 	}
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
-		if (key === 'scriptPath') {
+		if (key === 'basePath') {
 			setOption('themesPath', options[key] + 'themes/');
 			setOption('langPath', options[key] + 'lang/');
 			setOption('pluginsPath', options[key] + 'plugins/');

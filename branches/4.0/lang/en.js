@@ -49,6 +49,7 @@ KindEditor.lang({
 	clearhtml : 'Clear HTML code',
 	pagebreak : 'Insert Page Break',
 	quickformat : 'Quick Format',
+	uploadfile : 'Upload file',
 	yes : 'OK',
 	no : 'Cancel',
 	close : 'Close',

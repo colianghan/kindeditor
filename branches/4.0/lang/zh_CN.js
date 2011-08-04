@@ -49,6 +49,7 @@ KindEditor.lang({
 	clearhtml : '清理HTML代码',
 	pagebreak : '插入分页符',
 	quickformat : '一键排版',
+	uploadfile : '上传文件',
 	yes : '确定',
 	no : '取消',
 	close : '关闭',

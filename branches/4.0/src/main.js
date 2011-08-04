@@ -209,7 +209,7 @@ function KEditor(options) {
 	// set options from param
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
-		if (key === 'scriptPath') {
+		if (key === 'basePath') {
 			setOption('themesPath', options[key] + 'themes/');
 			setOption('langPath', options[key] + 'lang/');
 			setOption('pluginsPath', options[key] + 'plugins/');

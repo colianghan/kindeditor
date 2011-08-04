@@ -1,5 +1,5 @@
 
-function _getScriptPath() {
+function _getBasePath() {
 	var els = document.getElementsByTagName('script'), src;
 	for (var i = 0, len = els.length; i < len; i++) {
 		src = els[i].src || '';
@@ -16,7 +16,7 @@ var _options = {
 	filterMode : false,
 	wellFormatMode : true,
 	shadowMode : true,
-	scriptPath : _getScriptPath(),
+	basePath : _getBasePath(),
 	langType : 'zh_CN',
 	urlType : '', // "", relative, absolute, domain
 	newlineTag : 'p', // p, br
@@ -38,7 +38,7 @@ var _options = {
 		'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
-		'flash', 'media', 'file', 'table', 'hr', 'emoticons', 'map', 'code', 'pagebreak', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'uploadfile', 'table', 'hr', 'emoticons', 'map', 'code', 'pagebreak', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
 	colorTable : [
@@ -81,6 +81,6 @@ var _options = {
 	}
 };
 
-_options.themesPath = _options.scriptPath + 'themes/';
-_options.langPath = _options.scriptPath + 'lang/';
-_options.pluginsPath = _options.scriptPath + 'plugins/';
+_options.themesPath = _options.basePath + 'themes/';
+_options.langPath = _options.basePath + 'lang/';
+_options.pluginsPath = _options.basePath + 'plugins/';

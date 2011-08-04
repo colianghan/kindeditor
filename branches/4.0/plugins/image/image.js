@@ -3,8 +3,8 @@ KindEditor.plugin('image', function(K) {
 	var self = this, name = 'image',
 		allowUpload = K.undef(self.allowUpload, true),
 		allowFileManager = K.undef(self.allowFileManager, false),
-		uploadJson = K.undef(self.imageUploadJson, self.scriptPath + 'php/upload_json.php'),
-		imgPath = this.scriptPath + 'plugins/image/images/',
+		uploadJson = K.undef(self.imageUploadJson, self.basePath + 'php/upload_json.php'),
+		imgPath = self.basePath + 'plugins/image/images/',
 		lang = self.lang(name + '.');
 	self.plugin.image = {
 		edit : function() {

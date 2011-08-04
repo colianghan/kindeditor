@@ -98,7 +98,7 @@
 				K('#create1').click(function(e) {
 					if (!editor1) {
 						editor1 = K.create('textarea[name=content1]', {
-							scriptPath : '../',
+							basePath : '../',
 							urlType : 'absolute',
 							designMode : true,
 							allowFileManager : true,
@@ -109,7 +109,7 @@
 				K('#create2').click(function(e) {
 					if (!editor2) {
 						editor2 = K.create(K('textarea[name=content2]').get(), {
-							scriptPath : '../',
+							basePath : '../',
 							langType : 'en'
 						});
 					}

@@ -51,17 +51,14 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'}',
 		'</style>'
 	];
-	if (_isArray(cssPath)) {
-		_each(cssPath, function(i, path) {
-			if (path !== '') {
-				arr.push('<link href="' + path + '" rel="stylesheet" />');
-			}
-		});
-	} else {
-		if (cssPath) {
-			arr.push('<link href="' + cssPath + '" rel="stylesheet" />');
-		}
+	if (!_isArray(cssPath)) {
+		cssPath = [cssPath];
 	}
+	_each(cssPath, function(i, path) {
+		if (path !== '') {
+			arr.push('<link href="' + path + '" rel="stylesheet" />');
+		}
+	});
 	if (cssData) {
 		arr.push('<style>' + cssData + '</style>');
 	}
