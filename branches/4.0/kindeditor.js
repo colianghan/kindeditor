@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 (2011-08-04)
+* @version 4.0 alpha (2011-08-05)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 (2011-08-04)',
+var _VERSION = '4.0 alpha (2011-08-05)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -226,7 +226,7 @@ var _options = {
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [
-		'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'cut', 'copy', 'paste',
+		'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'template', 'cut', 'copy', 'paste',
 		'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
 		'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
 		'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
@@ -3258,6 +3258,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'html {margin:0;padding:0;}',
 		'body {margin:0;padding:5px;}',
 		'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
+		'body, p, div {word-wrap: break-word;}',
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',
 		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
@@ -3336,8 +3337,8 @@ _extend(KEdit, KWidget, {
 				(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
 				'document.close();'),
 			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
-		self.iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
-		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>').css('width', '100%');
+		self.iframe = K('<iframe class="ke-edit-iframe" hidefocus="true" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
+		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true" hidefocus="true"></textarea>').css('width', '100%');
 		if (self.width) {
 			self.setWidth(self.width);
 		}
@@ -3470,10 +3471,18 @@ _extend(KEdit, KWidget, {
 	},
 	focus : function() {
 		var self = this;
-		if (self.designMode) {
-			self.win.focus();
+		self.designMode ? self.win.focus() : self.textarea[0].focus();
+		return self;
+	},
+	blur : function() {
+		var self = this;
+		if (_IE) {
+			var input = K('<input type="text" style="float:left;width:0;height:0;padding:0;margin:0;border:0;" value="" />', self.div);
+			self.div.append(input);
+			input[0].focus();
+			input.remove();
 		} else {
-			self.textarea[0].focus();
+			self.designMode ? self.win.blur() : self.textarea[0].blur();
 		}
 		return self;
 	}
@@ -4137,6 +4146,29 @@ function _bindNewlineEvent() {
 		}
 	});
 }
+function _bindTabEvent() {
+	var self = this;
+	K(self.edit.doc).keydown(function(e) {
+		if (e.which == 9) {
+			if (self.afterTab) {
+				e.stop();
+				self.afterTab.call(self, e);
+			}
+		}
+	});
+}
+function _bindFocusEvent() {
+	var self = this;
+	K(self.edit.textarea[0], self.edit.win).focus(function(e) {
+		if (self.afterFocus) {
+			self.afterFocus.call(self, e);
+		}
+	}).blur(function(e) {
+		if (self.afterBlur) {
+			self.afterBlur.call(self, e);
+		}
+	});
+}
 function _removeBookmarkTag(html) {
 	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
 }
@@ -4284,6 +4316,9 @@ KEditor.prototype = {
 	},
 	create : function() {
 		var self = this, fullscreenMode = self.fullscreenMode;
+		if (self.container) {
+			return self;
+		}
 		if (fullscreenMode) {
 			_docElement().style.overflow = 'hidden';
 		} else {
@@ -4368,6 +4403,8 @@ KEditor.prototype = {
 				});
 				_bindContextmenuEvent.call(self);
 				_bindNewlineEvent.call(self);
+				_bindTabEvent.call(self);
+				_bindFocusEvent.call(self);
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
 					self.addBookmark();
@@ -4439,6 +4476,9 @@ KEditor.prototype = {
 	},
 	remove : function() {
 		var self = this;
+		if (!self.container) {
+			return self;
+		}
 		if (self.menu) {
 			self.hideMenu();
 		}
@@ -4472,11 +4512,12 @@ KEditor.prototype = {
 		return this;
 	},
 	html : function(val) {
+		var self = this;
 		if (val === undefined) {
-			return this.edit.html();
+			return self.container ? self.edit.html() : _elementVal(self.srcElement);
 		}
-		this.edit.html(val);
-		return this;
+		self.container ? self.edit.html(val) : _elementVal(self.srcElement, val);
+		return self;
 	},
 	fullHtml : function() {
 		return this.edit.html(undefined, true);
@@ -4498,8 +4539,16 @@ KEditor.prototype = {
 		this.edit.focus();
 		return this;
 	},
+	blur : function() {
+		if (!self.container) {
+			return self;
+		}
+		this.edit.blur();
+		return this;
+	},
 	sync : function() {
-		_elementVal(K(this.srcElement), this.html());
+		_elementVal(this.srcElement, this.html());
+		return this;
 	},
 	addBookmark : function() {
 		var self = this, edit = self.edit, bookmark;
@@ -4807,7 +4856,7 @@ _plugin('core', function(K) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
+		if (!img || img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
 			return null;
 		}
 		return img;
@@ -4819,7 +4868,7 @@ _plugin('core', function(K) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || img[0].className !== 'ke-flash') {
+		if (!img || img.name !== 'img' || img[0].className !== 'ke-flash') {
 			return null;
 		}
 		return img;
@@ -4831,7 +4880,7 @@ _plugin('core', function(K) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
+		if (!img || img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
 			return null;
 		}
 		if (img[0].className == 'ke-flash') {
@@ -4882,8 +4931,8 @@ _plugin('core', function(K) {
 	self.plugin.getSelectedCell = function() {
 		return self.cmd.commonAncestor('td');
 	};
-	_each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
-	'rowdelete,insert,delete').split(','), function(i, val) {
+	_each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,rowmerge,colmerge,' +
+	'rowsplit,colsplit,coldelete,rowdelete,insert,delete').split(','), function(i, val) {
 		var cond = _inArray(val, ['prop', 'delete']) < 0 ? self.plugin.getSelectedCell : self.plugin.getSelectedTable;
 		self.addContextmenu({
 			title : self.lang('table' + val),

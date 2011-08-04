@@ -150,6 +150,31 @@ function _bindNewlineEvent() {
 	});
 }
 
+function _bindTabEvent() {
+	var self = this;
+	K(self.edit.doc).keydown(function(e) {
+		if (e.which == 9) {
+			if (self.afterTab) {
+				e.stop();
+				self.afterTab.call(self, e);
+			}
+		}
+	});
+}
+
+function _bindFocusEvent() {
+	var self = this;
+	K(self.edit.textarea[0], self.edit.win).focus(function(e) {
+		if (self.afterFocus) {
+			self.afterFocus.call(self, e);
+		}
+	}).blur(function(e) {
+		if (self.afterBlur) {
+			self.afterBlur.call(self, e);
+		}
+	});
+}
+
 function _removeBookmarkTag(html) {
 	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
 }
@@ -307,6 +332,9 @@ KEditor.prototype = {
 	},
 	create : function() {
 		var self = this, fullscreenMode = self.fullscreenMode;
+		if (self.container) {
+			return self;
+		}
 		if (fullscreenMode) {
 			_docElement().style.overflow = 'hidden';
 		} else {
@@ -397,6 +425,8 @@ KEditor.prototype = {
 				});
 				_bindContextmenuEvent.call(self);
 				_bindNewlineEvent.call(self);
+				_bindTabEvent.call(self);
+				_bindFocusEvent.call(self);
 				// add bookmark to undoStack
 				self.addBookmark();
 				self.cmd.oninput(function(e) {
@@ -476,6 +506,9 @@ KEditor.prototype = {
 	},
 	remove : function() {
 		var self = this;
+		if (!self.container) {
+			return self;
+		}
 		if (self.menu) {
 			self.hideMenu();
 		}
@@ -509,11 +542,12 @@ KEditor.prototype = {
 		return this;
 	},
 	html : function(val) {
+		var self = this;
 		if (val === undefined) {
-			return this.edit.html();
+			return self.container ? self.edit.html() : _elementVal(self.srcElement);
 		}
-		this.edit.html(val);
-		return this;
+		self.container ? self.edit.html(val) : _elementVal(self.srcElement, val);
+		return self;
 	},
 	fullHtml : function() {
 		return this.edit.html(undefined, true);
@@ -536,8 +570,16 @@ KEditor.prototype = {
 		this.edit.focus();
 		return this;
 	},
+	blur : function() {
+		if (!self.container) {
+			return self;
+		}
+		this.edit.blur();
+		return this;
+	},
 	sync : function() {
-		_elementVal(K(this.srcElement), this.html());
+		_elementVal(this.srcElement, this.html());
+		return this;
 	},
 	addBookmark : function() {
 		var self = this, edit = self.edit, bookmark;

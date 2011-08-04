@@ -96,8 +96,8 @@ _extend(KEdit, KWidget, {
 				'document.close();'),
 			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
 
-		self.iframe = K('<iframe class="ke-edit-iframe" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
-		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true"></textarea>').css('width', '100%');
+		self.iframe = K('<iframe class="ke-edit-iframe" hidefocus="true" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
+		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true" hidefocus="true"></textarea>').css('width', '100%');
 
 		if (self.width) {
 			self.setWidth(self.width);
@@ -238,10 +238,18 @@ _extend(KEdit, KWidget, {
 	},
 	focus : function() {
 		var self = this;
-		if (self.designMode) {
-			self.win.focus();
+		self.designMode ? self.win.focus() : self.textarea[0].focus();
+		return self;
+	},
+	blur : function() {
+		var self = this;
+		if (_IE) {
+			var input = K('<input type="text" style="float:left;width:0;height:0;padding:0;margin:0;border:0;" value="" />', self.div);
+			self.div.append(input);
+			input[0].focus();
+			input.remove();
 		} else {
-			self.textarea[0].focus();
+			self.designMode ? self.win.blur() : self.textarea[0].blur();
 		}
 		return self;
 	}

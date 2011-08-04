@@ -95,50 +95,53 @@
 			<input type="button" id="create2" value="Create #2" />
 			<input type="button" id="remove1" value="Remove #1" />
 			<input type="button" id="remove2" value="Remove #2" />
+			<input type="button" id="focus1" value="Focus #1" />
+			<input type="button" id="blur1" value="Blur #1" />
 			<input type="submit" name="button" value="Submit" />
 		</form>
 		<script>
 			//document.domain = 'kindsoft.net';
 			KindEditor.ready(function(K) {
-				var editor1 = null, editor2 = null;
+				var editor1, editor2;
 				K('#create1').click(function(e) {
-					if (!editor1) {
-						editor1 = K.create('textarea[name=content1]', {
-							basePath : '../',
-							urlType : 'absolute',
-							designMode : true,
-							allowFileManager : true,
-							fullscreenMode : false,
-							afterUpload : function(url) {
-								var select = K('#uploadFile')[0];
-								select.options.add(new Option(url, url));
-							}
-						});
-					}
+					editor1 = K.create('textarea[name=content1]', {
+						basePath : '../',
+						urlType : 'absolute',
+						designMode : true,
+						allowFileManager : true,
+						fullscreenMode : false,
+						afterTab : function() {
+							editor2.focus();
+						},
+						afterUpload : function(url) {
+							var select = K('#uploadFile')[0];
+							select.options.add(new Option(url, url));
+						}
+					});
 				});
 				K('#create2').click(function(e) {
-					if (!editor2) {
-						editor2 = K.create(K('textarea[name=content2]').get(), {
-							basePath : '../',
-							langType : 'en'
-						});
-					}
+					editor2 = K.create(K('textarea[name=content2]').get(), {
+						basePath : '../',
+						langType : 'en',
+						afterTab : function() {
+							K('#uploadFile')[0].focus();
+						}
+					});
 				});
 				K('#create1').click();
 				K('#create2').click();
 				K('#remove1').click(function(e) {
-					if (editor1) {
-						editor1.remove();
-						editor1 = null;
-					}
+					editor1.remove();
 				});
 				K('#remove2').click(function(e) {
-					if (editor2) {
-						editor2.remove();
-						editor2 = null;
-					}
+					editor2.remove();
 				});
-				
+				K('#focus1').click(function(e) {
+					editor1.focus();
+				});
+				K('#blur1').click(function(e) {
+					editor1.blur();
+				});
 			});
 		</script>
 		<div style="height:1000px;"></div>
