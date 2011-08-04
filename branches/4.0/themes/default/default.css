@@ -316,7 +316,7 @@
 	width: 16px;
 	height: 16px;
 }
-.ke-icon-uploadfile {
+.ke-icon-insertfile {
 	background-position: 0px -1040px;
 	width: 16px;
 	height: 16px;
@@ -618,6 +618,10 @@
 	border-color: #848484 #E0E0E0 #E0E0E0 #848484;
 	border-style: solid;
 	border-width: 1px;
+}
+.ke-dialog-body .ke-form {
+	margin: 0;
+	padding: 0;
 }
 .ke-dialog-row {
 	margin-bottom: 10px;

@@ -15,8 +15,7 @@ KindEditor.plugin('image', function(K) {
 				//hidden iframe
 				'<iframe name="uploadIframe" style="display:none;"></iframe>',
 				//form start
-				'<form name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">',
-				'<input type="hidden" name="referMethod" value="" />',
+				'<form class="ke-form" name="uploadForm" method="post" enctype="multipart/form-data" target="uploadIframe">',
 				//url or file
 				'<div class="ke-dialog-row">',
 				'<div class="tab1" style="display:none;">',

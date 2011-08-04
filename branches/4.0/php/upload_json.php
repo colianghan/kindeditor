@@ -12,14 +12,19 @@ require_once 'JSON.php';
 $php_path = dirname(__FILE__) . '/';
 $php_url = dirname($_SERVER['PHP_SELF']) . '/';
 
-//文件保存目录路径，可以指定绝对路径，比如 /var/www/attached/
+//文件保存目录路径
 $save_path = $php_path . '../attached/';
-//文件保存目录URL，可以指定绝对路径，比如 http://www.yoursite.com/attached/
+//文件保存目录URL
 $save_url = $php_url . '../attached/';
 //定义允许上传的文件扩展名
-$ext_arr = array('gif', 'jpg', 'jpeg', 'png', 'bmp');
+$image_ext_arr = array('gif', 'jpg', 'jpeg', 'png', 'bmp');
+$media_ext_arr = array('swf', 'flv', 'mp3', 'wav', 'wma', 'wmv', 'mid', 'avi', 'mpg', 'asf', 'rm', 'rmvb');
+$file_ext_arr = array('doc', 'docx', 'xls', 'xlsx', 'ppt', 'txt', 'zip', 'rar', 'gz', 'bz2');
+$ext_arr = array_merge($image_ext_arr, $media_ext_arr, $file_ext_arr);
 //最大文件大小
 $max_size = 1000000;
+
+$save_path = realpath($save_path) . '/';
 
 //有上传文件时
 if (empty($_FILES) === false) {
@@ -57,6 +62,13 @@ if (empty($_FILES) === false) {
 	//检查扩展名
 	if (in_array($file_ext, $ext_arr) === false) {
 		alert("上传文件扩展名是不允许的扩展名。");
+	}
+	//创建文件夹
+	$ymd = date("Ymd");
+	$save_path .= $ymd . "/";
+	$save_url .= $ymd . "/";
+	if (!file_exists($save_path)) {
+		mkdir($save_path);
 	}
 	//新文件名
 	$new_file_name = date("YmdHis") . '_' . rand(10000, 99999) . '.' . $file_ext;
