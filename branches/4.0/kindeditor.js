@@ -3407,7 +3407,6 @@ _extend(KEdit, KWidget, {
 		_elementVal(self.srcElement, self.html());
 		self.srcElement.show();
 		doc.write('');
-		doc.clear();
 		self.iframe.remove();
 		self.textarea.remove();
 		KEdit.parent.remove.call(self);
@@ -3765,9 +3764,9 @@ _extend(KUploadButton, {
 			'<form class="ke-inline-block ke-form" method="post" enctype="multipart/form-data" target="' + target + '" action="' + url + '">',
 			'<span class="ke-inline-block ke-upload-area">',
 			'<span class="ke-button-common ke-button-outer">',
-			'<input type="button" class="ke-button-common ke-button" value="' + title + '" tabindex="-1" />',
+			'<input type="button" class="ke-button-common ke-button" value="' + title + '" />',
 			'</span>',
-			'<input type="file" class="ke-upload-file" name="' + fieldName + '" />',
+			'<input type="file" class="ke-upload-file" name="' + fieldName + '" tabindex="-1" />',
 			'</span></form>',
 			'</iframe></div>'].join('');
 		var div = K(html, button.doc);

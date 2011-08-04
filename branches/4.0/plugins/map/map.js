@@ -40,7 +40,7 @@ KindEditor.plugin('map', function(K) {
 			beforeRemove : function() {
 				searchBtn.remove();
 				doc.write('');
-				doc.clear();
+				iframe.remove();
 			}
 		});
 		var div = dialog.div,
