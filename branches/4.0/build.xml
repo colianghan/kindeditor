@@ -32,6 +32,7 @@
 			<fileset file="${src}/toolbar.js"/>
 			<fileset file="${src}/menu.js"/>
 			<fileset file="${src}/colorpicker.js"/>
+			<fileset file="${src}/uploadbutton.js"/>
 			<fileset file="${src}/dialog.js"/>
 			<fileset file="${src}/tabs.js"/>
 			<fileset file="${src}/ajax.js"/>

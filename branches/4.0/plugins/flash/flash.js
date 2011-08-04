@@ -1,30 +1,37 @@
 
 KindEditor.plugin('flash', function(K) {
-	var self = this, name = 'flash', lang = self.lang(name + '.');
+	var self = this, name = 'flash', lang = self.lang(name + '.'),
+		allowFlashUpload = K.undef(self.allowFlashUpload, true),
+		allowFileManager = K.undef(self.allowFileManager, false),
+		uploadJson = K.undef(self.imageUploadJson, self.basePath + 'php/upload_json.php');
 	self.plugin.flash = {
 		edit : function() {
 			var html = [
 				'<div style="padding:10px 20px;">',
 				//url
 				'<div class="ke-dialog-row">',
-				'<label for="keUrl">' + lang.url + '</label>',
-				'<input class="ke-input-text" type="text" id="keUrl" name="url" value="" style="width:90%;" />',
+				'<label for="keUrl" style="width:60px;">' + lang.url + '</label>',
+				'<input class="ke-input-text" type="text" id="keUrl" name="url" value="" style="width:160px;" /> &nbsp;',
+				'<input type="button" class="ke-upload-button" value="' + lang.upload + '" /> &nbsp;',
+				'<span class="ke-button-common ke-button-outer">',
+				'<input type="button" class="ke-button-common ke-button" name="viewServer" value="' + lang.viewServer + '" />',
+				'</span>',
 				'</div>',
 				//width
 				'<div class="ke-dialog-row">',
-				'<label for="keWidth">' + lang.width + '</label>',
+				'<label for="keWidth" style="width:60px;">' + lang.width + '</label>',
 				'<input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="550" maxlength="4" /> ',
 				'</div>',
 				//height
 				'<div class="ke-dialog-row">',
-				'<label for="keHeight">' + lang.height + '</label>',
+				'<label for="keHeight" style="width:60px;">' + lang.height + '</label>',
 				'<input type="text" id="keHeight" class="ke-input-text ke-input-number" name="height" value="400" maxlength="4" /> ',
 				'</div>',
 				'</div>'
 			].join('');
 			var dialog = self.createDialog({
 				name : name,
-				width : 400,
+				width : 450,
 				height : 200,
 				title : self.lang(name),
 				body : html,
@@ -45,9 +52,51 @@ KindEditor.plugin('flash', function(K) {
 			}),
 			div = dialog.div,
 			urlBox = K('[name="url"]', div),
+			viewServerBtn = K('[name="viewServer"]', div),
 			widthBox = K('[name="width"]', div),
 			heightBox = K('[name="height"]', div);
 			urlBox.val('http://');
+
+			if (allowFlashUpload) {
+				var uploadbutton = K.uploadbutton({
+					button : K('.ke-upload-button', div)[0],
+					fieldName : 'imgFile',
+					url : uploadJson,
+					afterUpload : function(data) {
+						if (data.error === 0) {
+							urlBox.val(K.formatUrl(data.url, 'absolute'));
+							alert(self.lang('uploadSuccess'));
+						} else {
+							alert(data.message);
+						}
+					}
+				});
+				uploadbutton.fileBox.change(function(e) {
+					uploadbutton.submit();
+				});
+			} else {
+				K('.ke-upload-button', div).hide();
+				urlBox.width(250);
+			}
+
+			if (allowFileManager) {
+				viewServerBtn.click(function(e) {
+					self.loadPlugin('filemanager', function() {
+						self.plugin.filemanagerDialog({
+							viewType : 'VIEW',
+							clickFn : function(url, title) {
+								if (self.dialogs.length > 1) {
+									K('[name="url"]', div).val(url);
+									self.hideDialog();
+								}
+							}
+						});
+					});
+				});
+			} else {
+				viewServerBtn.hide();
+			}
+
 			var img = self.plugin.getSelectedFlash();
 			if (img) {
 				var attrs = K.mediaAttrs(img.attr('data-ke-tag'));

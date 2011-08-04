@@ -1,5 +1,5 @@
 
-function _button(arg) {
+function _createButton(arg) {
 	arg = arg || {};
 	var name = arg.name || '',
 		span = K('<span class="ke-button-common ke-button-outer" title="' + name + '"></span>'),
@@ -55,7 +55,7 @@ _extend(KDialog, KWidget, {
 			{ btn : noBtn, name : 'no' }
 		], function() {
 			if (this.btn) {
-				var button = _button(this.btn);
+				var button = _createButton(this.btn);
 				button.addClass('ke-dialog-' + this.name);
 				footerDiv.append(button);
 			}
@@ -104,5 +104,4 @@ function _dialog(options) {
 	return new KDialog(options);
 }
 
-K.button = _button;
 K.dialog = _dialog;
