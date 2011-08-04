@@ -86,6 +86,11 @@
 			<br />
 			<textarea name="content2" cols="100" rows="20" style="width:700px;height:100px;"></textarea>
 			<br />
+			<select id="uploadFile">
+				<option value="">附件列表</option>
+			</select>
+			<br />
+			<br />
 			<input type="button" id="create1" value="Create #1" />
 			<input type="button" id="create2" value="Create #2" />
 			<input type="button" id="remove1" value="Remove #1" />
@@ -103,7 +108,11 @@
 							urlType : 'absolute',
 							designMode : true,
 							allowFileManager : true,
-							fullscreenMode : false
+							fullscreenMode : false,
+							afterUpload : function(url) {
+								var select = K('#uploadFile')[0];
+								select.options.add(new Option(url, url));
+							}
 						});
 					}
 				});

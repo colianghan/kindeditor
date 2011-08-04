@@ -127,7 +127,11 @@ KindEditor.plugin('image', function(K) {
 								return false;
 							}
 						});
-						self.exec('insertimage', data.url, title, width, height, 0, align).hideDialog().focus();
+						var url = K.formatUrl(data.url, 'absolute');
+						self.exec('insertimage', url, title, width, height, 0, align).hideDialog().focus();
+						if (self.afterUpload) {
+							self.afterUpload.call(self, url);
+						}
 					} else {
 						alert(data.message);
 					}

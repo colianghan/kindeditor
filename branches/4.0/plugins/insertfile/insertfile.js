@@ -57,7 +57,11 @@ KindEditor.plugin('insertfile', function(K) {
 			url : uploadJson,
 			afterUpload : function(data) {
 				if (data.error === 0) {
-					urlBox.val(K.formatUrl(data.url, 'absolute'));
+					var url = K.formatUrl(data.url, 'absolute');
+					urlBox.val(url);
+					if (self.afterUpload) {
+						self.afterUpload.call(self, url);
+					}
 					alert(self.lang('uploadSuccess'));
 				} else {
 					alert(data.message);

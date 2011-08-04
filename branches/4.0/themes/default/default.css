@@ -326,6 +326,36 @@
 	width: 16px;
 	height: 16px;
 }
+.ke-icon-template {
+	background-position: 0px -1072px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecellsplit {
+	background-position: 0px -1088px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablerowmerge {
+	background-position: 0px -1104px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablerowsplit {
+	background-position: 0px -1120px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecolmerge {
+	background-position: 0px -1136px;
+	width: 16px;
+	height: 16px;
+}
+.ke-icon-tablecolsplit {
+	background-position: 0px -1152px;
+	width: 16px;
+	height: 16px;
+}
 /* container (*/
 .ke-container {
 	display: block;

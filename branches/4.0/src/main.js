@@ -873,7 +873,7 @@ _plugin('core', function(K) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
+		if (!img || img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
 			return null;
 		}
 		return img;
@@ -885,7 +885,7 @@ _plugin('core', function(K) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || img[0].className !== 'ke-flash') {
+		if (!img || img.name !== 'img' || img[0].className !== 'ke-flash') {
 			return null;
 		}
 		return img;
@@ -897,7 +897,7 @@ _plugin('core', function(K) {
 			return null;
 		}
 		var img = K(sc.childNodes[so]);
-		if (img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
+		if (!img || img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
 			return null;
 		}
 		if (img[0].className == 'ke-flash') {
@@ -949,8 +949,8 @@ _plugin('core', function(K) {
 	self.plugin.getSelectedCell = function() {
 		return self.cmd.commonAncestor('td');
 	};
-	_each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,coldelete,' +
-	'rowdelete,insert,delete').split(','), function(i, val) {
+	_each(('prop,cellprop,colinsertleft,colinsertright,rowinsertabove,rowinsertbelow,rowmerge,colmerge,' +
+	'rowsplit,colsplit,coldelete,rowdelete,insert,delete').split(','), function(i, val) {
 		var cond = _inArray(val, ['prop', 'delete']) < 0 ? self.plugin.getSelectedCell : self.plugin.getSelectedTable;
 		self.addContextmenu({
 			title : self.lang('table' + val),
