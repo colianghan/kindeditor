@@ -189,5 +189,12 @@ KindEditor.lang({
 		{'2' : 'Line height 2'},
 		{'2.5' : 'Line height 2.5'},
 		{'3' : 'Line height 3'}
-	]
+	],
+	'template.selectTemplate' : 'Template',
+	'template.replaceContent' : 'Replace current content',
+	'template.fileList' : {
+		'1.html' : 'Image and Text (1.html)',
+		'2.html' : 'Table (2.html)',
+		'3.html' : 'List (3.html)'
+	}
 }, 'en');

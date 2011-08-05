@@ -191,5 +191,12 @@ KindEditor.lang({
 		{'2' : '2倍行距'},
 		{'2.5' : '2.5倍行距'},
 		{'3' : '3倍行距'}
-	]
+	],
+	'template.selectTemplate' : '可选模板',
+	'template.replaceContent' : '替换当前内容',
+	'template.fileList' : {
+		'1.html' : '图片和文字 (1.html)',
+		'2.html' : '表格 (2.html)',
+		'3.html' : '项目编号 (3.html)'
+	}
 }, 'zh_CN');

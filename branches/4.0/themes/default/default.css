@@ -856,6 +856,7 @@
 	border-style: solid;
 	border-width: 1px;
 }
+/* filemanager */
 .ke-plugin-filemanager-header {
 	width: 100%;
 	margin-bottom: 10px;
@@ -914,4 +915,22 @@
 .ke-plugin-filemanager-body .ke-table .ke-datetime {
 	width: 30%;
 	text-align: center;
+}
+/* template */
+.ke-plugin-template .ke-header {
+	width: 100%;
+	margin-bottom: 10px;
+}
+.ke-plugin-template label {
+	margin-right: 0;
+	cursor: pointer;
+	font-weight: normal;
+	display: inline;
+	vertical-align: top;
+}
+.ke-plugin-template .ke-left {
+	float: left;
+}
+.ke-plugin-template .ke-right {
+	float: right;
 }
