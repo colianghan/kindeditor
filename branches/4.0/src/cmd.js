@@ -110,7 +110,7 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 		if (key === '*') {
 			return true;
 		}
-		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+		var match = /^(\.?)([^=]+)(?:=([^=]*))?$/.exec(key);
 		var method = match[1] ? 'css' : 'attr';
 		key = match[2];
 		var val = match[3] || '';
@@ -144,7 +144,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 			allFlag = true;
 			break;
 		}
-		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+		var match = /^(\.?)([^=]+)(?:=([^=]*))?$/.exec(key);
 		key = match[2];
 		if (match[1]) {
 			key = _toCamel(key);

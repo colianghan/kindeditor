@@ -2350,7 +2350,7 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 		if (key === '*') {
 			return true;
 		}
-		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+		var match = /^(\.?)([^=]+)(?:=([^=]*))?$/.exec(key);
 		var method = match[1] ? 'css' : 'attr';
 		key = match[2];
 		var val = match[3] || '';
@@ -2383,7 +2383,7 @@ function _removeAttrOrCssByKey(knode, map, mapKey) {
 			allFlag = true;
 			break;
 		}
-		var match = /^(\.?)([^=]+)(?:=([^=]+))?$/.exec(key);
+		var match = /^(\.?)([^=]+)(?:=([^=]*))?$/.exec(key);
 		key = match[2];
 		if (match[1]) {
 			key = _toCamel(key);
@@ -4496,6 +4496,9 @@ KEditor.prototype = {
 	},
 	resize : function(width, height) {
 		var self = this;
+		if (!self.container) {
+			return self;
+		}
 		if (width !== null) {
 			self.container.css('width', _addUnit(width));
 		}
@@ -4508,7 +4511,7 @@ KEditor.prototype = {
 		return self;
 	},
 	select : function() {
-		this.cmd.select();
+		this.container && this.cmd.select();
 		return this;
 	},
 	html : function(val) {
@@ -4520,7 +4523,31 @@ KEditor.prototype = {
 		return self;
 	},
 	fullHtml : function() {
-		return this.edit.html(undefined, true);
+		return this.container ? this.edit.html(undefined, true) : '';
+	},
+	text : function(val) {
+		var self = this;
+		if (val === undefined) {
+			return _trim(self.html().replace(/<(?!img|embed).*?>/ig, '').replace(/&nbsp;/ig, ' '));
+		} else {
+			return self.html(_escape(val));
+		}
+	},
+	isEmpty : function() {
+		return _trim(this.pureData().replace(/\r\n|\n|\r/, '')) === '';
+	},
+	selectedHtml : function() {
+		return this.container ? this.cmd.range.html() : '';
+	},
+	count : function(mode) {
+		mode = (mode || 'html').toLowerCase();
+		if (mode === 'html') {
+			return self.html().length;
+		}
+		if (mode === 'text') {
+			return self.text().replace(/<(?:img|embed).*?>/ig, 'K').replace(/\r\n|\n|\r/g, '').length;
+		}
+		return 0;
 	},
 	exec : function(key) {
 		key = key.toLowerCase();
@@ -4533,21 +4560,28 @@ KEditor.prototype = {
 		return self;
 	},
 	insertHtml : function(val) {
-		return this.exec('inserthtml', val);
-	},
-	focus : function() {
-		this.edit.focus();
+		this.container && this.exec('inserthtml', val);
 		return this;
 	},
-	blur : function() {
-		if (!self.container) {
-			return self;
+	appendHtml : function(val) {
+		this.html(this.html() + val);
+		if (self.container) {
+			var cmd = this.cmd;
+			cmd.range.selectNodeContents(cmd.doc.body).collapse(false);
+			cmd.select();
 		}
-		this.edit.blur();
 		return this;
 	},
 	sync : function() {
 		_elementVal(this.srcElement, this.html());
+		return this;
+	},
+	focus : function() {
+		this.container ? this.edit.focus() : this.srcElement[0].focus();
+		return this;
+	},
+	blur : function() {
+		this.container ? this.edit.blur() : this.srcElement[0].blur();
 		return this;
 	},
 	addBookmark : function() {

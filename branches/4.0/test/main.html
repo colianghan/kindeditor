@@ -95,6 +95,15 @@
 			<input type="button" id="create2" value="Create #2" />
 			<input type="button" id="remove1" value="Remove #1" />
 			<input type="button" id="remove2" value="Remove #2" />
+			<input type="button" id="getHtml1" value="Get HTML #1" />
+			<input type="button" id="fullHtml1" value="Get Full HTML #1" />
+			<input type="button" id="setHtml1" value="Set HTML #1" />
+			<input type="button" id="getText1" value="Get Text #1" />
+			<input type="button" id="setText1" value="Set Text #1" />
+			<input type="button" id="selectedHtml1" value="Get Selected HTML #1" />
+			<input type="button" id="insertHtml1" value="Insert HTML #1" />
+			<input type="button" id="appendHtml1" value="Append HTML #1" />
+			<input type="button" id="sync1" value="Sync #1" />
 			<input type="button" id="focus1" value="Focus #1" />
 			<input type="button" id="blur1" value="Blur #1" />
 			<input type="submit" name="button" value="Submit" />
@@ -135,6 +144,34 @@
 				});
 				K('#remove2').click(function(e) {
 					editor2.remove();
+				});
+				K('#getHtml1').click(function(e) {
+					alert(editor1.html());
+				});
+				K('#fullHtml1').click(function(e) {
+					alert(editor1.fullHtml());
+				});
+				K('#setHtml1').click(function(e) {
+					editor1.html('<h1>abcd</h1>');
+				});
+				K('#getText1').click(function(e) {
+					alert(editor1.text());
+				});
+				K('#setText1').click(function(e) {
+					editor1.text('<h1>abcd</h1>');
+				});
+				K('#selectedHtml1').click(function(e) {
+					alert(editor1.selectedHtml());
+				});
+				K('#insertHtml1').click(function(e) {
+					editor1.insertHtml('<strong>abcd</strong>1234');
+				});
+				K('#appendHtml1').click(function(e) {
+					editor1.appendHtml('<strong>abcd</strong>1234');
+				});
+				K('#sync1').click(function(e) {
+					editor1.sync();
+					alert(K('textarea[name=content1]').val());
 				});
 				K('#focus1').click(function(e) {
 					editor1.focus();
