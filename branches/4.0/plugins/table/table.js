@@ -179,6 +179,7 @@ KindEditor.plugin('table', function(K) {
 						}
 						html += '</table>';
 						self.insertHtml(html).select().hideDialog().focus();
+						self.addBookmark();
 					}
 				}
 			}),
@@ -352,6 +353,7 @@ KindEditor.plugin('table', function(K) {
 							'border-color' : borderColor
 						});
 						self.hideDialog().focus();
+						self.addBookmark();
 					}
 				}
 			}),
@@ -398,7 +400,7 @@ KindEditor.plugin('table', function(K) {
 			// foucs and select
 			widthBox[0].focus();
 			widthBox[0].select();
-			//get selected cell
+			// get selected cell
 			var cell = self.plugin.getSelectedCell();
 			var match,
 				cellWidth = cell[0].style.width || cell[0].width || '',
@@ -430,6 +432,8 @@ KindEditor.plugin('table', function(K) {
 		},
 		'delete' : function() {
 			self.plugin.getSelectedTable().remove();
+			self.cmd.selection(true);
+			self.addBookmark();
 		},
 		colinsert : function(offset) {
 			var table = self.plugin.getSelectedTable()[0], cell = self.plugin.getSelectedCell()[0],
@@ -438,6 +442,7 @@ KindEditor.plugin('table', function(K) {
 				var newCell = table.rows[i].insertCell(index);
 				newCell.innerHTML = '&nbsp;';
 			}
+			self.addBookmark();
 		},
 		colinsertleft : function() {
 			this.colinsert(0);
@@ -452,6 +457,7 @@ KindEditor.plugin('table', function(K) {
 				var cell = newRow.insertCell(i);
 				cell.innerHTML = '&nbsp;';
 			}
+			self.addBookmark();
 		},
 		rowinsertabove : function() {
 			this.rowinsert(0);
@@ -459,15 +465,90 @@ KindEditor.plugin('table', function(K) {
 		rowinsertbelow : function() {
 			this.rowinsert(1);
 		},
+		rowmerge : function() {
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				rowIndex = row.rowIndex,
+				cellIndex = cell.cellIndex,
+				nextRowIndex = rowIndex + cell.rowSpan;
+			// 最后一行不能合并
+			if (table.rows.length === nextRowIndex) {
+				return;
+			}
+			var nextRow = table.rows[nextRowIndex],
+				nextCell = nextRow.cells[cellIndex];
+			// 上下行的colspan不一致时不能合并
+			if (cell.colSpan !== nextCell.colSpan) {
+				return;
+			}
+			nextRow.deleteCell(cellIndex);
+			cell.rowSpan += 1;
+			self.addBookmark();
+		},
+		colmerge : function() {
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				rowIndex = row.rowIndex,
+				cellIndex = cell.cellIndex,
+				nextCellIndex = cellIndex + 1;
+			// 最后一列不能合并
+			if (row.cells.length === nextCellIndex) {
+				return;
+			}
+			var nextCell = row.cells[nextCellIndex];
+			// 左右列的rowspan不一致时不能合并
+			if (cell.rowSpan !== nextCell.rowSpan) {
+				return;
+			}
+			row.deleteCell(nextCellIndex);
+			cell.colSpan += 1;
+			self.addBookmark();
+		},
+		rowsplit : function() {
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				cellIndex = cell.cellIndex;
+			if (cell.rowSpan === 1) {
+				return;
+			}
+			for (var i = row.rowIndex + 1, len = cell.rowSpan; i < len; i++) {
+				var newCell = table.rows[i].insertCell(cellIndex);
+				newCell.innerHTML = '&nbsp;';
+			}
+			cell.rowSpan = 1;
+			self.addBookmark();
+		},
+		colsplit : function() {
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				cellIndex = cell.cellIndex;
+			if (cell.colSpan === 1) {
+				return;
+			}
+			for (var i = cellIndex + 1, len = cell.colSpan; i < len; i++) {
+				var newCell = row.insertCell(i);
+				newCell.innerHTML = '&nbsp;';
+			}
+			cell.colSpan = 1;
+			self.addBookmark();
+		},
 		coldelete : function() {
 			var table = self.plugin.getSelectedTable()[0], cell = self.plugin.getSelectedCell()[0], index = cell.cellIndex;
 			for (var i = 0, len = table.rows.length; i < len; i++) {
 				table.rows[i].deleteCell(index);
 			}
+			self.cmd.selection(true);
+			self.addBookmark();
 		},
 		rowdelete : function() {
 			var table = self.plugin.getSelectedTable()[0], row = self.plugin.getSelectedRow()[0];
 			table.deleteRow(row.rowIndex);
+			self.cmd.selection(true);
+			self.addBookmark();
 		}
 	};
 	self.clickToolbar(name, self.plugin.table.prop);

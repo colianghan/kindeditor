@@ -256,14 +256,18 @@ _extend(KCmd, {
 		self.sel = _getSel(doc);
 		self.range = range;
 	},
-	selection : function() {
+	selection : function(forceReset) {
 		var self = this, doc = self.doc, rng = _getRng(doc);
+		self.sel = _getSel(doc);
 		if (rng) {
-			self.sel = _getSel(doc);
 			self.range = _range(rng);
 			if (K(self.range.startContainer).name == 'html') {
 				self.range.selectNodeContents(doc.body).collapse(false);
 			}
+			return self;
+		}
+		if (forceReset) {
+			self.range.selectNodeContents(doc.body).collapse(false);
 		}
 		return self;
 	},
