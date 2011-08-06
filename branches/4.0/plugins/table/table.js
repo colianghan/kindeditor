@@ -566,7 +566,7 @@ KindEditor.plugin('table', function(K) {
 			}
 			for (var i = 1, len = cell.colSpan; i < len; i++) {
 				var newCell = row.insertCell(cellIndex + i);
-				if (cell.rowSpan) {
+				if (cell.rowSpan > 1) {
 					newCell.rowSpan = cell.rowSpan;
 				}
 				newCell.innerHTML = '&nbsp;';
@@ -584,6 +584,9 @@ KindEditor.plugin('table', function(K) {
 					newCell = newRow.cells[index];
 				if (newCell.colSpan > 1) {
 					newCell.colSpan -= 1;
+					if (newCell.colSpan === 1) {
+						K(newCell).removeAttr('colSpan');
+					}
 				} else {
 					newRow.deleteCell(index);
 				}
