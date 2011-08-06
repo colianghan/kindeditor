@@ -193,8 +193,8 @@ KindEditor.lang({
 	'template.selectTemplate' : 'Template',
 	'template.replaceContent' : 'Replace current content',
 	'template.fileList' : {
-		'1.html' : 'Image and Text (1.html)',
-		'2.html' : 'Table (2.html)',
-		'3.html' : 'List (3.html)'
+		'1.html' : 'Image and Text',
+		'2.html' : 'Table',
+		'3.html' : 'List'
 	}
 }, 'en');
