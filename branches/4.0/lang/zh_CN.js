@@ -39,7 +39,7 @@ KindEditor.lang({
 	emoticons : '插入表情',
 	link : '超级链接',
 	unlink : '取消超级链接',
-	fullscreen : '全屏显示',
+	fullscreen : '全屏显示(Esc)',
 	about : '关于',
 	print : '打印(Ctrl+P)',
 	filemanager : '浏览服务器',

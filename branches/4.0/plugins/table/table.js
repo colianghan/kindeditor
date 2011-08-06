@@ -1,6 +1,17 @@
 
 KindEditor.plugin('table', function(K) {
 	var self = this, name = 'table', lang = self.lang(name + '.');
+	// 取得下一行cell的index
+	function _getCellIndex(table, row, cell) {
+		var rowSpanCount = 0;
+		for (var i = 0, len = row.cells.length; i < len; i++) {
+			if (row.cells[i] == cell) {
+				break;
+			}
+			rowSpanCount += row.cells[i].rowSpan - 1;
+		}
+		return cell.cellIndex - rowSpanCount;
+	}
 	self.plugin.table = {
 		//insert or modify table
 		prop : function(isInsert) {
@@ -436,11 +447,16 @@ KindEditor.plugin('table', function(K) {
 			self.addBookmark();
 		},
 		colinsert : function(offset) {
-			var table = self.plugin.getSelectedTable()[0], cell = self.plugin.getSelectedCell()[0],
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
 				index = cell.cellIndex + offset;
 			for (var i = 0, len = table.rows.length; i < len; i++) {
-				var newCell = table.rows[i].insertCell(index);
+				var newRow = table.rows[i],
+					newCell = newRow.insertCell(index);
 				newCell.innerHTML = '&nbsp;';
+				// 调整下一行的单元格index
+				index = _getCellIndex(table, newRow, newCell);
 			}
 			self.addBookmark();
 		},
@@ -451,10 +467,15 @@ KindEditor.plugin('table', function(K) {
 			this.colinsert(1);
 		},
 		rowinsert : function(offset) {
-			var table = self.plugin.getSelectedTable()[0], row = self.plugin.getSelectedRow()[0],
-				newRow = table.insertRow(row.rowIndex + offset);
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				newRow = table.insertRow(row.rowIndex + (cell.rowSpan - 1) + offset);
 			for (var i = 0, len = row.cells.length; i < len; i++) {
 				var cell = newRow.insertCell(i);
+				if (row.cells[i].colSpan > 1) {
+					cell.colSpan = row.cells[i].colSpan;
+				}
 				cell.innerHTML = '&nbsp;';
 			}
 			self.addBookmark();
@@ -469,32 +490,36 @@ KindEditor.plugin('table', function(K) {
 			var table = self.plugin.getSelectedTable()[0],
 				row = self.plugin.getSelectedRow()[0],
 				cell = self.plugin.getSelectedCell()[0],
-				rowIndex = row.rowIndex,
-				cellIndex = cell.cellIndex,
-				nextRowIndex = rowIndex + cell.rowSpan;
+				rowIndex = row.rowIndex, // 当前行的index
+				nextRowIndex = rowIndex + cell.rowSpan, // 下一行的index
+				nextRow = table.rows[nextRowIndex]; // 下一行
 			// 最后一行不能合并
-			if (table.rows.length === nextRowIndex) {
+			if (table.rows.length <= nextRowIndex) {
 				return;
 			}
-			var nextRow = table.rows[nextRowIndex],
-				nextCell = nextRow.cells[cellIndex];
+			var cellIndex = _getCellIndex(table, row, cell); // 下一行单元格的index
+			if (nextRow.cells.length <= cellIndex) {
+				return;
+			}
+			var nextCell = nextRow.cells[cellIndex]; // 下一行单元格
 			// 上下行的colspan不一致时不能合并
 			if (cell.colSpan !== nextCell.colSpan) {
 				return;
 			}
 			nextRow.deleteCell(cellIndex);
 			cell.rowSpan += 1;
+			self.cmd.selection(true);
 			self.addBookmark();
 		},
 		colmerge : function() {
 			var table = self.plugin.getSelectedTable()[0],
 				row = self.plugin.getSelectedRow()[0],
 				cell = self.plugin.getSelectedCell()[0],
-				rowIndex = row.rowIndex,
+				rowIndex = row.rowIndex, // 当前行的index
 				cellIndex = cell.cellIndex,
 				nextCellIndex = cellIndex + 1;
 			// 最后一列不能合并
-			if (row.cells.length === nextCellIndex) {
+			if (row.cells.length <= nextCellIndex) {
 				return;
 			}
 			var nextCell = row.cells[nextCellIndex];
@@ -502,23 +527,32 @@ KindEditor.plugin('table', function(K) {
 			if (cell.rowSpan !== nextCell.rowSpan) {
 				return;
 			}
+			cell.colSpan += nextCell.colSpan;
 			row.deleteCell(nextCellIndex);
-			cell.colSpan += 1;
+			self.cmd.selection(true);
 			self.addBookmark();
 		},
 		rowsplit : function() {
 			var table = self.plugin.getSelectedTable()[0],
 				row = self.plugin.getSelectedRow()[0],
 				cell = self.plugin.getSelectedCell()[0],
-				cellIndex = cell.cellIndex;
+				rowIndex = row.rowIndex;
+			// 不是可分割单元格
 			if (cell.rowSpan === 1) {
 				return;
 			}
-			for (var i = row.rowIndex + 1, len = cell.rowSpan; i < len; i++) {
-				var newCell = table.rows[i].insertCell(cellIndex);
+			var cellIndex = _getCellIndex(table, row, cell);
+			for (var i = 1, len = cell.rowSpan; i < len; i++) {
+				var newRow = table.rows[rowIndex + i],
+					newCell = newRow.insertCell(cellIndex);
+				if (cell.colSpan > 1) {
+					newCell.colSpan = cell.colSpan;
+				}
 				newCell.innerHTML = '&nbsp;';
+				// 调整下一行的单元格index
+				cellIndex = _getCellIndex(table, newRow, newCell);
 			}
-			cell.rowSpan = 1;
+			K(cell).removeAttr('rowSpan');
 			self.addBookmark();
 		},
 		colsplit : function() {
@@ -526,27 +560,50 @@ KindEditor.plugin('table', function(K) {
 				row = self.plugin.getSelectedRow()[0],
 				cell = self.plugin.getSelectedCell()[0],
 				cellIndex = cell.cellIndex;
+			// 不是可分割单元格
 			if (cell.colSpan === 1) {
 				return;
 			}
-			for (var i = cellIndex + 1, len = cell.colSpan; i < len; i++) {
-				var newCell = row.insertCell(i);
+			for (var i = 1, len = cell.colSpan; i < len; i++) {
+				var newCell = row.insertCell(cellIndex + i);
+				if (cell.rowSpan) {
+					newCell.rowSpan = cell.rowSpan;
+				}
 				newCell.innerHTML = '&nbsp;';
 			}
-			cell.colSpan = 1;
+			K(cell).removeAttr('colSpan');
 			self.addBookmark();
 		},
 		coldelete : function() {
-			var table = self.plugin.getSelectedTable()[0], cell = self.plugin.getSelectedCell()[0], index = cell.cellIndex;
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				index = cell.cellIndex;
 			for (var i = 0, len = table.rows.length; i < len; i++) {
-				table.rows[i].deleteCell(index);
+				var newRow = table.rows[i],
+					newCell = newRow.cells[index];
+				if (newCell.colSpan > 1) {
+					newCell.colSpan -= 1;
+				} else {
+					newRow.deleteCell(index);
+				}
+				// 跳过不需要删除的行
+				if (newCell.rowSpan > 1) {
+					i += newCell.rowSpan - 1;
+				}
 			}
 			self.cmd.selection(true);
 			self.addBookmark();
 		},
 		rowdelete : function() {
-			var table = self.plugin.getSelectedTable()[0], row = self.plugin.getSelectedRow()[0];
-			table.deleteRow(row.rowIndex);
+			var table = self.plugin.getSelectedTable()[0],
+				row = self.plugin.getSelectedRow()[0],
+				cell = self.plugin.getSelectedCell()[0],
+				rowIndex = row.rowIndex;
+			// 从下到上删除
+			for (var i = cell.rowSpan - 1; i >= 0; i--) {
+				table.deleteRow(rowIndex + i);
+			}
 			self.cmd.selection(true);
 			self.addBookmark();
 		}
