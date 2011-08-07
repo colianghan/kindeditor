@@ -277,6 +277,8 @@ function _getEndRange(node, offset) {
 // convert native Range to KRange
 function _toRange(rng) {
 	var doc, range;
+	// <table><tr><td></td>|<td></td></tr></table>
+	// to <table><tr><td></td><td>|</td></tr></table>
 	function tr2td(start) {
 		if (K(start.node).name == 'tr') {
 			start.node = start.node.cells[start.offset];
