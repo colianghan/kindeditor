@@ -192,7 +192,7 @@ KindEditor.plugin('table', function(K) {
 						for (var i = 0; i < rows; i++) {
 							html += '<tr>';
 							for (var j = 0; j < cols; j++) {
-								html += '<td>&nbsp;</td>';
+								html += '<td>' + (K.IE ? '' : '<br />') + '</td>';
 							}
 							html += '</tr>';
 						}
@@ -462,7 +462,7 @@ KindEditor.plugin('table', function(K) {
 			for (var i = 0, len = table.rows.length; i < len; i++) {
 				var newRow = table.rows[i],
 					newCell = newRow.insertCell(index);
-				newCell.innerHTML = '&nbsp;';
+				newCell.innerHTML = K.IE ? '' : '<br />';
 				// 调整下一行的单元格index
 				index = _getCellIndex(table, newRow, newCell);
 			}
@@ -484,7 +484,7 @@ KindEditor.plugin('table', function(K) {
 				if (row.cells[i].colSpan > 1) {
 					cell.colSpan = row.cells[i].colSpan;
 				}
-				cell.innerHTML = '&nbsp;';
+				cell.innerHTML = K.IE ? '' : '<br />';
 			}
 			self.addBookmark();
 		},
@@ -556,7 +556,7 @@ KindEditor.plugin('table', function(K) {
 				if (cell.colSpan > 1) {
 					newCell.colSpan = cell.colSpan;
 				}
-				newCell.innerHTML = '&nbsp;';
+				newCell.innerHTML = K.IE ? '' : '<br />';
 				// 调整下一行的单元格index
 				cellIndex = _getCellIndex(table, newRow, newCell);
 			}
@@ -577,7 +577,7 @@ KindEditor.plugin('table', function(K) {
 				if (cell.rowSpan > 1) {
 					newCell.rowSpan = cell.rowSpan;
 				}
-				newCell.innerHTML = '&nbsp;';
+				newCell.innerHTML = K.IE ? '' : '<br />';
 			}
 			K(cell).removeAttr('colSpan');
 			self.addBookmark();

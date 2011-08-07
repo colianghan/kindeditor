@@ -1869,6 +1869,12 @@ function _getEndRange(node, offset) {
 }
 function _toRange(rng) {
 	var doc, range;
+	function tr2td(start) {
+		if (K(start.node).name == 'tr') {
+			start.node = start.node.cells[start.offset];
+			start.offset = 0;
+		}
+	}
 	if (_IE) {
 		if (rng.item) {
 			doc = _getDoc(rng.item(0));
@@ -1879,6 +1885,8 @@ function _toRange(rng) {
 		doc = rng.parentElement().ownerDocument;
 		var start = _getStartEnd(rng, true),
 			end = _getStartEnd(rng, false);
+		tr2td(start);
+		tr2td(end);
 		range = new KRange(doc);
 		range.setStart(start.node, start.offset);
 		range.setEnd(end.node, end.offset);
