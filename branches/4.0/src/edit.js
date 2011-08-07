@@ -14,7 +14,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'body, p, div {word-wrap: break-word;}',
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',
-		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'.ke-zeroborder td {border:1px dotted #AAAAAA;}',
 		'.ke-flash {',
 		'	border:1px solid #AAAAAA;',
 		'	background-image:url(' + themesPath + 'common/flash.gif);',

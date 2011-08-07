@@ -1145,6 +1145,16 @@ _plugin('core', function(K) {
 		})
 		.replace(/(<[^>]+\s)(on\w+="[^"]*"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
+		})
+		.replace(/<table([^>]*)>/ig, function(full) {
+			if (full.indexOf('ke-zeroborder') >= 0) {
+				return full;
+			}
+			var attrs = _getAttrList(full);
+			if (attrs.border === undefined || attrs.border === '' || attrs.border === '0') {
+				return _addClassToTag(full, 'ke-zeroborder');
+			}
+			return full;
 		});
 	});
 });

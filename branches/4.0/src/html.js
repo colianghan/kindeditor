@@ -23,6 +23,21 @@ function _getAttrList(tag) {
 	return list;
 }
 
+function _addClassToTag(tag, className) {
+	if (/\s+class\s*=/.test(tag)) {
+		tag = tag.replace(/(\s+class=["']?)([^"']*)(["']?[\s>])/, function($0, $1, $2, $3) {
+			if ((' ' + $2 + ' ').indexOf(' ' + className + ' ') < 0) {
+				return $2 === '' ? $1 + className + $3 : $1 + $2 + ' ' + className + $3;
+			} else {
+				return $0;
+			}
+		});
+	} else {
+		tag = tag.substr(0, tag.length - 1) + ' class="' + className + '">';
+	}
+	return tag;
+}
+
 function _formatCss(css) {
 	var str = '';
 	_each(_getCssList(css), function(key, val) {

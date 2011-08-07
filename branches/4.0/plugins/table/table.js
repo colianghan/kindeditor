@@ -1,6 +1,6 @@
 
 KindEditor.plugin('table', function(K) {
-	var self = this, name = 'table', lang = self.lang(name + '.');
+	var self = this, name = 'table', lang = self.lang(name + '.'), zeroborder = 'ke-zeroborder';
 	// 取得下一行cell的index
 	function _getCellIndex(table, row, cell) {
 		var rowSpanCount = 0;
@@ -142,6 +142,11 @@ KindEditor.plugin('table', function(K) {
 							} else {
 								table.removeAttr('border');
 							}
+							if (border === '' || border === '0') {
+								table.addClass(zeroborder);
+							} else {
+								table.removeClass(zeroborder);
+							}
 							if (borderColor !== '') {
 								table.attr('borderColor', borderColor);
 							} else {
@@ -176,6 +181,9 @@ KindEditor.plugin('table', function(K) {
 						}
 						if (border !== '') {
 							html += ' border="' + border + '"';
+						}
+						if (border === '' || border === '0') {
+							html += ' class="' + zeroborder + '"';
 						}
 						if (borderColor !== '') {
 							html += ' bordercolor="' + borderColor + '"';

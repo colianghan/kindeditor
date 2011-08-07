@@ -575,6 +575,20 @@ function _getAttrList(tag) {
 	}
 	return list;
 }
+function _addClassToTag(tag, className) {
+	if (/\s+class\s*=/.test(tag)) {
+		tag = tag.replace(/(\s+class=["']?)([^"']*)(["']?[\s>])/, function($0, $1, $2, $3) {
+			if ((' ' + $2 + ' ').indexOf(' ' + className + ' ') < 0) {
+				return $2 === '' ? $1 + className + $3 : $1 + $2 + ' ' + className + $3;
+			} else {
+				return $0;
+			}
+		});
+	} else {
+		tag = tag.substr(0, tag.length - 1) + ' class="' + className + '">';
+	}
+	return tag;
+}
 function _formatCss(css) {
 	var str = '';
 	_each(_getCssList(css), function(key, val) {
@@ -3265,7 +3279,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'body, p, div {word-wrap: break-word;}',
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',
-		'table.ke-zeroborder td {border:1px dotted #AAAAAA;}',
+		'.ke-zeroborder td {border:1px dotted #AAAAAA;}',
 		'.ke-flash {',
 		'	border:1px solid #AAAAAA;',
 		'	background-image:url(' + themesPath + 'common/flash.gif);',
@@ -5084,6 +5098,16 @@ _plugin('core', function(K) {
 		})
 		.replace(/(<[^>]+\s)(on\w+="[^"]*"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
+		})
+		.replace(/<table([^>]*)>/ig, function(full) {
+			if (full.indexOf('ke-zeroborder') >= 0) {
+				return full;
+			}
+			var attrs = _getAttrList(full);
+			if (attrs.border === undefined || attrs.border === '' || attrs.border === '0') {
+				return _addClassToTag(full, 'ke-zeroborder');
+			}
+			return full;
 		});
 	});
 });
