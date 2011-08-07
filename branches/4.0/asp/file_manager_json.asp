@@ -13,7 +13,7 @@
 
 Dim aspUrl, rootPath, rootUrl, fileTypes
 Dim currentPath, currentUrl, currentDirPath, moveupDirPath
-Dim path, order, fso, folder, dir, file, result
+Dim path, order, dirName, fso, folder, dir, file, result
 Dim fileExt, dirCount, fileCount, orderIndex, i, j
 Dim dirList(), fileList(), isDir, hasFile, filesize, isPhoto, filetype, filename, datetime
 
@@ -31,6 +31,23 @@ currentPath = ""
 currentUrl = ""
 currentDirPath = ""
 moveupDirPath = ""
+
+Set fso = Server.CreateObject("Scripting.FileSystemObject")
+Set folder = fso.GetFolder(currentPath)
+
+'目录名
+dirName = Request.QueryString("dir")
+If Not isEmpty(dirName) Then
+	If instr(dirName, lcase("image,flash,media,file")) < 1 Then
+		Response.Write "Invalid Directory name."
+		Response.End
+	End If
+	rootPath = rootPath & dirName & "/"
+	rootUrl = rootUrl & dirName & "/"
+	If Not fso.FolderExists(Server.mappath(rootPath)) Then
+		fso.CreateFolder(Server.mappath(rootPath))
+	End If
+End If
 
 '根据path参数，设置各路径和URL
 path = Request.QueryString("path")
@@ -77,9 +94,6 @@ result("moveup_dir_path") = moveupDirPath
 result("current_dir_path") = currentDirPath
 '当前目录的URL
 result("current_url") = currentUrl
-
-Set fso = Server.CreateObject("Scripting.FileSystemObject")
-Set folder = fso.GetFolder(currentPath)
 
 '文件数
 dirCount = folder.SubFolders.count

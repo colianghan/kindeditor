@@ -50,6 +50,17 @@ If file.fileSize > maxSize Then
 End If
 
 '创建文件夹
+dirName = Request.QueryString("dir")
+If Not isEmpty(dirName) Then
+	If instr(dirName, lcase("image,flash,media,file")) < 1 Then
+		showError("目录名不正确。")
+	End If
+	savePath = savePath & dirName & "/"
+	saveUrl = saveUrl & dirName & "/"
+	If Not fso.FolderExists(Server.mappath(savePath)) Then
+		fso.CreateFolder(Server.mappath(savePath))
+	End If
+End If
 ymd = year(now) & month(now) & day(now)
 savePath = savePath & ymd & "/"
 saveUrl = saveUrl & ymd & "/"

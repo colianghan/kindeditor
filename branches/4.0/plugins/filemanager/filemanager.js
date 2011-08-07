@@ -17,6 +17,7 @@ KindEditor.plugin('filemanager', function(K) {
 	self.plugin.filemanagerDialog = function(options) {
 		var width = K.undef(options.width, 520),
 			height = K.undef(options.height, 510),
+			dirName = K.undef(options.dirName, ''),
 			viewType = K.undef(options.viewType, 'VIEW').toUpperCase(), // "LIST" or "VIEW"
 			clickFn = options.clickFn;
 		var html = [
@@ -61,7 +62,7 @@ KindEditor.plugin('filemanager', function(K) {
 		viewTypeBox = K('[name="viewType"]', div),
 		orderTypeBox = K('[name="orderType"]', div);
 		function reloadPage(path, order, func) {
-			var url = fileManagerJson, param = '&path=' + path + '&order=' + order;
+			var url = fileManagerJson, param = '&path=' + path + '&order=' + order + '&dir=' + dirName;
 			if (!/\?/.test(url)) {
 				url += '?';
 				param = param.substr(1);

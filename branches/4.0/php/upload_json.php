@@ -12,6 +12,8 @@ require_once 'JSON.php';
 $php_path = dirname(__FILE__) . '/';
 $php_url = dirname($_SERVER['PHP_SELF']) . '/';
 
+
+
 //文件保存目录路径
 $save_path = $php_path . '../attached/';
 //文件保存目录URL
@@ -63,7 +65,19 @@ if (empty($_FILES) === false) {
 	if (in_array($file_ext, $ext_arr) === false) {
 		alert("上传文件扩展名是不允许的扩展名。");
 	}
+	//检查目录名
+	$dir_name = $_GET['dir'] ? trim($_GET['dir']) : '';
+	if (!in_array($dir_name, array('', 'image', 'flash', 'media', 'file'))) {
+		alert("目录名不正确。");
+	}
 	//创建文件夹
+	if ($dir_name !== '') {
+		$save_path .= $dir_name . "/";
+		$save_url .= $dir_name . "/";
+		if (!file_exists($save_path)) {
+			mkdir($save_path);
+		}
+	}
 	$ymd = date("Ymd");
 	$save_path .= $ymd . "/";
 	$save_url .= $ymd . "/";

@@ -42,6 +42,19 @@ if(!uploadDir.canWrite()){
 	return;
 }
 //创建文件夹
+String dirName = request.getParameter("dir");
+if (dirName != null) {
+	if(!Arrays.<String>asList(new String[]{"image", "flash", "media", "file"}).contains(dirName)){
+		out.println(getError("目录名不正确。"));
+		return;
+	}
+	savePath += dirName + "/";
+	saveUrl += dirName + "/";
+	File saveDirFile = new File(savePath);
+	if (!saveDirFile.exists()) {
+		saveDirFile.mkdirs();
+	}
+}
 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 String ymd = sdf.format(new Date());
 savePath += ymd + "/";

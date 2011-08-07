@@ -54,7 +54,7 @@ KindEditor.plugin('insertfile', function(K) {
 		var uploadbutton = K.uploadbutton({
 			button : K('.ke-upload-button', div)[0],
 			fieldName : 'imgFile',
-			url : uploadJson,
+			url : uploadJson + '?dir=file',
 			afterUpload : function(data) {
 				if (data.error === 0) {
 					var url = K.formatUrl(data.url, 'absolute');
@@ -75,7 +75,8 @@ KindEditor.plugin('insertfile', function(K) {
 			viewServerBtn.click(function(e) {
 				self.loadPlugin('filemanager', function() {
 					self.plugin.filemanagerDialog({
-						viewType : 'VIEW',
+						viewType : 'LIST',
+						dirName : 'file',
 						clickFn : function(url, title) {
 							if (self.dialogs.length > 1) {
 								K('[name="url"]', div).val(url);

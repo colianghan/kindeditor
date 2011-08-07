@@ -59,6 +59,18 @@ public class Upload : IHttpHandler
 			showError("上传文件扩展名是不允许的扩展名。");
 		}
 
+		//创建文件夹
+		String dirName = context.Request.QueryString["dir"];
+		if (!String.IsNullOrEmpty(dirName)) {
+			if (Array.IndexOf("image,flash,media,file".Split(','), dirName) == -1) {
+				showError("目录名不正确。");
+			}
+			dirPath += dirName + "/";
+			saveUrl += dirName + "/";
+			if (!Directory.Exists(dirPath)) {
+				Directory.CreateDirectory(dirPath);
+			}
+		}
 		String ymd = DateTime.Now.ToString("yyyyMMdd", DateTimeFormatInfo.InvariantInfo);
 		dirPath += ymd + "/";
 		saveUrl += ymd + "/";
