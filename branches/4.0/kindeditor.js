@@ -4469,6 +4469,9 @@ KEditor.prototype = {
 				self.cmd.onchange(function(e) {
 					self.addBookmark();
 					self.updateState();
+					if (self.options.afterChange) {
+						self.options.afterChange.call(self);
+					}
 				});
 				if (self.readonlyMode) {
 					self.readonly();
@@ -4610,6 +4613,7 @@ KEditor.prototype = {
 		return this.container ? this.cmd.range.html() : '';
 	},
 	count : function(mode) {
+		var self = this;
 		mode = (mode || 'html').toLowerCase();
 		if (mode === 'html') {
 			return self.html().length;

@@ -9,9 +9,12 @@
 			}
 		</style>
 		<link rel="stylesheet" href="../themes/default/default.css" />
-		<script charset="utf-8" src="../kindeditor-min.js"></script>
+		<script charset="utf-8" src="../kindeditor.js"></script>
 		<script charset="utf-8" src="../lang/zh_CN.js"></script>
 		<script>
+			function getParam(url, name) {
+				return url.match(new RegExp('[?&]' + name + '=([^?&]+)', 'i')) ? unescape(RegExp.$1) : '';
+			}
 			KindEditor.ready(function(K) {
 				var optionMap = {
 					'content0' : {
@@ -41,7 +44,14 @@
 					'content5' : {
 						cssPath : '../plugins/code/prettify.css',
 						newlineTag : 'br'
-					}
+					},
+					'content6' : {
+						cssPath : '../plugins/code/prettify.css',
+						afterChange : function() {
+							K('#tab6 .word_count1').html(this.count());
+							K('#tab6 .word_count2').html(this.count('text'));
+						}
+					},
 				};
 				var editor = null;
 				var tabs = K.tabs({
@@ -87,30 +97,31 @@
 				});
 				tabs.add({
 					title : 'HTML过滤',
-					panel : K('#tab6')
+					panel : K('#tab7')
 				});
 				tabs.add({
 					title : 'URL设置',
-					panel : K('#tab6')
+					panel : K('#tab8')
 				});
 				tabs.add({
 					title : '全屏模式',
-					panel : K('#tab6')
+					panel : K('#tab9')
 				});
 				tabs.add({
 					title : '自定义插件',
-					panel : K('#tab6')
+					panel : K('#tab10')
 				});
 				tabs.add({
 					title : '回调函数',
-					panel : K('#tab6')
+					panel : K('#tab11')
 				});
 				tabs.add({
 					title : '调用API',
-					panel : K('#tab6')
+					panel : K('#tab12')
 				});
-				tabs.select(0);
-				K('#tab0').show();
+				var index = parseInt(getParam(location.href, 'tab') || 0, 10);
+				tabs.select(index);
+				K('#tab' + index).show();
 				
 				K('#tab2 input[name=load]').click(function() {
 					K.loadScript('../kindeditor.js', function() {
@@ -300,5 +311,29 @@ KindEditor.ready(function(K) {
 </p>
 			</textarea>
 		</div>
+		
+		<!-- 统计字数 -->
+		<div id="tab6" style="display:none;">
+			<textarea name="content" style="width:800px;height:400px;">
+JavaScript代码:
+<pre class="prettyprint">
+KindEditor.ready(function(K) {
+	K.create('textarea[name="content"]' : {
+		afterChange : function() {
+			K('#tab6 .word_count1').html(this.count());
+			K('#tab6 .word_count2').html(this.count('text'));
+		}
+	});
+});
+</pre>
+<p>
+	&nbsp;
+</p>
+			</textarea>
+			<br />
+			您当前输入了 <span class="word_count1">0</span> 个文字。（字数统计包含HTML代码。）<br />
+			您当前输入了 <span class="word_count2">0</span> 个文字。（字数统计包含纯文本、IMG、EMBED，不包含换行符，IMG和EMBED算一个文字。）
+		</div>
+		
 	</body>
 </html>
