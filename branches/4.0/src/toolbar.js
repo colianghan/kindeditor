@@ -79,8 +79,8 @@ _extend(KToolbar, KWidget, {
 		}
 		return self;
 	},
-	disable : function(bool) {
-		var self = this, arr = self.noDisableItems, item;
+	disableItems : function(bool, noDisableItems) {
+		var self = this, arr = _undef(noDisableItems, self.noDisableItems), item;
 		// disable toolbar
 		if (bool === undefined ? !self.disableMode : bool) {
 			_each(self._itemNodes, function(key, val) {
@@ -109,6 +109,26 @@ _extend(KToolbar, KWidget, {
 			self.disableMode = false;
 		}
 		return self;
+	},
+	enable : function(name) {
+		var self = this,
+			itemNode = self._itemNodes[name];
+		if (itemNode) {
+			itemNode.removeClass('ke-disabled');
+			itemNode.opacity(1);
+			_bindToolbarEvent(itemNode, itemNode.data('item'));
+		}
+		self.disableMode = false;
+	},
+	disable : function(name) {
+		var self = this,
+			itemNode = self._itemNodes[name];
+		if (itemNode) {
+			itemNode.removeClass('ke-selected').addClass('ke-disabled');
+			itemNode.opacity(0.5);
+			itemNode.unbind();
+		}
+		self.disableMode = true;
 	}
 });
 

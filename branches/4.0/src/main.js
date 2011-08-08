@@ -154,10 +154,12 @@ function _bindTabEvent() {
 	var self = this;
 	K(self.edit.doc).keydown(function(e) {
 		if (e.which == 9) {
+			e.preventDefault();
 			if (self.afterTab) {
-				e.stop();
 				self.afterTab.call(self, e);
+				return;
 			}
+			self.insertHtml('&nbsp;&nbsp;&nbsp;&nbsp;');
 		}
 	});
 }
@@ -226,10 +228,12 @@ function _undoToRedo(fromStack, toStack) {
 function KEditor(options) {
 	var self = this;
 	// save original options
-	self.config = {};
+	self.options = {};
 	function setOption(key, val) {
-		self[key] = val;
-		self.config[key] = val;
+		if (KEditor.prototype[key] === undefined) {
+			self[key] = val;
+		}
+		self.options[key] = val;
 	}
 	// set options from param
 	_each(options, function(key, val) {
@@ -256,6 +260,7 @@ function KEditor(options) {
 	setOption('width', _addUnit(self.width));
 	setOption('height', _addUnit(self.height));
 	self.srcElement = se;
+	self.initContent = _elementVal(se);
 	self.plugin = {};
 	// private properties
 	self._handlers = {};
@@ -432,9 +437,13 @@ KEditor.prototype = {
 					self.addBookmark();
 					self.updateState();
 				});
+				// readonly
+				if (self.readonlyMode) {
+					self.readonly();
+				}
 				self.afterCreate();
-				if (self.afterCreateFn) {
-					self.afterCreateFn.call(self);
+				if (self.options.afterCreate) {
+					self.options.afterCreate.call(self);
 				}
 			}
 		});
@@ -482,23 +491,31 @@ KEditor.prototype = {
 			statusbar.last().css('visibility', 'hidden');
 		} else {
 			// bind drag event
-			_drag({
-				moveEl : container,
-				clickEl : statusbar,
-				moveFn : function(x, y, width, height, diffX, diffY) {
-					height += diffY;
-					resize(null, height);
-				}
-			});
-			_drag({
-				moveEl : container,
-				clickEl : statusbar.last(),
-				moveFn : function(x, y, width, height, diffX, diffY) {
-					width += diffX;
-					height += diffY;
-					resize(width, height);
-				}
-			});
+			if (self.resizeType > 0) {
+				_drag({
+					moveEl : container,
+					clickEl : statusbar,
+					moveFn : function(x, y, width, height, diffX, diffY) {
+						height += diffY;
+						resize(null, height);
+					}
+				});
+			} else {
+				statusbar.first().css('visibility', 'hidden');
+			}
+			if (self.resizeType === 2) {
+				_drag({
+					moveEl : container,
+					clickEl : statusbar.last(),
+					moveFn : function(x, y, width, height, diffX, diffY) {
+						width += diffX;
+						height += diffY;
+						resize(width, height);
+					}
+				});
+			} else {
+				statusbar.last().css('visibility', 'hidden');
+			}
 		}
 		return self;
 	},
@@ -644,6 +661,23 @@ KEditor.prototype = {
 		this.fullscreenMode = (bool === undefined ? !this.fullscreenMode : bool);
 		return this.remove().create();
 	},
+	readonly : function(isReadonly) {
+		isReadonly = _undef(isReadonly, true);
+		var self = this, edit = self.edit, doc = edit.doc;
+		if (self.designMode) {
+			self.toolbar.disableItems(isReadonly, []);
+		} else {
+			_each(self.noDisableItems, function() {
+				self.toolbar[isReadonly ? 'disable' : 'enable'](this);
+			});
+		}
+		if (_IE) {
+			doc.body.contentEditable = !isReadonly;
+		} else {
+			doc.designMode = isReadonly ? 'off' : 'on';
+		}
+		edit.textarea[0].disabled = isReadonly;
+	},
 	createMenu : function(options) {
 		var self = this,
 			name = options.name,
@@ -781,16 +815,19 @@ _plugin('core', function(K) {
 			el.bind('submit', function(e) {
 				self.sync();
 			});
+			K('[type="reset"]', el).click(function() {
+				self.html(self.initContent);
+			});
 		}
 	}
 	// source
 	self.clickToolbar('source', function() {
 		if (self.edit.designMode) {
-			self.toolbar.disable(true);
+			self.toolbar.disableItems(true);
 			self.edit.design(false);
 			self.toolbar.select('source');
 		} else {
-			self.toolbar.disable(false);
+			self.toolbar.disableItems(false);
 			self.edit.design(true);
 			self.toolbar.unselect('source');
 		}
@@ -800,7 +837,7 @@ _plugin('core', function(K) {
 		if (this.designMode) {
 			this.toolbar.unselect('source');
 		} else {
-			this.toolbar.disable(true).select('source');
+			this.toolbar.disableItems(true).select('source');
 		}
 	});
 	// fullscreen

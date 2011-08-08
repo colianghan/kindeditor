@@ -177,6 +177,8 @@
 			<input type="button" id="sync1" value="Sync #1" />
 			<input type="button" id="focus1" value="Focus #1" />
 			<input type="button" id="blur1" value="Blur #1" />
+			<input type="button" id="readonly1" value="Readonly #1" />
+			<input type="button" id="cancelReadonly1" value="Cancel Readonly #1" />
 			<input type="submit" name="button" value="Submit" />
 		</form>
 		<script>
@@ -184,6 +186,9 @@
 			KindEditor.ready(function(K) {
 				var editor1, editor2;
 				K('#create1').click(function(e) {
+					if (editor1) {
+						return;
+					}
 					editor1 = K.create('textarea[name=content1]', {
 						basePath : '../',
 						urlType : 'absolute',
@@ -200,6 +205,9 @@
 					});
 				});
 				K('#create2').click(function(e) {
+					if (editor2) {
+						return;
+					}
 					editor2 = K.create(K('textarea[name=content2]').get(), {
 						basePath : '../',
 						langType : 'en',
@@ -212,9 +220,11 @@
 				K('#create2').click();
 				K('#remove1').click(function(e) {
 					editor1.remove();
+					editor1 = null;
 				});
 				K('#remove2').click(function(e) {
 					editor2.remove();
+					editor1 = null;
 				});
 				K('#getHtml1').click(function(e) {
 					alert(editor1.html());
@@ -249,6 +259,12 @@
 				});
 				K('#blur1').click(function(e) {
 					editor1.blur();
+				});
+				K('#readonly1').click(function(e) {
+					editor1.readonly();
+				});
+				K('#cancelReadonly1').click(function(e) {
+					editor1.readonly(false);
 				});
 			});
 		</script>

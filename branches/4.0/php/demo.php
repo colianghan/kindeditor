@@ -25,7 +25,7 @@
 				imageUploadJson : '../php/upload_json.php',
 				fileManagerJson : '../php/file_manager_json.php',
 				allowFileManager : true,
-				afterCreateFn : function() {
+				afterCreate : function() {
 					var self = this;
 					K.ctrl(document, 13, function() {
 						self.sync();

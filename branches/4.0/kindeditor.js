@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-08)
+* @version 4.0 alpha (2011-08-09)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 alpha (2011-08-08)',
+var _VERSION = '4.0 alpha (2011-08-09)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -222,7 +222,7 @@ var _options = {
 	indentChar : '\t',
 	cssPath : '',
 	cssData : '',
-	minWidth : 600,
+	minWidth : 650,
 	minHeight : 100,
 	minChangeSize : 5,
 	items : [
@@ -3606,8 +3606,8 @@ _extend(KToolbar, KWidget, {
 		}
 		return self;
 	},
-	disable : function(bool) {
-		var self = this, arr = self.noDisableItems, item;
+	disableItems : function(bool, noDisableItems) {
+		var self = this, arr = _undef(noDisableItems, self.noDisableItems), item;
 		if (bool === undefined ? !self.disableMode : bool) {
 			_each(self._itemNodes, function(key, val) {
 				item = val.data('item');
@@ -3634,6 +3634,26 @@ _extend(KToolbar, KWidget, {
 			self.disableMode = false;
 		}
 		return self;
+	},
+	enable : function(name) {
+		var self = this,
+			itemNode = self._itemNodes[name];
+		if (itemNode) {
+			itemNode.removeClass('ke-disabled');
+			itemNode.opacity(1);
+			_bindToolbarEvent(itemNode, itemNode.data('item'));
+		}
+		self.disableMode = false;
+	},
+	disable : function(name) {
+		var self = this,
+			itemNode = self._itemNodes[name];
+		if (itemNode) {
+			itemNode.removeClass('ke-selected').addClass('ke-disabled');
+			itemNode.opacity(0.5);
+			itemNode.unbind();
+		}
+		self.disableMode = true;
 	}
 });
 function _toolbar(options) {
@@ -4186,10 +4206,12 @@ function _bindTabEvent() {
 	var self = this;
 	K(self.edit.doc).keydown(function(e) {
 		if (e.which == 9) {
+			e.preventDefault();
 			if (self.afterTab) {
-				e.stop();
 				self.afterTab.call(self, e);
+				return;
 			}
+			self.insertHtml('&nbsp;&nbsp;&nbsp;&nbsp;');
 		}
 	});
 }
@@ -4250,10 +4272,12 @@ function _undoToRedo(fromStack, toStack) {
 }
 function KEditor(options) {
 	var self = this;
-	self.config = {};
+	self.options = {};
 	function setOption(key, val) {
-		self[key] = val;
-		self.config[key] = val;
+		if (KEditor.prototype[key] === undefined) {
+			self[key] = val;
+		}
+		self.options[key] = val;
 	}
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
@@ -4278,6 +4302,7 @@ function KEditor(options) {
 	setOption('width', _addUnit(self.width));
 	setOption('height', _addUnit(self.height));
 	self.srcElement = se;
+	self.initContent = _elementVal(se);
 	self.plugin = {};
 	self._handlers = {};
 	self._contextmenus = [];
@@ -4445,9 +4470,12 @@ KEditor.prototype = {
 					self.addBookmark();
 					self.updateState();
 				});
+				if (self.readonlyMode) {
+					self.readonly();
+				}
 				self.afterCreate();
-				if (self.afterCreateFn) {
-					self.afterCreateFn.call(self);
+				if (self.options.afterCreate) {
+					self.options.afterCreate.call(self);
 				}
 			}
 		});
@@ -4488,23 +4516,31 @@ KEditor.prototype = {
 			statusbar.first().css('visibility', 'hidden');
 			statusbar.last().css('visibility', 'hidden');
 		} else {
-			_drag({
-				moveEl : container,
-				clickEl : statusbar,
-				moveFn : function(x, y, width, height, diffX, diffY) {
-					height += diffY;
-					resize(null, height);
-				}
-			});
-			_drag({
-				moveEl : container,
-				clickEl : statusbar.last(),
-				moveFn : function(x, y, width, height, diffX, diffY) {
-					width += diffX;
-					height += diffY;
-					resize(width, height);
-				}
-			});
+			if (self.resizeType > 0) {
+				_drag({
+					moveEl : container,
+					clickEl : statusbar,
+					moveFn : function(x, y, width, height, diffX, diffY) {
+						height += diffY;
+						resize(null, height);
+					}
+				});
+			} else {
+				statusbar.first().css('visibility', 'hidden');
+			}
+			if (self.resizeType === 2) {
+				_drag({
+					moveEl : container,
+					clickEl : statusbar.last(),
+					moveFn : function(x, y, width, height, diffX, diffY) {
+						width += diffX;
+						height += diffY;
+						resize(width, height);
+					}
+				});
+			} else {
+				statusbar.last().css('visibility', 'hidden');
+			}
 		}
 		return self;
 	},
@@ -4649,6 +4685,23 @@ KEditor.prototype = {
 		this.fullscreenMode = (bool === undefined ? !this.fullscreenMode : bool);
 		return this.remove().create();
 	},
+	readonly : function(isReadonly) {
+		isReadonly = _undef(isReadonly, true);
+		var self = this, edit = self.edit, doc = edit.doc;
+		if (self.designMode) {
+			self.toolbar.disableItems(isReadonly, []);
+		} else {
+			_each(self.noDisableItems, function() {
+				self.toolbar[isReadonly ? 'disable' : 'enable'](this);
+			});
+		}
+		if (_IE) {
+			doc.body.contentEditable = !isReadonly;
+		} else {
+			doc.designMode = isReadonly ? 'off' : 'on';
+		}
+		edit.textarea[0].disabled = isReadonly;
+	},
 	createMenu : function(options) {
 		var self = this,
 			name = options.name,
@@ -4768,15 +4821,18 @@ _plugin('core', function(K) {
 			el.bind('submit', function(e) {
 				self.sync();
 			});
+			K('[type="reset"]', el).click(function() {
+				self.html(self.initContent);
+			});
 		}
 	}
 	self.clickToolbar('source', function() {
 		if (self.edit.designMode) {
-			self.toolbar.disable(true);
+			self.toolbar.disableItems(true);
 			self.edit.design(false);
 			self.toolbar.select('source');
 		} else {
-			self.toolbar.disable(false);
+			self.toolbar.disableItems(false);
 			self.edit.design(true);
 			self.toolbar.unselect('source');
 		}
@@ -4786,7 +4842,7 @@ _plugin('core', function(K) {
 		if (this.designMode) {
 			this.toolbar.unselect('source');
 		} else {
-			this.toolbar.disable(true).select('source');
+			this.toolbar.disableItems(true).select('source');
 		}
 	});
 	self.clickToolbar('fullscreen', function() {
