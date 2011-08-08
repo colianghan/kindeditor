@@ -838,7 +838,7 @@ function _cmd(mixed) {
 	// mixed is a node
 	if (mixed.nodeName) {
 		var doc = _getDoc(mixed),
-			range = _range(doc).selectNodeContents(doc.body).collapse(true),
+			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		// add events
 		cmd.onchange(function(e) {
@@ -848,12 +848,23 @@ function _cmd(mixed) {
 		if (_WEBKIT) {
 			K(doc).click(function(e) {
 				if (K(e.target).name === 'img') {
-					var rng = _getRng(doc);
-					if (rng) {
-						cmd.range = _range(rng);
-					}
+					cmd.selection(true);
 					cmd.range.selectNode(e.target);
 					cmd.select();
+				}
+			});
+		}
+		// [IE] bug: clear iframe when press backspase key
+		if (_IE) {
+			K(doc).keydown(function(e) {
+				if (e.which == 8) {
+					cmd.selection();
+					var rng = cmd.range;
+					if (rng.isControl()) {
+						rng.collapse(true);
+						K(rng.startContainer.childNodes[rng.startOffset]).remove();
+						e.preventDefault();
+					}
 				}
 			});
 		}

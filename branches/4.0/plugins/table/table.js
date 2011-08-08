@@ -450,8 +450,10 @@ KindEditor.plugin('table', function(K) {
 			this.prop(true);
 		},
 		'delete' : function() {
-			self.plugin.getSelectedTable().remove();
-			self.cmd.selection(true);
+			var table = self.plugin.getSelectedTable();
+			self.cmd.range.setStartBefore(table[0]).collapse(true);
+			self.cmd.select();
+			table.remove();
 			self.addBookmark();
 		},
 		colinsert : function(offset) {
@@ -466,6 +468,8 @@ KindEditor.plugin('table', function(K) {
 				// 调整下一行的单元格index
 				index = _getCellIndex(table, newRow, newCell);
 			}
+			self.cmd.range.selectNodeContents(cell).collapse(true);
+			self.cmd.select();
 			self.addBookmark();
 		},
 		colinsertleft : function() {
@@ -480,12 +484,15 @@ KindEditor.plugin('table', function(K) {
 				cell = self.plugin.getSelectedCell()[0],
 				newRow = table.insertRow(row.rowIndex + (cell.rowSpan - 1) + offset);
 			for (var i = 0, len = row.cells.length; i < len; i++) {
-				var cell = newRow.insertCell(i);
+				var newCell = newRow.insertCell(i);
+				// copy colspan
 				if (row.cells[i].colSpan > 1) {
-					cell.colSpan = row.cells[i].colSpan;
+					newCell.colSpan = row.cells[i].colSpan;
 				}
-				cell.innerHTML = K.IE ? '' : '<br />';
+				newCell.innerHTML = K.IE ? '' : '<br />';
 			}
+			self.cmd.range.selectNodeContents(cell).collapse(true);
+			self.cmd.select();
 			self.addBookmark();
 		},
 		rowinsertabove : function() {
@@ -516,7 +523,8 @@ KindEditor.plugin('table', function(K) {
 			}
 			nextRow.deleteCell(cellIndex);
 			cell.rowSpan += 1;
-			self.cmd.selection(true);
+			self.cmd.range.selectNodeContents(cell).collapse(true);
+			self.cmd.select();
 			self.addBookmark();
 		},
 		colmerge : function() {
@@ -537,7 +545,8 @@ KindEditor.plugin('table', function(K) {
 			}
 			cell.colSpan += nextCell.colSpan;
 			row.deleteCell(nextCellIndex);
-			self.cmd.selection(true);
+			self.cmd.range.selectNodeContents(cell).collapse(true);
+			self.cmd.select();
 			self.addBookmark();
 		},
 		rowsplit : function() {
@@ -561,6 +570,8 @@ KindEditor.plugin('table', function(K) {
 				cellIndex = _getCellIndex(table, newRow, newCell);
 			}
 			K(cell).removeAttr('rowSpan');
+			self.cmd.range.selectNodeContents(cell).collapse(true);
+			self.cmd.select();
 			self.addBookmark();
 		},
 		colsplit : function() {
@@ -580,6 +591,8 @@ KindEditor.plugin('table', function(K) {
 				newCell.innerHTML = K.IE ? '' : '<br />';
 			}
 			K(cell).removeAttr('colSpan');
+			self.cmd.range.selectNodeContents(cell).collapse(true);
+			self.cmd.select();
 			self.addBookmark();
 		},
 		coldelete : function() {
@@ -603,7 +616,13 @@ KindEditor.plugin('table', function(K) {
 					i += newCell.rowSpan - 1;
 				}
 			}
-			self.cmd.selection(true);
+			if (row.cells.length === 0) {
+				self.cmd.range.setStartBefore(table).collapse(true);
+				self.cmd.select();
+				K(table).remove();
+			} else {
+				self.cmd.selection(true);
+			}
 			self.addBookmark();
 		},
 		rowdelete : function() {
@@ -615,7 +634,13 @@ KindEditor.plugin('table', function(K) {
 			for (var i = cell.rowSpan - 1; i >= 0; i--) {
 				table.deleteRow(rowIndex + i);
 			}
-			self.cmd.selection(true);
+			if (table.rows.length === 0) {
+				self.cmd.range.setStartBefore(table).collapse(true);
+				self.cmd.select();
+				K(table).remove();
+			} else {
+				self.cmd.selection(true);
+			}
 			self.addBookmark();
 		}
 	};

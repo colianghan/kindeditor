@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-07)
+* @version 4.0 alpha (2011-08-08)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 alpha (2011-08-07)',
+var _VERSION = '4.0 alpha (2011-08-08)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -188,7 +188,7 @@ var _INLINE_TAG_MAP = _toMap('a,abbr,acronym,b,basefont,bdo,big,br,button,cite,c
 	_BLOCK_TAG_MAP = _toMap('address,applet,blockquote,body,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,h1,h2,h3,h4,h5,h6,head,hr,html,iframe,ins,isindex,li,map,menu,meta,noframes,noscript,object,ol,p,pre,script,style,table,tbody,td,tfoot,th,thead,title,tr,ul'),
 	_SINGLE_TAG_MAP = _toMap('area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed'),
 	_STYLE_TAG_MAP = _toMap('b,basefont,big,del,em,font,i,s,small,span,strike,strong,sub,sup,u'),
-	_CONTROL_TAG_MAP = _toMap('img,table'),
+	_CONTROL_TAG_MAP = _toMap('img,table,input,textarea,button'),
 	_PRE_TAG_MAP = _toMap('pre,style,script'),
 	_NOSPLIT_TAG_MAP = _toMap('html,head,body,td,tr,table,ol,ul,li'),
 	_AUTOCLOSE_TAG_MAP = _toMap('colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr'),
@@ -3050,7 +3050,7 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 function _cmd(mixed) {
 	if (mixed.nodeName) {
 		var doc = _getDoc(mixed),
-			range = _range(doc).selectNodeContents(doc.body).collapse(true),
+			range = _range(doc).selectNodeContents(doc.body).collapse(false),
 			cmd = new KCmd(range);
 		cmd.onchange(function(e) {
 			cmd.selection();
@@ -3058,12 +3058,22 @@ function _cmd(mixed) {
 		if (_WEBKIT) {
 			K(doc).click(function(e) {
 				if (K(e.target).name === 'img') {
-					var rng = _getRng(doc);
-					if (rng) {
-						cmd.range = _range(rng);
-					}
+					cmd.selection(true);
 					cmd.range.selectNode(e.target);
 					cmd.select();
+				}
+			});
+		}
+		if (_IE) {
+			K(doc).keydown(function(e) {
+				if (e.which == 8) {
+					cmd.selection();
+					var rng = cmd.range;
+					if (rng.isControl()) {
+						rng.collapse(true);
+						K(rng.startContainer.childNodes[rng.startOffset]).remove();
+						e.preventDefault();
+					}
 				}
 			});
 		}
