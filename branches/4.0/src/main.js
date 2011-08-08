@@ -428,10 +428,8 @@ KEditor.prototype = {
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
 				// add bookmark to undoStack
-				self.addBookmark();
-				self.cmd.oninput(function(e) {
+				self.cmd.onchange(function(e) {
 					self.addBookmark();
-				}).onchange(function(e) {
 					self.updateState();
 				});
 				self.afterCreate();

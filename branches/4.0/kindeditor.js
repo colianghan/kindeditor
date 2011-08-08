@@ -4441,10 +4441,8 @@ KEditor.prototype = {
 				_bindNewlineEvent.call(self);
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
-				self.addBookmark();
-				self.cmd.oninput(function(e) {
+				self.cmd.onchange(function(e) {
 					self.addBookmark();
-				}).onchange(function(e) {
 					self.updateState();
 				});
 				self.afterCreate();
