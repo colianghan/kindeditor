@@ -335,6 +335,9 @@ KEditor.prototype = {
 	beforeSetHtml : function(fn) {
 		return this.handler('beforeSetHtml', fn);
 	},
+	afterSetHtml : function(fn) {
+		return this.handler('afterSetHtml', fn);
+	},
 	create : function() {
 		var self = this, fullscreenMode = self.fullscreenMode;
 		if (self.container) {
@@ -420,6 +423,9 @@ KEditor.prototype = {
 				html = self.beforeSetHtml(html);
 				return _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
 			},
+			afterSetHtml : function() {
+				self.afterSetHtml();
+			},
 			afterCreate : function() {
 				self.cmd = this.cmd;
 				// hide menu when click document
@@ -432,12 +438,19 @@ KEditor.prototype = {
 				_bindNewlineEvent.call(self);
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
-				// add bookmark to undoStack
+				// afterChange event
 				self.cmd.onchange(function(e) {
-					self.addBookmark();
 					self.updateState();
+					self.addBookmark();
 					if (self.options.afterChange) {
 						self.options.afterChange.call(self);
+					}
+				});
+				this.textarea.keyup(function(e) {
+					if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
+						if (self.options.afterChange) {
+							self.options.afterChange.call(self);
+						}
 					}
 				});
 				// readonly
@@ -591,7 +604,7 @@ KEditor.prototype = {
 		var self = this;
 		mode = (mode || 'html').toLowerCase();
 		if (mode === 'html') {
-			return self.html().length;
+			return _removeBookmarkTag(self.html()).length;
 		}
 		if (mode === 'text') {
 			return self.text().replace(/<(?:img|embed).*?>/ig, 'K').replace(/\r\n|\n|\r/g, '').length;
@@ -606,6 +619,9 @@ KEditor.prototype = {
 		if (_inArray(key, 'selectall,copy,paste,print'.split(',')) < 0) {
 			self.updateState();
 			self.addBookmark();
+			if (self.options.afterChange) {
+				self.options.afterChange.call(self);
+			}
 		}
 		return self;
 	},
@@ -806,6 +822,12 @@ _plugin('core', function(K) {
 		shortcutKeys = {
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
 		};
+	// afterChange
+	self.afterSetHtml(function() {
+		if (self.options.afterChange) {
+			self.options.afterChange.call(self);
+		}
+	});
 	// sync
 	if (self.syncType == 'form') {
 		var el = K(self.srcElement), hasForm = false;

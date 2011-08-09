@@ -198,6 +198,9 @@
 						afterTab : function() {
 							editor2.focus();
 						},
+						afterChange : function() {
+							//console.log('1');
+						},
 						afterUpload : function(url) {
 							var select = K('#uploadFile')[0];
 							select.options.add(new Option(url, url));

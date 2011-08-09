@@ -85,6 +85,7 @@ _extend(KEdit, KWidget, {
 		self.designMode = _undef(options.designMode, true);
 		self.beforeGetHtml = options.beforeGetHtml;
 		self.beforeSetHtml = options.beforeSetHtml;
+		self.afterSetHtml = options.afterSetHtml;
 
 		var themesPath = _undef(options.themesPath, ''),
 			bodyClass = options.bodyClass,
@@ -205,6 +206,9 @@ _extend(KEdit, KWidget, {
 				}
 			} else {
 				body.innerHTML = val;
+			}
+			if (self.afterSetHtml) {
+				self.afterSetHtml();
 			}
 			return self;
 		}

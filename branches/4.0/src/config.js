@@ -77,6 +77,7 @@ var _options = {
 			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.background',
 			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
 		],
+		pre : ['class'],
 		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };

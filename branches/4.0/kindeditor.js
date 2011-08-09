@@ -271,6 +271,7 @@ var _options = {
 			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.background',
 			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
 		],
+		pre : ['class'],
 		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
 	}
 };
@@ -278,6 +279,15 @@ _options.themesPath = _options.basePath + 'themes/';
 _options.langPath = _options.basePath + 'lang/';
 _options.pluginsPath = _options.basePath + 'plugins/';
 var _useCapture = false;
+var _INPUT_KEY_MAP = _toMap('8,9,13,32,46,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
+var _CURSORMOVE_KEY_MAP = _toMap('33..40');
+var _CHANGE_KEY_MAP = {};
+_each(_INPUT_KEY_MAP, function(key, val) {
+	_CHANGE_KEY_MAP[key] = val;
+});
+_each(_CURSORMOVE_KEY_MAP, function(key, val) {
+	_CHANGE_KEY_MAP[key] = val;
+});
 function _bindEvent(el, type, fn) {
 	if (el.addEventListener){
 		el.addEventListener(type, fn, _useCapture);
@@ -2301,15 +2311,6 @@ K.START_TO_START = _START_TO_START;
 K.START_TO_END = _START_TO_END;
 K.END_TO_END = _END_TO_END;
 K.END_TO_START = _END_TO_START;
-var _INPUT_KEY_MAP = _toMap('9,32,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
-var _CURSORMOVE_KEY_MAP = _toMap('8,13,33..40,46');
-var _CHANGE_KEY_MAP = {};
-_each(_INPUT_KEY_MAP, function(key, val) {
-	_CHANGE_KEY_MAP[key] = val;
-});
-_each(_CURSORMOVE_KEY_MAP, function(key, val) {
-	_CHANGE_KEY_MAP[key] = val;
-});
 function _nativeCommand(doc, key, val) {
 	try {
 		doc.execCommand(key, false, val);
@@ -2996,15 +2997,6 @@ _extend(KCmd, {
 		}
 		return self;
 	},
-	oninput : function(fn) {
-		var self = this, doc = self.doc;
-		K(doc).keyup(function(e) {
-			if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
-				fn(e);
-			}
-		});
-		return self;
-	},
 	onchange : function(fn) {
 		var self = this, doc = self.doc, body = doc.body;
 		K(doc).keyup(function(e) {
@@ -3364,6 +3356,7 @@ _extend(KEdit, KWidget, {
 		self.designMode = _undef(options.designMode, true);
 		self.beforeGetHtml = options.beforeGetHtml;
 		self.beforeSetHtml = options.beforeSetHtml;
+		self.afterSetHtml = options.afterSetHtml;
 		var themesPath = _undef(options.themesPath, ''),
 			bodyClass = options.bodyClass,
 			cssPath = options.cssPath,
@@ -3475,6 +3468,9 @@ _extend(KEdit, KWidget, {
 				}
 			} else {
 				body.innerHTML = val;
+			}
+			if (self.afterSetHtml) {
+				self.afterSetHtml();
 			}
 			return self;
 		}
@@ -4375,6 +4371,9 @@ KEditor.prototype = {
 	beforeSetHtml : function(fn) {
 		return this.handler('beforeSetHtml', fn);
 	},
+	afterSetHtml : function(fn) {
+		return this.handler('afterSetHtml', fn);
+	},
 	create : function() {
 		var self = this, fullscreenMode = self.fullscreenMode;
 		if (self.container) {
@@ -4455,6 +4454,9 @@ KEditor.prototype = {
 				html = self.beforeSetHtml(html);
 				return _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
 			},
+			afterSetHtml : function() {
+				self.afterSetHtml();
+			},
 			afterCreate : function() {
 				self.cmd = this.cmd;
 				K(this.doc, document).mousedown(function(e) {
@@ -4467,10 +4469,17 @@ KEditor.prototype = {
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
 				self.cmd.onchange(function(e) {
-					self.addBookmark();
 					self.updateState();
+					self.addBookmark();
 					if (self.options.afterChange) {
 						self.options.afterChange.call(self);
+					}
+				});
+				this.textarea.keyup(function(e) {
+					if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
+						if (self.options.afterChange) {
+							self.options.afterChange.call(self);
+						}
 					}
 				});
 				if (self.readonlyMode) {
@@ -4616,7 +4625,7 @@ KEditor.prototype = {
 		var self = this;
 		mode = (mode || 'html').toLowerCase();
 		if (mode === 'html') {
-			return self.html().length;
+			return _removeBookmarkTag(self.html()).length;
 		}
 		if (mode === 'text') {
 			return self.text().replace(/<(?:img|embed).*?>/ig, 'K').replace(/\r\n|\n|\r/g, '').length;
@@ -4630,6 +4639,9 @@ KEditor.prototype = {
 		if (_inArray(key, 'selectall,copy,paste,print'.split(',')) < 0) {
 			self.updateState();
 			self.addBookmark();
+			if (self.options.afterChange) {
+				self.options.afterChange.call(self);
+			}
 		}
 		return self;
 	},
@@ -4813,6 +4825,11 @@ _plugin('core', function(K) {
 		shortcutKeys = {
 			undo : 'Z', redo : 'Y', bold : 'B', italic : 'I', underline : 'U', print : 'P', selectall : 'A'
 		};
+	self.afterSetHtml(function() {
+		if (self.options.afterChange) {
+			self.options.afterChange.call(self);
+		}
+	});
 	if (self.syncType == 'form') {
 		var el = K(self.srcElement), hasForm = false;
 		while ((el = el.parent())) {
