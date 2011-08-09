@@ -211,6 +211,7 @@ var _options = {
 	wellFormatMode : true,
 	shadowMode : true,
 	basePath : _getBasePath(),
+	themeType : 'default',
 	langType : 'zh_CN',
 	urlType : '',
 	newlineTag : 'p',
@@ -218,6 +219,7 @@ var _options = {
 	syncType : 'form',
 	pasteType : 2,
 	dialogAlignType : 'page',
+	useContextmenu : true,
 	bodyClass : 'ke-content',
 	indentChar : '\t',
 	cssPath : '',
@@ -4110,6 +4112,10 @@ function _bindContextmenuEvent() {
 		if (self.menu) {
 			self.hideMenu();
 		}
+		if (!self.useContextmenu) {
+			e.preventDefault();
+			return;
+		}
 		if (self._contextmenus.length === 0) {
 			return;
 		}
@@ -4389,7 +4395,7 @@ KEditor.prototype = {
 		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
 			height = _addUnit(_removeUnit(height) + 2);
 		}
-		var container = K('<div class="ke-container"></div>').css('width', width);
+		var container = K('<div class="ke-container ke-container-' + self.themeType + '"></div>').css('width', width);
 		if (fullscreenMode) {
 			container.css({
 				position : 'absolute',
@@ -4616,7 +4622,7 @@ KEditor.prototype = {
 		}
 	},
 	isEmpty : function() {
-		return _trim(this.pureData().replace(/\r\n|\n|\r/, '')) === '';
+		return _trim(this.text().replace(/\r\n|\n|\r/, '')) === '';
 	},
 	selectedHtml : function() {
 		return this.container ? this.cmd.range.html() : '';
@@ -4726,9 +4732,11 @@ KEditor.prototype = {
 		options.x = pos.x;
 		options.y = pos.y + knode.height();
 		if (options.selectedColor !== undefined) {
+			options.cls = 'ke-colorpicker-' + self.themeType;
 			options.noColor = self.lang('noColor');
 			self.menu = _colorpicker(options);
 		} else {
+			options.cls = 'ke-menu-' + self.themeType;
 			options.centerLineMode = false;
 			self.menu = _menu(options);
 		}
@@ -4763,6 +4771,7 @@ KEditor.prototype = {
 		if (self.dialogAlignType != 'page') {
 			options.alignEl = self.container;
 		}
+		options.cls = 'ke-dialog-' + self.themeType;
 		if (self.dialogs.length > 0) {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];

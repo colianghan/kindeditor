@@ -17,6 +17,7 @@ var _options = {
 	wellFormatMode : true,
 	shadowMode : true,
 	basePath : _getBasePath(),
+	themeType : 'default', // default, simple
 	langType : 'zh_CN',
 	urlType : '', // "", relative, absolute, domain
 	newlineTag : 'p', // p, br
@@ -24,6 +25,7 @@ var _options = {
 	syncType : 'form', // "", form
 	pasteType : 2, // 0:none, 1:text, 2:HTML
 	dialogAlignType : 'page', // page, editor
+	useContextmenu : true,
 	bodyClass : 'ke-content',
 	indentChar : '\t', // \t, "  "
 	cssPath : '', //String or Array

@@ -5,6 +5,7 @@
 		<title>KindEditor Main Test</title>
 		<!-- <script src="../lib/firebug-lite/build/firebug-lite.js#startOpened"></script> -->
 		<link rel="stylesheet" href="../themes/default/default.css" />
+		<link rel="stylesheet" href="../themes/simple/simple.css" />
 		<!-- <link rel="stylesheet" href="../lib/taobao.css" /> -->
 		<style>
 			.selected {
@@ -179,6 +180,7 @@
 			<input type="button" id="blur1" value="Blur #1" />
 			<input type="button" id="readonly1" value="Readonly #1" />
 			<input type="button" id="cancelReadonly1" value="Cancel Readonly #1" />
+			<input type="button" id="isEmpty1" value="Is Empty #1" />
 			<input type="submit" name="button" value="Submit" />
 		</form>
 		<script>
@@ -192,6 +194,7 @@
 					editor1 = K.create('textarea[name=content1]', {
 						basePath : '../',
 						urlType : 'absolute',
+						themeType : 'simple',
 						designMode : true,
 						allowFileManager : true,
 						fullscreenMode : false,
@@ -268,6 +271,9 @@
 				});
 				K('#cancelReadonly1').click(function(e) {
 					editor1.readonly(false);
+				});
+				K('#isEmpty1').click(function(e) {
+					alert(editor1.isEmpty());
 				});
 			});
 		</script>

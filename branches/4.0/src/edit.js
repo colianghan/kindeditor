@@ -111,6 +111,7 @@ _extend(KEdit, KWidget, {
 		} else {
 			self.iframe.hide();
 		}
+
 		function ready() {
 			var doc = _iframeDoc(self.iframe);
 			doc.open();

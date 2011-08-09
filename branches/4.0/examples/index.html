@@ -21,6 +21,7 @@
 			}
 		</style>
 		<link rel="stylesheet" href="../themes/default/default.css" />
+		<link rel="stylesheet" href="../themes/simple/simple.css" />
 		<script charset="utf-8" src="../kindeditor.js"></script>
 		<script charset="utf-8" src="../lang/zh_CN.js"></script>
 		<script>
@@ -85,10 +86,11 @@
 				return url.match(new RegExp('[?&]' + name + '=([^?&]+)', 'i')) ? unescape(RegExp.$1) : '';
 			}
 			KindEditor.ready(function(K) {
-				var tabTitleList = ['默认模式', '简单模式', '异步加载', '多语言', '只读模式', '回车换行设置', '统计字数', 'HTML过滤', 'URL设置', '全屏模式', '自定义插件', '自定义风格', '调用API'];
+				var tabTitleList = ['默认模式', '简单模式', '异步加载', '多语言', '只读模式', '回车换行设置', '统计字数', 'HTML过滤', 'URL设置', '自定义风格', '自定义插件'];
 				var optionMap = {
 					'content0' : {
-						cssPath : '../plugins/code/prettify.css'
+						cssPath : '../plugins/code/prettify.css',
+						allowFileManager : true
 					},
 					'content1' : {
 						cssPath : '../plugins/code/prettify.css',
@@ -132,12 +134,12 @@
 					},
 					'content9' : {
 						cssPath : '../plugins/code/prettify.css',
-						fullscreenMode : true
+						themeType : 'simple'
 					},
 					'content10' : {
 						cssPath : ['../plugins/code/prettify.css', 'index.css'],
 						items : ['source', 'removeformat', 'example1', 'example2']
-					},
+					}
 				};
 				var editor = null;
 				var tabs = K.tabs({
@@ -163,6 +165,34 @@
 				tabs.select(index);
 				K('#tab' + index).show();
 				
+				K('#tab0 input[name=getHtml]').click(function(e) {
+					alert(editor.html());
+				});
+				K('#tab0 input[name=isEmpty]').click(function(e) {
+					alert(editor.isEmpty());
+				});
+				K('#tab0 input[name=getText]').click(function(e) {
+					alert(editor.text());
+				});
+				K('#tab0 input[name=selectedHtml]').click(function(e) {
+					alert(editor.selectedHtml());
+				});
+				K('#tab0 input[name=setHtml]').click(function(e) {
+					editor.html('<h3>Hello KindEditor</h3>');
+				});
+				K('#tab0 input[name=setText]').click(function(e) {
+					editor.text('<h3>Hello KindEditor</h3>');
+				});
+				K('#tab0 input[name=insertHtml]').click(function(e) {
+					editor.insertHtml('<strong>插入HTML</strong>');
+				});
+				K('#tab0 input[name=appendHtml]').click(function(e) {
+					editor.appendHtml('<strong>添加HTML</strong>');
+				});
+				K('#tab0 input[name=clear]').click(function(e) {
+					editor.html('');
+				});
+
 				K('#tab2 input[name=load]').click(function() {
 					K.loadScript('../kindeditor.js', function() {
 						editor = K.create('#tab2 textarea', optionMap.content2);
@@ -208,6 +238,15 @@
 					optionMap.content8.urlType = this.value;
 					editor = K.create('#tab8 textarea', optionMap.content8);
 				});
+
+				K('#tab9 select[name=themeType]').change(function() {
+					if (editor) {
+						editor.remove();
+						editor = null;
+					}
+					optionMap.content9.themeType = this.value;
+					editor = K.create('#tab9 textarea', optionMap.content9);
+				});
 			});
 		</script>
 	</head>
@@ -231,7 +270,9 @@
 </p>
 <pre class="prettyprint">
 KindEditor.ready(function(K) {
-	K.create('textarea[name="content"]');
+	K.create('textarea[name="content"]', {
+		allowFileManager : true
+	});
 });
 </pre>
 <p>
@@ -239,6 +280,17 @@ KindEditor.ready(function(K) {
 </p>
 			</textarea>
 			<p>
+				<input type="button" name="getHtml" value="取得HTML" />
+				<input type="button" name="isEmpty" value="判断是否为空" />
+				<input type="button" name="getText" value="取得文本(包含img,embed)" />
+				<input type="button" name="selectedHtml" value="取得选中HTML" />
+				<br />
+				<br />
+				<input type="button" name="setHtml" value="设置HTML" />
+				<input type="button" name="setText" value="设置文本" />
+				<input type="button" name="insertHtml" value="插入HTML" />
+				<input type="button" name="appendHtml" value="添加HTML" />
+				<input type="button" name="clear" value="清空内容" />
 				<input type="reset" name="reset" value="Reset" />
 			</p>
 			</form>
@@ -455,14 +507,22 @@ KindEditor.ready(function(K) {
 			</textarea>
 		</div>
 		
-		<!-- 全屏模式 -->
+		<!-- 自定义风格 -->
 		<div id="tab9" style="display:none;">
+			<p>
+			<select name="themeType">
+				<option value="simple">简单风格</option>
+				<option value="default">默认风格</option>
+			</select>
+			</p>
 			<textarea name="content" style="width:800px;height:400px;">
 JavaScript代码:
 <pre class="prettyprint">
 KindEditor.ready(function(K) {
+	// 简单风格: themeType : 'simple'
+	// 默认风格: themeType : 'default'
 	K.create('textarea[name="content"]' : {
-		fullscreenMode : true
+		themeType : 'simple'
 	});
 });
 </pre>
@@ -476,5 +536,6 @@ KindEditor.ready(function(K) {
 		<div id="tab10" style="display:none;">
 			<textarea name="content" style="width:800px;height:400px;"></textarea>
 		</div>
+
 	</body>
 </html>
