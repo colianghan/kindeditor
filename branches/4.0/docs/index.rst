@@ -4,7 +4,8 @@ KindEditor 4.x 文档
 .. toctree::
 	:maxdepth: 1
 
-	intro
+	usage
+	option
 	core
 	event
 	selector

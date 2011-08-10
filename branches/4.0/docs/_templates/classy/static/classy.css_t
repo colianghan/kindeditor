@@ -39,7 +39,7 @@ hr {
 div.body {
 	background-color: #ffffff;
 	color: #3E4349;
-	padding: 0 30px 30px 30px;
+	padding: 0 0 30px 0;
 }
 
 img.floatingflask {
@@ -70,7 +70,7 @@ div.related {
 }
 
 div.related ul {
-	padding: 0 0 0 10px;
+	padding: 0;
 }
 
 /* -- body styles ----------------------------------------------------------- */
