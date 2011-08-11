@@ -326,9 +326,11 @@ KEditor.prototype = {
 			'subscript,superscript,bold,italic,underline,strikethrough').split(','), function(i, name) {
 			self.cmd.state(name) ? self.toolbar.select(name) : self.toolbar.unselect(name);
 		});
+		return self;
 	},
 	addContextmenu : function(item) {
 		this._contextmenus.push(item);
+		return this;
 	},
 	afterCreate : function(fn) {
 		return this.handler('afterCreate', fn);

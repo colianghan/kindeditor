@@ -15,6 +15,8 @@ width
 * 数据类型: String
 * 默认值: textarea输入框的宽度
 
+示例:
+
 .. sourcecode:: js
 
 	K.create('#id', {
@@ -231,6 +233,8 @@ themeType
 * 数据类型: String
 * 默认值: "default"
 
+示例:
+
 .. sourcecode:: html
 
 	<link rel="stylesheet" href="../themes/default/default.css" />
@@ -256,6 +260,8 @@ langType
 
 * 数据类型: String
 * 默认值: "zh_CN"
+
+示例:
 
 .. sourcecode:: html
 

@@ -144,7 +144,6 @@ function _extend(child, parent, proto) {
 	childProto.constructor = child;
 	child.prototype = childProto;
 	child.parent = parent ? parent.prototype : null;
-	return child;
 }
 
 //From http://www.json.org/json2.js

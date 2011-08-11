@@ -56,6 +56,14 @@ K.V
 --------------------------------------------------------
 当前浏览器的版本号。
 
+.. index:: TIME
+
+.. _TIME:
+
+K.TIME
+--------------------------------------------------------
+加载JS时的时间。
+
 .. index:: isArray
 
 .. _isArray:
@@ -260,6 +268,24 @@ K.unescape(val)
 
 	var str = K.unescape('&lt;div id=&quot;abc&quot;&gt;&amp;&lt;/div&gt;'); //返回"<div id="abc">&</div>"
 
+.. index:: toCamel
+
+.. _toCamel:
+
+K.toCamel(val)
+--------------------------------------------------------
+将to-camel格式的字符串转换成toCamel格式。
+
+* 参数:
+	* string val: 
+* 返回: string
+
+示例:
+
+.. sourcecode:: js
+
+	str = K.toCamel('font-weight'); //返回"fontWeight"
+
 .. index:: toHex
 
 .. _toHex:
@@ -336,6 +362,78 @@ K.undef(val , defaultVal)
 	val = K.undef(1, 0); //返回1
 	var obj = {};
 	val = K.undef(obj.aaa, 0); //返回0
+
+.. index:: extend
+
+.. _extend:
+
+K.extend(fn , proto)
+--------------------------------------------------------
+创建class。
+
+* 参数:
+	* function fn: Function
+	* object proto: fn的prototype
+* 返回: undefined
+
+示例:
+
+.. sourcecode:: js
+
+	function Animal() {
+		this.init();
+	}
+	K.extend(Animal, {
+		init : function() {
+			console.log('init animal.');
+		},
+		run : function() {
+			console.log('animal is running.');
+		}
+	});
+	var animal = new Animal();
+	animal.run();
+
+K.extend(child , parent , proto)
+--------------------------------------------------------
+继承class。
+
+* 参数:
+	* function child: 子类
+	* function parent: 父类
+	* object proto: 子类的prototype
+* 返回: undefined
+
+示例:
+
+.. sourcecode:: js
+
+	// create Animal class
+	function Animal(name) {
+		this.init(name);
+	}
+	K.extend(Animal, {
+		init : function(name) {
+			this.name = name;
+		},
+		run : function() {
+			console.log(this.name + ' is running.');
+		}
+	});
+	// create Cat class
+	function Cat(name, age) {
+		this.init(name, age);
+	}
+	K.extend(Cat, Animal, {
+		init : function(name, age) {
+			Cat.parent.init.call(this, name);
+			this.age = age;
+		}
+	});
+	var myCat = new Cat('Tony', 5);
+	console.log(myCat.name); // print 'Tony'
+	console.log(myCat.age); // print 5
+	myCat.run(); // print 'Tony is running.'
 
 .. index:: json
 

@@ -9,6 +9,7 @@ KindEditor 4.x 文档
 	theme
 	plugin
 	qna
+	editor
 	core
 	event
 	selector

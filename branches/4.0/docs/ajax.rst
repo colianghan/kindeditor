@@ -4,11 +4,11 @@ Ajax API
 .. contents::
 	:depth: 2
 
-.. index:: getScript
+.. index:: loadScript
 
-.. _getScript:
+.. _loadScript:
 
-K.getScript(url [, fn])
+K.loadScript(url [, fn])
 --------------------------------------------------------
 加载JavaScript文件。
 
@@ -21,7 +21,7 @@ K.getScript(url [, fn])
 
 .. sourcecode:: js
 
-	K.getScript('test.js', function() {
+	K.loadScript('test.js', function() {
 		console.log('ok');
 	});
 
