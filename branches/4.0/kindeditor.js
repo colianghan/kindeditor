@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-09)
+* @version 4.0 alpha (2011-08-11)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 alpha (2011-08-09)',
+var _VERSION = '4.0 alpha (2011-08-11)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,

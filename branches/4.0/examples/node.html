@@ -6,19 +6,13 @@
 		<link rel="stylesheet" href="../themes/default/default.css" />
 		<script src="../kindeditor.js"></script>
 		<style>
-			#html {
-				border : 1px solid #888888;
-				background-color : #F0F0F0;
-				margin : 20px;
-				padding : 20px;
-			}
 			.cls {
 				border : 1px solid #A0A0A0;
 				margin : 10px;
 				padding : 10px;
 				cursor: pointer;
 			}
-			.clicked {
+			.on {
 				border : 1px solid red;
 				background-color : #F0F0F0;
 			}
@@ -26,10 +20,10 @@
 		<script>
 			KindEditor.ready(function(K) {
 				K('.cls').mouseover(function(e) {
-					K(this).addClass('clicked');
+					K(this).addClass('on');
 				})
 				.mouseout(function(e) {
-					K(this).removeClass('clicked');
+					K(this).removeClass('on');
 				})
 				.click(function(e) {
 					eval(K.unescape(K(this).html()));

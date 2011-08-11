@@ -2,7 +2,7 @@
 KindEditor.plugin('insertfile', function(K) {
 	var self = this, name = 'insertfile',
 	allowFileManager = K.undef(self.allowFileManager, false),
-	uploadJson = K.undef(self.imageUploadJson, self.basePath + 'php/upload_json.php?type=123'),
+	uploadJson = K.undef(self.uploadJson, self.basePath + 'php/upload_json.php'),
 	lang = self.lang(name + '.');
 	self.clickToolbar(name, function() {
 		var html = [

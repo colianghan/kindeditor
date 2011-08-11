@@ -6,6 +6,9 @@ KindEditor 4.x 文档
 
 	usage
 	option
+	theme
+	plugin
+	qna
 	core
 	event
 	selector

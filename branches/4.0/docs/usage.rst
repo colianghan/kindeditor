@@ -37,7 +37,7 @@
 
 	* id在当前页面必须是唯一的值。
 	* 在textarea里设置HTML内容即可实现编辑，在这里需要注意的是，如果从服务器端程序(ASP、PHP、ASP.NET等)直接显示内容，则必须转换HTML特殊字符(>,<,&,")。具体请参考各语言目录下面的demo.xxx程序，目前支持ASP、ASP.NET、PHP、JSP。
-	* 在有些浏览器上不设宽度和高度可能显示有问题，所以最好设一下宽度和高度。宽度和高度可用inline样式设置，也可用编辑器初始化参数设置。
+	* 在有些浏览器上不设宽度和高度可能显示有问题，所以最好设一下宽度和高度。宽度和高度可用inline样式设置，也可用 :doc:`option` 设置。
 
 2) 在该HTML页面添加以下脚本。
 
@@ -45,6 +45,7 @@
 
 	<link rel="stylesheet" href="/editor/themes/default/default.css" />
 	<script charset="utf-8" src="/editor/kindeditor.js"></script>
+	<script charset="utf-8" src="/editor/lang/zh_CN.js"></script>
 	<script>
 		var editor;
 		KindEditor.ready(function(K) {
@@ -68,8 +69,6 @@
 4. 获取HTML数据
 -----------------------------------------------------------------
 
-KindEditor的可视化操作在新创建的iframe上执行，代码模式下的textarea框也是新创建的，所以最后提交前需要将HTML数据同步到原来的textarea，editor.sync()函数会完成这个动作。
-
 .. sourcecode:: js
 
 	// 取得HTML内容
@@ -86,7 +85,8 @@ KindEditor的可视化操作在新创建的iframe上执行，代码模式下的t
 
 .. note ::
 
-	KindEditor在默认情况下自动寻找textarea所属的form元素，找到form后onsubmit事件里添加sync函数，所以用form方式提交数据，不需要手动执行sync()函数。
+	* KindEditor的可视化操作在新创建的iframe上执行，代码模式下的textarea框也是新创建的，所以最后提交前需要将HTML数据同步到原来的textarea，editor.sync()函数会完成这个动作。
+	* KindEditor在默认情况下自动寻找textarea所属的form元素，找到form后onsubmit事件里添加sync函数，所以用form方式提交数据，不需要手动执行sync()函数。
 
 
 
