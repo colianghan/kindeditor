@@ -515,3 +515,108 @@ html()
 	range.selectNodeContents(K('#id1')[0]);
 	var html = range.html();
 
+.. index:: down
+
+.. _KRange.down:
+
+down()
+--------------------------------------------------------
+降低range的位置。
+
+* 参数: 无
+* 返回: KRange
+
+示例:
+
+.. sourcecode:: js
+
+	// <p><strong><span>123</span>abc</strong>def</p>
+	range.setStart(strong, 1);
+	range.down();
+	console.log(range.startContainer, range.startOffset); // print "abc", 0
+
+.. index:: up
+
+.. _KRange.up:
+
+up()
+--------------------------------------------------------
+提高range的位置。
+
+* 参数: 无
+* 返回: KRange
+
+示例:
+
+.. sourcecode:: js
+
+	// <p><strong><span>123</span>abc</strong>def</p>
+	range.setStart("abc", 0);
+	range.up();
+	console.log(range.startContainer, range.startOffset); // print strong, 1
+
+.. index:: enlarge
+
+.. _KRange.enlarge:
+
+enlarge()
+--------------------------------------------------------
+扩大边界。
+
+* 参数: 无
+* 返回: KRange
+
+示例:
+
+.. sourcecode:: js
+
+	// <p><strong><span>123</span>abc</strong>def</p>
+	range.setStart("123", 0);
+	range.setEnd("abc", 3);
+	range.enlarge();
+	console.log(range.startContainer, range.startOffset); // print p, 0
+	console.log(range.endContainer, range.endOffset); // print p, 1
+
+.. index:: createBookmark
+
+.. _KRange.createBookmark:
+
+createBookmark([serialize])
+--------------------------------------------------------
+创建bookmark。(插入临时节点标记位置)
+
+* 参数:
+	* Boolean serialize: bookmark类型，默认值为false，true时bookmark包含临时节点的ID，false时bookmark包含临时节点的Element。
+* 返回: bookmark
+
+示例:
+
+.. sourcecode:: js
+
+	bookmark = range.createBookmark();
+	console.log(bookmark); // print {start: startNode, end: endNode}
+
+	bookmark = range.createBookmark(true);
+	console.log(bookmark); // print {start: 'start_node_id', end: 'end_node_id'}
+
+.. index:: moveToBookmark
+
+.. _KRange.moveToBookmark:
+
+moveToBookmark(bookmark)
+--------------------------------------------------------
+根据bookmark重新设置range。
+
+* 参数:
+	* Object bookmark: 通过 :ref:`KRange.createBookmark` 得到的bookmark
+* 返回: KRange
+
+示例:
+
+.. sourcecode:: js
+
+	bookmark = range.createBookmark();
+	// 在这里执行一些改变DOM的处理
+	// ...
+	range.moveToBookmark(bookmark);
+

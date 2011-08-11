@@ -5,10 +5,10 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-11)
+* @version 4.0 alpha (2011-08-12)
 *******************************************************************************/
 (function (window, undefined) {
-var _VERSION = '4.0 alpha (2011-08-11)',
+var _VERSION = '4.0 alpha (2011-08-12)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -2294,11 +2294,12 @@ _extend(KRange, {
 			self.collapse(true);
 		}
 		return self;
-	},
+	/*},
 	dump : function() {
 		console.log('--------------------');
 		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
 		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
+	*/
 	}
 });
 function _range(mixed) {

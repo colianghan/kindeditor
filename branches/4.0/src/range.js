@@ -697,7 +697,7 @@ _extend(KRange, {
 		enlargePos(self.endContainer, self.endOffset, false);
 		return self;
 	},
-	// 取得bookmark，通过插入临时节点定位
+	// 创建bookmark，通过插入临时节点标记位置
 	createBookmark : function(serialize) {
 		var self = this, doc = self.doc, endNode,
 			startNode = K('<span style="display:none;"></span>', doc)[0];
@@ -731,11 +731,12 @@ _extend(KRange, {
 			self.collapse(true);
 		}
 		return self;
-	},
+	/*},
 	dump : function() {
 		console.log('--------------------');
 		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
 		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
+	*/
 	}
 });
 

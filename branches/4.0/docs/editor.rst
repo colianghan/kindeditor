@@ -1,4 +1,4 @@
-编辑器API
+编辑器(Editor) API
 ========================================================
 
 .. contents::
@@ -488,7 +488,7 @@ createMenu(options)
 
 * 参数:
 	* object options: 初始化参数
-* 返回: KMenu
+* 返回: KMenu ( :doc:`menu` )
 
 示例:
 
@@ -582,7 +582,7 @@ createDialog(options)
 
 * 参数:
 	* object options: 初始化参数
-* 返回: KDialog
+* 返回: KDialog ( :doc:`dialog` )
 
 示例:
 

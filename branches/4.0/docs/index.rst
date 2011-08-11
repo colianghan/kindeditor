@@ -8,8 +8,8 @@ KindEditor 4.x 文档
 	option
 	theme
 	plugin
+	upload
 	qna
-	editor
 	core
 	event
 	selector
@@ -17,5 +17,12 @@ KindEditor 4.x 文档
 	range
 	cmd
 	ajax
+	widget
+	menu
+	colorpicker
+	dialog
+	tabs
+	uploadbutton
+	editor
 
 * :ref:`search`

@@ -504,6 +504,7 @@ _extend(KCmd, {
 		return null;
 	},
 	// Reference: document.queryCommandState
+	// TODO
 	state : function(key) {
 		var self = this, doc = self.doc, bool = false;
 		try {
