@@ -335,6 +335,9 @@ KEditor.prototype = {
 	afterCreate : function(fn) {
 		return this.handler('afterCreate', fn);
 	},
+	beforeRemove : function(fn) {
+		return this.handler('beforeRemove', fn);
+	},
 	beforeGetHtml : function(fn) {
 		return this.handler('beforeGetHtml', fn);
 	},
@@ -445,7 +448,7 @@ KEditor.prototype = {
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
 				// afterChange event
-				self.cmd.onchange(function(e) {
+				this.afterChange(function(e) {
 					self.updateState();
 					self.addBookmark();
 					if (self.options.afterChange) {
@@ -546,6 +549,7 @@ KEditor.prototype = {
 		if (!self.container) {
 			return self;
 		}
+		self.beforeRemove();
 		if (self.menu) {
 			self.hideMenu();
 		}
@@ -777,8 +781,6 @@ KEditor.prototype = {
 				parentDialog = self.dialogs[self.dialogs.length - 1];
 			// 降低mask的z-index
 			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
-		} else {
-			self.cmd.select();
 		}
 		return self;
 	}
@@ -851,8 +853,13 @@ _plugin('core', function(K) {
 			el.bind('submit', function(e) {
 				self.sync();
 			});
-			K('[type="reset"]', el).click(function() {
+			var resetBtn = K('[type="reset"]', el);
+			resetBtn.click(function() {
 				self.html(self.initContent);
+			});
+			self.beforeRemove(function() {
+				el.unbind();
+				resetBtn.unbind();
 			});
 		}
 	}

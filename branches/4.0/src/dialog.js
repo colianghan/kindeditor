@@ -65,7 +65,7 @@ _extend(KDialog, KWidget, {
 		}
 		self.mask = null;
 		if (showMask) {
-			var docEl = self.doc.documentElement,
+			var docEl = _docElement(self.doc),
 				docWidth = Math.max(docEl.scrollWidth, docEl.clientWidth),
 				docHeight = Math.max(docEl.scrollHeight, docEl.clientHeight);
 			self.mask = _widget({

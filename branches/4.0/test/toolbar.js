@@ -35,17 +35,17 @@ K('#remove').bind('click', function(e) {
 });
 K('#enable').bind('click', function(e) {
 	if (toolbar) {
-		toolbar.disable(false);
+		toolbar.disableItems(false);
 	}
 });
 K('#disable').bind('click', function(e) {
 	if (toolbar) {
-		toolbar.disable(true);
+		toolbar.disableItems(true);
 	}
 });
 K('#toggle').bind('click', function(e) {
 	if (toolbar) {
-		toolbar.disable();
+		toolbar.disableItems();
 	}
 });
 

@@ -9,3 +9,7 @@
 *******************************************************************************/
 
 (function (window, undefined) {
+
+	if (window.KindEditor) {
+		return;
+	}

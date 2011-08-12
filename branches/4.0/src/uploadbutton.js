@@ -22,7 +22,7 @@ _extend(KUploadButton, {
 			'</span>',
 			'<input type="file" class="ke-upload-file" name="' + fieldName + '" tabindex="-1" />',
 			'</span></form>',
-			'</iframe></div>'].join('');
+			'</div>'].join('');
 
 		var div = K(html, button.doc);
 		button.hide();

@@ -68,7 +68,7 @@ function _hasVal(node) {
 
 function _docElement(doc) {
 	doc = doc || document;
-	return (doc.compatMode != 'CSS1Compat') ? doc.body : doc.documentElement;
+	return _QUIRKS ? doc.body : doc.documentElement;
 }
 
 function _docHeight(doc) {
@@ -378,6 +378,7 @@ _extend(KNode, {
 			delete self[i];
 		});
 		self.length = 0;
+		self._data = {};
 		return self;
 	},
 	show : function(val) {

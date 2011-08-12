@@ -193,7 +193,11 @@ function _setId(el) {
 function _removeId(el) {
 	try {
 		delete el[_eventExpendo];
-	} catch(e) {}
+	} catch(e) {
+		if (el.removeAttribute) {
+			el.removeAttribute(_eventExpendo);
+		}
+	}
 }
 
 function _bind(el, type, fn) {

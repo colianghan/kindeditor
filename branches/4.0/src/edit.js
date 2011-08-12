@@ -56,7 +56,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		cssPath = [cssPath];
 	}
 	_each(cssPath, function(i, path) {
-		if (path !== '') {
+		if (path) {
 			arr.push('<link href="' + path + '" rel="stylesheet" />');
 		}
 	});
@@ -122,6 +122,36 @@ _extend(KEdit, KWidget, {
 			doc.close();
 			self.win = self.iframe[0].contentWindow;
 			self.doc = doc;
+			var cmd = _cmd(doc);
+			// add events
+			self.afterChange(function(e) {
+				cmd.selection();
+			});
+			// [WEBKIT] select an image after click the image
+			if (_WEBKIT) {
+				K(doc).click(function(e) {
+					if (K(e.target).name === 'img') {
+						cmd.selection(true);
+						cmd.range.selectNode(e.target);
+						cmd.select();
+					}
+				});
+			}
+			// [IE] bug: clear iframe when press backspase key
+			if (_IE) {
+				K(doc).keydown(function(e) {
+					if (e.which == 8) {
+						cmd.selection();
+						var rng = cmd.range;
+						if (rng.isControl()) {
+							rng.collapse(true);
+							K(rng.startContainer.childNodes[rng.startOffset]).remove();
+							e.preventDefault();
+						}
+					}
+				});
+			}
+			self.cmd = cmd;
 			self.html(_elementVal(self.srcElement));
 			if (_IE) {
 				doc.body.disabled = true;
@@ -130,7 +160,6 @@ _extend(KEdit, KWidget, {
 			} else {
 				doc.designMode = 'on';
 			}
-			self.cmd = _cmd(doc);
 			if (options.afterCreate) {
 				options.afterCreate.call(self);
 			}
@@ -169,6 +198,7 @@ _extend(KEdit, KWidget, {
 		K(doc).unbind();
 		K(doc.body).unbind();
 		K(document).unbind();
+		K(self.win).unbind();
 		// remove elements
 		_elementVal(self.srcElement, self.html());
 		self.srcElement.show();
@@ -176,7 +206,6 @@ _extend(KEdit, KWidget, {
 		self.iframe.remove();
 		self.textarea.remove();
 		KEdit.parent.remove.call(self);
-		return self;
 	},
 	html : function(val, isFull) {
 		var self = this, doc = self.doc;
@@ -256,6 +285,26 @@ _extend(KEdit, KWidget, {
 		} else {
 			self.designMode ? self.win.blur() : self.textarea[0].blur();
 		}
+		return self;
+	},
+	afterChange : function(fn) {
+		var self = this, doc = self.doc, body = doc.body;
+		K(doc).keyup(function(e) {
+			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
+				fn(e);
+			}
+		});
+		K(doc).mouseup(fn).contextmenu(fn);
+		if (doc !== document) {
+			K(document).mousedown(fn);
+		}
+		function timeoutHandler(e) {
+			setTimeout(function() {
+				fn(e);
+			}, 1);
+		}
+		K(body).bind('paste', timeoutHandler);
+		K(body).bind('cut', timeoutHandler);
 		return self;
 	}
 });

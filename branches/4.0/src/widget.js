@@ -118,7 +118,7 @@ _extend(KWidget, {
 		}
 		K(options.parent || self.doc.body).append(self.div);
 		if (options.autoScroll) {
-			if (_IE && _V < 7) {
+			if (_IE && _V < 7 || _QUIRKS) {
 				var scrollPos = _getScrollPos();
 				K(self.win).bind('scroll', function(e) {
 					var pos = _getScrollPos(),
@@ -170,10 +170,14 @@ _extend(KWidget, {
 		return self.pos(x, y);
 	},
 	remove : function() {
+		var self = this;
 		if (_IE && _V < 7) {
-			K(this.win).unbind('scroll');
+			K(self.win).unbind('scroll');
 		}
-		this.div.remove();
+		self.div.remove();
+		_each(self, function(i) {
+			self[i] = null;
+		});
 		return this;
 	},
 	show : function() {

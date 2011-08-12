@@ -186,51 +186,43 @@
 		<script>
 			//document.domain = 'kindsoft.net';
 			KindEditor.ready(function(K) {
-				var editor1, editor2;
-				K('#create1').click(function(e) {
-					if (editor1) {
-						return;
+				var editor1 = K.create('textarea[name=content1]', {
+					basePath : '../',
+					urlType : 'absolute',
+					themeType : 'simple',
+					designMode : true,
+					allowFileManager : true,
+					fullscreenMode : false,
+					afterTab : function() {
+						editor2.focus();
+					},
+					afterChange : function() {
+						//console.log('1');
+					},
+					afterUpload : function(url) {
+						var select = K('#uploadFile')[0];
+						select.options.add(new Option(url, url));
 					}
-					editor1 = K.create('textarea[name=content1]', {
-						basePath : '../',
-						urlType : 'absolute',
-						themeType : 'simple',
-						designMode : true,
-						allowFileManager : true,
-						fullscreenMode : false,
-						afterTab : function() {
-							editor2.focus();
-						},
-						afterChange : function() {
-							//console.log('1');
-						},
-						afterUpload : function(url) {
-							var select = K('#uploadFile')[0];
-							select.options.add(new Option(url, url));
-						}
-					});
+				});
+				var editor2 = K.create(K('textarea[name=content2]').get(), {
+					basePath : '../',
+					langType : 'en',
+					afterTab : function() {
+						K('#uploadFile')[0].focus();
+					}
+				});
+				K('#create1').click(function(e) {
+					editor1.create();
 				});
 				K('#create2').click(function(e) {
-					if (editor2) {
-						return;
-					}
-					editor2 = K.create(K('textarea[name=content2]').get(), {
-						basePath : '../',
-						langType : 'en',
-						afterTab : function() {
-							K('#uploadFile')[0].focus();
-						}
-					});
+					editor2.create();
+					
 				});
-				K('#create1').click();
-				K('#create2').click();
 				K('#remove1').click(function(e) {
 					editor1.remove();
-					editor1 = null;
 				});
 				K('#remove2').click(function(e) {
 					editor2.remove();
-					editor1 = null;
 				});
 				K('#getHtml1').click(function(e) {
 					alert(editor1.html());

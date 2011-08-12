@@ -35,36 +35,24 @@
 		<script>
 			//document.domain = 'kindsoft.net';
 			KindEditor.ready(function(K) {
-				var editor1 = null, editor2 = null;
+				var editor1 = K.create('textarea[name=editor1]', {
+					allowFileManager : true
+				});
+				var editor2 = K.create(K('textarea[name=editor2]').get(), {
+					langType : 'en'
+				});
 				K('#create1').click(function(e) {
-					if (!editor1) {
-						editor1 = K.create('textarea[name=editor1]', {
-							allowFileManager : true
-						});
-					}
+					editor1.create();
 				});
 				K('#create2').click(function(e) {
-					if (!editor2) {
-						editor2 = K.create(K('textarea[name=editor2]').get(), {
-							langType : 'en'
-						});
-					}
+					editor2.create();
 				});
-				K('#create1').click();
-				K('#create2').click();
 				K('#remove1').click(function(e) {
-					if (editor1) {
-						editor1.remove();
-						editor1 = null;
-					}
+					editor1.remove();
 				});
 				K('#remove2').click(function(e) {
-					if (editor2) {
-						editor2.remove();
-						editor2 = null;
-					}
+					editor2.remove();
 				});
-				
 			});
 		</script>
 	</body>

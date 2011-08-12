@@ -8,6 +8,7 @@ var _VERSION = '${VERSION}',
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
 	_WEBKIT = _ua.indexOf('applewebkit') > -1,
 	_OPERA = _ua.indexOf('opera') > -1,
+	_QUIRKS = document.compatMode != 'CSS1Compat',
 	_matches = /(?:msie|firefox|webkit|opera)[\/:\s](\d+)/.exec(_ua),
 	_V = _matches ? _matches[1] : '0',
 	_TIME = new Date().getTime();

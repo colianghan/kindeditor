@@ -734,27 +734,6 @@ _extend(KCmd, {
 			_nativeCommand(doc, 'unlink', null);
 		}
 		return self;
-	},
-	// 输入文字、移动光标、执行命令都会触发onchange事件
-	onchange : function(fn) {
-		var self = this, doc = self.doc, body = doc.body;
-		K(doc).keyup(function(e) {
-			if (!e.ctrlKey && !e.altKey && _CHANGE_KEY_MAP[e.which]) {
-				fn(e);
-			}
-		});
-		K(doc).mouseup(fn).contextmenu(fn);
-		if (doc !== document) {
-			K(document).mousedown(fn);
-		}
-		function timeoutHandler(e) {
-			setTimeout(function() {
-				fn(e);
-			}, 1);
-		}
-		K(body).bind('paste', timeoutHandler);
-		K(body).bind('cut', timeoutHandler);
-		return self;
 	}
 });
 
@@ -785,38 +764,8 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 function _cmd(mixed) {
 	// mixed is a node
 	if (mixed.nodeName) {
-		var doc = _getDoc(mixed),
-			range = _range(doc).selectNodeContents(doc.body).collapse(false),
-			cmd = new KCmd(range);
-		// add events
-		cmd.onchange(function(e) {
-			cmd.selection();
-		});
-		// [WEBKIT] select an image after click the image
-		if (_WEBKIT) {
-			K(doc).click(function(e) {
-				if (K(e.target).name === 'img') {
-					cmd.selection(true);
-					cmd.range.selectNode(e.target);
-					cmd.select();
-				}
-			});
-		}
-		// [IE] bug: clear iframe when press backspase key
-		if (_IE) {
-			K(doc).keydown(function(e) {
-				if (e.which == 8) {
-					cmd.selection();
-					var rng = cmd.range;
-					if (rng.isControl()) {
-						rng.collapse(true);
-						K(rng.startContainer.childNodes[rng.startOffset]).remove();
-						e.preventDefault();
-					}
-				}
-			});
-		}
-		return cmd;
+		var doc = _getDoc(mixed);
+		mixed = _range(doc).selectNodeContents(doc.body).collapse(false);
 	}
 	// mixed is a KRange
 	return new KCmd(mixed);

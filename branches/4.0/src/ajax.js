@@ -1,7 +1,7 @@
 
 function _loadScript(url, fn) {
-	var head = document.getElementsByTagName('head')[0] || document.documentElement,
-	script = document.createElement('script');
+	var head = document.getElementsByTagName('head')[0] || (_QUIRKS ? document.body : document.documentElement),
+		script = document.createElement('script');
 	head.appendChild(script);
 	script.src = url;
 	script.charset = 'utf-8';

@@ -236,6 +236,9 @@ function _getEndRange(node, offset) {
 			child = children[offset - 1];
 			isStart = false;
 		}
+		if (!child) {
+			return range;
+		}
 		if (K(child).name === 'head') {
 			if (offset === 1) {
 				isStart = true;
@@ -719,7 +722,7 @@ _extend(KRange, {
 	moveToBookmark : function(bookmark) {
 		var self = this, doc = self.doc,
 			start = K(bookmark.start, doc), end = bookmark.end ? K(bookmark.end, doc) : null;
-		if (!start) {
+		if (!start || start.length < 1) {
 			return self;
 		}
 		self.setStartBefore(start[0]);
