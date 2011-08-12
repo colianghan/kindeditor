@@ -32,7 +32,7 @@ KindEditor.plugin('image', function(K) {
 				'<label for="keWidth" style="width:60px;">' + lang.size + '</label>',
 				lang.width + ' <input type="text" id="keWidth" class="ke-input-text ke-input-number" name="width" value="" maxlength="4" /> ',
 				lang.height + ' <input type="text" class="ke-input-text ke-input-number" name="height" value="" maxlength="4" /> ',
-				'<img src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" />',
+				'<img class="ke-refresh-btn" src="' + imgPath + 'refresh.gif" width="16" height="16" alt="" style="cursor:pointer;" />',
 				'</div>',
 				//align
 				'<div class="ke-dialog-row">',
@@ -78,6 +78,13 @@ KindEditor.plugin('image', function(K) {
 						});
 						self.exec('insertimage', url, title, width, height, 0, align).hideDialog().focus();
 					}
+				},
+				beforeRemove : function() {
+					viewServerBtn.remove();
+					widthBox.remove();
+					heightBox.remove();
+					refreshBtn.remove();
+					uploadbutton.remove();
 				}
 			}),
 			div = dialog.div;
@@ -108,6 +115,7 @@ KindEditor.plugin('image', function(K) {
 				viewServerBtn = K('[name="viewServer"]', div),
 				widthBox = K('[name="width"]', div),
 				heightBox = K('[name="height"]', div),
+				refreshBtn = K('.ke-refresh-btn', div),
 				titleBox = K('[name="title"]', div),
 				alignBox = K('[name="align"]');
 
@@ -158,12 +166,39 @@ KindEditor.plugin('image', function(K) {
 			} else {
 				viewServerBtn.hide();
 			}
+			var originalWidth = 0, originalHeight = 0;
+			function setSize(width, height) {
+				widthBox.val(width);
+				heightBox.val(height);
+				originalWidth = width;
+				originalHeight = height;
+			}
+			refreshBtn.click(function(e) {
+				var tempImg = K('<img src="' + urlBox.val() + '" />', self.edit.doc).css({
+						position : 'absolute',
+						visibility : 'hidden',
+						top : 0,
+						left : '1000px',
+					});
+				K(self.edit.doc.body).append(tempImg);
+				setSize(tempImg.width(), tempImg.height());
+				tempImg.remove();
+			});
+			widthBox.change(function(e) {
+				if (originalWidth > 0) {
+					heightBox.val(Math.round(originalHeight / originalWidth * parseInt(this.value, 10)));
+				}
+			});
+			heightBox.change(function(e) {
+				if (originalHeight > 0) {
+					widthBox.val(Math.round(originalWidth / originalHeight * parseInt(this.value, 10)));
+				}
+			});
 			urlBox.val('http://');
 			var img = self.plugin.getSelectedImage();
 			if (img) {
 				urlBox.val(img.attr('data-ke-src'));
-				widthBox.val(img.width());
-				heightBox.val(img.height());
+				setSize(img.width(), img.height());
 				titleBox.val(img.attr('title'));
 				alignBox.each(function() {
 					if (this.value === img.attr('align')) {

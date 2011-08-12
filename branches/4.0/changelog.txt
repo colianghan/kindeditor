@@ -15,6 +15,8 @@ ver 4.0 alpha
 * 改善: 改进了HTML格式化功能。
 * 改善: 粘贴纯文本时按照换行设置（newlineTag）换行。
 * 改善: 滚动页面时dialog自动居中。
+* 改善: 在移动设备上只能使用代码模式。
+* 改善: 修改图片尺寸时自动保持比例。
 * BUG: 修复了在页面上设置document.domain时发生错误的问题。
 * BUG: 修复了跨域调用编辑器时无法使用dialog的问题。
 * BUG: 修复了range的collapsed为true时删除格式不起作用的问题。

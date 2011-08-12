@@ -263,6 +263,9 @@ function KEditor(options) {
 	}
 	setOption('width', _addUnit(self.width));
 	setOption('height', _addUnit(self.height));
+	if (_MOBILE) {
+		self.designMode = false;
+	}
 	self.srcElement = se;
 	self.initContent = _elementVal(se);
 	self.plugin = {};
@@ -865,6 +868,9 @@ _plugin('core', function(K) {
 	}
 	// source
 	self.clickToolbar('source', function() {
+		if (_MOBILE) {
+			return;
+		}
 		if (self.edit.designMode) {
 			self.toolbar.disableItems(true);
 			self.edit.design(false);
