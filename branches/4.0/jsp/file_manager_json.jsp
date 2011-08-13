@@ -26,7 +26,7 @@ if (dirName != null) {
 		return;
 	}
 	rootPath += dirName + "/";
-	saveUrl += dirName + "/";
+	rootUrl += dirName + "/";
 	File saveDirFile = new File(rootPath);
 	if (!saveDirFile.exists()) {
 		saveDirFile.mkdirs();
