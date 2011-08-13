@@ -63,6 +63,7 @@ K('#colorpicker').bind('click', function(e) {
 			y : colorpickerPos.y + K('#colorpicker').height(),
 			z : 19811214,
 			selectedColor : 'default',
+			noColor : '无颜色',
 			click : function(color) {
 				alert(color);
 			}
