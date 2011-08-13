@@ -5,13 +5,13 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-12)
+* @version 4.0 alpha (2011-08-13)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 alpha (2011-08-12)',
+var _VERSION = '4.0 alpha (2011-08-13)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -3339,7 +3339,7 @@ _extend(KEdit, KWidget, {
 				'document.close();'),
 			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
 		self.iframe = K('<iframe class="ke-edit-iframe" hidefocus="true" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
-		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true" hidefocus="true"></textarea>').css('width', '100%');
+		self.textarea = K('<textarea class="ke-edit-textarea" hidefocus="true"></textarea>').css('width', '100%');
 		if (self.width) {
 			self.setWidth(self.width);
 		}
@@ -4488,8 +4488,8 @@ KEditor.prototype = {
 				self.afterSetHtml();
 			},
 			afterCreate : function() {
-				self.cmd = this.cmd;
-				K(this.doc, document).mousedown(function(e) {
+				self.cmd = edit.cmd;
+				K(edit.doc, document).mousedown(function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}
@@ -4498,14 +4498,17 @@ KEditor.prototype = {
 				_bindNewlineEvent.call(self);
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
-				this.afterChange(function(e) {
+				edit.afterChange(function(e) {
+					if (!edit.designMode) {
+						return;
+					}
 					self.updateState();
 					self.addBookmark();
 					if (self.options.afterChange) {
 						self.options.afterChange.call(self);
 					}
 				});
-				this.textarea.keyup(function(e) {
+				edit.textarea.keyup(function(e) {
 					if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 						if (self.options.afterChange) {
 							self.options.afterChange.call(self);
@@ -4900,9 +4903,7 @@ _plugin('core', function(K) {
 		self.designMode = self.edit.designMode;
 	});
 	self.afterCreate(function() {
-		if (this.designMode) {
-			this.toolbar.unselect('source');
-		} else {
+		if (!this.designMode) {
 			this.toolbar.disableItems(true).select('source');
 		}
 	});

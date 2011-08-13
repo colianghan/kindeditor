@@ -439,9 +439,9 @@ KEditor.prototype = {
 				self.afterSetHtml();
 			},
 			afterCreate : function() {
-				self.cmd = this.cmd;
+				self.cmd = edit.cmd;
 				// hide menu when click document
-				K(this.doc, document).mousedown(function(e) {
+				K(edit.doc, document).mousedown(function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}
@@ -451,14 +451,17 @@ KEditor.prototype = {
 				_bindTabEvent.call(self);
 				_bindFocusEvent.call(self);
 				// afterChange event
-				this.afterChange(function(e) {
+				edit.afterChange(function(e) {
+					if (!edit.designMode) {
+						return;
+					}
 					self.updateState();
 					self.addBookmark();
 					if (self.options.afterChange) {
 						self.options.afterChange.call(self);
 					}
 				});
-				this.textarea.keyup(function(e) {
+				edit.textarea.keyup(function(e) {
 					if (!e.ctrlKey && !e.altKey && _INPUT_KEY_MAP[e.which]) {
 						if (self.options.afterChange) {
 							self.options.afterChange.call(self);
@@ -883,9 +886,7 @@ _plugin('core', function(K) {
 		self.designMode = self.edit.designMode;
 	});
 	self.afterCreate(function() {
-		if (this.designMode) {
-			this.toolbar.unselect('source');
-		} else {
+		if (!this.designMode) {
 			this.toolbar.disableItems(true).select('source');
 		}
 	});

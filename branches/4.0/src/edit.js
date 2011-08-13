@@ -98,7 +98,7 @@ _extend(KEdit, KWidget, {
 			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
 
 		self.iframe = K('<iframe class="ke-edit-iframe" hidefocus="true" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
-		self.textarea = K('<textarea class="ke-edit-textarea" kindeditor="true" hidefocus="true"></textarea>').css('width', '100%');
+		self.textarea = K('<textarea class="ke-edit-textarea" hidefocus="true"></textarea>').css('width', '100%');
 
 		if (self.width) {
 			self.setWidth(self.width);
