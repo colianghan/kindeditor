@@ -12,8 +12,8 @@
 ' 如果您确定直接使用本程序，使用之前请仔细确认相关安全设置。
 '
 
-Dim aspUrl, savePath, saveUrl, fileTypes, maxSize, fileName, fileExt, newFileName, filePath, fileUrl
-Dim upload, file, fso, ranNum, hash, ymd
+Dim aspUrl, savePath, saveUrl, fileTypes, maxSize, fileName, fileExt, newFileName, filePath, fileUrl, dirName
+Dim upload, file, fso, ranNum, hash, ymd, mm, dd
 
 aspUrl = Request.ServerVariables("SCRIPT_NAME")
 aspUrl = left(aspUrl, InStrRev(aspUrl, "/"))
@@ -52,7 +52,7 @@ End If
 '创建文件夹
 dirName = Request.QueryString("dir")
 If Not isEmpty(dirName) Then
-	If instr(dirName, lcase("image,flash,media,file")) < 1 Then
+	If instr(lcase("image,flash,media,file"), dirName) < 1 Then
 		showError("目录名不正确。")
 	End If
 	savePath = savePath & dirName & "/"
@@ -61,7 +61,15 @@ If Not isEmpty(dirName) Then
 		fso.CreateFolder(Server.mappath(savePath))
 	End If
 End If
-ymd = year(now) & month(now) & day(now)
+mm = month(now)
+If mm < 10 Then
+	mm = "0" & mm
+End If
+dd = day(now)
+If dd < 10 Then
+	dd = "0" & dd
+End If
+ymd = year(now) & mm & dd
 savePath = savePath & ymd & "/"
 saveUrl = saveUrl & ymd & "/"
 If Not fso.FolderExists(Server.mappath(savePath)) Then
@@ -72,7 +80,7 @@ fileName = file.filename
 fileExt = mid(fileName, InStrRev(fileName, ".") + 1)
 randomize
 ranNum = int(9000000 * rnd) + 10000
-newFileName = year(now) & month(now) & day(now) & hour(now) & minute(now) & second(now) & ranNum & "." & fileExt
+newFileName = year(now) & mm & dd & hour(now) & minute(now) & second(now) & ranNum & "." & fileExt
 
 If instr(fileTypes, lcase(fileExt)) < 1 Then
 	Set upload = nothing

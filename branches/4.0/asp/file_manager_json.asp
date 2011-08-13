@@ -33,12 +33,11 @@ currentDirPath = ""
 moveupDirPath = ""
 
 Set fso = Server.CreateObject("Scripting.FileSystemObject")
-Set folder = fso.GetFolder(currentPath)
 
 '目录名
 dirName = Request.QueryString("dir")
 If Not isEmpty(dirName) Then
-	If instr(dirName, lcase("image,flash,media,file")) < 1 Then
+	If instr(lcase("image,flash,media,file"), dirName) < 1 Then
 		Response.Write "Invalid Directory name."
 		Response.End
 	End If
@@ -62,6 +61,8 @@ Else
 	currentDirPath = path
 	moveupDirPath = RegexReplace(currentDirPath, "(.*?)[^\/]+\/$", "$1")
 End If
+
+Set folder = fso.GetFolder(currentPath)
 
 '排序形式，name or size or type
 order = lcase(Request.QueryString("order"))
