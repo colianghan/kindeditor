@@ -40,13 +40,15 @@ _extend(KUploadButton, {
 			iframe = self.iframe;
 		iframe.bind('load', function() {
 			iframe.unbind();
-			var data = {}, str = K.iframeDoc(iframe).body.innerHTML;
+			var data, str = K.iframeDoc(iframe).body.innerHTML;
 			try {
 				data = K.json(str);
 			} catch (e) {
 				alert(K.DEBUG ? str : self.lang('invalidJson'));
 			}
-			self.options.afterUpload.call(self, data);
+			if (data) {
+				self.options.afterUpload.call(self, data);
+			}
 		});
 		self.form[0].submit();
 		return self;

@@ -5,13 +5,13 @@
 * @author Longhao Luo <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-13)
+* @version 4.0 alpha (2011-08-14)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 alpha (2011-08-13)',
+var _VERSION = '4.0 alpha (2011-08-14)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
@@ -3863,13 +3863,15 @@ _extend(KUploadButton, {
 			iframe = self.iframe;
 		iframe.bind('load', function() {
 			iframe.unbind();
-			var data = {}, str = K.iframeDoc(iframe).body.innerHTML;
+			var data, str = K.iframeDoc(iframe).body.innerHTML;
 			try {
 				data = K.json(str);
 			} catch (e) {
 				alert(K.DEBUG ? str : self.lang('invalidJson'));
 			}
-			self.options.afterUpload.call(self, data);
+			if (data) {
+				self.options.afterUpload.call(self, data);
+			}
 		});
 		self.form[0].submit();
 		return self;

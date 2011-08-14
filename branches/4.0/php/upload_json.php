@@ -22,7 +22,7 @@ $save_url = $php_url . '../attached/';
 $ext_arr = array(
 	'image' => array('gif', 'jpg', 'jpeg', 'png', 'bmp'),
 	'flash' => array('swf', 'flv'),
-	'media' => array('mp3', 'wav', 'wma', 'wmv', 'mid', 'avi', 'mpg', 'asf', 'rm', 'rmvb'),
+	'media' => array('swf', 'flv', 'mp3', 'wav', 'wma', 'wmv', 'mid', 'avi', 'mpg', 'asf', 'rm', 'rmvb'),
 	'file' => array('doc', 'docx', 'xls', 'xlsx', 'ppt', 'htm', 'html', 'txt', 'zip', 'rar', 'gz', 'bz2'),
 );
 //最大文件大小
@@ -59,7 +59,7 @@ if (empty($_FILES) === false) {
 		alert("上传文件大小超过限制。");
 	}
 	//检查目录名
-	$dir_name = empty($_GET['dir']) ? '' : trim($_GET['dir']);
+	$dir_name = empty($_GET['dir']) ? 'image' : trim($_GET['dir']);
 	if (empty($ext_arr[$dir_name])) {
 		alert("目录名不正确。");
 	}
@@ -70,7 +70,7 @@ if (empty($_FILES) === false) {
 	$file_ext = strtolower($file_ext);
 	//检查扩展名
 	if (in_array($file_ext, $ext_arr[$dir_name]) === false) {
-		alert("上传文件扩展名是不允许的扩展名。");
+		alert("上传文件扩展名是不允许的扩展名。\n只允许" . implode(",", $ext_arr[$dir_name]) . "格式。");
 	}
 	//创建文件夹
 	if ($dir_name !== '') {
