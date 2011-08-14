@@ -222,6 +222,10 @@ _extend(KEdit, KWidget, {
 				if (self.beforeGetHtml) {
 					val = self.beforeGetHtml(val);
 				}
+				// bugfix: Firefox自动生成一个br标签
+				if (_GECKO && val == '<br />') {
+					val = '';
+				}
 				return val;
 			}
 			// set

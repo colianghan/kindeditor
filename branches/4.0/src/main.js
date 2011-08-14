@@ -642,12 +642,16 @@ KEditor.prototype = {
 		return self;
 	},
 	insertHtml : function(val) {
-		this.container && this.exec('inserthtml', val);
+		if (!this.container) {
+			return this;
+		}
+		val = this.beforeSetHtml(val);
+		this.exec('inserthtml', val);
 		return this;
 	},
 	appendHtml : function(val) {
 		this.html(this.html() + val);
-		if (self.container) {
+		if (this.container) {
 			var cmd = this.cmd;
 			cmd.range.selectNodeContents(cmd.doc.body).collapse(false);
 			cmd.select();
