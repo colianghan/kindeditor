@@ -511,7 +511,7 @@ KEditor.prototype = {
 		// reset size
 		self.resize(width, height);
 		// 为了限制宽度和高度，包装self.resize
-		function resize(width, height, updateProp) {
+		function newResize(width, height, updateProp) {
 			updateProp = _undef(updateProp, true);
 			if (width && width >= self.minWidth) {
 				self.resize(width, null);
@@ -530,7 +530,7 @@ KEditor.prototype = {
 		if (fullscreenMode) {
 			K(window).bind('resize', function(e) {
 				if (self.isCreated) {
-					resize(_docElement().clientWidth, _docElement().clientHeight, false);
+					newResize(_docElement().clientWidth, _docElement().clientHeight, false);
 				}
 			});
 			toolbar.select('fullscreen');
@@ -544,7 +544,7 @@ KEditor.prototype = {
 					clickEl : statusbar,
 					moveFn : function(x, y, width, height, diffX, diffY) {
 						height += diffY;
-						resize(null, height);
+						newResize(null, height);
 					}
 				});
 			} else {
@@ -557,7 +557,7 @@ KEditor.prototype = {
 					moveFn : function(x, y, width, height, diffX, diffY) {
 						width += diffX;
 						height += diffY;
-						resize(width, height);
+						newResize(width, height);
 					}
 				});
 			} else {
@@ -591,9 +591,6 @@ KEditor.prototype = {
 	},
 	resize : function(width, height) {
 		var self = this;
-		if (!self.isCreated) {
-			return self;
-		}
 		if (width !== null) {
 			self.container.css('width', _addUnit(width));
 		}
@@ -920,7 +917,10 @@ _plugin('core', function(K) {
 	self.afterCreate(function() {
 		K(self.edit.doc, self.edit.textarea).keyup(function(e) {
 			if (e.which == 27) {
-				self.clickToolbar('fullscreen');
+				// bugfix: 在opera 11上无法全屏，必须用setTimeout
+				setTimeout(function() {
+					self.fullscreen();
+				}, 0);
 			}
 		});
 		if (loaded) {

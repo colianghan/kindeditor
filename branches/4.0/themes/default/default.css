@@ -356,11 +356,11 @@
 	width: 16px;
 	height: 16px;
 }
-/* container (*/
+/* container */
 .ke-container {
 	display: block;
 	border: 1px solid #CCCCCC;
-	background-color: #FFFFFF;
+	background-color: #FFF;
 	overflow: hidden;
 }
 /* toolbar */
@@ -381,7 +381,6 @@
 }
 .ke-toolbar .ke-outline {
 	border: 1px solid #F0F0EE;
-	background-color: transparent;
 	margin: 1px;
 	padding: 1px 2px;
 	font-size: 0;
