@@ -279,7 +279,8 @@ var _options = {
 		],
 		pre : ['class'],
 		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
-	}
+	},
+	layout : '<div class="container"><div class="toolbar"></div><div class="edit"></div><div class="statusbar"></div></div>'
 };
 _options.themesPath = _options.basePath + 'themes/';
 _options.langPath = _options.basePath + 'lang/';
@@ -3154,7 +3155,11 @@ _extend(KWidget, {
 		if (options.html) {
 			self.div.html(options.html);
 		}
-		K(options.parent || self.doc.body).append(self.div);
+		if (options.src) {
+			K(options.src).hide().after(self.div);
+		} else {
+			K(self.doc.body).append(self.div);
+		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {
 				var scrollPos = _getScrollPos();
@@ -3421,7 +3426,7 @@ _extend(KEdit, KWidget, {
 		val = _addUnit(val);
 		self.div.css('height', val);
 		self.iframe.css('height', val);
-		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
+		if ((_IE && _V < 8) || _QUIRKS) {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
 		self.textarea.css('height', val);
@@ -3429,15 +3434,14 @@ _extend(KEdit, KWidget, {
 	},
 	remove : function() {
 		var self = this, doc = self.doc;
-		K(doc).unbind();
 		K(doc.body).unbind();
-		K(document).unbind();
+		K(doc).unbind();
 		K(self.win).unbind();
 		_elementVal(self.srcElement, self.html());
 		self.srcElement.show();
 		doc.write('');
-		self.iframe.remove();
-		self.textarea.remove();
+		self.iframe.unbind();
+		self.textarea.unbind();
 		KEdit.parent.remove.call(self);
 	},
 	html : function(val, isFull) {
@@ -3527,9 +3531,7 @@ _extend(KEdit, KWidget, {
 			}
 		});
 		K(doc).mouseup(fn).contextmenu(fn);
-		if (doc !== document) {
-			K(document).mousedown(fn);
-		}
+		K(self.win).blur(fn);
 		function timeoutHandler(e) {
 			setTimeout(function() {
 				fn(e);
@@ -3545,16 +3547,15 @@ function _edit(options) {
 }
 K.edit = _edit;
 K.iframeDoc = _iframeDoc;
-function _bindToolbarEvent(itemNode, item) {
-	itemNode.mouseover(function(e) {
-		K(this).addClass('ke-on');
-	})
-	.mouseout(function(e) {
-		K(this).removeClass('ke-on');
-	})
-	.click(function(e) {
-		item.click.call(this, e);
-	});
+function _selectToolbar(name, fn) {
+	var self = this,
+		knode = self.get(name);
+	if (knode) {
+		if (knode.hasClass('ke-disabled')) {
+			return;
+		}
+		fn(knode);
+	}
 }
 function KToolbar(options) {
 	this.init(options);
@@ -3564,113 +3565,109 @@ _extend(KToolbar, KWidget, {
 		var self = this;
 		KToolbar.parent.init.call(self, options);
 		self.disableMode = _undef(options.disableMode, false);
-		self.noDisableItems = _undef(options.noDisableItems, []);
-		self._itemNodes = {};
+		self.noDisableItemMap = _toMap(_undef(options.noDisableItems, []));
+		self._itemMap = {};
 		self.div.addClass('ke-toolbar').bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
 		});
-	},
-	get : function(key) {
-		return this._itemNodes[key];
-	},
-	addItem : function(item) {
-		var self = this, itemNode;
-		if (item.name == '|') {
-			itemNode = K('<span class="ke-inline-block ke-separator"></span>');
-		} else if (item.name == '/') {
-			itemNode = K('<br />');
-		} else {
-			itemNode = K('<span class="ke-inline-block ke-outline" title="' + (item.title || '') + '" unselectable="on">' +
-				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
-			_bindToolbarEvent(itemNode, item);
+		function find(target) {
+			var knode = K(target);
+			if (knode.hasClass('ke-outline')) {
+				return knode;
+			}
+			if (knode.hasClass('ke-toolbar-icon')) {
+				return knode.parent();
+			}
 		}
-		itemNode.data('item', item);
-		self._itemNodes[item.name] = itemNode;
-		self.div.append(itemNode);
-		return self;
-	},
-	remove : function() {
-		var self = this;
-		_each(self._itemNodes, function(key, val) {
-			val.remove();
+		function hover(e, method) {
+			var knode = find(e.target);
+			if (knode) {
+				if (knode.hasClass('ke-disabled')) {
+					return;
+				}
+				if (knode.hasClass('ke-selected')) {
+					return;
+				}
+				knode[method]('ke-on');
+			}
+		}
+		self.div.mouseover(function(e) {
+			hover(e, 'addClass');
+		})
+		.mouseout(function(e) {
+			hover(e, 'removeClass');
+		})
+		.click(function(e) {
+			var knode = find(e.target);
+			if (knode) {
+				if (knode.hasClass('ke-disabled')) {
+					return;
+				}
+				self.options.click.call(this, e, knode.attr('data-name'));
+			}
 		});
-		KToolbar.parent.remove.call(self);
-		return self;
+	},
+	get : function(name) {
+		if (this._itemMap[name]) {
+			return this._itemMap[name];
+		}
+		return (this._itemMap[name] = K('span.ke-icon-' + name, this.div).parent());
 	},
 	select : function(name) {
-		var self = this;
-		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
-			return self;
-		}
-		var itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.addClass('ke-selected').unbind('mouseover,mouseout');
-		}
+		_selectToolbar.call(this, name, function(knode) {
+			knode.addClass('ke-selected');
+		});
 		return self;
 	},
 	unselect : function(name) {
-		var self = this;
-		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
-			return self;
-		}
-		var itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.removeClass('ke-selected').removeClass('ke-on').mouseover(function(e) {
-				K(this).addClass('ke-on');
-			}).mouseout(function(e) {
-				K(this).removeClass('ke-on');
-			});
+		_selectToolbar.call(this, name, function(knode) {
+			knode.removeClass('ke-selected').removeClass('ke-on');
+		});
+		return self;
+	},
+	enable : function(name) {
+		var self = this,
+			knode = name.get ? name : self.get(name);
+		if (knode) {
+			knode.removeClass('ke-disabled');
+			knode.opacity(1);
 		}
 		return self;
 	},
-	disableItems : function(bool, noDisableItems) {
-		var self = this, arr = _undef(noDisableItems, self.noDisableItems), item;
+	disable : function(name) {
+		var self = this,
+			knode = name.get ? name : self.get(name);
+		if (knode) {
+			knode.removeClass('ke-selected').addClass('ke-disabled');
+			knode.opacity(0.5);
+		}
+		return self;
+	},
+	disableAll : function(bool, noDisableItems) {
+		var self = this, map = self.noDisableItemMap, item;
+		if (noDisableItems) {
+			map = _toMap(noDisableItems);
+		}
 		if (bool === undefined ? !self.disableMode : bool) {
-			_each(self._itemNodes, function(key, val) {
-				item = val.data('item');
-				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('ke-selected').addClass('ke-disabled');
-					val.opacity(0.5);
-					if (item.name !== '|') {
-						val.unbind();
-					}
+			K('span.ke-outline', self.div).each(function() {
+				var knode = K(this);
+					name = knode[0].getAttribute('data-name', 2);
+				if (!map[name]) {
+					self.disable(knode);
 				}
 			});
 			self.disableMode = true;
 		} else {
-			_each(self._itemNodes, function(key, val) {
-				item = val.data('item');
-				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('ke-disabled');
-					val.opacity(1);
-					if (item.name !== '|') {
-						_bindToolbarEvent(val, item);
-					}
+			K('span.ke-outline', self.div).each(function() {
+				var knode = K(this);
+					name = knode[0].getAttribute('data-name', 2);
+				if (!map[name]) {
+					self.enable(knode);
 				}
 			});
 			self.disableMode = false;
 		}
 		return self;
-	},
-	enable : function(name) {
-		var self = this,
-			itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.removeClass('ke-disabled');
-			itemNode.opacity(1);
-			_bindToolbarEvent(itemNode, itemNode.data('item'));
-		}
-		self.disableMode = false;
-	},
-	disable : function(name) {
-		var self = this,
-			itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.removeClass('ke-selected').addClass('ke-disabled');
-			itemNode.opacity(0.5);
-			itemNode.unbind();
-		}
-		self.disableMode = true;
 	}
 });
 function _toolbar(options) {
@@ -3746,7 +3743,7 @@ _extend(KMenu, KWidget, {
 		if (self.options.beforeRemove) {
 			self.options.beforeRemove.call(self);
 		}
-		K('.ke-menu-item', self.div[0]).remove();
+		K('.ke-menu-item', self.div[0]).unbind();
 		KMenu.parent.remove.call(self);
 		return self;
 	}
@@ -3980,11 +3977,11 @@ _extend(KDialog, KWidget, {
 		if (self.mask) {
 			self.mask.remove();
 		}
-		self.closeIcon.remove();
-		K('input', self.div).remove();
-		self.footerDiv.remove();
-		self.bodyDiv.remove();
-		self.headerDiv.remove();
+		self.closeIcon.unbind();
+		K('input', self.div).unbind();
+		self.footerDiv.unbind();
+		self.bodyDiv.unbind();
+		self.headerDiv.unbind();
 		KDialog.parent.remove.call(self);
 		return self;
 	}
@@ -4330,6 +4327,7 @@ function KEditor(options) {
 	self.srcElement = se;
 	self.initContent = _elementVal(se);
 	self.plugin = {};
+	self.isCreated = false;
 	self._handlers = {};
 	self._contextmenus = [];
 	self._undoStack = [];
@@ -4411,7 +4409,7 @@ KEditor.prototype = {
 	},
 	create : function() {
 		var self = this, fullscreenMode = self.fullscreenMode;
-		if (self.container) {
+		if (self.isCreated) {
 			return self;
 		}
 		if (fullscreenMode) {
@@ -4421,10 +4419,20 @@ KEditor.prototype = {
 		}
 		var width = fullscreenMode ? _docElement().clientWidth + 'px' : self.width,
 			height = fullscreenMode ? _docElement().clientHeight + 'px' : self.height;
-		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
+		if ((_IE && _V < 8) || _QUIRKS) {
 			height = _addUnit(_removeUnit(height) + 2);
 		}
-		var container = K('<div class="ke-container ke-container-' + self.themeType + '"></div>').css('width', width);
+		var container = K(self.layout),
+			toolbar = K('.toolbar', container),
+			edit = K('.edit', container),
+			statusbar = K('.statusbar', container);
+		if (fullscreenMode) {
+			K(document.body).append(container);
+		} else {
+			self.srcElement.before(container);
+		}
+		container.removeClass('container')
+			.addClass('ke-container ke-container-' + self.themeType).css('width', width);
 		if (fullscreenMode) {
 			container.css({
 				position : 'absolute',
@@ -4432,7 +4440,6 @@ KEditor.prototype = {
 				top : 0,
 				'z-index' : 811211
 			});
-			K(document.body).append(container);
 			self._scrollPos = _getScrollPos();
 			window.scrollTo(0, 0);
 			K(document.body).css({
@@ -4441,7 +4448,6 @@ KEditor.prototype = {
 			});
 			K(document.body.parentNode).css('overflow', 'hidden');
 		} else {
-			self.srcElement.before(container);
 			if (self._scrollPos) {
 				K(document.body).css({
 					'height' : '',
@@ -4451,30 +4457,36 @@ KEditor.prototype = {
 				window.scrollTo(self._scrollPos.x, self._scrollPos.y);
 			}
 		}
-		var toolbar = _toolbar({
-				parent : container,
-				noDisableItems : self.noDisableItems
-			});
-		_each(self.items, function(i, name) {
-			toolbar.addItem({
-				name : name,
-				title : self.lang(name),
-				click : function(e) {
-					if (self.menu) {
-						var menuName = self.menu.name;
-						self.hideMenu();
-						if (menuName === name) {
-							return;
-						}
-					}
-					e.stopPropagation();
-					self.clickToolbar(name);
-				}
-			});
+		var htmlList = [];
+		K.each(self.items, function(i, name) {
+			if (name == '|') {
+				htmlList.push('<span class="ke-inline-block ke-separator"></span>');
+			} else if (name == '/') {
+				htmlList.push('<br />');
+			} else {
+				htmlList.push('<span class="ke-inline-block ke-outline" data-name="' + name + '" title="' + self.lang(name) + '">');
+				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '"></span></span>');
+			}
 		});
-		var edit = _edit({
+		toolbar = _toolbar({
+			src : toolbar,
+			html : htmlList.join(''),
+			noDisableItems : self.noDisableItems,
+			click : function(e, name) {
+				if (self.menu) {
+					var menuName = self.menu.name;
+					self.hideMenu();
+					if (menuName === name) {
+						return;
+					}
+				}
+				e.stopPropagation();
+				self.clickToolbar(name);
+			}
+		});
+		edit = _edit({
 			height : _removeUnit(height) - toolbar.div.height(),
-			parent : container,
+			src : edit,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
 			themesPath : self.themesPath,
@@ -4494,11 +4506,12 @@ KEditor.prototype = {
 			},
 			afterCreate : function() {
 				self.cmd = edit.cmd;
-				K(edit.doc, document).mousedown(function(e) {
+				self._docMousedownFn = function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}
-				});
+				};
+				K(edit.doc, document).mousedown(self._docMousedownFn);
 				_bindContextmenuEvent.call(self);
 				_bindNewlineEvent.call(self);
 				_bindTabEvent.call(self);
@@ -4523,16 +4536,16 @@ KEditor.prototype = {
 				if (self.readonlyMode) {
 					self.readonly();
 				}
+				self.isCreated = true;
 				self.afterCreate();
 				if (self.options.afterCreate) {
 					self.options.afterCreate.call(self);
 				}
 			}
 		});
-		var statusbar = K('<div class="ke-statusbar"></div>');
-		container.append(statusbar);
-		statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
-		.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		statusbar.removeClass('statusbar').addClass('ke-statusbar')
+			.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
+			.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
 		self.container = container;
 		self.toolbar = toolbar;
 		self.edit = edit;
@@ -4558,7 +4571,7 @@ KEditor.prototype = {
 		}
 		if (fullscreenMode) {
 			K(window).bind('resize', function(e) {
-				if (self.container) {
+				if (self.isCreated) {
 					resize(_docElement().clientWidth, _docElement().clientHeight, false);
 				}
 			});
@@ -4596,7 +4609,7 @@ KEditor.prototype = {
 	},
 	remove : function() {
 		var self = this;
-		if (!self.container) {
+		if (!self.isCreated) {
 			return self;
 		}
 		self.beforeRemove();
@@ -4606,18 +4619,20 @@ KEditor.prototype = {
 		_each(self.dialogs, function() {
 			self.hideDialog();
 		});
+		K(document).unbind('mousedown', self._docMousedownFn);
 		self.toolbar.remove();
 		self.edit.remove();
-		self.statusbar.last().remove();
-		self.statusbar.remove();
+		self.statusbar.last().unbind();
+		self.statusbar.unbind();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = null;
 		self.dialogs = [];
+		self.isCreated = false;
 		return self;
 	},
 	resize : function(width, height) {
 		var self = this;
-		if (!self.container) {
+		if (!self.isCreated) {
 			return self;
 		}
 		if (width !== null) {
@@ -4632,19 +4647,19 @@ KEditor.prototype = {
 		return self;
 	},
 	select : function() {
-		this.container && this.cmd.select();
+		this.isCreated && this.cmd.select();
 		return this;
 	},
 	html : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return self.container ? self.edit.html() : _elementVal(self.srcElement);
+			return self.isCreated ? self.edit.html() : _elementVal(self.srcElement);
 		}
-		self.container ? self.edit.html(val) : _elementVal(self.srcElement, val);
+		self.isCreated ? self.edit.html(val) : _elementVal(self.srcElement, val);
 		return self;
 	},
 	fullHtml : function() {
-		return this.container ? this.edit.html(undefined, true) : '';
+		return this.isCreated ? this.edit.html(undefined, true) : '';
 	},
 	text : function(val) {
 		var self = this;
@@ -4658,7 +4673,7 @@ KEditor.prototype = {
 		return _trim(this.text().replace(/\r\n|\n|\r/, '')) === '';
 	},
 	selectedHtml : function() {
-		return this.container ? this.cmd.range.html() : '';
+		return this.isCreated ? this.cmd.range.html() : '';
 	},
 	count : function(mode) {
 		var self = this;
@@ -4685,7 +4700,7 @@ KEditor.prototype = {
 		return self;
 	},
 	insertHtml : function(val) {
-		if (!this.container) {
+		if (!this.isCreated) {
 			return this;
 		}
 		val = this.beforeSetHtml(val);
@@ -4694,7 +4709,7 @@ KEditor.prototype = {
 	},
 	appendHtml : function(val) {
 		this.html(this.html() + val);
-		if (this.container) {
+		if (this.isCreated) {
 			var cmd = this.cmd;
 			cmd.range.selectNodeContents(cmd.doc.body).collapse(false);
 			cmd.select();
@@ -4706,11 +4721,11 @@ KEditor.prototype = {
 		return this;
 	},
 	focus : function() {
-		this.container ? this.edit.focus() : this.srcElement[0].focus();
+		this.isCreated ? this.edit.focus() : this.srcElement[0].focus();
 		return this;
 	},
 	blur : function() {
-		this.container ? this.edit.blur() : this.srcElement[0].blur();
+		this.isCreated ? this.edit.blur() : this.srcElement[0].blur();
 		return this;
 	},
 	addBookmark : function() {
@@ -4748,7 +4763,7 @@ KEditor.prototype = {
 		isReadonly = _undef(isReadonly, true);
 		var self = this, edit = self.edit, doc = edit.doc;
 		if (self.designMode) {
-			self.toolbar.disableItems(isReadonly, []);
+			self.toolbar.disableAll(isReadonly, []);
 		} else {
 			_each(self.noDisableItems, function() {
 				self.toolbar[isReadonly ? 'disable' : 'enable'](this);
@@ -4901,11 +4916,11 @@ _plugin('core', function(K) {
 			return;
 		}
 		if (self.edit.designMode) {
-			self.toolbar.disableItems(true);
+			self.toolbar.disableAll(true);
 			self.edit.design(false);
 			self.toolbar.select('source');
 		} else {
-			self.toolbar.disableItems(false);
+			self.toolbar.disableAll(false);
 			self.edit.design(true);
 			self.toolbar.unselect('source');
 		}
@@ -4913,7 +4928,7 @@ _plugin('core', function(K) {
 	});
 	self.afterCreate(function() {
 		if (!this.designMode) {
-			this.toolbar.disableItems(true).select('source');
+			this.toolbar.disableAll(true).select('source');
 		}
 	});
 	self.clickToolbar('fullscreen', function() {

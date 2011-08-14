@@ -29,6 +29,9 @@
 	border: 1px solid #5690D2;
 	background-color: #E9EFF6;
 }
+.ke-container-simple .ke-toolbar  .ke-disabled {
+	cursor: default;
+}
 /* statusbar */
 .ke-container-simple .ke-statusbar {
 	position: relative;

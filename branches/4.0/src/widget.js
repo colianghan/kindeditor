@@ -116,7 +116,11 @@ _extend(KWidget, {
 		if (options.html) {
 			self.div.html(options.html);
 		}
-		K(options.parent || self.doc.body).append(self.div);
+		if (options.src) {
+			K(options.src).hide().after(self.div);
+		} else {
+			K(self.doc.body).append(self.div);
+		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {
 				var scrollPos = _getScrollPos();

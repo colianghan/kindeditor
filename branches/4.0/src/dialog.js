@@ -90,11 +90,11 @@ _extend(KDialog, KWidget, {
 		if (self.mask) {
 			self.mask.remove();
 		}
-		self.closeIcon.remove();
-		K('input', self.div).remove();
-		self.footerDiv.remove();
-		self.bodyDiv.remove();
-		self.headerDiv.remove();
+		self.closeIcon.unbind();
+		K('input', self.div).unbind();
+		self.footerDiv.unbind();
+		self.bodyDiv.unbind();
+		self.headerDiv.unbind();
 		KDialog.parent.remove.call(self);
 		return self;
 	}

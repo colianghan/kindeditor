@@ -92,7 +92,7 @@ KindEditor.plugin('image', function(K) {
 			var tabs;
 			if (allowImageUpload) {
 				tabs = K.tabs({
-					parent : K('.tabs', div),
+					src : K('.tabs', div),
 					afterSelect : function(i) {
 				
 					}
@@ -178,7 +178,7 @@ KindEditor.plugin('image', function(K) {
 						position : 'absolute',
 						visibility : 'hidden',
 						top : 0,
-						left : '1000px',
+						left : '1000px'
 					});
 				K(self.edit.doc.body).append(tempImg);
 				setSize(tempImg.width(), tempImg.height());

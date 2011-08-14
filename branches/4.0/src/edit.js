@@ -186,7 +186,7 @@ _extend(KEdit, KWidget, {
 		self.div.css('height', val);
 		self.iframe.css('height', val);
 		// 校正IE6和IE7的textarea高度
-		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
+		if ((_IE && _V < 8) || _QUIRKS) {
 			val = _addUnit(_removeUnit(val) - 2);
 		}
 		self.textarea.css('height', val);
@@ -195,16 +195,15 @@ _extend(KEdit, KWidget, {
 	remove : function() {
 		var self = this, doc = self.doc;
 		// remove events
-		K(doc).unbind();
 		K(doc.body).unbind();
-		K(document).unbind();
+		K(doc).unbind();
 		K(self.win).unbind();
 		// remove elements
 		_elementVal(self.srcElement, self.html());
 		self.srcElement.show();
 		doc.write('');
-		self.iframe.remove();
-		self.textarea.remove();
+		self.iframe.unbind();
+		self.textarea.unbind();
 		KEdit.parent.remove.call(self);
 	},
 	html : function(val, isFull) {
@@ -299,9 +298,7 @@ _extend(KEdit, KWidget, {
 			}
 		});
 		K(doc).mouseup(fn).contextmenu(fn);
-		if (doc !== document) {
-			K(document).mousedown(fn);
-		}
+		K(self.win).blur(fn);
 		function timeoutHandler(e) {
 			setTimeout(function() {
 				fn(e);

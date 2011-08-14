@@ -269,6 +269,7 @@ function KEditor(options) {
 	self.srcElement = se;
 	self.initContent = _elementVal(se);
 	self.plugin = {};
+	self.isCreated = false;
 	// private properties
 	self._handlers = {};
 	self._contextmenus = [];
@@ -352,7 +353,7 @@ KEditor.prototype = {
 	},
 	create : function() {
 		var self = this, fullscreenMode = self.fullscreenMode;
-		if (self.container) {
+		if (self.isCreated) {
 			return self;
 		}
 		if (fullscreenMode) {
@@ -363,10 +364,20 @@ KEditor.prototype = {
 		var width = fullscreenMode ? _docElement().clientWidth + 'px' : self.width,
 			height = fullscreenMode ? _docElement().clientHeight + 'px' : self.height;
 		// 校正IE6和IE7的高度
-		if ((_IE && _V < 8) || document.compatMode != 'CSS1Compat') {
+		if ((_IE && _V < 8) || _QUIRKS) {
 			height = _addUnit(_removeUnit(height) + 2);
 		}
-		var container = K('<div class="ke-container ke-container-' + self.themeType + '"></div>').css('width', width);
+		var container = K(self.layout),
+			toolbar = K('.toolbar', container),
+			edit = K('.edit', container),
+			statusbar = K('.statusbar', container);
+		if (fullscreenMode) {
+			K(document.body).append(container);
+		} else {
+			self.srcElement.before(container);
+		}
+		container.removeClass('container')
+			.addClass('ke-container ke-container-' + self.themeType).css('width', width);
 		if (fullscreenMode) {
 			container.css({
 				position : 'absolute',
@@ -374,7 +385,6 @@ KEditor.prototype = {
 				top : 0,
 				'z-index' : 811211
 			});
-			K(document.body).append(container);
 			// 为了防止拖动偏移，把文档高度设置成0
 			self._scrollPos = _getScrollPos();
 			window.scrollTo(0, 0);
@@ -384,7 +394,6 @@ KEditor.prototype = {
 			});
 			K(document.body.parentNode).css('overflow', 'hidden');
 		} else {
-			self.srcElement.before(container);
 			// 恢复文档高度
 			if (self._scrollPos) {
 				K(document.body).css({
@@ -396,31 +405,37 @@ KEditor.prototype = {
 			}
 		}
 		// create toolbar
-		var toolbar = _toolbar({
-				parent : container,
-				noDisableItems : self.noDisableItems
-			});
-		_each(self.items, function(i, name) {
-			toolbar.addItem({
-				name : name,
-				title : self.lang(name),
-				click : function(e) {
-					if (self.menu) {
-						var menuName = self.menu.name;
-						self.hideMenu();
-						if (menuName === name) {
-							return;
-						}
+		var htmlList = [];
+		K.each(self.items, function(i, name) {
+			if (name == '|') {
+				htmlList.push('<span class="ke-inline-block ke-separator"></span>');
+			} else if (name == '/') {
+				htmlList.push('<br />');
+			} else {
+				htmlList.push('<span class="ke-inline-block ke-outline" data-name="' + name + '" title="' + self.lang(name) + '">');
+				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '"></span></span>');
+			}
+		});
+		toolbar = _toolbar({
+			src : toolbar,
+			html : htmlList.join(''),
+			noDisableItems : self.noDisableItems,
+			click : function(e, name) {
+				if (self.menu) {
+					var menuName = self.menu.name;
+					self.hideMenu();
+					if (menuName === name) {
+						return;
 					}
-					e.stopPropagation();
-					self.clickToolbar(name);
 				}
-			});
+				e.stopPropagation();
+				self.clickToolbar(name);
+			}
 		});
 		// create edit
-		var edit = _edit({
+		edit = _edit({
 			height : _removeUnit(height) - toolbar.div.height(),
-			parent : container,
+			src : edit,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
 			themesPath : self.themesPath,
@@ -441,11 +456,12 @@ KEditor.prototype = {
 			afterCreate : function() {
 				self.cmd = edit.cmd;
 				// hide menu when click document
-				K(edit.doc, document).mousedown(function(e) {
+				self._docMousedownFn = function(e) {
 					if (self.menu) {
 						self.hideMenu();
 					}
-				});
+				};
+				K(edit.doc, document).mousedown(self._docMousedownFn);
 				_bindContextmenuEvent.call(self);
 				_bindNewlineEvent.call(self);
 				_bindTabEvent.call(self);
@@ -472,6 +488,7 @@ KEditor.prototype = {
 				if (self.readonlyMode) {
 					self.readonly();
 				}
+				self.isCreated = true;
 				self.afterCreate();
 				if (self.options.afterCreate) {
 					self.options.afterCreate.call(self);
@@ -479,10 +496,9 @@ KEditor.prototype = {
 			}
 		});
 		// create statusbar
-		var statusbar = K('<div class="ke-statusbar"></div>');
-		container.append(statusbar);
-		statusbar.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
-		.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
+		statusbar.removeClass('statusbar').addClass('ke-statusbar')
+			.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
+			.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
 		// set properties
 		self.container = container;
 		self.toolbar = toolbar;
@@ -513,7 +529,7 @@ KEditor.prototype = {
 		// fullscreen mode
 		if (fullscreenMode) {
 			K(window).bind('resize', function(e) {
-				if (self.container) {
+				if (self.isCreated) {
 					resize(_docElement().clientWidth, _docElement().clientHeight, false);
 				}
 			});
@@ -552,7 +568,7 @@ KEditor.prototype = {
 	},
 	remove : function() {
 		var self = this;
-		if (!self.container) {
+		if (!self.isCreated) {
 			return self;
 		}
 		self.beforeRemove();
@@ -562,18 +578,20 @@ KEditor.prototype = {
 		_each(self.dialogs, function() {
 			self.hideDialog();
 		});
+		K(document).unbind('mousedown', self._docMousedownFn);
 		self.toolbar.remove();
 		self.edit.remove();
-		self.statusbar.last().remove();
-		self.statusbar.remove();
+		self.statusbar.last().unbind();
+		self.statusbar.unbind();
 		self.container.remove();
 		self.container = self.toolbar = self.edit = self.menu = null;
 		self.dialogs = [];
+		self.isCreated = false;
 		return self;
 	},
 	resize : function(width, height) {
 		var self = this;
-		if (!self.container) {
+		if (!self.isCreated) {
 			return self;
 		}
 		if (width !== null) {
@@ -588,19 +606,19 @@ KEditor.prototype = {
 		return self;
 	},
 	select : function() {
-		this.container && this.cmd.select();
+		this.isCreated && this.cmd.select();
 		return this;
 	},
 	html : function(val) {
 		var self = this;
 		if (val === undefined) {
-			return self.container ? self.edit.html() : _elementVal(self.srcElement);
+			return self.isCreated ? self.edit.html() : _elementVal(self.srcElement);
 		}
-		self.container ? self.edit.html(val) : _elementVal(self.srcElement, val);
+		self.isCreated ? self.edit.html(val) : _elementVal(self.srcElement, val);
 		return self;
 	},
 	fullHtml : function() {
-		return this.container ? this.edit.html(undefined, true) : '';
+		return this.isCreated ? this.edit.html(undefined, true) : '';
 	},
 	text : function(val) {
 		var self = this;
@@ -614,7 +632,7 @@ KEditor.prototype = {
 		return _trim(this.text().replace(/\r\n|\n|\r/, '')) === '';
 	},
 	selectedHtml : function() {
-		return this.container ? this.cmd.range.html() : '';
+		return this.isCreated ? this.cmd.range.html() : '';
 	},
 	count : function(mode) {
 		var self = this;
@@ -642,7 +660,7 @@ KEditor.prototype = {
 		return self;
 	},
 	insertHtml : function(val) {
-		if (!this.container) {
+		if (!this.isCreated) {
 			return this;
 		}
 		val = this.beforeSetHtml(val);
@@ -651,7 +669,7 @@ KEditor.prototype = {
 	},
 	appendHtml : function(val) {
 		this.html(this.html() + val);
-		if (this.container) {
+		if (this.isCreated) {
 			var cmd = this.cmd;
 			cmd.range.selectNodeContents(cmd.doc.body).collapse(false);
 			cmd.select();
@@ -663,11 +681,11 @@ KEditor.prototype = {
 		return this;
 	},
 	focus : function() {
-		this.container ? this.edit.focus() : this.srcElement[0].focus();
+		this.isCreated ? this.edit.focus() : this.srcElement[0].focus();
 		return this;
 	},
 	blur : function() {
-		this.container ? this.edit.blur() : this.srcElement[0].blur();
+		this.isCreated ? this.edit.blur() : this.srcElement[0].blur();
 		return this;
 	},
 	addBookmark : function() {
@@ -705,7 +723,7 @@ KEditor.prototype = {
 		isReadonly = _undef(isReadonly, true);
 		var self = this, edit = self.edit, doc = edit.doc;
 		if (self.designMode) {
-			self.toolbar.disableItems(isReadonly, []);
+			self.toolbar.disableAll(isReadonly, []);
 		} else {
 			_each(self.noDisableItems, function() {
 				self.toolbar[isReadonly ? 'disable' : 'enable'](this);
@@ -879,11 +897,11 @@ _plugin('core', function(K) {
 			return;
 		}
 		if (self.edit.designMode) {
-			self.toolbar.disableItems(true);
+			self.toolbar.disableAll(true);
 			self.edit.design(false);
 			self.toolbar.select('source');
 		} else {
-			self.toolbar.disableItems(false);
+			self.toolbar.disableAll(false);
 			self.edit.design(true);
 			self.toolbar.unselect('source');
 		}
@@ -891,7 +909,7 @@ _plugin('core', function(K) {
 	});
 	self.afterCreate(function() {
 		if (!this.designMode) {
-			this.toolbar.disableItems(true).select('source');
+			this.toolbar.disableAll(true).select('source');
 		}
 	});
 	// fullscreen

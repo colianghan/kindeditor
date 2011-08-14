@@ -69,7 +69,7 @@ _extend(KMenu, KWidget, {
 		if (self.options.beforeRemove) {
 			self.options.beforeRemove.call(self);
 		}
-		K('.ke-menu-item', self.div[0]).remove();
+		K('.ke-menu-item', self.div[0]).unbind();
 		KMenu.parent.remove.call(self);
 		return self;
 	}

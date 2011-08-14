@@ -4,7 +4,7 @@
 		<meta charset="utf-8" />
 		<title>KindEditor Examples</title>
 		<style>
-			#tabs li {
+			.ke-tabs-example li {
 				padding: 0 5px;
 			}
 			.ke-icon-example1 {
@@ -144,7 +144,8 @@
 				};
 				var editor = null;
 				var tabs = K.tabs({
-					parent : K('#tabs'),
+					src : K('#tabs'),
+					cls : 'ke-tabs-example',
 					afterSelect : function(i) {
 						if (editor) {
 							editor.remove();

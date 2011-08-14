@@ -81,7 +81,8 @@ var _options = {
 		],
 		pre : ['class'],
 		'hr,br,tbody,tr,strong,b,sub,sup,em,i,u,strike' : []
-	}
+	},
+	layout : '<div class="container"><div class="toolbar"></div><div class="edit"></div><div class="statusbar"></div></div>'
 };
 
 _options.themesPath = _options.basePath + 'themes/';

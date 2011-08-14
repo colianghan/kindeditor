@@ -13,6 +13,7 @@ var cmds = {
 	removeformat : '',
 	selectall : ''
 };
+
 K.each(cmds, function(key, val) {
 	var a = K('<a href="javascript:;">' + key + '</a>').bind('click', (function(key, val) {
 		return function(e) {
@@ -26,7 +27,7 @@ K.each(cmds, function(key, val) {
 K('#create').bind('click', function(e) {
 	if (!edit) {
 		edit = K.edit({
-			parent : 'div#edit',
+			src : 'div#edit',
 			srcElement : 'body textarea',
 			width : '700px',
 			height : '200px',

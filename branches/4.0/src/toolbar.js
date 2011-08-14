@@ -1,14 +1,13 @@
 
-function _bindToolbarEvent(itemNode, item) {
-	itemNode.mouseover(function(e) {
-		K(this).addClass('ke-on');
-	})
-	.mouseout(function(e) {
-		K(this).removeClass('ke-on');
-	})
-	.click(function(e) {
-		item.click.call(this, e);
-	});
+function _selectToolbar(name, fn) {
+	var self = this,
+		knode = self.get(name);
+	if (knode) {
+		if (knode.hasClass('ke-disabled')) {
+			return;
+		}
+		fn(knode);
+	}
 }
 
 // create KToolbar class
@@ -20,115 +19,112 @@ _extend(KToolbar, KWidget, {
 		var self = this;
 		KToolbar.parent.init.call(self, options);
 		self.disableMode = _undef(options.disableMode, false);
-		self.noDisableItems = _undef(options.noDisableItems, []);
-		self._itemNodes = {};
+		self.noDisableItemMap = _toMap(_undef(options.noDisableItems, []));
+		self._itemMap = {};
 		self.div.addClass('ke-toolbar').bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
 		});
-	},
-	get : function(key) {
-		return this._itemNodes[key];
-	},
-	addItem : function(item) {
-		var self = this, itemNode;
-		if (item.name == '|') {
-			itemNode = K('<span class="ke-inline-block ke-separator"></span>');
-		} else if (item.name == '/') {
-			itemNode = K('<br />');
-		} else {
-			itemNode = K('<span class="ke-inline-block ke-outline" title="' + (item.title || '') + '" unselectable="on">' +
-				'<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + item.name + '" unselectable="on"></span></span>');
-			_bindToolbarEvent(itemNode, item);
+		function find(target) {
+			var knode = K(target);
+			if (knode.hasClass('ke-outline')) {
+				return knode;
+			}
+			if (knode.hasClass('ke-toolbar-icon')) {
+				return knode.parent();
+			}
 		}
-		itemNode.data('item', item);
-		self._itemNodes[item.name] = itemNode;
-		self.div.append(itemNode);
-		return self;
-	},
-	remove : function() {
-		var self = this;
-		_each(self._itemNodes, function(key, val) {
-			val.remove();
+		function hover(e, method) {
+			var knode = find(e.target);
+			if (knode) {
+				if (knode.hasClass('ke-disabled')) {
+					return;
+				}
+				if (knode.hasClass('ke-selected')) {
+					return;
+				}
+				knode[method]('ke-on');
+			}
+		}
+		self.div.mouseover(function(e) {
+			hover(e, 'addClass');
+		})
+		.mouseout(function(e) {
+			hover(e, 'removeClass');
+		})
+		.click(function(e) {
+			var knode = find(e.target);
+			if (knode) {
+				if (knode.hasClass('ke-disabled')) {
+					return;
+				}
+				self.options.click.call(this, e, knode.attr('data-name'));
+			}
 		});
-		KToolbar.parent.remove.call(self);
-		return self;
+	},
+	get : function(name) {
+		// cache
+		if (this._itemMap[name]) {
+			return this._itemMap[name];
+		}
+		return (this._itemMap[name] = K('span.ke-icon-' + name, this.div).parent());
 	},
 	select : function(name) {
-		var self = this;
-		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
-			return self;
-		}
-		var itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.addClass('ke-selected').unbind('mouseover,mouseout');
-		}
+		_selectToolbar.call(this, name, function(knode) {
+			knode.addClass('ke-selected');
+		});
 		return self;
 	},
 	unselect : function(name) {
-		var self = this;
-		if (self.disableMode && _inArray(name, self.noDisableItems) < 0) {
-			return self;
-		}
-		var itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.removeClass('ke-selected').removeClass('ke-on').mouseover(function(e) {
-				K(this).addClass('ke-on');
-			}).mouseout(function(e) {
-				K(this).removeClass('ke-on');
-			});
+		_selectToolbar.call(this, name, function(knode) {
+			knode.removeClass('ke-selected').removeClass('ke-on');
+		});
+		return self;
+	},
+	enable : function(name) {
+		var self = this,
+			knode = name.get ? name : self.get(name);
+		if (knode) {
+			knode.removeClass('ke-disabled');
+			knode.opacity(1);
 		}
 		return self;
 	},
-	disableItems : function(bool, noDisableItems) {
-		var self = this, arr = _undef(noDisableItems, self.noDisableItems), item;
+	disable : function(name) {
+		var self = this,
+			knode = name.get ? name : self.get(name);
+		if (knode) {
+			knode.removeClass('ke-selected').addClass('ke-disabled');
+			knode.opacity(0.5);
+		}
+		return self;
+	},
+	disableAll : function(bool, noDisableItems) {
+		var self = this, map = self.noDisableItemMap, item;
+		if (noDisableItems) {
+			map = _toMap(noDisableItems);
+		}
 		// disable toolbar
 		if (bool === undefined ? !self.disableMode : bool) {
-			_each(self._itemNodes, function(key, val) {
-				item = val.data('item');
-				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('ke-selected').addClass('ke-disabled');
-					val.opacity(0.5);
-					if (item.name !== '|') {
-						val.unbind();
-					}
+			K('span.ke-outline', self.div).each(function() {
+				var knode = K(this);
+					name = knode[0].getAttribute('data-name', 2);
+				if (!map[name]) {
+					self.disable(knode);
 				}
 			});
 			self.disableMode = true;
 		// enable toolbar
 		} else {
-			_each(self._itemNodes, function(key, val) {
-				item = val.data('item');
-				if (item.name !== '/' && _inArray(item.name, arr) < 0) {
-					val.removeClass('ke-disabled');
-					val.opacity(1);
-					if (item.name !== '|') {
-						_bindToolbarEvent(val, item);
-					}
+			K('span.ke-outline', self.div).each(function() {
+				var knode = K(this);
+					name = knode[0].getAttribute('data-name', 2);
+				if (!map[name]) {
+					self.enable(knode);
 				}
 			});
 			self.disableMode = false;
 		}
 		return self;
-	},
-	enable : function(name) {
-		var self = this,
-			itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.removeClass('ke-disabled');
-			itemNode.opacity(1);
-			_bindToolbarEvent(itemNode, itemNode.data('item'));
-		}
-		self.disableMode = false;
-	},
-	disable : function(name) {
-		var self = this,
-			itemNode = self._itemNodes[name];
-		if (itemNode) {
-			itemNode.removeClass('ke-selected').addClass('ke-disabled');
-			itemNode.opacity(0.5);
-			itemNode.unbind();
-		}
-		self.disableMode = true;
 	}
 });
 
