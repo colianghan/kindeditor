@@ -19,10 +19,12 @@ $save_path = $php_path . '../attached/';
 //文件保存目录URL
 $save_url = $php_url . '../attached/';
 //定义允许上传的文件扩展名
-$image_ext_arr = array('gif', 'jpg', 'jpeg', 'png', 'bmp');
-$media_ext_arr = array('swf', 'flv', 'mp3', 'wav', 'wma', 'wmv', 'mid', 'avi', 'mpg', 'asf', 'rm', 'rmvb');
-$file_ext_arr = array('doc', 'docx', 'xls', 'xlsx', 'ppt', 'htm', 'html', 'txt', 'zip', 'rar', 'gz', 'bz2');
-$ext_arr = array_merge($image_ext_arr, $media_ext_arr, $file_ext_arr);
+$ext_arr = array(
+	'image' => array('gif', 'jpg', 'jpeg', 'png', 'bmp'),
+	'flash' => array('swf', 'flv'),
+	'media' => array('mp3', 'wav', 'wma', 'wmv', 'mid', 'avi', 'mpg', 'asf', 'rm', 'rmvb'),
+	'file' => array('doc', 'docx', 'xls', 'xlsx', 'ppt', 'htm', 'html', 'txt', 'zip', 'rar', 'gz', 'bz2'),
+);
 //最大文件大小
 $max_size = 1000000;
 
@@ -56,19 +58,19 @@ if (empty($_FILES) === false) {
 	if ($file_size > $max_size) {
 		alert("上传文件大小超过限制。");
 	}
+	//检查目录名
+	$dir_name = empty($_GET['dir']) ? '' : trim($_GET['dir']);
+	if (empty($ext_arr[$dir_name])) {
+		alert("目录名不正确。");
+	}
 	//获得文件扩展名
 	$temp_arr = explode(".", $file_name);
 	$file_ext = array_pop($temp_arr);
 	$file_ext = trim($file_ext);
 	$file_ext = strtolower($file_ext);
 	//检查扩展名
-	if (in_array($file_ext, $ext_arr) === false) {
+	if (in_array($file_ext, $ext_arr[$dir_name]) === false) {
 		alert("上传文件扩展名是不允许的扩展名。");
-	}
-	//检查目录名
-	$dir_name = $_GET['dir'] ? trim($_GET['dir']) : '';
-	if (!in_array($dir_name, array('', 'image', 'flash', 'media', 'file'))) {
-		alert("目录名不正确。");
 	}
 	//创建文件夹
 	if ($dir_name !== '') {

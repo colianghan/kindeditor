@@ -20,7 +20,7 @@ $root_url = $php_url . '../attached/';
 $ext_arr = array('gif', 'jpg', 'jpeg', 'png', 'bmp');
 
 //目录名
-$dir_name = $_GET['dir'] ? trim($_GET['dir']) : '';
+$dir_name = empty($_GET['dir']) ? '' : trim($_GET['dir']);
 if (!in_array($dir_name, array('', 'image', 'flash', 'media', 'file'))) {
 	echo "Invalid Directory name.";
 	exit;
