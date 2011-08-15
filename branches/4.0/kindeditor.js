@@ -3152,13 +3152,13 @@ _extend(KWidget, {
 		if (options.css) {
 			self.div.css(options.css);
 		}
-		if (options.html) {
-			self.div.html(options.html);
-		}
 		if (options.src) {
 			K(options.src).hide().after(self.div);
 		} else {
 			K(self.doc.body).append(self.div);
+		}
+		if (options.html) {
+			self.div.html(options.html);
 		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {
@@ -4422,15 +4422,15 @@ KEditor.prototype = {
 		if ((_IE && _V < 8) || _QUIRKS) {
 			height = _addUnit(_removeUnit(height) + 2);
 		}
-		var container = K(self.layout),
-			toolbar = K('.toolbar', container),
-			edit = K('.edit', container),
-			statusbar = K('.statusbar', container);
+		var container = K(self.layout);
 		if (fullscreenMode) {
 			K(document.body).append(container);
 		} else {
 			self.srcElement.before(container);
 		}
+		var toolbarDiv = K('.toolbar', container),
+			editDiv = K('.edit', container),
+			statusbar = K('.statusbar', container);
 		container.removeClass('container')
 			.addClass('ke-container ke-container-' + self.themeType).css('width', width);
 		if (fullscreenMode) {
@@ -4468,8 +4468,8 @@ KEditor.prototype = {
 				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '"></span></span>');
 			}
 		});
-		toolbar = _toolbar({
-			src : toolbar,
+		var toolbar = _toolbar({
+			src : toolbarDiv,
 			html : htmlList.join(''),
 			noDisableItems : self.noDisableItems,
 			click : function(e, name) {
@@ -4484,9 +4484,9 @@ KEditor.prototype = {
 				self.clickToolbar(name);
 			}
 		});
-		edit = _edit({
+		var edit = _edit({
 			height : _removeUnit(height) - toolbar.div.height(),
-			src : edit,
+			src : editDiv,
 			srcElement : self.srcElement,
 			designMode : self.designMode,
 			themesPath : self.themesPath,

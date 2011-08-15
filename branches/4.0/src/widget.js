@@ -113,13 +113,13 @@ _extend(KWidget, {
 		if (options.css) {
 			self.div.css(options.css);
 		}
-		if (options.html) {
-			self.div.html(options.html);
-		}
 		if (options.src) {
 			K(options.src).hide().after(self.div);
 		} else {
 			K(self.doc.body).append(self.div);
+		}
+		if (options.html) {
+			self.div.html(options.html);
 		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {
