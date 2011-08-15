@@ -28,7 +28,7 @@ KindEditor.lang({
 	outdent : '減少縮排',
 	subscript : '下標',
 	superscript : '上標',
-	title : '標題',
+	formatblock : '標題',
 	fontname : '字體',
 	fontsize : '文字大小',
 	forecolor : '文字顏色',

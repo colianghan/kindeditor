@@ -94,6 +94,12 @@
 		<exec executable="java">
 			<arg line="-jar lib/closure-compiler.jar --js=${filename}.js --js_output_file=${filename}-min.js"/>
 		</exec>
+		<replaceregexp file="${filename}-min.js"
+			match="^"
+			replace="/* KindEditor ${version} (${ymd}), Copyright (C) kindsoft.net, Licence: http://www.kindsoft.net/license.php */"
+			encoding="${charset}"
+			byline="false"
+		/>
 	</target>
 
 	<target name="check" depends="merge">
