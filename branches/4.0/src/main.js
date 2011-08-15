@@ -290,7 +290,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
+		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}
@@ -842,7 +842,7 @@ function _create(expr, options) {
 		return create(editor);
 	}
 	// create editor after load lang file
-	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
+	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
 		return create(editor);
 	});
 	return editor;

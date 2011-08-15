@@ -2,7 +2,6 @@
 /**/ var undefined;
 
 var _VERSION = '${VERSION}',
-	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -173,8 +172,8 @@ function _json(text) {
 var _round = Math.round;
 
 var K = {
+	DEBUG : false,
 	VERSION : _VERSION,
-	DEBUG : _DEBUG,
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,

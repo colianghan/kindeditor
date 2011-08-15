@@ -12,7 +12,6 @@
 		return;
 	}
 var _VERSION = '4.0 alpha (2011-08-15)',
-	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -162,8 +161,8 @@ function _json(text) {
 }
 var _round = Math.round;
 var K = {
+	DEBUG : false,
 	VERSION : _VERSION,
-	DEBUG : _DEBUG,
 	IE : _IE,
 	GECKO : _GECKO,
 	WEBKIT : _WEBKIT,
@@ -4346,7 +4345,7 @@ KEditor.prototype = {
 			}
 			return self;
 		}
-		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
+		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}
@@ -4868,7 +4867,7 @@ function _create(expr, options) {
 	if (_language[editor.langType]) {
 		return create(editor);
 	}
-	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(_DEBUG ? _TIME : _VERSION), function() {
+	_loadScript(editor.langPath + editor.langType + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
 		return create(editor);
 	});
 	return editor;
