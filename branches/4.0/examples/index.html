@@ -360,6 +360,8 @@ KindEditor.loadScript('../kindeditor.js', function() {
 			<select name="lang">
 				<option value="en">English</option>
 				<option value="zh_CN">简体中文</option>
+				<option value="zh_TW">繁體中文</option>
+			</select>
 			</select>
 			</p>
 			<textarea name="content" style="width:800px;height:400px;">
@@ -368,6 +370,7 @@ JavaScript代码:
 KindEditor.ready(function(K) {
 	// English: langType : 'en'
 	// 简体中文: langType : 'zh_CN'
+	// 繁體中文: langType : 'zh_TW'
 	K.create('textarea[name="content"]' : {
 		langType : 'en'
 	});

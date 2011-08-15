@@ -1,8 +1,8 @@
 /*******************************************************************************
 * KindEditor - WYSIWYG HTML Editor for Internet
-* Copyright (C) 2006-${THISYEAR} Longhao Luo
+* Copyright (C) 2006-${THISYEAR} kindsoft.net
 *
-* @author Longhao Luo <luolonghao@gmail.com>
+* @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
 * @version ${VERSION}

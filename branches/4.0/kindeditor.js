@@ -1,17 +1,17 @@
 /*******************************************************************************
 * KindEditor - WYSIWYG HTML Editor for Internet
-* Copyright (C) 2006-2011 Longhao Luo
+* Copyright (C) 2006-2011 kindsoft.net
 *
-* @author Longhao Luo <luolonghao@gmail.com>
+* @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-14)
+* @version 4.0 alpha (2011-08-15)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 alpha (2011-08-14)',
+var _VERSION = '4.0 alpha (2011-08-15)',
 	_DEBUG = true,
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,

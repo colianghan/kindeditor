@@ -1,3 +1,11 @@
+/*******************************************************************************
+* KindEditor - WYSIWYG HTML Editor for Internet
+* Copyright (C) 2006-2011 kindsoft.net
+*
+* @author Roddy <luolonghao@gmail.com>
+* @site http://www.kindsoft.net/
+* @licence http://www.kindsoft.net/license.php
+*******************************************************************************/
 
 // google code prettify: http://google-code-prettify.googlecode.com/
 // http://google-code-prettify.googlecode.com/
