@@ -30,11 +30,11 @@ protected void Page_Load(object sender, EventArgs e)
 					var self = this;
 					K.ctrl(document, 13, function() {
 						self.sync();
-						document.forms['example'].submit();
+						K('form[name=example]')[0].submit();
 					});
 					K.ctrl(self.edit.doc, 13, function() {
 						self.sync();
-						document.forms['example'].submit();
+						K('form[name=example]')[0].submit();
 					});
 				}
 			});
@@ -44,7 +44,7 @@ protected void Page_Load(object sender, EventArgs e)
 </head>
 <body>
     <asp:Label ID="Label1" runat="server" Text=""></asp:Label>
-    <form id="form1" runat="server">
+    <form id="example" runat="server">
         <textarea id="content1" cols="100" rows="8" style="width:700px;height:200px;visibility:hidden;" runat="server"></textarea>
         <br />
         <asp:Button ID="Button1" runat="server" Text="提交内容" /> (提交快捷键: Ctrl + Enter)

@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-16)
+* @version 4.0 beta (2011-08-16)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 alpha (2011-08-16)',
+var _VERSION = '4.0 beta (2011-08-16)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -3341,7 +3341,7 @@ _extend(KEdit, KWidget, {
 			bodyClass = options.bodyClass,
 			cssPath = options.cssPath,
 			cssData = options.cssData,
-			isDocumentDomain = location.host !== document.domain,
+			isDocumentDomain = location.host.replace(/:\d+/, '') !== document.domain,
 			srcScript = ('document.open();' +
 				(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
 				'document.close();'),
@@ -4476,6 +4476,7 @@ KEditor.prototype = {
 			html : htmlList.join(''),
 			noDisableItems : self.noDisableItems,
 			click : function(e, name) {
+				e.stop();
 				if (self.menu) {
 					var menuName = self.menu.name;
 					self.hideMenu();
@@ -4483,7 +4484,6 @@ KEditor.prototype = {
 						return;
 					}
 				}
-				e.stopPropagation();
 				self.clickToolbar(name);
 			}
 		});

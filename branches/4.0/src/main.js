@@ -421,6 +421,7 @@ KEditor.prototype = {
 			html : htmlList.join(''),
 			noDisableItems : self.noDisableItems,
 			click : function(e, name) {
+				e.stop();
 				if (self.menu) {
 					var menuName = self.menu.name;
 					self.hideMenu();
@@ -428,7 +429,6 @@ KEditor.prototype = {
 						return;
 					}
 				}
-				e.stopPropagation();
 				self.clickToolbar(name);
 			}
 		});

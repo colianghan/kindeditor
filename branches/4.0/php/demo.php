@@ -29,11 +29,11 @@
 					var self = this;
 					K.ctrl(document, 13, function() {
 						self.sync();
-						document.forms['example'].submit();
+						K('form[name=example]')[0].submit();
 					});
 					K.ctrl(self.edit.doc, 13, function() {
 						self.sync();
-						document.forms['example'].submit();
+						K('form[name=example]')[0].submit();
 					});
 				}
 			});

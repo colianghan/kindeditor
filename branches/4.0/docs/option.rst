@@ -211,11 +211,11 @@ true时美化HTML数据。
 * 数据类型: Boolean
 * 默认值: true
 
-.. index:: resizeMode
+.. index:: resizeType
 
-.. _resizeMode:
+.. _resizeType:
 
-resizeMode
+resizeType
 --------------------------------------------------------
 2或1或0，2时可以拖动改变宽度和高度，1时只能改变高度，0时不能拖动。
 

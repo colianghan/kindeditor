@@ -91,7 +91,7 @@ _extend(KEdit, KWidget, {
 			bodyClass = options.bodyClass,
 			cssPath = options.cssPath,
 			cssData = options.cssData,
-			isDocumentDomain = location.host !== document.domain,
+			isDocumentDomain = location.host.replace(/:\d+/, '') !== document.domain,
 			srcScript = ('document.open();' +
 				(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
 				'document.close();'),
