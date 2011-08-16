@@ -3408,17 +3408,10 @@ _extend(KEdit, KWidget, {
 				options.afterCreate.call(self);
 			}
 		}
-		self.iframe.bind('load', function() {
-			self.iframe.unbind('load');
-			if (_IE) {
-				ready();
-			} else {
-				setTimeout(ready, 0);
-			}
-		});
 		self.div.append(self.iframe);
 		self.div.append(self.textarea);
 		self.srcElement.hide();
+		ready();
 	},
 	setWidth : function(val) {
 		this.div.css('width', _addUnit(val));
@@ -4508,6 +4501,7 @@ KEditor.prototype = {
 				self.afterSetHtml();
 			},
 			afterCreate : function() {
+				self.edit = edit = this;
 				self.cmd = edit.cmd;
 				self._docMousedownFn = function(e) {
 					if (self.menu) {

@@ -454,6 +454,7 @@ KEditor.prototype = {
 				self.afterSetHtml();
 			},
 			afterCreate : function() {
+				self.edit = edit = this;
 				self.cmd = edit.cmd;
 				// hide menu when click document
 				self._docMousedownFn = function(e) {
