@@ -4349,6 +4349,9 @@ KEditor.prototype = {
 		var self = this;
 		if (_plugins[name]) {
 			if (self._calledPlugins[name]) {
+				if (fn) {
+					fn.call(self);
+				}
 				return self;
 			}
 			_plugins[name].call(self, KindEditor);
