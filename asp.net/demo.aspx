@@ -14,25 +14,33 @@ protected void Page_Load(object sender, EventArgs e)
 <head runat="server">
     <meta charset="utf-8" />
     <title>KindEditor ASP.NET</title>
-    <script type="text/javascript" charset="utf-8" src="../kindeditor.js"></script>
-    <script type="text/javascript">
-        KE.show({
-            id : 'content1',
-            imageUploadJson : '../../asp.net/upload_json.ashx',
-            fileManagerJson : '../../asp.net/file_manager_json.ashx',
-            allowFileManager : true,
-		    afterCreate : function(id) {
-			    KE.event.ctrl(document, 13, function() {
-				    KE.util.setData(id);
-				    document.forms['form1'].submit();
-			    });
-			    KE.event.ctrl(KE.g[id].iframeDoc, 13, function() {
-				    KE.util.setData(id);
-				    document.forms['form1'].submit();
-			    });
-		    }
-        });
-    </script>
+    <link rel="stylesheet" href="../themes/default/default.css" />
+	<link rel="stylesheet" href="../plugins/code/prettify.css" />
+	<script charset="utf-8" src="../kindeditor.js"></script>
+	<script charset="utf-8" src="../lang/zh_CN.js"></script>
+	<script charset="utf-8" src="../plugins/code/prettify.js"></script>
+	<script>
+		KindEditor.ready(function(K) {
+			var editor1 = K.create('#content1', {
+				cssPath : '../plugins/code/prettify.css',
+				uploadJson : '../asp.net/upload_json.ashx',
+				fileManagerJson : '../asp.net/file_manager_json.ashx',
+				allowFileManager : true,
+				afterCreate : function() {
+					var self = this;
+					K.ctrl(document, 13, function() {
+						self.sync();
+						document.forms['example'].submit();
+					});
+					K.ctrl(self.edit.doc, 13, function() {
+						self.sync();
+						document.forms['example'].submit();
+					});
+				}
+			});
+			prettyPrint();
+		});
+	</script>
 </head>
 <body>
     <asp:Label ID="Label1" runat="server" Text=""></asp:Label>
