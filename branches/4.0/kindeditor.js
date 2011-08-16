@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 alpha (2011-08-15)
+* @version 4.0 alpha (2011-08-16)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 alpha (2011-08-15)',
+var _VERSION = '4.0 alpha (2011-08-16)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -3195,7 +3195,8 @@ _extend(KWidget, {
 	autoPos : function(width, height) {
 		var self = this,
 			w = _removeUnit(width) || 0,
-			h = _removeUnit(height) || 0;
+			h = _removeUnit(height) || 0,
+			scrollPos = _getScrollPos();
 		if (self._alignEl) {
 			var knode = K(self._alignEl),
 				pos = knode.pos(),
@@ -3204,10 +3205,13 @@ _extend(KWidget, {
 			x = diffX < 0 ? pos.x : pos.x + diffX;
 			y = diffY < 0 ? pos.y : pos.y + diffY;
 		} else {
-			var docEl = _docElement(self.doc),
-				scrollPos = _getScrollPos();
+			var docEl = _docElement(self.doc);
 			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
 			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+		}
+		if (!(_IE && _V < 7 || _QUIRKS)) {
+			x -= scrollPos.x;
+			y -= scrollPos.y;
 		}
 		return self.pos(x, y);
 	},

@@ -362,6 +362,8 @@
 	border: 1px solid #CCCCCC;
 	background-color: #FFF;
 	overflow: hidden;
+	margin: 0;
+	padding: 0;
 }
 /* toolbar */
 .ke-toolbar {

@@ -157,7 +157,8 @@ _extend(KWidget, {
 	autoPos : function(width, height) {
 		var self = this,
 			w = _removeUnit(width) || 0,
-			h = _removeUnit(height) || 0;
+			h = _removeUnit(height) || 0,
+			scrollPos = _getScrollPos();
 		if (self._alignEl) {
 			var knode = K(self._alignEl),
 				pos = knode.pos(),
@@ -166,10 +167,14 @@ _extend(KWidget, {
 			x = diffX < 0 ? pos.x : pos.x + diffX;
 			y = diffY < 0 ? pos.y : pos.y + diffY;
 		} else {
-			var docEl = _docElement(self.doc),
-				scrollPos = _getScrollPos();
+			var docEl = _docElement(self.doc);
 			x = _round(scrollPos.x + (docEl.clientWidth - w) / 2);
 			y = _round(scrollPos.y + (docEl.clientHeight - h) / 2);
+		}
+		// 用position:fixed后不需要添加scroll坐标
+		if (!(_IE && _V < 7 || _QUIRKS)) {
+			x -= scrollPos.x;
+			y -= scrollPos.y;
 		}
 		return self.pos(x, y);
 	},
