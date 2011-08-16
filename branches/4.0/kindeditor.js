@@ -4333,6 +4333,7 @@ function KEditor(options) {
 	self._contextmenus = [];
 	self._undoStack = [];
 	self._redoStack = [];
+	self._calledPlugins = {};
 }
 KEditor.prototype = {
 	lang : function(mixed) {
@@ -4341,10 +4342,14 @@ KEditor.prototype = {
 	loadPlugin : function(name, fn) {
 		var self = this;
 		if (_plugins[name]) {
+			if (self._calledPlugins[name]) {
+				return self;
+			}
 			_plugins[name].call(self, KindEditor);
 			if (fn) {
 				fn.call(self);
 			}
+			self._calledPlugins[name] = true;
 			return self;
 		}
 		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
