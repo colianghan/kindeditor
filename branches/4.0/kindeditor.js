@@ -4440,7 +4440,7 @@ KEditor.prototype = {
 			self._scrollPos = _getScrollPos();
 			window.scrollTo(0, 0);
 			K(document.body).css({
-				'height' : 0,
+				'height' : '1px',
 				'overflow' : 'hidden'
 			});
 			K(document.body.parentNode).css('overflow', 'hidden');

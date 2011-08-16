@@ -386,10 +386,11 @@ KEditor.prototype = {
 				'z-index' : 811211
 			});
 			// 为了防止拖动偏移，把文档高度设置成0
+			// bugfix: [WEBKIT] 高度为0时在dialog里无法粘贴文本
 			self._scrollPos = _getScrollPos();
 			window.scrollTo(0, 0);
 			K(document.body).css({
-				'height' : 0,
+				'height' : '1px',
 				'overflow' : 'hidden'
 			});
 			K(document.body.parentNode).css('overflow', 'hidden');
