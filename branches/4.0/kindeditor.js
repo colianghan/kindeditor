@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-16)
+* @version 4.0 beta (2011-08-17)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-16)',
+var _VERSION = '4.0 beta (2011-08-17)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -3022,8 +3022,14 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
 	KCmd.prototype[name] = function(val) {
 		var self = this;
+		if (_IE) {
+			rng = self.range.get(true);
+			try {
+				rng.select();
+			} catch(e) {}
+		}
 		_nativeCommand(self.doc, name, val);
-		if (!_IE || _inArray(name, 'selectall'.split(',')) >= 0) {
+		if (!_IE || _inArray(name, 'formatblock,selectall,insertorderedlist,insertunorderedlist'.split(',')) >= 0) {
 			self.selection();
 		}
 		return self;

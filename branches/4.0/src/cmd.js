@@ -741,9 +741,16 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 	'insertunorderedlist,indent,outdent,subscript,superscript').split(','), function(i, name) {
 	KCmd.prototype[name] = function(val) {
 		var self = this;
+		if (_IE) {
+			rng = self.range.get(true);
+			// TODO: IE9有时候报错
+			try {
+				rng.select();
+			} catch(e) {}
+		}
 		_nativeCommand(self.doc, name, val);
 		// 在webkit和firefox上需要重新选取range，否则有时候会报错
-		if (!_IE || _inArray(name, 'selectall'.split(',')) >= 0) {
+		if (!_IE || _inArray(name, 'formatblock,selectall,insertorderedlist,insertunorderedlist'.split(',')) >= 0) {
 			self.selection();
 		}
 		return self;
