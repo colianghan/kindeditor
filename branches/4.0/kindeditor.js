@@ -836,7 +836,11 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 		}
 		return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 	});
+	html = html.replace(/(<(?:pre|pre\s[^>]*)>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3) {
+		return $1 + $2.replace(/\n/g, '<span id="__kindeditor_pre_newline__" style="display:none;">\n') + $3;
+	});
 	html = html.replace(/\n\s*\n/g, '\n');
+	html = html.replace(/<span id="__kindeditor_pre_newline__" style="display:none;">/g, '');
 	return _trim(html);
 }
 function _mediaType(src) {

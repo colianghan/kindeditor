@@ -283,7 +283,13 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 		}
 		return startNewline + '<' + startSlash + tagName + attr + endSlash + '>' + endNewline;
 	});
+	// 将pre里的\n转换成 临时标签 + \n，防止被替换
+	html = html.replace(/(<(?:pre|pre\s[^>]*)>)([\s\S]*?)(<\/pre>)/ig, function($0, $1, $2, $3) {
+		return $1 + $2.replace(/\n/g, '<span id="__kindeditor_pre_newline__" style="display:none;">\n') + $3;
+	});
 	html = html.replace(/\n\s*\n/g, '\n');
+	// 删除临时标签
+	html = html.replace(/<span id="__kindeditor_pre_newline__" style="display:none;">/g, '');
 	return _trim(html);
 }
 // 根据URL判断 media type
