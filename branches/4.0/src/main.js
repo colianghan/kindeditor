@@ -1180,7 +1180,7 @@ _plugin('core', function(K) {
 			}
 			var cmd = self.cmd.selection(),
 				bookmark = cmd.range.createBookmark(),
-				div = K('<div class="' + cls + '">&nbsp;</div>', doc).css({
+				div = K('<div class="' + cls + '"></div>', doc).css({
 					position : 'absolute',
 					width : '1px',
 					height : '1px',
@@ -1205,6 +1205,9 @@ _plugin('core', function(K) {
 				}
 				var html = div.html();
 				div.remove();
+				if (html === '') {
+					return;
+				}
 				// paste HTML
 				if (self.pasteType === 2) {
 					html = self.beforeSetHtml(html);
