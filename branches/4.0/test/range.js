@@ -773,3 +773,17 @@ test('range.moveToBookmark', function() {
 	same(range.html(), '<strong>5678</strong>');
 	div.html('');
 });
+
+test('range.get', function() {
+	var div = K('<div></div>');
+	K(document.body.firstChild).before(div);
+	//1
+	div.html('0123456789<table><tr><td>123</td></tr></table>');
+	range = K.range(document);
+	range.setStart(div.first()[0], 7);
+	range.setEnd(div.first()[0], 8); // "7"
+	var nativeRange = range.get();
+	newRange = K.range(nativeRange);
+	equals(range.html(), newRange.html());
+	div.html('');
+});

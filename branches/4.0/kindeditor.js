@@ -1801,6 +1801,7 @@ function _getStartEnd(rng, isStart) {
 				dummy = doc.createElement('span');
 				knode.after(dummy);
 				node = dummy;
+				startPos += knode.text().replace(/\r\n|\n|\r/g, '').length;
 			}
 			_moveToElementText(nodeRange, node);
 			testRange.setEndPoint('StartToEnd', nodeRange);

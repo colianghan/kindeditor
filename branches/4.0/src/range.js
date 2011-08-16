@@ -179,11 +179,13 @@ function _getStartEnd(rng, isStart) {
 		}
 		if (node.nodeType == 1) {
 			var nodeRange = rng.duplicate(), dummy, knode = K(node);
-			//<table></table><img>ab[cd]ef
+			// <table></table><img>ab[cd]ef
 			if (knode.isControl()) {
 				dummy = doc.createElement('span');
 				knode.after(dummy);
 				node = dummy;
+				// 0123456[7]89<table><tr><td>123</td></tr></table>
+				startPos += knode.text().replace(/\r\n|\n|\r/g, '').length;
 			}
 			_moveToElementText(nodeRange, node);
 			testRange.setEndPoint('StartToEnd', nodeRange);
