@@ -367,7 +367,7 @@ KEditor.prototype = {
 		if ((_IE && _V < 8) || _QUIRKS) {
 			height = _addUnit(_removeUnit(height) + 2);
 		}
-		var container = K(self.layout);
+		var container = self.container = K(self.layout);
 		if (fullscreenMode) {
 			K(document.body).append(container);
 		} else {
@@ -375,7 +375,7 @@ KEditor.prototype = {
 		}
 		var toolbarDiv = K('.toolbar', container),
 			editDiv = K('.edit', container),
-			statusbar = K('.statusbar', container);
+			statusbar = self.statusbar = K('.statusbar', container);
 		container.removeClass('container')
 			.addClass('ke-container ke-container-' + self.themeType).css('width', width);
 		if (fullscreenMode) {
@@ -417,7 +417,7 @@ KEditor.prototype = {
 				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '"></span></span>');
 			}
 		});
-		var toolbar = _toolbar({
+		var toolbar = self.toolbar = _toolbar({
 			src : toolbarDiv,
 			html : htmlList.join(''),
 			noDisableItems : self.noDisableItems,
@@ -434,7 +434,7 @@ KEditor.prototype = {
 			}
 		});
 		// create edit
-		var edit = _edit({
+		var edit = self.edit = _edit({
 			height : _removeUnit(height) - toolbar.div.height(),
 			src : editDiv,
 			srcElement : self.srcElement,
@@ -501,11 +501,7 @@ KEditor.prototype = {
 		statusbar.removeClass('statusbar').addClass('ke-statusbar')
 			.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
 			.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-		// set properties
-		self.container = container;
-		self.toolbar = toolbar;
-		self.edit = edit;
-		self.statusbar = statusbar;
+
 		self.menu = self.contextmenu = null;
 		self.dialogs = [];
 		// remove resize event
@@ -907,8 +903,8 @@ _plugin('core', function(K) {
 		self.designMode = self.edit.designMode;
 	});
 	self.afterCreate(function() {
-		if (!this.designMode) {
-			this.toolbar.disableAll(true).select('source');
+		if (!self.designMode) {
+			self.toolbar.disableAll(true).select('source');
 		}
 	});
 	// fullscreen
@@ -926,6 +922,10 @@ _plugin('core', function(K) {
 			}
 		});
 		if (loaded) {
+			// bugfix: 在IE上在代码模式下切换全屏出现奇怪现象
+			if (_IE && !self.designMode) {
+				return;
+			}
 			self.focus();
 		}
 		if (!loaded) {
