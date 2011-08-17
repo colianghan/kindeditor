@@ -2549,7 +2549,6 @@ _extend(KCmd, {
 				var dummy = K('<span>&nbsp;</span>', doc);
 				range.insertNode(dummy[0]);
 				rng = doc.body.createTextRange();
-				console.log(rng, dummy[0]);
 				rng.moveToElementText(dummy[0]);
 				rng.collapse(false);
 				rng.select();
