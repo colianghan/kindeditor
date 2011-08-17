@@ -3419,10 +3419,20 @@ _extend(KEdit, KWidget, {
 				options.afterCreate.call(self);
 			}
 		}
+		if (isDocumentDomain) {
+			self.iframe.bind('load', function(e) {
+				self.iframe.unbind('load');
+				if (_IE) {
+					ready();
+				} else {
+					setTimeout(ready, 0);
+				}
+			});
+		}
 		self.div.append(self.iframe);
 		self.div.append(self.textarea);
 		self.srcElement.hide();
-		ready();
+		!isDocumentDomain && ready();
 	},
 	setWidth : function(val) {
 		this.div.css('width', _addUnit(val));

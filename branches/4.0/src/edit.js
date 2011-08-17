@@ -96,7 +96,6 @@ _extend(KEdit, KWidget, {
 				(isDocumentDomain ? 'document.domain="' + document.domain + '";' : '') +
 				'document.close();'),
 			iframeSrc = _IE ? ' src="javascript:void(function(){' + encodeURIComponent(srcScript) + '}())"' : '';
-
 		self.iframe = K('<iframe class="ke-edit-iframe" hidefocus="true" frameborder="0"' + iframeSrc + '></iframe>').css('width', '100%');
 		self.textarea = K('<textarea class="ke-edit-textarea" hidefocus="true"></textarea>').css('width', '100%');
 
@@ -163,18 +162,20 @@ _extend(KEdit, KWidget, {
 				options.afterCreate.call(self);
 			}
 		}
-		//self.iframe.bind('load', function(e) {
-		//	self.iframe.unbind('load');
-		//	if (_IE) {
-		//		ready();
-		//	} else {
-		//		setTimeout(ready, 0);
-		//	}
-		//});
+		if (isDocumentDomain) {
+			self.iframe.bind('load', function(e) {
+				self.iframe.unbind('load');
+				if (_IE) {
+					ready();
+				} else {
+					setTimeout(ready, 0);
+				}
+			});
+		}
 		self.div.append(self.iframe);
 		self.div.append(self.textarea);
 		self.srcElement.hide();
-		ready();
+		!isDocumentDomain && ready();
 	},
 	setWidth : function(val) {
 		this.div.css('width', _addUnit(val));
