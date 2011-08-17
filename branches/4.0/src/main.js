@@ -276,6 +276,7 @@ function KEditor(options) {
 	self._undoStack = [];
 	self._redoStack = [];
 	self._calledPlugins = {};
+	self._firstAddBookmark = true;
 }
 
 KEditor.prototype = {
@@ -653,12 +654,16 @@ KEditor.prototype = {
 	},
 	exec : function(key) {
 		key = key.toLowerCase();
-		var self = this, cmd = self.cmd;
+		var self = this, cmd = self.cmd,
+			changeFlag = _inArray(key, 'selectall,copy,paste,print'.split(',')) < 0;
+		if (changeFlag) {
+			self.addBookmark(false);
+		}
 		cmd[key].apply(cmd, _toArray(arguments, 1));
-		// 下面命令不改变HTML内容，所以不需要改变工具栏状态，也不需要保存bookmark
-		if (_inArray(key, 'selectall,copy,paste,print'.split(',')) < 0) {
+		// 不需要改变工具栏状态，不需要保存bookmark
+		if (changeFlag) {
 			self.updateState();
-			self.addBookmark();
+			self.addBookmark(false);
 			if (self.options.afterChange) {
 				self.options.afterChange.call(self);
 			}
@@ -694,9 +699,17 @@ KEditor.prototype = {
 		this.isCreated ? this.edit.blur() : this.srcElement[0].blur();
 		return this;
 	},
-	addBookmark : function() {
-		var self = this, edit = self.edit, bookmark;
-		if (edit.designMode) {
+	addBookmark : function(checkSize) {
+		checkSize = _undef(checkSize, true);
+		var self = this, edit = self.edit, html = edit.html(), bookmark;
+		if (checkSize && self._undoStack.length > 0) {
+			var prev = self._undoStack[self._undoStack.length - 1];
+			if (Math.abs(html.length -  _removeBookmarkTag(prev.html).length) < self.minChangeSize) {
+				return self;
+			}
+		}
+		// 第一次执行addBookmark时不执行range.createBookmark
+		if (edit.designMode && !self._firstAddBookmark) {
 			var range = self.cmd.range;
 			bookmark = range.createBookmark(true);
 			bookmark.html = edit.html();
@@ -706,12 +719,7 @@ KEditor.prototype = {
 				html : edit.html()
 			};
 		}
-		if (self._undoStack.length > 0) {
-			var prev = self._undoStack[self._undoStack.length - 1];
-			if (Math.abs(bookmark.html.length -  prev.html.length) < self.minChangeSize) {
-				return self;
-			}
-		}
+		self._firstAddBookmark = false;
 		_addBookmarkToStack(self._undoStack, bookmark);
 		return self;
 	},
