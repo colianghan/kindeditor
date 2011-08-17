@@ -490,11 +490,16 @@ KindEditor.plugin('table', function(K) {
 			var table = self.plugin.getSelectedTable()[0],
 				row = self.plugin.getSelectedRow()[0],
 				cell = self.plugin.getSelectedCell()[0],
+				newRow;
+			if (offset === 1) {
 				newRow = table.insertRow(row.rowIndex + (cell.rowSpan - 1) + offset);
+			} else {
+				newRow = table.insertRow(row.rowIndex);
+			}
 			for (var i = 0, len = row.cells.length; i < len; i++) {
 				var newCell = newRow.insertCell(i);
 				// copy colspan
-				if (row.cells[i].colSpan > 1) {
+				if (offset === 1 && row.cells[i].colSpan > 1) {
 					newCell.colSpan = row.cells[i].colSpan;
 				}
 				newCell.innerHTML = K.IE ? '' : '<br />';
