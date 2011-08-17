@@ -534,8 +534,8 @@ KindEditor.plugin('table', function(K) {
 			if (cell.colSpan !== nextCell.colSpan) {
 				return;
 			}
+			cell.rowSpan += nextCell.rowSpan;
 			nextRow.deleteCell(cellIndex);
-			cell.rowSpan += 1;
 			self.cmd.range.selectNodeContents(cell).collapse(true);
 			self.cmd.select();
 			self.addBookmark();
