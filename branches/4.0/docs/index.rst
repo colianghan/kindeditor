@@ -5,6 +5,7 @@ KindEditor 4.x 文档
 	:maxdepth: 1
 
 	usage
+	upgrade
 	option
 	theme
 	plugin

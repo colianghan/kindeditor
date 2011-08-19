@@ -68,7 +68,7 @@ KindEditor.plugin('image', function(K) {
 					name : self.lang('yes'),
 					click : function(e) {
 						// insert local image
-						if (tabs.selectedIndex === 1) {
+						if (tabs && tabs.selectedIndex === 1) {
 							uploadbutton.submit();
 							return;
 						}

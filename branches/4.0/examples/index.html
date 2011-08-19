@@ -314,7 +314,7 @@ KindEditor.ready(function(K) {
 </p>
 <pre class="prettyprint">
 KindEditor.ready(function(K) {
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		resizeType : 1,
 		allowPreviewEmoticons : false,
 		allowImageUpload : false,
@@ -371,7 +371,7 @@ KindEditor.ready(function(K) {
 	// English: langType : 'en'
 	// 简体中文: langType : 'zh_CN'
 	// 繁體中文: langType : 'zh_TW'
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		langType : 'en'
 	});
 });
@@ -388,7 +388,7 @@ KindEditor.ready(function(K) {
 JavaScript代码:
 <pre class="prettyprint">
 KindEditor.ready(function(K) {
-	var editor = K.create('textarea[name="content"]' : {
+	var editor = K.create('textarea[name="content"]', {
 		readonlyMode : true
 	});
 	// 设置成只读状态
@@ -425,7 +425,7 @@ JavaScript代码:
 KindEditor.ready(function(K) {
 	// P换行: newlineTag : 'p'
 	// BR换行: newlineTag : 'br'
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		newlineTag : 'br'
 	});
 });
@@ -442,7 +442,7 @@ KindEditor.ready(function(K) {
 JavaScript代码:
 <pre class="prettyprint">
 KindEditor.ready(function(K) {
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		afterChange : function() {
 			K('#tab6 .word_count1').html(this.count());
 			K('#tab6 .word_count2').html(this.count('text'));
@@ -465,7 +465,7 @@ KindEditor.ready(function(K) {
 JavaScript代码:
 <pre class="prettyprint">
 KindEditor.ready(function(K) {
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		filterMode : true
 	});
 });
@@ -501,7 +501,7 @@ KindEditor.ready(function(K) {
 	// 相对URL: urlType : 'relative'
 	// 不带域名的绝对URL: urlType : 'absolute'
 	// 带域名的绝对URL: urlType : 'domain'
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		urlType : ''
 	});
 });
@@ -526,7 +526,7 @@ JavaScript代码:
 KindEditor.ready(function(K) {
 	// 简单风格: themeType : 'simple'
 	// 默认风格: themeType : 'default'
-	K.create('textarea[name="content"]' : {
+	K.create('textarea[name="content"]', {
 		themeType : 'simple'
 	});
 });
