@@ -76,13 +76,12 @@ div.related ul {
 /* -- body styles ----------------------------------------------------------- */
 
 a {
-	color: #1C78AE;
-	text-decoration: underline;
+	color: #1870a9;
+	text-decoration: none;
 }
 
 a:hover {
-	color: #6D4100;
-	text-decoration: underline;
+	color: #BC2A4D;
 }
 
 div.body {

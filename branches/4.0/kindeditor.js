@@ -4538,8 +4538,8 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			beforeGetHtml : function(html) {
-				html = self.beforeGetHtml(html);
-				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
+				html = _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
+				return self.beforeGetHtml(html);
 			},
 			beforeSetHtml : function(html) {
 				html = self.beforeSetHtml(html);
@@ -5255,7 +5255,7 @@ _plugin('core', function(K) {
 		})
 		.replace(/<img[^>]*class="?ke-anchor"?[^>]*>/ig, function(full) {
 			var imgAttrs = _getAttrList(full);
-			return '<a name="' + unescape(imgAttrs['data-ke-name']) + '">';
+			return '<a name="' + unescape(imgAttrs['data-ke-name']) + '"></a>';
 		})
 		.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
 			return '<script' + unescape(attr) + '>' + code + '</script>';
