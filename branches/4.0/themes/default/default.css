@@ -356,6 +356,11 @@
 	width: 16px;
 	height: 16px;
 }
+.ke-icon-anchor {
+	background-position: 0px -1168px;
+	width: 16px;
+	height: 16px;
+}
 /* container */
 .ke-container {
 	display: block;
@@ -619,7 +624,6 @@
 .ke-dialog-body label {
 	margin-right: 10px;
 	cursor: pointer;
-	font-weight: bold;
 	display: -moz-inline-stack;
 	display: inline-block;
 	vertical-align: middle;

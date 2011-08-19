@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-17)
+* @version 4.0 beta (2011-08-19)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-17)',
+var _VERSION = '4.0 beta (2011-08-19)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -237,7 +237,7 @@ var _options = {
 		'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
 		'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
 		'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image',
-		'flash', 'media', 'insertfile', 'table', 'hr', 'emoticons', 'map', 'code', 'pagebreak', 'link', 'unlink', '|', 'about'
+		'flash', 'media', 'insertfile', 'table', 'hr', 'emoticons', 'map', 'code', 'pagebreak', 'anchor', 'link', 'unlink', '|', 'about'
 	],
 	noDisableItems : ['source', 'fullscreen'],
 	colorTable : [
@@ -3280,30 +3280,35 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'body, p, div {word-wrap: break-word;}',
 		'p {margin:5px 0;}',
 		'table {border-collapse:collapse;}',
-		'.ke-zeroborder td {border:1px dotted #AAAAAA;}',
-		'.ke-flash {',
-		'	border:1px solid #AAAAAA;',
+		'table.ke-zeroborder td {border:1px dotted #AAA;}',
+		'img.ke-flash {',
+		'	border:1px solid #AAA;',
 		'	background-image:url(' + themesPath + 'common/flash.gif);',
 		'	background-position:center center;',
 		'	background-repeat:no-repeat;',
 		'	width:100px;',
 		'	height:100px;',
 		'}',
-		'.ke-rm {',
-		'	border:1px solid #AAAAAA;',
+		'img.ke-rm {',
+		'	border:1px solid #AAA;',
 		'	background-image:url(' + themesPath + 'common/rm.gif);',
 		'	background-position:center center;',
 		'	background-repeat:no-repeat;',
 		'	width:100px;',
 		'	height:100px;',
 		'}',
-		'.ke-media {',
-		'	border:1px solid #AAAAAA;',
+		'img.ke-media {',
+		'	border:1px solid #AAA;',
 		'	background-image:url(' + themesPath + 'common/media.gif);',
 		'	background-position:center center;',
 		'	background-repeat:no-repeat;',
 		'	width:100px;',
 		'	height:100px;',
+		'}',
+		'img.ke-anchor {',
+		'	border:1px dashed #666;',
+		'	width:16px;',
+		'	height:16px;',
 		'}',
 		'.ke-script {',
 		'	display:none;',
@@ -3312,7 +3317,7 @@ function _getInitHtml(themesPath, bodyClass, cssPath, cssData) {
 		'	height:0;',
 		'}',
 		'.ke-pagebreak {',
-		'	border:1px dotted #AAAAAA;',
+		'	border:1px dotted #AAA;',
 		'	font-size:0;',
 		'	height:2px;',
 		'}',
@@ -4140,6 +4145,19 @@ function _lang(mixed, langType) {
 		}
 		_language[langType][obj.ns][obj.key] = val;
 	});
+}
+function _getImageFromRange(range, fn) {
+	var sc = range.startContainer, so = range.startOffset;
+	if (!_WEBKIT && !range.isControl()) {
+		return;
+	}
+	var img = K(sc.childNodes[so]);
+	if (!img || img.name != 'img') {
+		return;
+	}
+	if (fn(img)) {
+		return img;
+	}
 }
 function _bindContextmenuEvent() {
 	var self = this, doc = self.edit.doc;
@@ -5091,45 +5109,26 @@ _plugin('core', function(K) {
 		return self.cmd.commonAncestor('a');
 	};
 	self.plugin.getSelectedImage = function() {
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!_WEBKIT && !range.isControl()) {
-			return null;
-		}
-		var img = K(sc.childNodes[so]);
-		if (!img || img.name !== 'img' || /^ke-\w+$/i.test(img[0].className)) {
-			return null;
-		}
-		return img;
+		return _getImageFromRange(self.edit.cmd.range, function(img) {
+			return !/^ke-\w+$/i.test(img[0].className);
+		});
 	};
 	self.plugin.getSelectedFlash = function() {
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!_WEBKIT && !range.isControl()) {
-			return null;
-		}
-		var img = K(sc.childNodes[so]);
-		if (!img || img.name !== 'img' || img[0].className !== 'ke-flash') {
-			return null;
-		}
-		return img;
+		return _getImageFromRange(self.edit.cmd.range, function(img) {
+			return img[0].className == 'ke-flash';
+		});
 	};
 	self.plugin.getSelectedMedia = function() {
-		var range = self.edit.cmd.range,
-			sc = range.startContainer, so = range.startOffset;
-		if (!_WEBKIT && !range.isControl()) {
-			return null;
-		}
-		var img = K(sc.childNodes[so]);
-		if (!img || img.name !== 'img' || !/^ke-\w+$/.test(img[0].className)) {
-			return null;
-		}
-		if (img[0].className == 'ke-flash') {
-			return null;
-		}
-		return img;
+		return _getImageFromRange(self.edit.cmd.range, function(img) {
+			return img[0].className == 'ke-flash' || img[0].className == 'ke-rm';
+		});
 	};
-	_each('link,image,flash,media'.split(','), function(i, name) {
+	self.plugin.getSelectedAnchor = function() {
+		return _getImageFromRange(self.edit.cmd.range, function(img) {
+			return img[0].className == 'ke-anchor';
+		});
+	};
+	_each('link,image,flash,media,anchor'.split(','), function(i, name) {
 		var uName = name.charAt(0).toUpperCase() + name.substr(1);
 		_each('edit,delete'.split(','), function(j, val) {
 			self.addContextmenu({
@@ -5146,22 +5145,6 @@ _plugin('core', function(K) {
 			});
 		});
 		self.addContextmenu({ title : '-' });
-	});
-	self.beforeGetHtml(function(html) {
-		return html.replace(/<img[^>]*class="?ke-\w+"?[^>]*>/ig, function(full) {
-			var imgAttrs = _getAttrList(full),
-				attrs = _mediaAttrs(imgAttrs['data-ke-tag']);
-			return _mediaEmbed(attrs);
-		});
-	});
-	self.beforeSetHtml(function(html) {
-		return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>(?:<\/embed>)?/ig, function(full) {
-			var attrs = _getAttrList(full);
-			attrs.src = _undef(attrs.src, '');
-			attrs.width = _undef(attrs.width, 0);
-			attrs.height = _undef(attrs.height, 0);
-			return _mediaImg(self.themesPath + 'common/blank.gif', attrs);
-		});
 	});
 	self.plugin.getSelectedTable = function() {
 		return self.cmd.commonAncestor('table');
@@ -5265,7 +5248,16 @@ _plugin('core', function(K) {
 		});
 	});
 	self.beforeGetHtml(function(html) {
-		return html.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
+		return html.replace(/<img[^>]*class="?ke-(flash|rm|media)"?[^>]*>/ig, function(full) {
+			var imgAttrs = _getAttrList(full),
+				attrs = _mediaAttrs(imgAttrs['data-ke-tag']);
+			return _mediaEmbed(attrs);
+		})
+		.replace(/<img[^>]*class="?ke-anchor"?[^>]*>/ig, function(full) {
+			var imgAttrs = _getAttrList(full);
+			return '<a name="' + unescape(imgAttrs['data-ke-name']) + '">';
+		})
+		.replace(/<div\s+[^>]*data-ke-script-attr="([^"]*)"[^>]*>([\s\S]*?)<\/div>/ig, function(full, attr, code) {
 			return '<script' + unescape(attr) + '>' + code + '</script>';
 		})
 		.replace(/(<[^>]*)data-ke-src="([^"]*)"([^>]*>)/ig, function(full, start, src, end) {
@@ -5278,7 +5270,18 @@ _plugin('core', function(K) {
 		});
 	});
 	self.beforeSetHtml(function(html) {
-		return html.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
+		return html.replace(/<embed[^>]*type="([^"]+)"[^>]*>(?:<\/embed>)?/ig, function(full) {
+			var attrs = _getAttrList(full);
+			attrs.src = _undef(attrs.src, '');
+			attrs.width = _undef(attrs.width, 0);
+			attrs.height = _undef(attrs.height, 0);
+			return _mediaImg(self.themesPath + 'common/blank.gif', attrs);
+		})
+		.replace(/<a[^>]*name="([^"]+)"[^>]*>(?:<\/a>)?/ig, function(full) {
+			var attrs = _getAttrList(full);
+			return '<img class="ke-anchor" src="' + self.themesPath + 'common/anchor.gif" data-ke-name="' + escape(attrs.name) + '" />';
+		})
+		.replace(/<script([^>]*)>([\s\S]*?)<\/script>/ig, function(full, attr, code) {
 			return '<div class="ke-script" data-ke-script-attr="' + escape(attr) + '">' + code + '</div>';
 		})
 		.replace(/(<[^>]*)(href|src)="([^"]*)"([^>]*>)/ig, function(full, start, key, src, end) {
