@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-19)
+* @version 4.0 beta (2011-08-21)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-19)',
+var _VERSION = '4.0 beta (2011-08-21)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -5228,8 +5228,23 @@ _plugin('core', function(K) {
 					return;
 				}
 				if (self.pasteType === 2) {
-					html = self.beforeSetHtml(html);
-					html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
+					if (/schemas-microsoft-com|worddocument/i.test(html)) {
+						html = html.replace(/<meta[\s\S]*?>/ig, '')
+							.replace(/<![\s\S]*?>/ig, '')
+							.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')
+							.replace(/<script[^>]*>[\s\S]*?<\/script>/ig, '')
+							.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
+							.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
+							.replace(/<xml>[\s\S]*?<\/xml>/ig, '');
+						html = html.replace(/(<table[^>]*\s+)border="0"([^>]*>)/ig, function(full, start, end) {
+							return start + 'border="1" bordercolor="#000000"' + end;
+						});
+						html = self.beforeSetHtml(html);
+						html = _formatHtml(html, _options.htmlTags);
+					} else {
+						html = self.beforeSetHtml(html);
+						html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
+					}
 				}
 				if (self.pasteType === 1) {
 					html = html.replace(/<br[^>]*>/ig, '\n');
@@ -5294,15 +5309,11 @@ _plugin('core', function(K) {
 		.replace(/(<[^>]+\s)(on\w+="[^"]*"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
 		})
-		.replace(/<table([^>]*)>/ig, function(full) {
+		.replace(/<table[^>]*\s+border="0"[^>]*>/ig, function(full) {
 			if (full.indexOf('ke-zeroborder') >= 0) {
 				return full;
 			}
-			var attrs = _getAttrList(full);
-			if (attrs.border === undefined || attrs.border === '' || attrs.border === '0') {
-				return _addClassToTag(full, 'ke-zeroborder');
-			}
-			return full;
+			return _addClassToTag(full, 'ke-zeroborder');
 		});
 	});
 });

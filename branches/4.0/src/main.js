@@ -1210,8 +1210,24 @@ _plugin('core', function(K) {
 				}
 				// paste HTML
 				if (self.pasteType === 2) {
-					html = self.beforeSetHtml(html);
-					html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
+					// paste from ms word
+					if (/schemas-microsoft-com|worddocument/i.test(html)) {
+						html = html.replace(/<meta[\s\S]*?>/ig, '')
+							.replace(/<![\s\S]*?>/ig, '')
+							.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')
+							.replace(/<script[^>]*>[\s\S]*?<\/script>/ig, '')
+							.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
+							.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
+							.replace(/<xml>[\s\S]*?<\/xml>/ig, '');
+						html = html.replace(/(<table[^>]*\s+)border="0"([^>]*>)/ig, function(full, start, end) {
+							return start + 'border="1" bordercolor="#000000"' + end;
+						});
+						html = self.beforeSetHtml(html);
+						html = _formatHtml(html, _options.htmlTags);
+					} else {
+						html = self.beforeSetHtml(html);
+						html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
+					}
 				}
 				// paste text
 				if (self.pasteType === 1) {
@@ -1279,15 +1295,11 @@ _plugin('core', function(K) {
 		.replace(/(<[^>]+\s)(on\w+="[^"]*"[^>]*>)/ig, function(full, start, end) {
 			return start + 'data-ke-' + end;
 		})
-		.replace(/<table([^>]*)>/ig, function(full) {
+		.replace(/<table[^>]*\s+border="0"[^>]*>/ig, function(full) {
 			if (full.indexOf('ke-zeroborder') >= 0) {
 				return full;
 			}
-			var attrs = _getAttrList(full);
-			if (attrs.border === undefined || attrs.border === '' || attrs.border === '0') {
-				return _addClassToTag(full, 'ke-zeroborder');
-			}
-			return full;
+			return _addClassToTag(full, 'ke-zeroborder');
 		});
 	});
 });
