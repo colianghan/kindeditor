@@ -5228,7 +5228,7 @@ _plugin('core', function(K) {
 					return;
 				}
 				if (self.pasteType === 2) {
-					if (/schemas-microsoft-com|worddocument/i.test(html)) {
+					if (/schemas-microsoft-com|worddocument|mso-\w+/i.test(html)) {
 						html = html.replace(/<meta[\s\S]*?>/ig, '')
 							.replace(/<![\s\S]*?>/ig, '')
 							.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')

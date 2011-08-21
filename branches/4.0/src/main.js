@@ -1211,7 +1211,7 @@ _plugin('core', function(K) {
 				// paste HTML
 				if (self.pasteType === 2) {
 					// paste from ms word
-					if (/schemas-microsoft-com|worddocument/i.test(html)) {
+					if (/schemas-microsoft-com|worddocument|mso-\w+/i.test(html)) {
 						html = html.replace(/<meta[\s\S]*?>/ig, '')
 							.replace(/<![\s\S]*?>/ig, '')
 							.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')
