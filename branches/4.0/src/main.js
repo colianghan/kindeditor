@@ -851,6 +851,15 @@ KEditor.prototype = {
 */
 function _create(expr, options) {
 	options = options || {};
+	var loadStyleMode = _undef(options.loadStyleMode, _options.loadStyleMode);
+	// 自动加载CSS文件
+	if (loadStyleMode) {
+		var basePath = _undef(options.basePath, _options.basePath),
+			themesPath = _undef(options.themesPath, basePath + 'themes/'),
+			themeType = _undef(options.themeType, _options.themeType);
+		_loadStyle(themesPath + 'default/default.css');
+		_loadStyle(themesPath + themeType + '/' + themeType + '.css');
+	}
 	function create(editor) {
 		_each(_plugins, function(name, fn) {
 			fn.call(editor, KindEditor);
@@ -884,6 +893,11 @@ function _create(expr, options) {
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
+
+K.create = _create;
+K.render = _render;
+K.plugin = _plugin;
+K.lang = _lang;
 
 // core plugins
 _plugin('core', function(K) {
@@ -1303,8 +1317,3 @@ _plugin('core', function(K) {
 		});
 	});
 });
-
-K.create = _create;
-K.plugin = _plugin;
-K.lang = _lang;
-

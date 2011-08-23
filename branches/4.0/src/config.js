@@ -16,6 +16,7 @@ var _options = {
 	filterMode : false,
 	wellFormatMode : true,
 	shadowMode : true,
+	loadStyleMode : true,
 	basePath : _getBasePath(),
 	themeType : 'default', // default, simple
 	langType : 'zh_CN',

@@ -16,6 +16,21 @@ function _loadScript(url, fn) {
 	};
 }
 
+function _loadStyle(url) {
+	var head = document.getElementsByTagName('head')[0] || (_QUIRKS ? document.body : document.documentElement),
+		link = document.createElement('link'),
+		absoluteUrl = _formatUrl(url, 'absolute');
+	var links = K('link[rel="stylesheet"]', head);
+	for (var i = 0, len = links.length; i < len; i++) {
+		if (_formatUrl(links[i].href, 'absolute') === absoluteUrl) {
+			return;
+		}
+	}
+	head.appendChild(link);
+	link.href = url;
+	link.rel = 'stylesheet';
+}
+
 function _ajax(url, fn, method, data) {
 	method = method || 'GET'; //POST or GET
 	var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
@@ -43,4 +58,5 @@ function _ajax(url, fn, method, data) {
 }
 
 K.loadScript = _loadScript;
+K.loadStyle = _loadStyle;
 K.ajax = _ajax;

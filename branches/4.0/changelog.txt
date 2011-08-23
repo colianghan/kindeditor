@@ -6,7 +6,9 @@
 
 ver 4.0
 * 新增: 锚点功能。
-* 新增: 粘贴MS Word时自动清理Word专用格式代码，生成干净的HTML代码。
+* 新增: 增加了loadStyleMode属性，默认情况下自动加载CSS文件。
+* 改善: 粘贴MS Word时自动清理Word专用格式代码，生成干净的HTML代码。
+* 改善: 弹出框(dialog)里的输入框添加了基本验证。
 * BUG: 修复了allowImageUpload为false时，无法插入网络图片的问题。
 
 ver 4.0 beta

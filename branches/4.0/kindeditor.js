@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-21)
+* @version 4.0 beta (2011-08-23)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-21)',
+var _VERSION = '4.0 beta (2011-08-23)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -213,6 +213,7 @@ var _options = {
 	filterMode : false,
 	wellFormatMode : true,
 	shadowMode : true,
+	loadStyleMode : true,
 	basePath : _getBasePath(),
 	themeType : 'default',
 	langType : 'zh_CN',
@@ -4082,6 +4083,20 @@ function _loadScript(url, fn) {
 		}
 	};
 }
+function _loadStyle(url) {
+	var head = document.getElementsByTagName('head')[0] || (_QUIRKS ? document.body : document.documentElement),
+		link = document.createElement('link'),
+		absoluteUrl = _formatUrl(url, 'absolute');
+	var links = K('link[rel="stylesheet"]', head);
+	for (var i = 0, len = links.length; i < len; i++) {
+		if (_formatUrl(links[i].href, 'absolute') === absoluteUrl) {
+			return;
+		}
+	}
+	head.appendChild(link);
+	link.href = url;
+	link.rel = 'stylesheet';
+}
 function _ajax(url, fn, method, data) {
 	method = method || 'GET';
 	var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
@@ -4108,6 +4123,7 @@ function _ajax(url, fn, method, data) {
 	}
 }
 K.loadScript = _loadScript;
+K.loadStyle = _loadStyle;
 K.ajax = _ajax;
 var _plugins = {};
 function _plugin(name, fn) {
@@ -4894,6 +4910,14 @@ KEditor.prototype = {
 };
 function _create(expr, options) {
 	options = options || {};
+	var loadStyleMode = _undef(options.loadStyleMode, _options.loadStyleMode);
+	if (loadStyleMode) {
+		var basePath = _undef(options.basePath, _options.basePath),
+			themesPath = _undef(options.themesPath, basePath + 'themes/'),
+			themeType = _undef(options.themeType, _options.themeType);
+		_loadStyle(themesPath + 'default/default.css');
+		_loadStyle(themesPath + themeType + '/' + themeType + '.css');
+	}
 	function create(editor) {
 		_each(_plugins, function(name, fn) {
 			fn.call(editor, KindEditor);
@@ -4923,6 +4947,10 @@ function _create(expr, options) {
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
+K.create = _create;
+K.render = _render;
+K.plugin = _plugin;
+K.lang = _lang;
 _plugin('core', function(K) {
 	var self = this,
 		shortcutKeys = {
@@ -5317,7 +5345,4 @@ _plugin('core', function(K) {
 		});
 	});
 });
-K.create = _create;
-K.plugin = _plugin;
-K.lang = _lang;
 })(window);
