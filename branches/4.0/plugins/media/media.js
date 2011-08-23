@@ -51,12 +51,29 @@ KindEditor.plugin('media', function(K) {
 				yesBtn : {
 					name : self.lang('yes'),
 					click : function(e) {
-						var url = urlBox.val(),
-							html = K.mediaImg(self.themesPath + 'common/blank.gif', {
+						var url = K.trim(urlBox.val()),
+							width = widthBox.val(),
+							height = heightBox.val();
+						if (url === '' || url == 'http://') {
+							alert(self.lang('invalidUrl'));
+							urlBox[0].focus();
+							return;
+						}
+						if (!/^\d*$/.test(width)) {
+							alert(self.lang('invalidWidth'));
+							widthBox[0].focus();
+							return;
+						}
+						if (!/^\d*$/.test(height)) {
+							alert(self.lang('invalidHeight'));
+							heightBox[0].focus();
+							return;
+						}
+						var html = K.mediaImg(self.themesPath + 'common/blank.gif', {
 								src : url,
 								type : K.mediaType(url),
-								width : widthBox.val(),
-								height : heightBox.val(),
+								width : width,
+								height : height,
 								autostart : autostartBox[0].checked ? 'true' : 'false',
 								loop : 'true'
 							});

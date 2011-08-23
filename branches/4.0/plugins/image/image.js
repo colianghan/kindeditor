@@ -73,7 +73,7 @@ KindEditor.plugin('image', function(K) {
 							return;
 						}
 						// insert remote image
-						var url = urlBox.val(),
+						var url = K.trim(urlBox.val()),
 							width = widthBox.val(),
 							height = heightBox.val(),
 							title = titleBox.val(),
@@ -84,6 +84,21 @@ KindEditor.plugin('image', function(K) {
 								return false;
 							}
 						});
+						if (url === '' || url == 'http://') {
+							alert(self.lang('invalidUrl'));
+							urlBox[0].focus();
+							return;
+						}
+						if (!/^\d*$/.test(width)) {
+							alert(self.lang('invalidWidth'));
+							widthBox[0].focus();
+							return;
+						}
+						if (!/^\d*$/.test(height)) {
+							alert(self.lang('invalidHeight'));
+							heightBox[0].focus();
+							return;
+						}
 						self.exec('insertimage', url, title, width, height, 0, align).hideDialog().focus();
 					}
 				},
