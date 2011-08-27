@@ -197,7 +197,7 @@ function _bindFocusEvent() {
 }
 
 function _removeBookmarkTag(html) {
-	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/i, ''));
+	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/ig, ''));
 }
 
 function _addBookmarkToStack(stack, bookmark) {
