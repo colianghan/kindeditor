@@ -2955,20 +2955,20 @@ _extend(KCmd, {
 	insertimage : function(url, title, width, height, border, align) {
 		title = _undef(title, '');
 		border = _undef(border, 0);
-		var html = '<img src="' + url + '" data-ke-src="' + url + '" ';
+		var html = '<img src="' + _escape(url) + '" data-ke-src="' + _escape(url) + '" ';
 		if (width) {
-			html += 'width="' + width + '" ';
+			html += 'width="' + _escape(width) + '" ';
 		}
 		if (height) {
-			html += 'height="' + height + '" ';
+			html += 'height="' + _escape(height) + '" ';
 		}
 		if (title) {
-			html += 'title="' + title + '" ';
+			html += 'title="' + _escape(title) + '" ';
 		}
 		if (align) {
-			html += 'align="' + align + '" ';
+			html += 'align="' + _escape(align) + '" ';
 		}
-		html += 'alt="' + title + '" ';
+		html += 'alt="' + _escape(title) + '" ';
 		html += '/>';
 		return this.inserthtml(html);
 	},
@@ -2981,11 +2981,11 @@ _extend(KCmd, {
 			self.select();
 		}
 		if (range.collapsed) {
-			var html = '<a href="' + url + '" data-ke-src="' + url + '" ';
+			var html = '<a href="' + _escape(url) + '" data-ke-src="' + _escape(url) + '" ';
 			if (type) {
-				html += ' target="' + type + '"';
+				html += ' target="' + _escape(type) + '"';
 			}
-			html += '>' + url + '</a>';
+			html += '>' + _escape(url) + '</a>';
 			self.inserthtml(html);
 		} else {
 			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
