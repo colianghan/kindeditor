@@ -2310,7 +2310,7 @@ _extend(KRange, {
 		}
 		self.setStartBefore(start[0]);
 		start.remove();
-		if (end) {
+		if (end && end.length > 0) {
 			self.setEndBefore(end[0]);
 			end.remove();
 		} else {
