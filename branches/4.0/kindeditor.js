@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-23)
+* @version 4.0 beta (2011-08-27)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-23)',
+var _VERSION = '4.0 beta (2011-08-27)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -207,6 +207,7 @@ function _getBasePath() {
 	}
 	return '';
 }
+var _basePath = _getBasePath();
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
@@ -214,7 +215,10 @@ var _options = {
 	wellFormatMode : true,
 	shadowMode : true,
 	loadStyleMode : true,
-	basePath : _getBasePath(),
+	basePath : _basePath,
+	themesPath : _basePath + 'themes/',
+	langPath : _basePath + 'lang/',
+	pluginsPath : _basePath + 'plugins/',
 	themeType : 'default',
 	langType : 'zh_CN',
 	urlType : '',
@@ -282,9 +286,6 @@ var _options = {
 	},
 	layout : '<div class="container"><div class="toolbar"></div><div class="edit"></div><div class="statusbar"></div></div>'
 };
-_options.themesPath = _options.basePath + 'themes/';
-_options.langPath = _options.basePath + 'lang/';
-_options.pluginsPath = _options.basePath + 'plugins/';
 var _useCapture = false;
 var _INPUT_KEY_MAP = _toMap('8,9,13,32,46,48..57,59,61,65..90,106,109..111,188,190..192,219..222');
 var _CURSORMOVE_KEY_MAP = _toMap('33..40');
@@ -1466,9 +1467,12 @@ _extend(KNode, {
 			}
 			_unbind(node);
 			if (keepChilds) {
-				new KNode(node.childNodes).each(function() {
-					new KNode([node]).after(this);
-				});
+				var child = node.firstChild;
+				while (child) {
+					var next = child.nextSibling;
+					node.parentNode.insertBefore(child, node);
+					child = next;
+				}
 			}
 			node.parentNode.removeChild(node);
 			delete self[i];
@@ -4353,9 +4357,9 @@ function KEditor(options) {
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
 		if (key === 'basePath') {
-			setOption('themesPath', options[key] + 'themes/');
-			setOption('langPath', options[key] + 'lang/');
-			setOption('pluginsPath', options[key] + 'plugins/');
+			options.themesPath === undefined && setOption('themesPath', options[key] + 'themes/');
+			options.langPath === undefined && setOption('langPath', options[key] + 'lang/');
+			options.pluginsPath === undefined && setOption('pluginsPath', options[key] + 'plugins/');
 		}
 	});
 	_each(_options, function(key, val) {
@@ -4948,7 +4952,6 @@ if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
 K.create = _create;
-K.render = _render;
 K.plugin = _plugin;
 K.lang = _lang;
 _plugin('core', function(K) {

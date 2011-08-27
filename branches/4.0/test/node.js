@@ -138,10 +138,9 @@ test("remove",function(){
 	node.remove();
 	equals(node.length, 0);
 	// Test preserve child nodes. 
-	var node = K('<div><p><span>123</span></p></div>');
+	var node = K('<div><p><span>123</span><span>456</span>789</p></div>');
 	K('p', node).remove(true);
-	equals(K('span', node).length, 1);
-	equals(K('p', node).length, 0);
+	equals(node.html(), '<span>123</span><span>456</span>789');
 });
 
 test("html",function(){

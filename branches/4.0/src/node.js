@@ -370,9 +370,12 @@ _extend(KNode, {
 			}
 			_unbind(node);
 			if (keepChilds) {
-				new KNode(node.childNodes).each(function() {
-					new KNode([node]).after(this);
-				});
+				var child = node.firstChild;
+				while (child) {
+					var next = child.nextSibling;
+					node.parentNode.insertBefore(child, node);
+					child = next;
+				}
 			}
 			node.parentNode.removeChild(node);
 			delete self[i];

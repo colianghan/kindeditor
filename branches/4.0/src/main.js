@@ -258,9 +258,9 @@ function KEditor(options) {
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
 		if (key === 'basePath') {
-			setOption('themesPath', options[key] + 'themes/');
-			setOption('langPath', options[key] + 'lang/');
-			setOption('pluginsPath', options[key] + 'plugins/');
+			options.themesPath === undefined && setOption('themesPath', options[key] + 'themes/');
+			options.langPath === undefined && setOption('langPath', options[key] + 'lang/');
+			options.pluginsPath === undefined && setOption('pluginsPath', options[key] + 'plugins/');
 		}
 	});
 	// set options from default setting
@@ -895,7 +895,6 @@ if (_IE && _V < 7) {
 }
 
 K.create = _create;
-K.render = _render;
 K.plugin = _plugin;
 K.lang = _lang;
 

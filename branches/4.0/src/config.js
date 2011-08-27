@@ -10,6 +10,8 @@ function _getBasePath() {
 	return '';
 }
 
+var _basePath = _getBasePath();
+
 var _options = {
 	designMode : true,
 	fullscreenMode : false,
@@ -17,7 +19,10 @@ var _options = {
 	wellFormatMode : true,
 	shadowMode : true,
 	loadStyleMode : true,
-	basePath : _getBasePath(),
+	basePath : _basePath,
+	themesPath : _basePath + 'themes/',
+	langPath : _basePath + 'lang/',
+	pluginsPath : _basePath + 'plugins/',
 	themeType : 'default', // default, simple
 	langType : 'zh_CN',
 	urlType : '', // "", relative, absolute, domain
@@ -85,7 +90,3 @@ var _options = {
 	},
 	layout : '<div class="container"><div class="toolbar"></div><div class="edit"></div><div class="statusbar"></div></div>'
 };
-
-_options.themesPath = _options.basePath + 'themes/';
-_options.langPath = _options.basePath + 'lang/';
-_options.pluginsPath = _options.basePath + 'plugins/';
