@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-27)
+* @version 4.0 beta (2011-08-28)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-27)',
+var _VERSION = '4.0 beta (2011-08-28)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -693,9 +693,7 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 		return $1 + $2.replace(/<(?:br|br\s[^>]*)>/ig, '\n') + $3;
 	});
 	html = html.replace(/<(?:br|br\s[^>]*)\s*\/?>\s*<\/p>/ig, '</p>');
-	html = html.replace(/(<(?:p|p\s[^>]*)>)\s*(<\/p>)/ig, function($0, $1, $2) {
-		return $1 + '&nbsp;' + $2;
-	});
+	html = html.replace(/<(?:p|p\s[^>]*)><\/p>/ig, '');
 	html = html.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {
@@ -2562,7 +2560,10 @@ _extend(KCmd, {
 				return self;
 			}
 			if (_WEBKIT) {
-				range.insertNode(doc.createTextNode('\u200B'));
+				var children = sc.childNodes;
+				if (K(sc).isInline() || so > 0 && K(children[so - 1]).isInline() || children[so] && K(children[so]).isInline()) {
+					range.insertNode(doc.createTextNode('\u200B'));
+				}
 			}
 		}
 		rng = range.get(true);

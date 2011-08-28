@@ -124,10 +124,8 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	});
 	// <br/></p> to </p>
 	html = html.replace(/<(?:br|br\s[^>]*)\s*\/?>\s*<\/p>/ig, '</p>');
-	// <p></p> to <p>&nbsp;</p>
-	html = html.replace(/(<(?:p|p\s[^>]*)>)\s*(<\/p>)/ig, function($0, $1, $2) {
-		return $1 + '&nbsp;' + $2;
-	});
+	// delete <p></p>
+	html = html.replace(/<(?:p|p\s[^>]*)><\/p>/ig, '');
 	html = html.replace(/\u200B/g, '');
 	var htmlTagMap = {};
 	if (htmlTags) {

@@ -247,7 +247,10 @@ _extend(KCmd, {
 				return self;
 			}
 			if (_WEBKIT) {
-				range.insertNode(doc.createTextNode('\u200B'));
+				var children = sc.childNodes;
+				if (K(sc).isInline() || so > 0 && K(children[so - 1]).isInline() || children[so] && K(children[so]).isInline()) {
+					range.insertNode(doc.createTextNode('\u200B'));
+				}
 			}
 		}
 		//other case
