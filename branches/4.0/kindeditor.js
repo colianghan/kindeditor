@@ -703,6 +703,12 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 				htmlTagMap[arr[i]] = _toMap(val);
 			}
 		});
+		if (!htmlTagMap.script) {
+			html = html.replace(/(<(?:script|script\s[^>]*)>)([\s\S]*?)(<\/script>)/ig, '');
+		}
+		if (!htmlTagMap.style) {
+			html = html.replace(/(<(?:style|style\s[^>]*)>)([\s\S]*?)(<\/style>)/ig, '');
+		}
 	}
 	var re = /(\s*)<(\/)?([\w\-:]+)((?:\s+|(?:\s+[\w\-:]+)|(?:\s+[\w\-:]+=[^\s"'<>]+)|(?:\s+[\w\-:"]+="[^"]*")|(?:\s+[\w\-:"]+='[^']*'))*)(\/)?>(\s*)/g;
 	var tagStack = [];
@@ -4570,12 +4576,12 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			beforeGetHtml : function(html) {
-				html = _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
-				return self.beforeGetHtml(html);
+				html = self.beforeGetHtml(html);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
 			},
 			beforeSetHtml : function(html) {
-				html = self.beforeSetHtml(html);
-				return _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
+				html = _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
+				return self.beforeSetHtml(html);
 			},
 			afterSetHtml : function() {
 				self.afterSetHtml();

@@ -17,6 +17,7 @@ ver 4.0
 * BUG: [IE] 修复了反复执行后退和前进时有时候出现脚本错误的问题。
 * BUG: [IE] 修复了连续选择相同文件上传时，第二次开始无法上传的问题。
 * BUG: [IE] 修复了textarea在p标签里时，无法创建编辑器的问题。
+* BUG: 修复了filterMode为true时，没有过滤script和style内容的问题。
 
 ver 4.0 beta
 * BUG: 修复了域名包含端口时在IE上发生错误的问题。

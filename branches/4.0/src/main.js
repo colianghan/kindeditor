@@ -471,12 +471,12 @@ KEditor.prototype = {
 			cssPath : self.cssPath,
 			cssData : self.cssData,
 			beforeGetHtml : function(html) {
-				html = _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
-				return self.beforeGetHtml(html);
+				html = self.beforeGetHtml(html);
+				return _formatHtml(html, self.filterMode ? self.htmlTags : null, self.urlType, self.wellFormatMode, self.indentChar);
 			},
 			beforeSetHtml : function(html) {
-				html = self.beforeSetHtml(html);
-				return _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
+				html = _formatHtml(html, self.filterMode ? self.htmlTags : null, '', false);
+				return self.beforeSetHtml(html);
 			},
 			afterSetHtml : function() {
 				self.afterSetHtml();
