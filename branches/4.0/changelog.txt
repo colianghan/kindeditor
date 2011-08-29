@@ -15,6 +15,7 @@ ver 4.0
 * BUG: 修复了设置basePath参数后，themesPath、langPath、pluginsPath参数不起作用的问题。
 * BUG: 修复了图片和超级连接URL输入双引号时，HTML代码出现错乱的问题。
 * BUG: 修复了在IE上反复执行后退和前进时有时候出现脚本错误的问题。
+* BUG: 修复了在IE上连续选择相同文件上传时，第二次开始无法上传的问题。
 
 ver 4.0 beta
 * BUG: 修复了域名包含端口时在IE上发生错误的问题。

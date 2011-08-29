@@ -3902,6 +3902,11 @@ _extend(KUploadButton, {
 			}
 		});
 		self.form[0].submit();
+		var tempForm = document.createElement('form');
+		self.fileBox.before(tempForm);
+		K(tempForm).append(self.fileBox);
+		tempForm.reset();
+		K(tempForm).remove(true);
 		return self;
 	},
 	remove : function() {

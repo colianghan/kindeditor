@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>UploadButton Examples</title>
+		<link rel="stylesheet" href="../themes/default/default.css" />
+		<script src="../kindeditor.js"></script>
+		<style>
+			.cls {
+				border : 1px solid #A0A0A0;
+				margin : 10px;
+				padding : 10px;
+				cursor: pointer;
+			}
+			.on {
+				border : 1px solid red;
+				background-color : #F0F0F0;
+			}
+		</style>
+		<script>
+			KindEditor.ready(function(K) {
+				var uploadbutton = K.uploadbutton({
+					button : K('#uploadButton')[0],
+					fieldName : 'imgFile',
+					url : '../php/upload_json.php?dir=file',
+					afterUpload : function(data) {
+						if (data.error === 0) {
+							var url = K.formatUrl(data.url, 'absolute');
+							K('#url').val(url);
+						} else {
+							alert(data.message);
+						}
+					}
+				});
+				uploadbutton.fileBox.change(function(e) {
+					uploadbutton.submit();
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<input type="text" id="url" value="" /><input type="button" id="uploadButton" value="Upload" />
+	</body>
+</html>
