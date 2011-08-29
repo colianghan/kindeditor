@@ -119,7 +119,14 @@ _extend(KWidget, {
 			K(self.doc.body).append(self.div);
 		}
 		if (options.html) {
-			self.div.html(options.html);
+			if (_IE) {
+				// bugfix: 在IE上innerHTML有时候报错
+				K('@' + options.html, self.doc).each(function() {
+					self.div.append(this);
+				});
+			} else {
+				self.div.html(options.html);
+			}
 		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {

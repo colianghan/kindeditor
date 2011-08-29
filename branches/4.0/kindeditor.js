@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-28)
+* @version 4.0 beta (2011-08-29)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-28)',
+var _VERSION = '4.0 beta (2011-08-29)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -3174,7 +3174,13 @@ _extend(KWidget, {
 			K(self.doc.body).append(self.div);
 		}
 		if (options.html) {
-			self.div.html(options.html);
+			if (_IE) {
+				K('@' + options.html, self.doc).each(function() {
+					self.div.append(this);
+				});
+			} else {
+				self.div.html(options.html);
+			}
 		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {
