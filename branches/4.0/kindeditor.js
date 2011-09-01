@@ -3888,14 +3888,12 @@ _extend(KUploadButton, {
 		var html = [
 			'<div class="ke-inline-block ' + cls + '">',
 			'<iframe name="' + target + '" style="display:none;"></iframe>',
-			'<form class="ke-inline-block ke-form" method="post" enctype="multipart/form-data" target="' + target + '" action="' + url + '">',
-			'<span class="ke-inline-block ke-upload-area">',
-			'<span class="ke-button-common ke-button-outer">',
+			'<form class="ke-upload-area ke-form" method="post" enctype="multipart/form-data" target="' + target + '" action="' + url + '">',
+			'<span class="ke-button-common">',
 			'<input type="button" class="ke-button-common ke-button" value="' + title + '" />',
 			'</span>',
 			'<input type="file" class="ke-upload-file" name="' + fieldName + '" tabindex="-1" />',
-			'</span></form>',
-			'</div>'].join('');
+			'</form></div>'].join('');
 		var div = K(html, button.doc);
 		button.hide();
 		button.before(div);
