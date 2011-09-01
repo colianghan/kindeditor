@@ -226,8 +226,10 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 			<input type="button" id="readonly1" value="Readonly #1" />
 			<input type="button" id="cancelReadonly1" value="Cancel Readonly #1" />
 			<input type="button" id="isEmpty1" value="Is Empty #1" />
+			<input type="button" id="isDirty1" value="Is Dirty #1" />
 			<input type="button" id="loadPlugin1" value="Load Plugin #1" />
 			<input type="submit" name="button" value="Submit" />
+			<input type="reset" name="button" value="Reset" />
 		</form>
 		<script>
 			KindEditor.DEBUG = true;
@@ -315,6 +317,9 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 				});
 				K('#isEmpty1').click(function(e) {
 					alert(editor1.isEmpty());
+				});
+				K('#isDirty1').click(function(e) {
+					alert(editor1.isDirty());
 				});
 				K('#loadPlugin1').click(function(e) {
 					editor1.loadPlugin('template', function() {

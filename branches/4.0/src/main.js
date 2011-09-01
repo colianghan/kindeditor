@@ -518,6 +518,7 @@ KEditor.prototype = {
 					self.readonly();
 				}
 				self.isCreated = true;
+				self.initContent = self.html();
 				self.afterCreate();
 				if (self.options.afterCreate) {
 					self.options.afterCreate.call(self);
@@ -652,6 +653,9 @@ KEditor.prototype = {
 	},
 	isEmpty : function() {
 		return _trim(this.text().replace(/\r\n|\n|\r/, '')) === '';
+	},
+	isDirty : function() {
+		return _trim(this.initContent.replace(/\r\n|\n|\r|t/g, '')) !== _trim(this.html().replace(/\r\n|\n|\r|t/g, ''));
 	},
 	selectedHtml : function() {
 		return this.isCreated ? this.cmd.range.html() : '';
