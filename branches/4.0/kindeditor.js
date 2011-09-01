@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-08-29)
+* @version 4.0 beta (2011-09-01)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-08-29)',
+var _VERSION = '4.0 beta (2011-09-01)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -119,6 +119,9 @@ function _toArray(obj, offset) {
 function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
+function _invalidUrl(url) {
+	return !url || /[<>"]/.test(url);
+}
 function _extend(child, parent, proto) {
 	if (!proto) {
 		proto = parent;
@@ -184,6 +187,7 @@ var K = {
 	toMap : _toMap,
 	toArray : _toArray,
 	undef : _undef,
+	invalidUrl : _invalidUrl,
 	extend : _extend,
 	json : _json
 };

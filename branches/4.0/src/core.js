@@ -126,6 +126,10 @@ function _undef(val, defaultVal) {
 	return val === undefined ? defaultVal : val;
 }
 
+function _invalidUrl(url) {
+	return !url || /[<>"]/.test(url);
+}
+
 function _extend(child, parent, proto) {
 	if (!proto) {
 		proto = parent;
@@ -195,6 +199,7 @@ var K = {
 	toMap : _toMap,
 	toArray : _toArray,
 	undef : _undef,
+	invalidUrl : _invalidUrl,
 	extend : _extend,
 	json : _json
 };

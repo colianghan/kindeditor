@@ -84,7 +84,7 @@ KindEditor.plugin('image', function(K) {
 								return false;
 							}
 						});
-						if (url === '' || url == 'http://') {
+						if (url == 'http://' || _invalidUrl(url)) {
 							alert(self.lang('invalidUrl'));
 							urlBox[0].focus();
 							return;

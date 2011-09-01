@@ -379,6 +379,25 @@ K.undef(val , defaultVal)
 	var obj = {};
 	val = K.undef(obj.aaa, 0); //返回0
 
+.. index:: invalidUrl
+
+.. _invalidUrl:
+
+K.invalidUrl(val)
+--------------------------------------------------------
+判断URL或路径是否合法。
+
+* 参数:
+	* mixed val: URL或路径
+* 返回: boolean
+
+示例:
+
+.. sourcecode:: js
+
+	val = K.invalidUrl('abc<">.html'); //返回true
+	val = K.invalidUrl('abc.html'); //返回false
+
 .. index:: extend
 
 .. _extend:
