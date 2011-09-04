@@ -145,9 +145,13 @@ test("remove",function(){
 
 test("html",function(){
 	var node = K('<div>xxx</div>');
+	K(document.body).append(node);
 	equals(node.html(), 'xxx');
 	equals(node.html('bbb').html(), 'bbb');
 	equals(K('<textarea></textarea>').html('abc').html(), 'abc');
+	equals(node.html('<p><hr></p>').html(), '<hr />');
+	equals(node.html('<script></script>').html(), '<script></script>');
+	node.remove();
 });
 
 test("outer",function(){

@@ -1140,11 +1140,14 @@ function _setHtml(el, html) {
 	if (el.nodeType != 1) {
 		return;
 	}
+	var doc = _getDoc(el);
 	try {
-		el.innerHTML = html;
+		el.innerHTML = '<img id="__kindeditor_temp_tag__" width="0" height="0" style="display:none;" />' + html;
+		var temp = doc.getElementById('__kindeditor_temp_tag__');
+		temp.parentNode.removeChild(temp);
 	} catch(e) {
 		K(el).empty();
-		K('@' + html, _getDoc(el)).each(function() {
+		K('@' + html, doc).each(function() {
 			el.appendChild(this);
 		});
 	}
@@ -1653,9 +1656,13 @@ K = function(expr, root) {
 		if (expr.length !== length || /<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
 				div = doc.createElement('div'), list = [];
-			div.innerHTML = expr;
+			div.innerHTML = '<img id="__kindeditor_temp_tag__" width="0" height="0" style="display:none;" />' + expr;
 			for (var i = 0, len = div.childNodes.length; i < len; i++) {
-				list.push(div.childNodes[i]);
+				var child = div.childNodes[i];
+				if (child.id == '__kindeditor_temp_tag__') {
+					continue;
+				}
+				list.push(child);
 			}
 			return newNode(list);
 		}
