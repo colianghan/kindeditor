@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-09-01)
+* @version 4.0 beta (2011-09-04)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-09-01)',
+var _VERSION = '4.0 beta (2011-09-04)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -1140,7 +1140,14 @@ function _setHtml(el, html) {
 	if (el.nodeType != 1) {
 		return;
 	}
-	el.innerHTML = html;
+	try {
+		el.innerHTML = html;
+	} catch(e) {
+		K(el).empty();
+		K('@' + html, _getDoc(el)).each(function() {
+			el.appendChild(this);
+		});
+	}
 }
 function _hasClass(el, cls) {
 	return _inString(cls, el.className, ' ');
@@ -1467,6 +1474,21 @@ _extend(KNode, {
 		});
 		return K(nodes);
 	},
+	empty : function() {
+		var self = this;
+		self.each(function(i, node) {
+			var child = node.firstChild;
+			while (child) {
+				if (!node.parentNode) {
+					return;
+				}
+				var next = child.nextSibling;
+				child.parentNode.removeChild(child);
+				child = next;
+			}
+		});
+		return self;
+	},
 	remove : function(keepChilds) {
 		var self = this;
 		self.each(function(i, node) {
@@ -1631,7 +1653,7 @@ K = function(expr, root) {
 		if (expr.length !== length || /<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
 				div = doc.createElement('div'), list = [];
-			_setHtml(div, expr);
+			div.innerHTML = expr;
 			for (var i = 0, len = div.childNodes.length; i < len; i++) {
 				list.push(div.childNodes[i]);
 			}
@@ -2947,10 +2969,6 @@ _extend(KCmd, {
 		if (_inPreElement(K(range.startContainer))) {
 			return self;
 		}
-		if (!_IE) {
-			_nativeCommand(doc, 'inserthtml', val);
-			return self;
-		}
 		var frag = doc.createDocumentFragment();
 		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
@@ -3188,13 +3206,7 @@ _extend(KWidget, {
 			K(self.doc.body).append(self.div);
 		}
 		if (options.html) {
-			if (_IE) {
-				K('@' + options.html, self.doc).each(function() {
-					self.div.append(this);
-				});
-			} else {
-				self.div.html(options.html);
-			}
+			self.div.html(options.html);
 		}
 		if (options.autoScroll) {
 			if (_IE && _V < 7 || _QUIRKS) {

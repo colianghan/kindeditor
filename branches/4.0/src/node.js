@@ -22,7 +22,15 @@ function _setHtml(el, html) {
 	if (el.nodeType != 1) {
 		return;
 	}
-	el.innerHTML = html;
+	try {
+		el.innerHTML = html;
+	} catch(e) {
+		// bugfix: 在IE上innerHTML有时候报错
+		K(el).empty();
+		K('@' + html, _getDoc(el)).each(function() {
+			el.appendChild(this);
+		});
+	}
 }
 
 function _hasClass(el, cls) {
@@ -362,6 +370,21 @@ _extend(KNode, {
 		});
 		return K(nodes);
 	},
+	empty : function() {
+		var self = this;
+		self.each(function(i, node) {
+			var child = node.firstChild;
+			while (child) {
+				if (!node.parentNode) {
+					return;
+				}
+				var next = child.nextSibling;
+				child.parentNode.removeChild(child);
+				child = next;
+			}
+		});
+		return self;
+	},
 	remove : function(keepChilds) {
 		var self = this;
 		self.each(function(i, node) {
@@ -531,7 +554,7 @@ K = function(expr, root) {
 		if (expr.length !== length || /<.+>/.test(expr)) {
 			var doc = root ? root.ownerDocument || root : document,
 				div = doc.createElement('div'), list = [];
-			_setHtml(div, expr);
+			div.innerHTML = expr;
 			for (var i = 0, len = div.childNodes.length; i < len; i++) {
 				list.push(div.childNodes[i]);
 			}

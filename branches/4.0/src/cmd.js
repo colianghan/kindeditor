@@ -652,10 +652,6 @@ _extend(KCmd, {
 		if (_inPreElement(K(range.startContainer))) {
 			return self;
 		}
-		if (!_IE) {
-			_nativeCommand(doc, 'inserthtml', val);
-			return self;
-		}
 		var frag = doc.createDocumentFragment();
 		K('@' + val, doc).each(function() {
 			frag.appendChild(this);
