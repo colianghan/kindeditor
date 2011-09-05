@@ -24,6 +24,7 @@ ver 4.0
 * BUG: [IE7] 修复了上传按钮出现偏移的问题。
 * BUG: [IE] 修复了innerHTML有时候抛出异常的问题。
 * BUG: 修复了清除HTML代码时过滤rowspan和colspan，导致表格被破坏的问题。
+* BUG: 修复了在框架(frameset)下面，点击编辑器的源代码按钮后，再点击其它连接变弹出显示的问题。
 
 ver 4.0 beta
 * BUG: 修复了域名包含端口时在IE上发生错误的问题。

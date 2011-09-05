@@ -106,7 +106,7 @@ _extend(KToolbar, KWidget, {
 		// disable toolbar
 		if (bool === undefined ? !self.disableMode : bool) {
 			K('span.ke-outline', self.div).each(function() {
-				var knode = K(this);
+				var knode = K(this),
 					name = knode[0].getAttribute('data-name', 2);
 				if (!map[name]) {
 					self.disable(knode);
@@ -116,7 +116,7 @@ _extend(KToolbar, KWidget, {
 		// enable toolbar
 		} else {
 			K('span.ke-outline', self.div).each(function() {
-				var knode = K(this);
+				var knode = K(this),
 					name = knode[0].getAttribute('data-name', 2);
 				if (!map[name]) {
 					self.enable(knode);
