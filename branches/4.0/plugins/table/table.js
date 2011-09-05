@@ -240,7 +240,11 @@ KindEditor.plugin('table', function(K) {
 							html += '</tr>';
 						}
 						html += '</table>';
-						self.insertHtml(html).select().hideDialog().focus();
+						if (!K.IE) {
+							html += '<br />';
+						}
+						self.insertHtml(html);
+						self.select().hideDialog().focus();
 						self.addBookmark();
 					}
 				}
