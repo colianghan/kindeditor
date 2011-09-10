@@ -736,12 +736,11 @@ _extend(KRange, {
 			self.collapse(true);
 		}
 		return self;
-	/*},
+	},
 	dump : function() {
 		console.log('--------------------');
 		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
 		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
-	*/
 	}
 });
 

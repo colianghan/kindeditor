@@ -239,7 +239,9 @@ _extend(KCmd, {
 				var dummy = K('<span>&nbsp;</span>', doc);
 				range.insertNode(dummy[0]);
 				rng = doc.body.createTextRange();
-				rng.moveToElementText(dummy[0]);
+				try {
+					rng.moveToElementText(dummy[0]);
+				} catch(ex) {}
 				rng.collapse(false);
 				rng.select();
 				dummy.remove();
@@ -650,6 +652,16 @@ _extend(KCmd, {
 			return self;
 		}
 		if (_inPreElement(K(range.startContainer))) {
+			return self;
+		}
+		// [IE] 优化性能
+		if (_IE) {
+			var rng = range.get();
+			if (rng.item) {
+				rng.item(0).outerHTML = val;
+			} else {
+				rng.pasteHTML(val);
+			}
 			return self;
 		}
 		var frag = doc.createDocumentFragment();

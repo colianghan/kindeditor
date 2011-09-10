@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-09-05)
+* @version 4.0 beta (2011-09-10)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-09-05)',
+var _VERSION = '4.0 beta (2011-09-10)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -2354,12 +2354,11 @@ _extend(KRange, {
 			self.collapse(true);
 		}
 		return self;
-	/*},
+	},
 	dump : function() {
 		console.log('--------------------');
 		console.log(this.startContainer.nodeType == 3 ? this.startContainer.nodeValue : this.startContainer, this.startOffset);
 		console.log(this.endContainer.nodeType == 3 ? this.endContainer.nodeValue : this.endContainer, this.endOffset);
-	*/
 	}
 });
 function _range(mixed) {
@@ -2591,7 +2590,9 @@ _extend(KCmd, {
 				var dummy = K('<span>&nbsp;</span>', doc);
 				range.insertNode(dummy[0]);
 				rng = doc.body.createTextRange();
-				rng.moveToElementText(dummy[0]);
+				try {
+					rng.moveToElementText(dummy[0]);
+				} catch(ex) {}
 				rng.collapse(false);
 				rng.select();
 				dummy.remove();
@@ -2974,6 +2975,15 @@ _extend(KCmd, {
 			return self;
 		}
 		if (_inPreElement(K(range.startContainer))) {
+			return self;
+		}
+		if (_IE) {
+			var rng = range.get();
+			if (rng.item) {
+				rng.item(0).outerHTML = val;
+			} else {
+				rng.pasteHTML(val);
+			}
 			return self;
 		}
 		var frag = doc.createDocumentFragment();
@@ -3532,15 +3542,7 @@ _extend(KEdit, KWidget, {
 			if (self.beforeSetHtml) {
 				val = self.beforeSetHtml(val);
 			}
-			if (_IE) {
-				body.innerHTML = '<img id="__kindeditor_temp_tag__" width="0" height="0" />' + val;
-				var img = K('#__kindeditor_temp_tag__', doc);
-				if (img) {
-					img.remove();
-				}
-			} else {
-				body.innerHTML = val;
-			}
+			K(body).html(val);
 			if (self.afterSetHtml) {
 				self.afterSetHtml();
 			}
@@ -4346,7 +4348,7 @@ function _bindFocusEvent() {
 	});
 }
 function _removeBookmarkTag(html) {
-	return _trim(html.replace(/<span [^>]*id="__kindeditor_bookmark_\w+_\d+__"[^>]*><\/span>/ig, ''));
+	return _trim(html.replace(/<span [^>]*id="?__kindeditor_bookmark_\w+_\d+__"?[^>]*><\/span>/ig, ''));
 }
 function _addBookmarkToStack(stack, bookmark) {
 	if (stack.length === 0) {
@@ -4359,17 +4361,19 @@ function _addBookmarkToStack(stack, bookmark) {
 	}
 }
 function _undoToRedo(fromStack, toStack) {
-	var self = this, edit = self.edit, range, bookmark;
+	var self = this, edit = self.edit,
+		body = edit.doc.body,
+		range, bookmark;
 	if (fromStack.length === 0) {
 		return self;
 	}
 	if (edit.designMode) {
 		range = self.cmd.range;
 		bookmark = range.createBookmark(true);
-		bookmark.html = edit.html();
+		bookmark.html = body.innerHTML;
 	} else {
 		bookmark = {
-			html : edit.html()
+			html : body.innerHTML
 		};
 	}
 	_addBookmarkToStack(toStack, bookmark);
@@ -4384,7 +4388,7 @@ function _undoToRedo(fromStack, toStack) {
 			self.select();
 		}
 	} else {
-		edit.html(_removeBookmarkTag(prev.html));
+		K(body).html(_removeBookmarkTag(prev.html));
 	}
 	return self;
 }
@@ -4839,7 +4843,9 @@ KEditor.prototype = {
 	},
 	addBookmark : function(checkSize) {
 		checkSize = _undef(checkSize, true);
-		var self = this, edit = self.edit, html = edit.html(), bookmark;
+		var self = this, edit = self.edit,
+			body = edit.doc.body,
+			html = body.innerHTML, bookmark;
 		if (checkSize && self._undoStack.length > 0) {
 			var prev = self._undoStack[self._undoStack.length - 1];
 			if (Math.abs(html.length -  _removeBookmarkTag(prev.html).length) < self.minChangeSize) {
@@ -4849,11 +4855,11 @@ KEditor.prototype = {
 		if (edit.designMode && !self._firstAddBookmark) {
 			var range = self.cmd.range;
 			bookmark = range.createBookmark(true);
-			bookmark.html = edit.html();
+			bookmark.html = body.innerHTML;
 			range.moveToBookmark(bookmark);
 		} else {
 			bookmark = {
-				html : edit.html()
+				html : body.innerHTML
 			};
 		}
 		self._firstAddBookmark = false;
@@ -5300,7 +5306,7 @@ _plugin('core', function(K) {
 					K('span.Apple-style-span', div).remove(true);
 					K('meta', div).remove();
 				}
-				var html = div.html();
+				var html = div[0].innerHTML;
 				div.remove();
 				if (html === '') {
 					return;
@@ -5314,14 +5320,22 @@ _plugin('core', function(K) {
 							.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
 							.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
 							.replace(/<xml>[\s\S]*?<\/xml>/ig, '');
-						html = html.replace(/(<table[^>]*\s+)border="0"([^>]*>)/ig, function(full, start, end) {
-							return start + 'border="1" bordercolor="#000000"' + end;
+						html = html.replace(/(<table[^>]*)(>)/ig, function(full, start, end) {
+							full = full.replace(/border="?\d+"?/, '');
+							var attrs = _getAttrList(full), newFull = start;
+							if (attrs.border === undefined) {
+								newFull += ' border="1"';
+							}
+							if (attrs.bordercolor === undefined) {
+								newFull += ' bordercolor="#000000"';
+							}
+							newFull += end;
+							return newFull;
 						});
-						html = self.beforeSetHtml(html);
-						html = _formatHtml(html, _options.htmlTags);
+						html = _formatHtml(html, self.filterMode ? self.htmlTags : _options.htmlTags);
 					} else {
-						html = self.beforeSetHtml(html);
 						html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
+						html = self.beforeSetHtml(html);
 					}
 				}
 				if (self.pasteType === 1) {
