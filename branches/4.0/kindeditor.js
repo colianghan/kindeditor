@@ -211,18 +211,18 @@ function _getBasePath() {
 	}
 	return '';
 }
-var _basePath = _getBasePath();
-var _options = {
+K.basePath = _getBasePath();
+K.options = {
 	designMode : true,
 	fullscreenMode : false,
 	filterMode : false,
 	wellFormatMode : true,
 	shadowMode : true,
 	loadStyleMode : true,
-	basePath : _basePath,
-	themesPath : _basePath + 'themes/',
-	langPath : _basePath + 'lang/',
-	pluginsPath : _basePath + 'plugins/',
+	basePath : K.basePath,
+	themesPath : K.basePath + 'themes/',
+	langPath : K.basePath + 'lang/',
+	pluginsPath : K.basePath + 'plugins/',
 	themeType : 'default',
 	langType : 'zh_CN',
 	urlType : '',
@@ -853,6 +853,28 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	html = html.replace(/<span id="__kindeditor_pre_newline__">\n/g, '\n');
 	return _trim(html);
 }
+function _clearMsWord(html, htmlTags) {
+	html = html.replace(/<meta[\s\S]*?>/ig, '')
+		.replace(/<![\s\S]*?>/ig, '')
+		.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')
+		.replace(/<script[^>]*>[\s\S]*?<\/script>/ig, '')
+		.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
+		.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
+		.replace(/<xml>[\s\S]*?<\/xml>/ig, '')
+		.replace(/(<table[^>]*)(>)/ig, function(full, start, end) {
+			full = full.replace(/border="?\d+"?/, '');
+			var attrs = _getAttrList(full), newFull = start;
+			if (attrs.border === undefined) {
+				newFull += ' border="1"';
+			}
+			if (attrs.bordercolor === undefined) {
+				newFull += ' bordercolor="#000000"';
+			}
+			newFull += end;
+			return newFull;
+		});
+	return _formatHtml(html, htmlTags);
+}
 function _mediaType(src) {
 	if (/\.(rm|rmvb)(\?|$)/i.test(src)) {
 		return 'audio/x-pn-realaudio-plugin';
@@ -909,6 +931,7 @@ K.mediaType = _mediaType;
 K.mediaAttrs = _mediaAttrs;
 K.mediaEmbed = _mediaEmbed;
 K.mediaImg = _mediaImg;
+K.clearMsWord = _clearMsWord;
 function _contains(nodeA, nodeB) {
 	if (nodeA.nodeType == 9 && nodeB.nodeType != 9) {
 		return true;
@@ -4188,7 +4211,7 @@ function _parseLangKey(key) {
 	return { ns : ns, key : key };
 }
 function _lang(mixed, langType) {
-	langType = langType === undefined ? _options.langType : langType;
+	langType = langType === undefined ? K.options.langType : langType;
 	if (typeof mixed === 'string') {
 		if (!_language[langType]) {
 			return 'no language';
@@ -4409,7 +4432,7 @@ function KEditor(options) {
 			options.pluginsPath === undefined && setOption('pluginsPath', options[key] + 'plugins/');
 		}
 	});
-	_each(_options, function(key, val) {
+	_each(K.options, function(key, val) {
 		if (self[key] === undefined) {
 			setOption(key, val);
 		}
@@ -4967,11 +4990,11 @@ KEditor.prototype = {
 };
 function _create(expr, options) {
 	options = options || {};
-	var loadStyleMode = _undef(options.loadStyleMode, _options.loadStyleMode);
+	var loadStyleMode = _undef(options.loadStyleMode, K.options.loadStyleMode);
 	if (loadStyleMode) {
-		var basePath = _undef(options.basePath, _options.basePath),
+		var basePath = _undef(options.basePath, K.options.basePath),
 			themesPath = _undef(options.themesPath, basePath + 'themes/'),
-			themeType = _undef(options.themeType, _options.themeType);
+			themeType = _undef(options.themeType, K.options.themeType);
 		_loadStyle(themesPath + 'default/default.css');
 		_loadStyle(themesPath + themeType + '/' + themeType + '.css');
 	}
@@ -5313,26 +5336,7 @@ _plugin('core', function(K) {
 				}
 				if (self.pasteType === 2) {
 					if (/schemas-microsoft-com|worddocument|mso-\w+/i.test(html)) {
-						html = html.replace(/<meta[\s\S]*?>/ig, '')
-							.replace(/<![\s\S]*?>/ig, '')
-							.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')
-							.replace(/<script[^>]*>[\s\S]*?<\/script>/ig, '')
-							.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
-							.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
-							.replace(/<xml>[\s\S]*?<\/xml>/ig, '');
-						html = html.replace(/(<table[^>]*)(>)/ig, function(full, start, end) {
-							full = full.replace(/border="?\d+"?/, '');
-							var attrs = _getAttrList(full), newFull = start;
-							if (attrs.border === undefined) {
-								newFull += ' border="1"';
-							}
-							if (attrs.bordercolor === undefined) {
-								newFull += ' bordercolor="#000000"';
-							}
-							newFull += end;
-							return newFull;
-						});
-						html = _formatHtml(html, self.filterMode ? self.htmlTags : _options.htmlTags);
+						html = _clearMsWord(html, self.filterMode ? self.htmlTags : K.options.htmlTags);
 					} else {
 						html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
 						html = self.beforeSetHtml(html);

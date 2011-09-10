@@ -297,6 +297,29 @@ function _formatHtml(html, htmlTags, urlType, wellFormatted, indentChar) {
 	html = html.replace(/<span id="__kindeditor_pre_newline__">\n/g, '\n');
 	return _trim(html);
 }
+// 清理MS Word专用标签
+function _clearMsWord(html, htmlTags) {
+	html = html.replace(/<meta[\s\S]*?>/ig, '')
+		.replace(/<![\s\S]*?>/ig, '')
+		.replace(/<style[^>]*>[\s\S]*?<\/style>/ig, '')
+		.replace(/<script[^>]*>[\s\S]*?<\/script>/ig, '')
+		.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
+		.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
+		.replace(/<xml>[\s\S]*?<\/xml>/ig, '')
+		.replace(/(<table[^>]*)(>)/ig, function(full, start, end) {
+			full = full.replace(/border="?\d+"?/, '');
+			var attrs = _getAttrList(full), newFull = start;
+			if (attrs.border === undefined) {
+				newFull += ' border="1"';
+			}
+			if (attrs.bordercolor === undefined) {
+				newFull += ' bordercolor="#000000"';
+			}
+			newFull += end;
+			return newFull;
+		});
+	return _formatHtml(html, htmlTags);
+}
 // 根据URL判断 media type
 function _mediaType(src) {
 	if (/\.(rm|rmvb)(\?|$)/i.test(src)) {
@@ -359,3 +382,4 @@ K.mediaType = _mediaType;
 K.mediaAttrs = _mediaAttrs;
 K.mediaEmbed = _mediaEmbed;
 K.mediaImg = _mediaImg;
+K.clearMsWord = _clearMsWord;

@@ -10,19 +10,19 @@ function _getBasePath() {
 	return '';
 }
 
-var _basePath = _getBasePath();
+K.basePath = _getBasePath();
 
-var _options = {
+K.options = {
 	designMode : true,
 	fullscreenMode : false,
 	filterMode : false,
 	wellFormatMode : true,
 	shadowMode : true,
 	loadStyleMode : true,
-	basePath : _basePath,
-	themesPath : _basePath + 'themes/',
-	langPath : _basePath + 'lang/',
-	pluginsPath : _basePath + 'plugins/',
+	basePath : K.basePath,
+	themesPath : K.basePath + 'themes/',
+	langPath : K.basePath + 'lang/',
+	pluginsPath : K.basePath + 'plugins/',
 	themeType : 'default', // default, simple
 	langType : 'zh_CN',
 	urlType : '', // "", relative, absolute, domain
