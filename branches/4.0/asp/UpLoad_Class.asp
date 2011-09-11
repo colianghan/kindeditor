@@ -82,7 +82,7 @@ Class AnUpLoad
 		vErr = -1
 		vExe = ""
 		vTotalSize = 0
-		vCharSet = "gb2312"
+		vCharSet = "utf-8"
 		vOP=false
 		pID="AnUpload"
 		setApp "",0,0,""

@@ -70,6 +70,7 @@ KindEditor.plugin('image', function(K) {
 						// insert local image
 						if (tabs && tabs.selectedIndex === 1) {
 							uploadbutton.submit();
+							localUrlBox.val('');
 							return;
 						}
 						// insert remote image
