@@ -142,29 +142,68 @@ function _bindNewlineEvent() {
 	if (_OPERA) {
 		return;
 	}
+	var brSkipTagMap = _toMap('h1,h2,h3,h4,h5,h6,pre,li'),
+		pSkipTagMap = _toMap('p,h1,h2,h3,h4,h5,h6,pre,li,blockquote');
+	// 取得range的block标签名
+	function getAncestorTagName(range) {
+		var ancestor = K(range.commonAncestor());
+		while (ancestor) {
+			if (ancestor.type == 1 && !ancestor.isStyle()) {
+				break;
+			}
+			ancestor = ancestor.parent();
+		}
+		return ancestor.name;
+	}
 	K(doc).keydown(function(e) {
 		if (e.which != 13 || e.shiftKey || e.ctrlKey || e.altKey) {
 			return;
 		}
 		self.cmd.selection();
-		var range = self.cmd.range,
-			ancestor = K(range.commonAncestor());
-		if (ancestor.type == 3) {
-			ancestor = ancestor.parent();
-		}
-		var tagName = ancestor.name;
+		var tagName = getAncestorTagName(self.cmd.range);
 		if (tagName == 'marquee' || tagName == 'select') {
 			return;
 		}
 		// br
-		if (newlineTag === 'br' && _inArray(tagName, 'h1,h2,h3,h4,h5,h6,pre,li'.split(',')) < 0) {
+		if (newlineTag === 'br' && !brSkipTagMap[tagName]) {
 			e.preventDefault();
 			self.insertHtml('<br />');
 			return;
 		}
 		// p
-		if (_inArray(tagName, 'p,h1,h2,h3,h4,h5,h6,pre,div,li,blockquote'.split(',')) < 0) {
-			_nativeCommand(doc, 'formatblock', '<P>');
+		if (!pSkipTagMap[tagName]) {
+			_nativeCommand(doc, 'formatblock', '<p>');
+		}
+	});
+	K(doc).keyup(function(e) {
+		if (e.which != 13 || e.shiftKey || e.ctrlKey || e.altKey) {
+			return;
+		}
+		if (newlineTag == 'br') {
+			return;
+		}
+		self.cmd.selection();
+		var tagName = getAncestorTagName(self.cmd.range);
+		if (tagName == 'marquee' || tagName == 'select') {
+			return;
+		}
+		if (!pSkipTagMap[tagName]) {
+			_nativeCommand(doc, 'formatblock', '<p>');
+		}
+		// [WEBKIT] 将DIV改成P
+		var div = self.cmd.commonAncestor('div');
+		if (div) {
+			var p = K('<p></p>'),
+				child = div[0].firstChild;
+			while (child) {
+				var next = child.nextSibling;
+				p.append(child);
+				child = next;
+			}
+			div.before(p);
+			div.remove();
+			self.cmd.range.selectNodeContents(p[0]);
+			self.cmd.select();
 		}
 	});
 }
@@ -1025,7 +1064,7 @@ _plugin('core', function(K) {
 				height : heights[key] + 12,
 				checked : (curVal === key || curVal === val),
 				click : function() {
-					self.select().exec('formatblock', '<' + key.toUpperCase() + '>').hideMenu();
+					self.select().exec('formatblock', '<' + key + '>').hideMenu();
 				}
 			});
 		});
