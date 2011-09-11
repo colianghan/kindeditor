@@ -49,7 +49,7 @@ KindEditor.plugin('flash', function(K) {
 						var url = K.trim(urlBox.val()),
 							width = widthBox.val(),
 							height = heightBox.val();
-						if (url == 'http://' || _invalidUrl(url)) {
+						if (url == 'http://' || K.invalidUrl(url)) {
 							alert(self.lang('invalidUrl'));
 							urlBox[0].focus();
 							return;

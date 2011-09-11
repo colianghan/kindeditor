@@ -42,7 +42,7 @@ _extend(KUploadButton, {
 			try {
 				data = K.json(str);
 			} catch (e) {
-				alert(K.DEBUG ? str : self.lang('invalidJson'));
+				alert(str);
 			}
 			if (data) {
 				self.options.afterUpload.call(self, data);

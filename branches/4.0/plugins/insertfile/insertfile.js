@@ -43,7 +43,7 @@ KindEditor.plugin('insertfile', function(K) {
 				click : function(e) {
 					var url = K.trim(urlBox.val()),
 						title = titleBox.val();
-					if (url == 'http://' || _invalidUrl(url)) {
+					if (url == 'http://' || K.invalidUrl(url)) {
 						alert(self.lang('invalidUrl'));
 						urlBox[0].focus();
 						return;

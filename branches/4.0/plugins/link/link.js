@@ -32,7 +32,7 @@ KindEditor.plugin('link', function(K) {
 						name : self.lang('yes'),
 						click : function(e) {
 							var url = K.trim(urlBox.val());
-							if (url == 'http://' || _invalidUrl(url)) {
+							if (url == 'http://' || K.invalidUrl(url)) {
 								alert(self.lang('invalidUrl'));
 								urlBox[0].focus();
 								return;
