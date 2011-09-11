@@ -5339,9 +5339,10 @@ _plugin('core', function(K) {
 			}
 		});
 		K(doc.body).bind(_IE ? 'beforepaste' : 'paste', function(e){
-			if (self.pasteType === 0 || K('div.' + cls, doc).length > 0) {
+			if (self.pasteType === 0) {
 				return;
 			}
+			K('div.' + cls, doc).remove();
 			var cmd = self.cmd.selection(),
 				bookmark = cmd.range.createBookmark(),
 				div = K('<div class="' + cls + '"></div>', doc).css({
