@@ -758,7 +758,6 @@ _each(('formatblock,selectall,justifyleft,justifycenter,justifyright,justifyfull
 		var self = this;
 		if (_IE) {
 			rng = self.range.get(true);
-			// TODO: IE9有时候报错
 			try {
 				rng.select();
 			} catch(e) {}
@@ -777,6 +776,12 @@ _each('cut,copy,paste'.split(','), function(i, name) {
 		var self = this;
 		if (!self.doc.queryCommandSupported(name)) {
 			throw 'not supported';
+		}
+		if (_IE) {
+			rng = self.range.get(true);
+			try {
+				rng.select();
+			} catch(e) {}
 		}
 		_nativeCommand(self.doc, name, null);
 		return self;

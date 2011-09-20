@@ -1228,71 +1228,83 @@ _plugin('core', function(K) {
 	});
 	// paste
 	self.afterCreate(function() {
-		var doc = self.edit.doc, cls = '__kindeditor_paste__';
-		K(doc.body).bind('paste', function(e) {
-			if (self.pasteType === 0) {
-				e.stop();
+		var doc = self.edit.doc, cmd, bookmark, div,
+			cls = '__kindeditor_paste__', pasting = false;
+		function movePastedData() {
+			cmd.range.moveToBookmark(bookmark);
+			cmd.select();
+			if (_WEBKIT) {
+				K('div.' + cls, div).each(function() {
+					K(this).after('<br />').remove(true);
+				});
+				K('span.Apple-style-span', div).remove(true);
+				K('meta', div).remove();
 			}
-		});
-		K(doc.body).bind(_IE ? 'beforepaste' : 'paste', function(e){
-			if (self.pasteType === 0) {
+			var html = div[0].innerHTML;
+			div.remove();
+			if (html === '') {
 				return;
 			}
+			// paste HTML
+			if (self.pasteType === 2) {
+				// paste from ms word
+				if (/schemas-microsoft-com|worddocument|mso-\w+/i.test(html)) {
+					html = _clearMsWord(html, self.filterMode ? self.htmlTags : K.options.htmlTags);
+				} else {
+					html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
+					html = self.beforeSetHtml(html);
+				}
+			}
+			// paste text
+			if (self.pasteType === 1) {
+				html = html.replace(/<br[^>]*>/ig, '\n');
+				html = html.replace(/<\/p><p[^>]*>/ig, '\n');
+				html = html.replace(/<[^>]+/g, '');
+				html = html.replace(/&nbsp;/ig, ' ');
+				html = html.replace(/\n\s*\n/g, '\n');
+				if (self.newlineTag == 'p') {
+					html = html.replace(/^/, '<p>').replace(/$/, '</p>').replace(/\n/g, '</p><p>');
+				} else {
+					html = html.replace(/\n/g, '<br />$&');
+				}
+			}
+			self.insertHtml(html);
+		}
+		K(doc.body).bind('paste', function(e){
+			if (self.pasteType === 0) {
+				e.stop();
+				return;
+			}
+			if (pasting) {
+				return;
+			}
+			pasting = true;
 			K('div.' + cls, doc).remove();
-			var cmd = self.cmd.selection(),
-				bookmark = cmd.range.createBookmark(),
-				div = K('<div class="' + cls + '"></div>', doc).css({
-					position : 'absolute',
-					width : '1px',
-					height : '1px',
-					overflow : 'hidden',
-					left : '-1981px',
-					top : K(bookmark.start).pos().y + 'px',
-					'white-space' : 'nowrap'
-				});
+			cmd = self.cmd.selection();
+			bookmark = cmd.range.createBookmark();
+			div = K('<div class="' + cls + '"></div>', doc).css({
+				position : 'absolute',
+				width : '1px',
+				height : '1px',
+				overflow : 'hidden',
+				left : '-1981px',
+				top : K(bookmark.start).pos().y + 'px',
+				'white-space' : 'nowrap'
+			});
 			K(doc.body).append(div);
-			cmd.range.selectNodeContents(div[0]);
-			cmd.select();
-			// 结束粘贴后
-			setTimeout(function() {
-				cmd.range.moveToBookmark(bookmark);
+			if (_IE) {
+				var rng = cmd.range.get(true);
+				rng.moveToElementText(div[0]);
+				rng.select();
+				rng.execCommand('paste');
+				e.preventDefault();
+			} else {
+				cmd.range.selectNodeContents(div[0]);
 				cmd.select();
-				if (_WEBKIT) {
-					K('div.' + cls, div).each(function() {
-						K(this).after('<br />').remove(true);
-					});
-					K('span.Apple-style-span', div).remove(true);
-					K('meta', div).remove();
-				}
-				var html = div[0].innerHTML;
-				div.remove();
-				if (html === '') {
-					return;
-				}
-				// paste HTML
-				if (self.pasteType === 2) {
-					// paste from ms word
-					if (/schemas-microsoft-com|worddocument|mso-\w+/i.test(html)) {
-						html = _clearMsWord(html, self.filterMode ? self.htmlTags : K.options.htmlTags);
-					} else {
-						html = _formatHtml(html, self.filterMode ? self.htmlTags : null);
-						html = self.beforeSetHtml(html);
-					}
-				}
-				// paste text
-				if (self.pasteType === 1) {
-					html = html.replace(/<br[^>]*>/ig, '\n');
-					html = html.replace(/<\/p><p[^>]*>/ig, '\n');
-					html = html.replace(/<[^>]+/g, '');
-					html = html.replace(/&nbsp;/ig, ' ');
-					html = html.replace(/\n\s*\n/g, '\n');
-					if (self.newlineTag == 'p') {
-						html = html.replace(/^/, '<p>').replace(/$/, '</p>').replace(/\n/g, '</p><p>');
-					} else {
-						html = html.replace(/\n/g, '<br />$&');
-					}
-				}
-				self.insertHtml(html);
+			}
+			setTimeout(function() {
+				movePastedData();
+				pasting = false;
 			}, 0);
 		});
 	});
