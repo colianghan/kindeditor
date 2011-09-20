@@ -24,7 +24,7 @@ KindEditor.plugin('wordpaste', function(K) {
 					name : self.lang('yes'),
 					click : function(e) {
 						var str = doc.body.innerHTML;
-						str = _clearMsWord(str, self.filterMode ? self.htmlTags : K.options.htmlTags);
+						str = K.clearMsWord(str, self.filterMode ? self.htmlTags : K.options.htmlTags);
 						self.insertHtml(str).hideDialog().focus();
 					}
 				}
