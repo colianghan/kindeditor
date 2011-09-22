@@ -647,31 +647,44 @@ _extend(KCmd, {
 		return this.select();
 	},
 	inserthtml : function(val) {
-		var self = this, doc = self.doc, range = self.range;
+		var self = this, range = self.range;
 		if (val === '') {
 			return self;
 		}
 		if (_inPreElement(K(range.startContainer))) {
 			return self;
 		}
-		// [IE] 优化性能
-		if (_IE) {
+		// IE专用，优化性能
+		function pasteHtml(range, val) {
 			var rng = range.get();
 			if (rng.item) {
 				rng.item(0).outerHTML = val;
 			} else {
 				rng.pasteHTML(val);
 			}
+		}
+		// 全浏览器兼容，在IE上速度慢
+		function insertHtml(range, val) {
+			var doc = range.doc,
+				frag = doc.createDocumentFragment();
+			K('@' + val, doc).each(function() {
+				frag.appendChild(this);
+			});
+			range.deleteContents();
+			range.insertNode(frag);
+			range.collapse(false);
+			self.select();
+		}
+		if (_IE) {
+			try {
+				pasteHtml(range, val);
+			} catch(e) {
+				insertHtml(range, val);
+			}
 			return self;
 		}
-		var frag = doc.createDocumentFragment();
-		K('@' + val, doc).each(function() {
-			frag.appendChild(this);
-		});
-		range.deleteContents();
-		range.insertNode(frag);
-		range.collapse(false);
-		return self.select();
+		insertHtml(range, val);
+		return self;
 	},
 	hr : function() {
 		return this.inserthtml('<hr />');

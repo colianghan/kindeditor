@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-09-20)
+* @version 4.0 beta (2011-09-22)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-09-20)',
+var _VERSION = '4.0 beta (2011-09-22)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -2993,30 +2993,42 @@ _extend(KCmd, {
 		return this.select();
 	},
 	inserthtml : function(val) {
-		var self = this, doc = self.doc, range = self.range;
+		var self = this, range = self.range;
 		if (val === '') {
 			return self;
 		}
 		if (_inPreElement(K(range.startContainer))) {
 			return self;
 		}
-		if (_IE) {
+		function pasteHtml(range, val) {
 			var rng = range.get();
 			if (rng.item) {
 				rng.item(0).outerHTML = val;
 			} else {
 				rng.pasteHTML(val);
 			}
+		}
+		function insertHtml(range, val) {
+			var doc = range.doc,
+				frag = doc.createDocumentFragment();
+			K('@' + val, doc).each(function() {
+				frag.appendChild(this);
+			});
+			range.deleteContents();
+			range.insertNode(frag);
+			range.collapse(false);
+			self.select();
+		}
+		if (_IE) {
+			try {
+				pasteHtml(range, val);
+			} catch(e) {
+				insertHtml(range, val);
+			}
 			return self;
 		}
-		var frag = doc.createDocumentFragment();
-		K('@' + val, doc).each(function() {
-			frag.appendChild(this);
-		});
-		range.deleteContents();
-		range.insertNode(frag);
-		range.collapse(false);
-		return self.select();
+		insertHtml(range, val);
+		return self;
 	},
 	hr : function() {
 		return this.inserthtml('<hr />');
