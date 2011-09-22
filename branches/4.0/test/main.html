@@ -331,25 +331,11 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 						select.options.add(new Option(url, url));
 					}
 				});
-				var editor2 = K.create(K('textarea[name=content2]').get(), {
-					basePath : '../',
-					langType : 'en',
-					afterTab : function() {
-						K('#uploadFile')[0].focus();
-					}
-				});
 				K('#create1').click(function(e) {
 					editor1.create();
 				});
-				K('#create2').click(function(e) {
-					editor2.create();
-					
-				});
 				K('#remove1').click(function(e) {
 					editor1.remove();
-				});
-				K('#remove2').click(function(e) {
-					editor2.remove();
 				});
 				K('#getHtml1').click(function(e) {
 					alert(editor1.html());
@@ -404,6 +390,22 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 					editor1.loadPlugin('template', function() {
 						
 					});
+				});
+			});
+			KindEditor.ready(function(K) {
+				var editor2 = K.create(K('textarea[name=content2]').get(), {
+					basePath : '../',
+					langType : 'en',
+					afterTab : function() {
+						K('#uploadFile')[0].focus();
+					}
+				});
+				K('#create2').click(function(e) {
+					editor2.create();
+					
+				});
+				K('#remove2').click(function(e) {
+					editor2.remove();
 				});
 			});
 		</script>
