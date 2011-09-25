@@ -129,6 +129,18 @@ test('undef', function() {
 	same(K.undef(obj.aaa, 0), 1);
 });
 
+test('invalidUrl', function() {
+	ok(K.invalidUrl('http://www.kindsoft.net/') === false);
+	ok(K.invalidUrl('http://www.kindsoft.net/<br>') === true);
+	ok(K.invalidUrl('http://www.kindsoft.net/"abcd"') === true);
+	ok(K.invalidUrl('http://www.kindsoft.net/<b>abcd</b>') === true);
+});
+
+test('addParam', function() {
+	same(K.addParam('upload.php', 'b=2'), 'upload.php?b=2');
+	same(K.addParam('upload.php?a=1', 'b=2'), 'upload.php?a=1&b=2');
+});
+
 test('extend', function() {
 	function Parent() {
 		this.init();

@@ -122,6 +122,9 @@ function _undef(val, defaultVal) {
 function _invalidUrl(url) {
 	return !url || /[<>"]/.test(url);
 }
+function _addParam(url, param) {
+	return url.indexOf('?') >= 0 ? url + '&' + param : url + '?' + param;
+}
 function _extend(child, parent, proto) {
 	if (!proto) {
 		proto = parent;
@@ -188,6 +191,7 @@ var K = {
 	toArray : _toArray,
 	undef : _undef,
 	invalidUrl : _invalidUrl,
+	addParam : _addParam,
 	extend : _extend,
 	json : _json
 };

@@ -146,7 +146,7 @@ KindEditor.plugin('image', function(K) {
 			var uploadbutton = K.uploadbutton({
 				button : K('.ke-upload-button', div)[0],
 				fieldName : 'imgFile',
-				url : uploadJson + '?dir=image',
+				url : K.addParam(uploadJson, 'dir=image'),
 				afterUpload : function(data) {
 					if (data.error === 0) {
 						var width = widthBox.val(),

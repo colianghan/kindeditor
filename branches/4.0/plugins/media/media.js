@@ -93,7 +93,7 @@ KindEditor.plugin('media', function(K) {
 				var uploadbutton = K.uploadbutton({
 					button : K('.ke-upload-button', div)[0],
 					fieldName : 'imgFile',
-					url : uploadJson + '?dir=media',
+					url : K.addParam(uploadJson, 'dir=media'),
 					afterUpload : function(data) {
 						if (data.error === 0) {
 							var url = K.formatUrl(data.url, 'absolute');
