@@ -214,6 +214,7 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 				<option value="">附件列表</option>
 			</select>
 			<br />
+			<textarea id="insertHtml"><!-- comment test --><strong>abcd</strong></textarea>
 			<br />
 			<input type="button" id="create1" value="Create #1" />
 			<input type="button" id="create2" value="Create #2" />
@@ -276,22 +277,22 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 					alert(editor1.fullHtml());
 				});
 				K('#setHtml1').click(function(e) {
-					editor1.html('<h1>abcd</h1>');
+					editor1.html(K('#insertHtml').val());
 				});
 				K('#getText1').click(function(e) {
 					alert(editor1.text());
 				});
 				K('#setText1').click(function(e) {
-					editor1.text('<h1>abcd</h1>');
+					editor1.text(K('#insertHtml').val());
 				});
 				K('#selectedHtml1').click(function(e) {
 					alert(editor1.selectedHtml());
 				});
 				K('#insertHtml1').click(function(e) {
-					editor1.insertHtml('<strong>abcd</strong>1234');
+					editor1.insertHtml(K('#insertHtml').val());
 				});
 				K('#appendHtml1').click(function(e) {
-					editor1.appendHtml('<strong>abcd</strong>1234');
+					editor1.appendHtml(K('#insertHtml').val());
 				});
 				K('#sync1').click(function(e) {
 					editor1.sync();

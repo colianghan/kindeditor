@@ -658,12 +658,19 @@ _extend(KCmd, {
 		}
 		// IE专用，优化性能
 		function pasteHtml(range, val) {
+			val = '<img id="__kindeditor_temp_tag__" width="0" height="0" style="display:none;" />' + val;
 			var rng = range.get();
 			if (rng.item) {
 				rng.item(0).outerHTML = val;
 			} else {
 				rng.pasteHTML(val);
 			}
+			var temp = range.doc.getElementById('__kindeditor_temp_tag__');
+			temp.parentNode.removeChild(temp);
+			var newRange = _toRange(rng);
+			range.setEnd(newRange.endContainer, newRange.endOffset);
+			range.collapse(false);
+			self.select();
 		}
 		// 全浏览器兼容，在IE上速度慢
 		function insertHtml(range, val) {
