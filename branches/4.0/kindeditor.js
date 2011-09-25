@@ -5051,6 +5051,9 @@ KEditor.prototype = {
 		return self;
 	}
 };
+function _editor(options) {
+	return new KEditor(options);
+}
 function _create(expr, options) {
 	options = options || {};
 	options.basePath = _undef(options.basePath, K.basePath);
@@ -5069,8 +5072,8 @@ function _create(expr, options) {
 		return editor.create();
 	}
 	var knode = K(expr);
-	if (!expr || !knode) {
-		return new KEditor(options);
+	if (!knode) {
+		return;
 	}
 	options.srcElement = knode[0];
 	if (!options.width) {
@@ -5091,6 +5094,7 @@ function _create(expr, options) {
 if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
+K.editor = _editor;
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;

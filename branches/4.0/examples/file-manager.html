@@ -9,7 +9,7 @@
 		<script src="../plugins/filemanager/filemanager.js"></script>
 		<script>
 			KindEditor.ready(function(K) {
-				var editor = K.create();
+				var editor = K.editor();
 				K.plugin('filemanager').call(editor, K);
 				K('#filemanager').click(function() {
 					var dialog = editor.plugin.filemanagerDialog({

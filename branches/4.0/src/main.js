@@ -884,6 +884,10 @@ KEditor.prototype = {
 	}
 };
 
+function _editor(options) {
+	return new KEditor(options);
+}
+
 /**
 	@example
 	K.create('textarea');
@@ -909,8 +913,8 @@ function _create(expr, options) {
 		return editor.create();
 	}
 	var knode = K(expr);
-	if (!expr || !knode) {
-		return new KEditor(options);
+	if (!knode) {
+		return;
 	}
 	options.srcElement = knode[0];
 	if (!options.width) {
@@ -936,6 +940,7 @@ if (_IE && _V < 7) {
 	_nativeCommand(document, 'BackgroundImageCache', true);
 }
 
+K.editor = _editor;
 K.create = _create;
 K.plugin = _plugin;
 K.lang = _lang;
