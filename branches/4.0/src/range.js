@@ -178,16 +178,16 @@ function _getStartEnd(rng, isStart) {
 			return {node: node.parentNode, offset: i};
 		}
 		if (node.nodeType == 1) {
-			var nodeRange = rng.duplicate(), dummy, knode = K(node);
+			var nodeRange = rng.duplicate(), dummy, knode = K(node), newNode = node;
 			// <table></table><img>ab[cd]ef
 			if (knode.isControl()) {
 				dummy = doc.createElement('span');
 				knode.after(dummy);
-				node = dummy;
+				newNode = dummy;
 				// 0123456[7]89<table><tr><td>123</td></tr></table>
 				startPos += knode.text().replace(/\r\n|\n|\r/g, '').length;
 			}
-			_moveToElementText(nodeRange, node);
+			_moveToElementText(nodeRange, newNode);
 			testRange.setEndPoint('StartToEnd', nodeRange);
 			if (cmp > 0) {
 				startPos += nodeRange.text.replace(/\r\n|\n|\r/g, '').length;
@@ -211,7 +211,7 @@ function _getStartEnd(rng, isStart) {
 	}
 	//<p><table></table><img>ab|c</p>
 	if (cmp > 0) {
-		while (startNode.nodeType == 1) {
+		while (startNode.nextSibling && startNode.nodeType == 1) {
 			startNode = startNode.nextSibling;
 		}
 	}

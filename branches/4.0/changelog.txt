@@ -30,6 +30,7 @@ ver 4.0
 * BUG: [WEBKIT] 修复了回车换行后标题属性丢失的问题。
 * BUG: [WEBKIT] 修复了粘贴到单元格时有时候粘贴错位的问题。
 * BUG: 修复了删除格式时有时候丢失文字的问题。
+* BUG: [IE] 修复了在HTML里有inline-block时有时候_getStartEnd报错的问题。
 
 ver 4.0 beta
 * BUG: 修复了域名包含端口时在IE上发生错误的问题。

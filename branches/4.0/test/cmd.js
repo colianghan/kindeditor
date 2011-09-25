@@ -521,7 +521,8 @@ test('cmd.execute', function() {
 	range.setEnd(div[0], 2);
 	cmd = K.cmd(range);
 	cmd.removeformat();
-	same(range.html(), 'abcdefg'); 
+	same(range.html(), 'abcdefg');
+	div.html('');
 });
 
 test('cmd.inserthtml', function() {
