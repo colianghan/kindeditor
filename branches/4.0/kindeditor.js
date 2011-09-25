@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0 beta (2011-09-22)
+* @version 4.0 beta (2011-09-25)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0 beta (2011-09-22)',
+var _VERSION = '4.0 beta (2011-09-25)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -2471,6 +2471,9 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 	return false;
 }
 function _removeAttrOrCss(knode, map) {
+	if (knode.type != 1) {
+		return;
+	}
 	_removeAttrOrCssByKey(knode, map, '*');
 	_removeAttrOrCssByKey(knode, map);
 }
@@ -2744,6 +2747,7 @@ _extend(KCmd, {
 			range.collapse(true);
 			return self;
 		}
+		range.enlarge();
 		if (range.startOffset === 0) {
 			var ksc = K(range.startContainer), parent;
 			while ((parent = ksc.parent()) && parent.isStyle() && parent.children().length == 1) {
@@ -2802,12 +2806,11 @@ _extend(KCmd, {
 		if (endAfter && _isEmptyNode(endAfter)) {
 			endAfter.remove();
 		}
-		var startNode = sc.nodeType == 3 ? sc : sc.childNodes[so],
-			endNode =  ec.nodeType == 3 || ec === 0 ? ec : ec.childNodes[eo - 1];
+		var bookmark = range.createBookmark(true);
 		_each(nodeList, function(i, node) {
-			var knode = K(node);
-			_removeAttrOrCss(knode, map);
+			_removeAttrOrCss(K(node), map);
 		});
+		range.moveToBookmark(bookmark);
 		return self;
 	},
 	commonNode : function(map) {

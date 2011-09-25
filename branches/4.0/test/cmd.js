@@ -514,6 +514,14 @@ test('cmd.execute', function() {
 	cmd.removeformat();
 	equals(div.html().replace(/\n/, ''), '<p>1234</p>');
 	div.html('');
+	//15
+	div.html('<span style="color:#e56600;">abc</span><span><span style="color:#e56600;">d</span><span style="color:#e56600;">efg</span></span>');
+	range = K.range(document);
+	range.setStart(div[0], 0);
+	range.setEnd(div[0], 2);
+	cmd = K.cmd(range);
+	cmd.removeformat();
+	same(range.html(), 'abcdefg'); 
 });
 
 test('cmd.inserthtml', function() {

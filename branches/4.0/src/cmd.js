@@ -82,6 +82,9 @@ function _hasAttrOrCssByKey(knode, map, mapKey) {
 }
 //删除一个node的属性和CSS
 function _removeAttrOrCss(knode, map) {
+	if (knode.type != 1) {
+		return;
+	}
 	_removeAttrOrCssByKey(knode, map, '*');
 	_removeAttrOrCssByKey(knode, map);
 }
@@ -382,6 +385,7 @@ _extend(KCmd, {
 			range.collapse(true);
 			return self;
 		}
+		range.enlarge();
 		//<p><strong><em>[123456789]</em></strong></p>, remove strong
 		if (range.startOffset === 0) {
 			var ksc = K(range.startContainer), parent;
@@ -449,14 +453,12 @@ _extend(KCmd, {
 		if (endAfter && _isEmptyNode(endAfter)) {
 			endAfter.remove();
 		}
-		//1234|<strong>56</strong>|789, reset range after remove strong
-		var startNode = sc.nodeType == 3 ? sc : sc.childNodes[so],
-			endNode =  ec.nodeType == 3 || ec === 0 ? ec : ec.childNodes[eo - 1];
+		var bookmark = range.createBookmark(true);
 		//remove attributes or styles
 		_each(nodeList, function(i, node) {
-			var knode = K(node);
-			_removeAttrOrCss(knode, map);
+			_removeAttrOrCss(K(node), map);
 		});
+		range.moveToBookmark(bookmark);
 		return self;
 	},
 	commonNode : function(map) {
