@@ -298,11 +298,6 @@ function KEditor(options) {
 	// set options from param
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
-		if (key === 'basePath') {
-			options.themesPath === undefined && setOption('themesPath', options[key] + 'themes/');
-			options.langPath === undefined && setOption('langPath', options[key] + 'lang/');
-			options.pluginsPath === undefined && setOption('pluginsPath', options[key] + 'plugins/');
-		}
 	});
 	// set options from default setting
 	_each(K.options, function(key, val) {
@@ -898,14 +893,15 @@ KEditor.prototype = {
 */
 function _create(expr, options) {
 	options = options || {};
-	var loadStyleMode = _undef(options.loadStyleMode, K.options.loadStyleMode);
+	options.basePath = _undef(options.basePath, K.basePath);
+	options.themesPath = _undef(options.themesPath, options.basePath + 'themes/');
+	options.langPath = _undef(options.langPath, options.basePath + 'lang/');
+	options.pluginsPath = _undef(options.pluginsPath, options.basePath + 'plugins/');
 	// 自动加载CSS文件
-	if (loadStyleMode) {
-		var basePath = _undef(options.basePath, K.options.basePath),
-			themesPath = _undef(options.themesPath, basePath + 'themes/'),
-			themeType = _undef(options.themeType, K.options.themeType);
-		_loadStyle(themesPath + 'default/default.css');
-		_loadStyle(themesPath + themeType + '/' + themeType + '.css');
+	if (_undef(options.loadStyleMode, K.options.loadStyleMode)) {
+		var themeType = _undef(options.themeType, K.options.themeType);
+		_loadStyle(options.themesPath + 'default/default.css');
+		_loadStyle(options.themesPath + themeType + '/' + themeType + '.css');
 	}
 	function create(editor) {
 		_each(_plugins, function(name, fn) {
