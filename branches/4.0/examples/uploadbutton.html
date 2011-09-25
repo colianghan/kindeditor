@@ -4,19 +4,7 @@
 		<meta charset="utf-8" />
 		<title>UploadButton Examples</title>
 		<link rel="stylesheet" href="../themes/default/default.css" />
-		<script src="../kindeditor.js"></script>
-		<style>
-			.cls {
-				border : 1px solid #A0A0A0;
-				margin : 10px;
-				padding : 10px;
-				cursor: pointer;
-			}
-			.on {
-				border : 1px solid red;
-				background-color : #F0F0F0;
-			}
-		</style>
+		<script src="../kindeditor-min.js"></script>
 		<script>
 			KindEditor.ready(function(K) {
 				var uploadbutton = K.uploadbutton({
@@ -39,6 +27,6 @@
 		</script>
 	</head>
 	<body>
-		<input type="text" id="url" value="" /><input type="button" id="uploadButton" value="Upload" />
+		<input type="text" id="url" value="" /> <input type="button" id="uploadButton" value="Upload" />
 	</body>
 </html>

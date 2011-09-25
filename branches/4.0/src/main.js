@@ -2,6 +2,9 @@
 var _plugins = {};
 
 function _plugin(name, fn) {
+	if (!fn) {
+		return _plugins[name];
+	}
 	_plugins[name] = fn;
 }
 
@@ -305,18 +308,14 @@ function KEditor(options) {
 			setOption(key, val);
 		}
 	});
-	var se = K(self.srcElement);
-	if (!self.width) {
-		setOption('width', se.width() || self.minWidth);
-	}
-	if (!self.height) {
-		setOption('height', se.height() || self.minHeight);
-	}
+	setOption('width', _undef(self.width, self.minWidth));
+	setOption('height', _undef(self.height, self.minHeight));
 	setOption('width', _addUnit(self.width));
 	setOption('height', _addUnit(self.height));
 	if (_MOBILE) {
 		self.designMode = false;
 	}
+	var se = K(self.srcElement || '<textarea/>');
 	self.srcElement = se;
 	self.initContent = _elementVal(se);
 	self.plugin = {};
@@ -328,6 +327,8 @@ function KEditor(options) {
 	self._redoStack = [];
 	self._calledPlugins = {};
 	self._firstAddBookmark = true;
+	self.menu = self.contextmenu = null;
+	self.dialogs = [];
 }
 
 KEditor.prototype = {
@@ -566,8 +567,6 @@ KEditor.prototype = {
 			.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
 			.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
 
-		self.menu = self.contextmenu = null;
-		self.dialogs = [];
 		// remove resize event
 		K(window).unbind('resize');
 		// reset size
@@ -910,8 +909,8 @@ function _create(expr, options) {
 		return editor.create();
 	}
 	var knode = K(expr);
-	if (!knode) {
-		return;
+	if (!expr || !knode) {
+		return new KEditor(options);
 	}
 	options.srcElement = knode[0];
 	if (!options.width) {

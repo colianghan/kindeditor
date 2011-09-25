@@ -3977,7 +3977,7 @@ _extend(KUploadButton, {
 		self.button = button;
 		self.iframe = K('iframe', div);
 		self.form = K('form', div);
-		self.fileBox = K('.ke-upload-file', div).width(K('.ke-button-outer').width());
+		self.fileBox = K('.ke-upload-file', div).width(K('.ke-button-common').width());
 		self.options = options;
 	},
 	submit : function() {
@@ -4231,6 +4231,9 @@ K.loadStyle = _loadStyle;
 K.ajax = _ajax;
 var _plugins = {};
 function _plugin(name, fn) {
+	if (!fn) {
+		return _plugins[name];
+	}
 	_plugins[name] = fn;
 }
 var _language = {};
@@ -4495,29 +4498,20 @@ function KEditor(options) {
 	}
 	_each(options, function(key, val) {
 		setOption(key, options[key]);
-		if (key === 'basePath') {
-			options.themesPath === undefined && setOption('themesPath', options[key] + 'themes/');
-			options.langPath === undefined && setOption('langPath', options[key] + 'lang/');
-			options.pluginsPath === undefined && setOption('pluginsPath', options[key] + 'plugins/');
-		}
 	});
 	_each(K.options, function(key, val) {
 		if (self[key] === undefined) {
 			setOption(key, val);
 		}
 	});
-	var se = K(self.srcElement);
-	if (!self.width) {
-		setOption('width', se.width() || self.minWidth);
-	}
-	if (!self.height) {
-		setOption('height', se.height() || self.minHeight);
-	}
+	setOption('width', _undef(self.width, self.minWidth));
+	setOption('height', _undef(self.height, self.minHeight));
 	setOption('width', _addUnit(self.width));
 	setOption('height', _addUnit(self.height));
 	if (_MOBILE) {
 		self.designMode = false;
 	}
+	var se = K(self.srcElement || '<textarea/>');
 	self.srcElement = se;
 	self.initContent = _elementVal(se);
 	self.plugin = {};
@@ -4528,6 +4522,8 @@ function KEditor(options) {
 	self._redoStack = [];
 	self._calledPlugins = {};
 	self._firstAddBookmark = true;
+	self.menu = self.contextmenu = null;
+	self.dialogs = [];
 }
 KEditor.prototype = {
 	lang : function(mixed) {
@@ -4751,8 +4747,6 @@ KEditor.prototype = {
 		statusbar.removeClass('statusbar').addClass('ke-statusbar')
 			.append('<span class="ke-inline-block ke-statusbar-center-icon"></span>')
 			.append('<span class="ke-inline-block ke-statusbar-right-icon"></span>');
-		self.menu = self.contextmenu = null;
-		self.dialogs = [];
 		K(window).unbind('resize');
 		self.resize(width, height);
 		function newResize(width, height, updateProp) {
@@ -5059,13 +5053,14 @@ KEditor.prototype = {
 };
 function _create(expr, options) {
 	options = options || {};
-	var loadStyleMode = _undef(options.loadStyleMode, K.options.loadStyleMode);
-	if (loadStyleMode) {
-		var basePath = _undef(options.basePath, K.options.basePath),
-			themesPath = _undef(options.themesPath, basePath + 'themes/'),
-			themeType = _undef(options.themeType, K.options.themeType);
-		_loadStyle(themesPath + 'default/default.css');
-		_loadStyle(themesPath + themeType + '/' + themeType + '.css');
+	options.basePath = _undef(options.basePath, K.basePath);
+	options.themesPath = _undef(options.themesPath, options.basePath + 'themes/');
+	options.langPath = _undef(options.langPath, options.basePath + 'lang/');
+	options.pluginsPath = _undef(options.pluginsPath, options.basePath + 'plugins/');
+	if (_undef(options.loadStyleMode, K.options.loadStyleMode)) {
+		var themeType = _undef(options.themeType, K.options.themeType);
+		_loadStyle(options.themesPath + 'default/default.css');
+		_loadStyle(options.themesPath + themeType + '/' + themeType + '.css');
 	}
 	function create(editor) {
 		_each(_plugins, function(name, fn) {
@@ -5074,8 +5069,8 @@ function _create(expr, options) {
 		return editor.create();
 	}
 	var knode = K(expr);
-	if (!knode) {
-		return;
+	if (!expr || !knode) {
+		return new KEditor(options);
 	}
 	options.srcElement = knode[0];
 	if (!options.width) {
