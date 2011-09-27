@@ -918,10 +918,10 @@ function _create(expr, options) {
 	}
 	options.srcElement = knode[0];
 	if (!options.width) {
-		options.width = knode.width();
+		options.width = knode[0].style.width || knode.width();
 	}
 	if (!options.height) {
-		options.height = knode.height();
+		options.height = knode[0].style.height || knode.height();
 	}
 	var editor = new KEditor(options);
 	// create editor
