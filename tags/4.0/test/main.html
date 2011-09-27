@@ -1,0 +1,347 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>KindEditor Main Test</title>
+		<!-- <script src="../lib/firebug-lite/build/firebug-lite.js#startOpened"></script> -->
+		<link rel="stylesheet" href="../themes/default/default.css" />
+		<link rel="stylesheet" href="../themes/simple/simple.css" />
+		<!-- <link rel="stylesheet" href="../lib/taobao.css" /> -->
+		<style>
+			.selected {
+				padding: 10px;
+				margin: 10px;
+			}
+			table, td, tr {
+				border: 1px solid #000;
+				padding: 10px;
+				margin: 10px;
+			}
+		</style>
+		<script src="../src/core.js"></script>
+		<script src="../src/config.js"></script>
+		<script src="../src/ajax.js"></script>
+		<script src="../src/event.js"></script>
+		<script src="../src/html.js"></script>
+		<script src="../src/selector.js"></script>
+		<script src="../src/node.js"></script>
+		<script src="../src/range.js"></script>
+		<script src="../src/cmd.js"></script>
+		<script src="../src/widget.js"></script>
+		<script src="../src/edit.js"></script>
+		<script src="../src/toolbar.js"></script>
+		<script src="../src/menu.js"></script>
+		<script src="../src/colorpicker.js"></script>
+		<script src="../src/uploadbutton.js"></script>
+		<script src="../src/dialog.js"></script>
+		<script src="../src/tabs.js"></script>
+		<script src="../src/main.js"></script>
+		<script src="../lang/zh_CN.js"></script>
+		<script src="../lang/en.js"></script>
+		<script src="../plugins/emoticons/emoticons.js"></script>
+		<script src="../plugins/flash/flash.js"></script>
+		<script src="../plugins/image/image.js"></script>
+		<script src="../plugins/link/link.js"></script>
+		<script src="../plugins/media/media.js"></script>
+		<script src="../plugins/plainpaste/plainpaste.js"></script>
+		<script src="../plugins/table/table.js"></script>
+		<script src="../plugins/wordpaste/wordpaste.js"></script>
+		<script src="../plugins/filemanager/filemanager.js"></script>
+		<script src="../plugins/preview/preview.js"></script>
+		<script src="../plugins/code/code.js"></script>
+		<script src="../plugins/map/map.js"></script>
+		<script src="../plugins/lineheight/lineheight.js"></script>
+		<script src="../plugins/clearhtml/clearhtml.js"></script>
+	</head>
+	<body>
+		<h1 id="type">KindEditor Main Test</h1>
+		<form method="post" action="../php/demo.php">
+			<p><textarea name="content1" cols="100" rows="20" style="width:800px;height:200px;">
+<div style="display:inline-block;"></div>123<div></div><div></div>
+<p style="text-align:left;text-indent:24pt;">
+	<span style="font-size:12pt;font-family:仿宋_GB2312;color:#E56600;">三个基</span><span style="font-family:仿宋_GB2312;font-size:16px;"><span style="color:#E56600;">本</span><span style="color:#E56600;">关系式</span></span> 
+</p>
+bbbbbbbbbbbbbbb
+<script>
+	// alert(1);
+</script>
+<table style="width:90%;" cellspacing="0" cellpadding="2">
+	<tbody>
+		<tr>
+			<td>
+				1
+			</td>
+			<td>
+				2
+			</td>
+			<td>
+				3
+			</td>
+			<td>
+				4
+			</td>
+		</tr>
+		<tr>
+			<td rowspan="2">
+				1
+			</td>
+			<td>
+				2
+			</td>
+			<td>
+				3
+			</td>
+			<td>
+				4
+			</td>
+		</tr>
+		<tr>
+			<td>
+				2
+			</td>
+			<td>
+				3
+			</td>
+			<td>
+				4
+			</td>
+		</tr>
+	</tbody>
+</table>
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+<table style="width:90%;" cellspacing="0" cellpadding="2">
+	<tbody>
+		<tr>
+			<td>
+				1
+			</td>
+			<td>
+				2
+			</td>
+			<td>
+				3
+			</td>
+			<td>
+				4
+			</td>
+		</tr>
+		<tr>
+			<td rowspan="2">
+				a
+			</td>
+			<td colspan="2" rowspan="2">
+				b
+			</td>
+			<td rowspan="2">
+				d
+			</td>
+		</tr>
+		<tr>
+		</tr>
+		<tr>
+			<td>
+				1
+			</td>
+			<td>
+				2
+			</td>
+			<td>
+				3
+			</td>
+			<td>
+				4
+			</td>
+		</tr>
+	</tbody>
+</table>
+<style>
+	table {
+		border: 1px solid #000;
+	}
+</style>
+<pre>
+	123
+	456
+</pre>
+<br />
+<table style="width:90%;" border="1" bordercolor="#000000" cellpadding="2" cellspacing="0">
+	<tbody>
+		<tr>
+			<td>
+				a
+			</td>
+			<td colspan="2" rowspan="2">
+				b
+			</td>
+			<td>
+				d
+			</td>
+		</tr>
+		<tr>
+			<td>
+				e
+			</td>
+			<td>
+				h
+			</td>
+		</tr>
+		<tr>
+			<td>
+				1
+			</td>
+			<td>
+				2
+			</td>
+			<td>
+				3
+			</td>
+			<td>
+				4
+			</td>
+		</tr>
+	</tbody>
+</table>
+		<img src="data/logo_180_30.gif" onclick="javascript:alert(2);" />
+		测试内容1<div><a href="#">测试内容1</a><br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div>
+		测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div></div><div>测试内容1<div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1测试内容1</div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1<br /></div><div>测试内容1</div>
+			</textarea></p>
+			<br />
+			<textarea name="content2" cols="100" rows="20" style="width:700px;height:200px;">
+<div style="display:inline-block;"></div>123<div></div><div></div>
+</textarea>
+			<br />
+			<select id="uploadFile">
+				<option value="">附件列表</option>
+			</select>
+			<br />
+			<textarea id="insertHtml"><!-- comment test --><strong>abcd</strong></textarea>
+			<br />
+			<input type="button" id="create1" value="Create #1" />
+			<input type="button" id="create2" value="Create #2" />
+			<input type="button" id="remove1" value="Remove #1" />
+			<input type="button" id="remove2" value="Remove #2" />
+			<input type="button" id="getHtml1" value="Get HTML #1" />
+			<input type="button" id="fullHtml1" value="Get Full HTML #1" />
+			<input type="button" id="setHtml1" value="Set HTML #1" />
+			<input type="button" id="getText1" value="Get Text #1" />
+			<input type="button" id="setText1" value="Set Text #1" />
+			<input type="button" id="selectedHtml1" value="Get Selected HTML #1" />
+			<input type="button" id="insertHtml1" value="Insert HTML #1" />
+			<input type="button" id="appendHtml1" value="Append HTML #1" />
+			<input type="button" id="sync1" value="Sync #1" />
+			<input type="button" id="focus1" value="Focus #1" />
+			<input type="button" id="blur1" value="Blur #1" />
+			<input type="button" id="readonly1" value="Readonly #1" />
+			<input type="button" id="cancelReadonly1" value="Cancel Readonly #1" />
+			<input type="button" id="isEmpty1" value="Is Empty #1" />
+			<input type="button" id="isDirty1" value="Is Dirty #1" />
+			<input type="button" id="loadPlugin1" value="Load Plugin #1" />
+			<input type="submit" name="button" value="Submit" />
+			<input type="reset" name="button" value="Reset" />
+		</form>
+		<script>
+			KindEditor.DEBUG = true;
+			//KindEditor.options.filterMode = true;
+			//document.domain = 'kindsoft.net';
+			KindEditor.ready(function(K) {
+				var editor1 = K.create('textarea[name=content1]', {
+					basePath : '../',
+					pluginsPath : '../plugins/',
+					urlType : 'absolute',
+					themeType : 'simple',
+					allowImageUpload : false,
+					designMode : true,
+					allowFileManager : true,
+					fullscreenMode : false,
+					afterTab : function() {
+						editor2.focus();
+					},
+					afterChange : function() {
+						//console.log('1');
+					},
+					afterUpload : function(url) {
+						var select = K('#uploadFile')[0];
+						select.options.add(new Option(url, url));
+					}
+				});
+				K('#create1').click(function(e) {
+					editor1.create();
+				});
+				K('#remove1').click(function(e) {
+					editor1.remove();
+				});
+				K('#getHtml1').click(function(e) {
+					alert(editor1.html());
+				});
+				K('#fullHtml1').click(function(e) {
+					alert(editor1.fullHtml());
+				});
+				K('#setHtml1').click(function(e) {
+					editor1.html(K('#insertHtml').val());
+				});
+				K('#getText1').click(function(e) {
+					alert(editor1.text());
+				});
+				K('#setText1').click(function(e) {
+					editor1.text(K('#insertHtml').val());
+				});
+				K('#selectedHtml1').click(function(e) {
+					alert(editor1.selectedHtml());
+				});
+				K('#insertHtml1').click(function(e) {
+					editor1.insertHtml(K('#insertHtml').val());
+				});
+				K('#appendHtml1').click(function(e) {
+					editor1.appendHtml(K('#insertHtml').val());
+				});
+				K('#sync1').click(function(e) {
+					editor1.sync();
+					alert(K('textarea[name=content1]').val());
+				});
+				K('#focus1').click(function(e) {
+					editor1.focus();
+				});
+				K('#blur1').click(function(e) {
+					editor1.blur();
+				});
+				K('#readonly1').click(function(e) {
+					editor1.readonly();
+				});
+				K('#cancelReadonly1').click(function(e) {
+					editor1.readonly(false);
+				});
+				K('#isEmpty1').click(function(e) {
+					alert(editor1.isEmpty());
+				});
+				K('#isDirty1').click(function(e) {
+					alert(editor1.isDirty());
+				});
+				K('#loadPlugin1').click(function(e) {
+					editor1.loadPlugin('template', function() {
+						
+					});
+					editor1.loadPlugin('template', function() {
+						
+					});
+				});
+			});
+			KindEditor.ready(function(K) {
+				var editor2 = K.create(K('textarea[name=content2]').get(), {
+					basePath : '../',
+					langType : 'en',
+					afterTab : function() {
+						K('#uploadFile')[0].focus();
+					}
+				});
+				K('#create2').click(function(e) {
+					editor2.create();
+					
+				});
+				K('#remove2').click(function(e) {
+					editor2.remove();
+				});
+			});
+		</script>
+		<div style="height:1000px;"></div>
+	</body>
+</html>
