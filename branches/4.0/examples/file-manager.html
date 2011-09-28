@@ -8,7 +8,9 @@
 		<script src="../lang/zh_CN.js"></script>
 		<script>
 			KindEditor.ready(function(K) {
-				var editor = K.editor();
+				var editor = K.editor({
+					fileManagerJson : '../php/file_manager_json.php'
+				});
 				K('#filemanager').click(function() {
 					editor.loadPlugin('filemanager', function() {
 						editor.plugin.filemanagerDialog({
