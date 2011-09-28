@@ -13,7 +13,6 @@
 
 .. sourcecode:: html
 
-	<link rel="stylesheet" href="/ke4/themes/default/default.css" />
 	<script charset="utf-8" src="/ke4/kindeditor.js"></script>
 	<script charset="utf-8" src="/ke4/lang/zh_CN.js"></script>
 
@@ -51,6 +50,19 @@
 	* 4.x修改过一些参数名，所以3.x的初始化参数不一定直接兼容4.x，具体参数请参考 :doc:`option` 。
 	* 4.x通过K.create返回的editor对象调用编辑器API，具体方法请参考 :doc:`editor` 。
 	* 4.x插件采用js动态加载机制，uploadJson和fileManagerJson是相对于当前页面的路径，使用相对路径时需要注意。
+	* 如果需要在其它函数内调用editor对象，可以将editor对象设置成全局变量。
+
+.. sourcecode:: html
+
+	<script>
+		KindEditor.ready(function(K) {
+			window.EditorObject = K.create('#editor_id');
+		});
+		//取得编辑器内容
+		function getEditorData() {
+			return EditorObject.html();
+		}
+	</script>
 
 
 

@@ -388,7 +388,7 @@ K.invalidUrl(val)
 判断URL或路径是否合法。
 
 * 参数:
-	* mixed val: URL或路径
+	* string val: URL或路径
 * 返回: boolean
 
 示例:
@@ -397,6 +397,26 @@ K.invalidUrl(val)
 
 	val = K.invalidUrl('abc<">.html'); //返回true
 	val = K.invalidUrl('abc.html'); //返回false
+
+.. index:: addParam
+
+.. _addParam:
+
+K.addParam(url, param)
+--------------------------------------------------------
+URL添加GET参数，拼接时自动判断连接字符(&或?)。
+
+* 参数:
+	* string url: URL
+	* string param: GET参数
+* 返回: boolean
+
+示例:
+
+.. sourcecode:: js
+
+	url = K.addParam('http://www.example.com/test.php', 'abc=123');
+	url = K.addParam('http://www.example.com/test.php?cde=456', 'abc=123');
 
 .. index:: extend
 

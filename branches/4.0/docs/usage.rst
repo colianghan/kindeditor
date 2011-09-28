@@ -43,7 +43,6 @@
 
 .. sourcecode:: html
 
-	<link rel="stylesheet" href="/editor/themes/default/default.css" />
 	<script charset="utf-8" src="/editor/kindeditor.js"></script>
 	<script charset="utf-8" src="/editor/lang/zh_CN.js"></script>
 	<script>
