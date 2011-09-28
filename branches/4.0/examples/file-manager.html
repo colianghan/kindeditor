@@ -6,19 +6,19 @@
 		<link rel="stylesheet" href="../themes/default/default.css" />
 		<script src="../kindeditor.js"></script>
 		<script src="../lang/zh_CN.js"></script>
-		<script src="../plugins/filemanager/filemanager.js"></script>
 		<script>
 			KindEditor.ready(function(K) {
 				var editor = K.editor();
-				K.plugin('filemanager').call(editor, K);
 				K('#filemanager').click(function() {
-					var dialog = editor.plugin.filemanagerDialog({
-						viewType : 'VIEW',
-						dirName : 'image',
-						clickFn : function(url, title) {
-							K('#url').val(url);
-							editor.hideDialog();
-						}
+					editor.loadPlugin('filemanager', function() {
+						editor.plugin.filemanagerDialog({
+							viewType : 'VIEW',
+							dirName : 'image',
+							clickFn : function(url, title) {
+								K('#url').val(url);
+								editor.hideDialog();
+							}
+						});
 					});
 				});
 			});
