@@ -76,7 +76,7 @@ K.options = {
 		'td,th': [
 			'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor',
 			'.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight',
-			'.font-style', '.text-decoration', '.vertical-align', '.background'
+			'.font-style', '.text-decoration', '.vertical-align', '.background', '.border'
 		],
 		a : ['href', 'target', 'name'],
 		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess'],

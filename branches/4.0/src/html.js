@@ -306,17 +306,8 @@ function _clearMsWord(html, htmlTags) {
 		.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
 		.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
 		.replace(/<xml>[\s\S]*?<\/xml>/ig, '')
-		.replace(/(<table[^>]*)(>)/ig, function(full, start, end) {
-			full = full.replace(/border="?\d+"?/, '');
-			var attrs = _getAttrList(full), newFull = start;
-			if (attrs.border === undefined) {
-				newFull += ' border="1"';
-			}
-			if (attrs.bordercolor === undefined) {
-				newFull += ' bordercolor="#000000"';
-			}
-			newFull += end;
-			return newFull;
+		.replace(/<(?:table|td)[^>]*>/ig, function(full) {
+			return full.replace(/border-bottom:([#\w\s]+)/ig, 'border:$1');
 		});
 	return _formatHtml(html, htmlTags);
 }

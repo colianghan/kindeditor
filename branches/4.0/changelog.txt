@@ -7,6 +7,7 @@
 ver 4.0.1
 * 改善: 改进image插件，通过editor.plugin.imageDialog()可以单独调用图片弹出框。
 * BUG: 修改了不能用style的width和height设置编辑器大小的问题。
+* BUG: 修改了从MS WORD里面拷贝过来的表格，表格的颜色会丢掉的问题。
 
 ver 4.0 (2011-09-26)
 * 新增: 锚点功能。
