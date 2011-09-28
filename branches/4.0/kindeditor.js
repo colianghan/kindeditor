@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0.1 (2011-09-27)
+* @version 4.0.1 (2011-09-28)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0.1 (2011-09-27)',
+var _VERSION = '4.0.1 (2011-09-28)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -280,7 +280,7 @@ K.options = {
 		'td,th': [
 			'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor',
 			'.text-align', '.color', '.background-color', '.font-size', '.font-family', '.font-weight',
-			'.font-style', '.text-decoration', '.vertical-align', '.background'
+			'.font-style', '.text-decoration', '.vertical-align', '.background', '.border'
 		],
 		a : ['href', 'target', 'name'],
 		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess'],
@@ -865,17 +865,8 @@ function _clearMsWord(html, htmlTags) {
 		.replace(/<w:[^>]+>[\s\S]*?<\/w:[^>]+>/ig, '')
 		.replace(/<o:[^>]+>[\s\S]*?<\/o:[^>]+>/ig, '')
 		.replace(/<xml>[\s\S]*?<\/xml>/ig, '')
-		.replace(/(<table[^>]*)(>)/ig, function(full, start, end) {
-			full = full.replace(/border="?\d+"?/, '');
-			var attrs = _getAttrList(full), newFull = start;
-			if (attrs.border === undefined) {
-				newFull += ' border="1"';
-			}
-			if (attrs.bordercolor === undefined) {
-				newFull += ' bordercolor="#000000"';
-			}
-			newFull += end;
-			return newFull;
+		.replace(/<(?:table|td)[^>]*>/ig, function(full) {
+			return full.replace(/border-bottom:([#\w\s]+)/ig, 'border:$1');
 		});
 	return _formatHtml(html, htmlTags);
 }
@@ -5047,6 +5038,9 @@ KEditor.prototype = {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
 			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
+		}
+		if (_IE) {
+			self.cmd.select();
 		}
 		return self;
 	}

@@ -880,6 +880,10 @@ KEditor.prototype = {
 			// 降低mask的z-index
 			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
 		}
+		// IE bugfix: 关闭dialog后，跳转到top
+		if (_IE) {
+			self.cmd.select();
+		}
 		return self;
 	}
 };
