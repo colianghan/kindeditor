@@ -739,8 +739,7 @@ _extend(KCmd, {
 			self.inserthtml(html);
 		} else {
 			_nativeCommand(doc, 'createlink', '__kindeditor_temp_url__');
-			a = self.commonNode({ a : '*' });
-			K('a[href="__kindeditor_temp_url__"]', a ? a.parent() : doc).each(function() {
+			K('a[href="__kindeditor_temp_url__"]', doc).each(function() {
 				K(this).attr('href', url).attr('data-ke-src', url);
 				if (type) {
 					K(this).attr('target', type);
