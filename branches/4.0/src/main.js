@@ -841,13 +841,21 @@ KEditor.prototype = {
 		options.closeBtn = _undef(options.closeBtn, {
 			name : self.lang('close'),
 			click : function(e) {
-				self.hideDialog().focus();
+				self.hideDialog();
+				// IE bugfix: 关闭dialog后，跳转到top
+				if (_IE) {
+					self.cmd.select();
+				}
 			}
 		});
 		options.noBtn = _undef(options.noBtn, {
 			name : self.lang(options.yesBtn ? 'no' : 'close'),
 			click : function(e) {
-				self.hideDialog().focus();
+				self.hideDialog();
+				// IE bugfix: 关闭dialog后，跳转到top
+				if (_IE) {
+					self.cmd.select();
+				}
 			}
 		});
 		if (self.dialogAlignType != 'page') {
@@ -879,10 +887,6 @@ KEditor.prototype = {
 				parentDialog = self.dialogs[self.dialogs.length - 1];
 			// 降低mask的z-index
 			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
-		}
-		// IE bugfix: 关闭dialog后，跳转到top
-		if (_IE) {
-			self.cmd.select();
 		}
 		return self;
 	}

@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0.1 (2011-09-28)
+* @version 4.0.1 (2011-09-29)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0.1 (2011-09-28)',
+var _VERSION = '4.0.1 (2011-09-29)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -4192,21 +4192,25 @@ function _loadStyle(url) {
 	link.href = url;
 	link.rel = 'stylesheet';
 }
-function _ajax(url, fn, method, data) {
+function _ajax(url, fn, method, param, dataType) {
 	method = method || 'GET';
+	dataType = dataType || 'json';
 	var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
 	xhr.open(method, url, true);
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState == 4 && xhr.status == 200) {
 			if (fn) {
-				data = _json(_trim(xhr.responseText));
+				var data = _trim(xhr.responseText);
+				if (dataType == 'json') {
+					data = _json(data);
+				}
 				fn(data);
 			}
 		}
 	};
 	if (method == 'POST') {
 		var params = [];
-		_each(data, function(key, val) {
+		_each(param, function(key, val) {
 			params.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
 		});
 		try {
@@ -5005,13 +5009,19 @@ KEditor.prototype = {
 		options.closeBtn = _undef(options.closeBtn, {
 			name : self.lang('close'),
 			click : function(e) {
-				self.hideDialog().focus();
+				self.hideDialog();
+				if (_IE) {
+					self.cmd.select();
+				}
 			}
 		});
 		options.noBtn = _undef(options.noBtn, {
 			name : self.lang(options.yesBtn ? 'no' : 'close'),
 			click : function(e) {
-				self.hideDialog().focus();
+				self.hideDialog();
+				if (_IE) {
+					self.cmd.select();
+				}
 			}
 		});
 		if (self.dialogAlignType != 'page') {
@@ -5038,9 +5048,6 @@ KEditor.prototype = {
 			var firstDialog = self.dialogs[0],
 				parentDialog = self.dialogs[self.dialogs.length - 1];
 			firstDialog.mask.div.css('z-index', parentDialog.z - 1);
-		}
-		if (_IE) {
-			self.cmd.select();
 		}
 		return self;
 	}

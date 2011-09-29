@@ -31,21 +31,25 @@ function _loadStyle(url) {
 	link.rel = 'stylesheet';
 }
 
-function _ajax(url, fn, method, data) {
+function _ajax(url, fn, method, param, dataType) {
 	method = method || 'GET'; //POST or GET
+	dataType = dataType || 'json'; //json or html
 	var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
 	xhr.open(method, url, true);
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState == 4 && xhr.status == 200) {
 			if (fn) {
-				data = _json(_trim(xhr.responseText));
+				var data = _trim(xhr.responseText);
+				if (dataType == 'json') {
+					data = _json(data);
+				}
 				fn(data);
 			}
 		}
 	};
 	if (method == 'POST') {
 		var params = [];
-		_each(data, function(key, val) {
+		_each(param, function(key, val) {
 			params.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
 		});
 		try {
