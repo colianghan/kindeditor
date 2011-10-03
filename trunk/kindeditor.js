@@ -5,7 +5,7 @@
 * @author Roddy <luolonghao@gmail.com>
 * @site http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 3.5.5 (2011-07-08)
+* @version 3.5.5 (2011-10-03)
 *******************************************************************************/
 
 (function (undefined) {
@@ -14,7 +14,7 @@ if (window.KindEditor !== undefined) return;
 
 var KE = {};
 
-KE.version = '3.5.5 (2011-07-08)';
+KE.version = '3.5.5 (2011-10-03)';
 
 KE.scriptPath = (function() {
 	var elements = document.getElementsByTagName('script');
@@ -3437,9 +3437,7 @@ KE.plugin.fullscreen = {
 			g.width = this.width;
 			g.height = this.height;
 			KE.create(id, 2);
-			document.body.style.height = this.bodyHeight;
-			document.body.style.overflow = this.bodyOverflow;
-			document.body.parentNode.style.overflow = this.htmlOverflow;
+			KE.util.getDocumentElement().style.overflow = '';
 			window.scrollTo(this.scrollPos.x, this.scrollPos.y);
 			KE.event.remove(window, 'resize', resizeListener);
 			g.resizeMode = g.config.resizeMode;
@@ -3452,12 +3450,7 @@ KE.plugin.fullscreen = {
 			KE.remove(id, 2);
 			this.scrollPos = KE.util.getScrollPos();
 			window.scrollTo(0, 0);
-			this.bodyHeight = KE.getComputedStyle(document.body, 'height');
-			this.bodyOverflow = KE.getComputedStyle(document.body, 'overflow');
-			this.htmlOverflow = KE.getComputedStyle(document.body.parentNode, 'overflow');
-			document.body.style.height = 0;
-			document.body.style.overflow = 'hidden';
-			document.body.parentNode.style.overflow = 'hidden';
+			KE.util.getDocumentElement().style.overflow = 'hidden';
 			resetSize();
 			KE.create(id, 1);
 			var div = g.container;
