@@ -4525,6 +4525,7 @@ function KEditor(options) {
 	self.initContent = _elementVal(se);
 	self.plugin = {};
 	self.isCreated = false;
+	self.isLoading = false;
 	self._handlers = {};
 	self._contextmenus = [];
 	self._undoStack = [];
@@ -4554,7 +4555,12 @@ KEditor.prototype = {
 			self._calledPlugins[name] = true;
 			return self;
 		}
+		if (self.isLoading) {
+			return self;
+		}
+		self.isLoading = true;
 		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
+			self.isLoading = false;
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}

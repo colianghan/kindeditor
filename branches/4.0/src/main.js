@@ -320,6 +320,7 @@ function KEditor(options) {
 	self.initContent = _elementVal(se);
 	self.plugin = {};
 	self.isCreated = false;
+	self.isLoading = false;
 	// private properties
 	self._handlers = {};
 	self._contextmenus = [];
@@ -354,7 +355,13 @@ KEditor.prototype = {
 			return self;
 		}
 		// 还没加载相关plugin，动态加载
+		// 防止重复加载
+		if (self.isLoading) {
+			return self;
+		}
+		self.isLoading = true;
 		_loadScript(self.pluginsPath + name + '/' + name + '.js?ver=' + encodeURIComponent(K.DEBUG ? _TIME : _VERSION), function() {
+			self.isLoading = false;
 			if (_plugins[name]) {
 				self.loadPlugin(name, fn);
 			}
