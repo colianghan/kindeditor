@@ -71,7 +71,7 @@ K.options = {
 			'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align', 'bordercolor',
 			'.padding', '.margin', '.border', 'bgcolor', '.text-align', '.color', '.background-color',
 			'.font-size', '.font-family', '.font-weight', '.font-style', '.text-decoration', '.background',
-			'.width', '.height'
+			'.width', '.height', '.border-collapse'
 		],
 		'td,th': [
 			'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor',
@@ -80,7 +80,7 @@ K.options = {
 		],
 		a : ['href', 'target', 'name'],
 		embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', '.width', '.height', 'align', 'allowscriptaccess'],
-		img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', '.width', '.height'],
+		img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', '.width', '.height', '.border'],
 		'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : [
 			'align', '.text-align', '.color', '.background-color', '.font-size', '.font-family', '.background',
 			'.font-weight', '.font-style', '.text-decoration', '.vertical-align', '.text-indent', '.margin-left'
