@@ -82,6 +82,19 @@ _extend(KDialog, KWidget, {
 		self.bodyDiv = bodyDiv;
 		self.headerDiv = headerDiv;
 	},
+	showLoading : function() {
+		var self = this, body = self.bodyDiv;
+		self.loading = K('<div class="ke-dialog-loading"></div>')
+			.width(body.width()).height(body.height())
+			.css('top', self.headerDiv.height() + 'px');
+		body.css('visibility', 'hidden').after(self.loading);
+		return self;
+	},
+	hideLoading : function() {
+		this.loading && this.loading.remove();
+		this.bodyDiv.css('visibility', 'visible');
+		return this;
+	},
 	remove : function() {
 		var self = this;
 		if (self.options.beforeRemove) {

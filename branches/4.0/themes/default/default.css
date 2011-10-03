@@ -693,6 +693,13 @@
 	margin: 0;
 	padding: 0;
 }
+.ke-dialog-loading {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	background: url("../common/loading.gif") no-repeat scroll center center transparent;
+}
 .ke-dialog-row {
 	margin-bottom: 10px;
 }
