@@ -23,7 +23,7 @@ _extend(KToolbar, KWidget, {
 		self._itemMap = {};
 		self.div.addClass('ke-toolbar').bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
-		});
+		}).attr('unselectable', 'on');
 		function find(target) {
 			var knode = K(target);
 			if (knode.hasClass('ke-outline')) {

@@ -18,7 +18,7 @@ _extend(KColorPicker, KWidget, {
 		self._cells = [];
 		self.div.addClass('ke-colorpicker').bind('click,mousedown', function(e){
 			e.stopPropagation();
-		});
+		}).attr('unselectable', 'on');
 		var table = self.doc.createElement('table');
 		self.div.append(table);
 		table.className = 'ke-colorpicker-table';
@@ -54,10 +54,11 @@ _extend(KColorPicker, KWidget, {
 			self.options.click.call(K(this), color);
 		});
 		if (color) {
-			cell.append(K('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
+			cell.append(K('<div class="ke-colorpicker-cell-color" unselectable="on"></div>').css('background-color', color));
 		} else {
 			cell.html(self.options.noColor);
 		}
+		K(cell).attr('unselectable', 'on');
 		self._cells.push(cell);
 	},
 	remove : function() {

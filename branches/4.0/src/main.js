@@ -477,8 +477,8 @@ KEditor.prototype = {
 			} else if (name == '/') {
 				htmlList.push('<br />');
 			} else {
-				htmlList.push('<span class="ke-inline-block ke-outline" data-name="' + name + '" title="' + self.lang(name) + '">');
-				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '"></span></span>');
+				htmlList.push('<span class="ke-inline-block ke-outline" data-name="' + name + '" title="' + self.lang(name) + '" unselectable="on">');
+				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '" unselectable="on"></span></span>');
 			}
 		});
 		var toolbar = self.toolbar = _toolbar({

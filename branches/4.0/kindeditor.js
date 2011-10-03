@@ -5,13 +5,13 @@
 * @author Roddy <luolonghao@gmail.com>
 * @website http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 4.0.1 (2011-09-29)
+* @version 4.0.1 (2011-10-03)
 *******************************************************************************/
 (function (window, undefined) {
 	if (window.KindEditor) {
 		return;
 	}
-var _VERSION = '4.0.1 (2011-09-29)',
+var _VERSION = '4.0.1 (2011-10-03)',
 	_ua = navigator.userAgent.toLowerCase(),
 	_IE = _ua.indexOf('msie') > -1 && _ua.indexOf('opera') == -1,
 	_GECKO = _ua.indexOf('gecko') > -1 && _ua.indexOf('khtml') == -1,
@@ -3683,7 +3683,7 @@ _extend(KToolbar, KWidget, {
 		self._itemMap = {};
 		self.div.addClass('ke-toolbar').bind('contextmenu,mousedown,mousemove', function(e) {
 			e.preventDefault();
-		});
+		}).attr('unselectable', 'on');
 		function find(target) {
 			var knode = K(target);
 			if (knode.hasClass('ke-outline')) {
@@ -3799,7 +3799,7 @@ _extend(KMenu, KWidget, {
 		self.centerLineMode = _undef(options.centerLineMode, true);
 		self.div.addClass('ke-menu').bind('click,mousedown', function(e){
 			e.stopPropagation();
-		});
+		}).attr('unselectable', 'on');
 	},
 	addItem : function(item) {
 		var self = this;
@@ -3807,7 +3807,7 @@ _extend(KMenu, KWidget, {
 			self.div.append(K('<div class="ke-menu-separator"></div>'));
 			return;
 		}
-		var itemDiv = K('<div class="ke-menu-item"></div>'),
+		var itemDiv = K('<div class="ke-menu-item" unselectable="on"></div>'),
 			leftDiv = K('<div class="ke-inline-block ke-menu-item-left"></div>'),
 			rightDiv = K('<div class="ke-inline-block ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
@@ -3884,7 +3884,7 @@ _extend(KColorPicker, KWidget, {
 		self._cells = [];
 		self.div.addClass('ke-colorpicker').bind('click,mousedown', function(e){
 			e.stopPropagation();
-		});
+		}).attr('unselectable', 'on');
 		var table = self.doc.createElement('table');
 		self.div.append(table);
 		table.className = 'ke-colorpicker-table';
@@ -3920,10 +3920,11 @@ _extend(KColorPicker, KWidget, {
 			self.options.click.call(K(this), color);
 		});
 		if (color) {
-			cell.append(K('<div class="ke-colorpicker-cell-color"></div>').css('background-color', color));
+			cell.append(K('<div class="ke-colorpicker-cell-color" unselectable="on"></div>').css('background-color', color));
 		} else {
 			cell.html(self.options.noColor);
 		}
+		K(cell).attr('unselectable', 'on');
 		self._cells.push(cell);
 	},
 	remove : function() {
@@ -4657,8 +4658,8 @@ KEditor.prototype = {
 			} else if (name == '/') {
 				htmlList.push('<br />');
 			} else {
-				htmlList.push('<span class="ke-inline-block ke-outline" data-name="' + name + '" title="' + self.lang(name) + '">');
-				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '"></span></span>');
+				htmlList.push('<span class="ke-inline-block ke-outline" data-name="' + name + '" title="' + self.lang(name) + '" unselectable="on">');
+				htmlList.push('<span class="ke-inline-block ke-toolbar-icon ke-toolbar-icon-url ke-icon-' + name + '" unselectable="on"></span></span>');
 			}
 		});
 		var toolbar = self.toolbar = _toolbar({

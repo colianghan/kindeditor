@@ -11,7 +11,7 @@ _extend(KMenu, KWidget, {
 		self.centerLineMode = _undef(options.centerLineMode, true);
 		self.div.addClass('ke-menu').bind('click,mousedown', function(e){
 			e.stopPropagation();
-		});
+		}).attr('unselectable', 'on');
 	},
 	addItem : function(item) {
 		var self = this;
@@ -19,7 +19,7 @@ _extend(KMenu, KWidget, {
 			self.div.append(K('<div class="ke-menu-separator"></div>'));
 			return;
 		}
-		var itemDiv = K('<div class="ke-menu-item"></div>'),
+		var itemDiv = K('<div class="ke-menu-item" unselectable="on"></div>'),
 			leftDiv = K('<div class="ke-inline-block ke-menu-item-left"></div>'),
 			rightDiv = K('<div class="ke-inline-block ke-menu-item-right"></div>'),
 			height = _addUnit(item.height),
