@@ -182,7 +182,9 @@ KE.plugin.fullscreen = {
 			g.width = this.width;
 			g.height = this.height;
 			KE.create(id, 2);
-			KE.util.getDocumentElement().style.overflow = '';
+			document.body.style.height = '';
+			document.body.style.overflow = '';
+			document.body.parentNode.style.overflow = '';
 			window.scrollTo(this.scrollPos.x, this.scrollPos.y);
 			KE.event.remove(window, 'resize', resizeListener);
 			g.resizeMode = g.config.resizeMode;
@@ -195,7 +197,9 @@ KE.plugin.fullscreen = {
 			KE.remove(id, 2);
 			this.scrollPos = KE.util.getScrollPos();
 			window.scrollTo(0, 0);
-			KE.util.getDocumentElement().style.overflow = 'hidden';
+			document.body.style.height = 0;
+			document.body.style.overflow = 'hidden';
+			document.body.parentNode.style.overflow = 'hidden';
 			resetSize();
 			KE.create(id, 1);
 			var div = g.container;

@@ -5,7 +5,7 @@
 * @author Roddy <luolonghao@gmail.com>
 * @site http://www.kindsoft.net/
 * @licence http://www.kindsoft.net/license.php
-* @version 3.5.5 (2011-10-03)
+* @version 3.5.6 (2011-10-04)
 *******************************************************************************/
 
 (function (undefined) {
@@ -14,7 +14,7 @@ if (window.KindEditor !== undefined) return;
 
 var KE = {};
 
-KE.version = '3.5.5 (2011-10-03)';
+KE.version = '3.5.6 (2011-10-04)';
 
 KE.scriptPath = (function() {
 	var elements = document.getElementsByTagName('script');
@@ -3437,7 +3437,9 @@ KE.plugin.fullscreen = {
 			g.width = this.width;
 			g.height = this.height;
 			KE.create(id, 2);
-			KE.util.getDocumentElement().style.overflow = '';
+			document.body.style.height = '';
+			document.body.style.overflow = '';
+			document.body.parentNode.style.overflow = '';
 			window.scrollTo(this.scrollPos.x, this.scrollPos.y);
 			KE.event.remove(window, 'resize', resizeListener);
 			g.resizeMode = g.config.resizeMode;
@@ -3450,7 +3452,9 @@ KE.plugin.fullscreen = {
 			KE.remove(id, 2);
 			this.scrollPos = KE.util.getScrollPos();
 			window.scrollTo(0, 0);
-			KE.util.getDocumentElement().style.overflow = 'hidden';
+			document.body.style.height = 0;
+			document.body.style.overflow = 'hidden';
+			document.body.parentNode.style.overflow = 'hidden';
 			resetSize();
 			KE.create(id, 1);
 			var div = g.container;
