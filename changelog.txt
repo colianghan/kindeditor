@@ -7,6 +7,7 @@
 ver 4.0.1
 * 改善: image插件，通过editor.plugin.imageDialog()可以单独调用图片弹出框。
 * 改善: filemanager插件，Ajax请求时显示Loading效果。
+* 改善: 工具栏图标改成png8格式。
 * BUG: 修复了不能用style的width和height设置编辑器大小的问题。
 * BUG: 修复了从MS WORD里面拷贝过来的表格，表格的颜色会丢掉的问题。
 * BUG: [IE] 修复了关闭弹出层后光标自动跳转到顶部的问题。
